@@ -1,11 +1,14 @@
 "use client";
 
 import { AuthGate } from "@/components/AuthGate";
+import { HomeScreen } from "@/components/home/HomeScreen";
 
 export default function Page() {
   return (
     <AuthGate need="baby">
-      {() => <main className="p-6 text-2xl font-semibold">Bé Yêu</main>}
+      {({ ctx }) =>
+        ctx?.baby ? <HomeScreen baby={ctx.baby} member={ctx.member} /> : null
+      }
     </AuthGate>
   );
 }

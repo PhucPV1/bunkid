@@ -1,0 +1,28 @@
+export class PermissionDeniedError extends Error {
+  constructor() {
+    super("permission_denied");
+    this.name = "PermissionDeniedError";
+  }
+}
+
+const PERMISSION = "Bạn không có quyền thực hiện thao tác này";
+
+export function toVietnameseError(e: unknown): string {
+  if (e instanceof PermissionDeniedError) return PERMISSION;
+  const message =
+    typeof e === "object" && e !== null && "message" in e
+      ? String((e as { message: unknown }).message)
+      : "";
+  // supabase-js reports fetch failures as an error object, not a thrown TypeError.
+  if (/failed to fetch|network|load failed/i.test(message))
+    return "Mất kết nối mạng, thử lại sau.";
+  if (typeof e === "object" && e !== null && "code" in e) {
+    const code = (e as { code?: unknown }).code;
+    if (code === "23505") return "Đã có người bắt đầu trước.";
+    if (code === "42501") return PERMISSION;
+  }
+  if (e instanceof Error) return `Có lỗi xảy ra: ${e.message}`;
+  if (typeof e === "object" && e !== null && "message" in e)
+    return `Có lỗi xảy ra: ${String((e as { message: unknown }).message)}`;
+  return "Có lỗi xảy ra.";
+}
