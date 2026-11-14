@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { BrandMark } from "@/components/brand/BrandMark";
 import { supabase } from "@/lib/supabase/client";
+import { GoogleButton } from "./GoogleButton";
 
 export function LoginScreen() {
   const [error, setError] = useState<string | null>(null);
@@ -18,27 +20,22 @@ export function LoginScreen() {
   }
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center gap-6 p-6 text-center">
-      <h1 className="text-3xl font-semibold">Kim Bun</h1>
-      <p className="text-muted">Theo dõi bú, ngủ, tã của bé cùng cả nhà.</p>
-      <button
-        type="button"
-        onClick={signIn}
-        className="min-h-12 rounded-2xl bg-accent text-lg font-medium text-on-accent"
-      >
-        Đăng nhập bằng Google
-      </button>
-      <Link
-        href="/cai-app"
-        className="flex min-h-11 items-center justify-center text-accent-ink underline"
-      >
-        Cách cài Kim Bun lên màn hình chính
-      </Link>
-      {error && (
-        <p role="alert" className="text-danger">
-          {error}
-        </p>
-      )}
+    <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center gap-8 px-6 py-6 text-center">
+      <BrandMark tagline="Nhật ký chăm bé của cả nhà" />
+      <div className="flex flex-col gap-3">
+        <GoogleButton onClick={() => void signIn()} />
+        <Link
+          href="/cai-app"
+          className="flex min-h-11 items-center justify-center text-[15px] font-semibold text-accent-text"
+        >
+          Cách cài Kim Bun lên màn hình chính
+        </Link>
+        {error && (
+          <p role="alert" className="text-[15px] text-danger">
+            {error}
+          </p>
+        )}
+      </div>
     </main>
   );
 }
