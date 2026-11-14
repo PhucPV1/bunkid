@@ -86,10 +86,10 @@ export function StatsScreen({ baby }: { baby: Baby }) {
     <main className="mx-auto flex max-w-md flex-col gap-4 p-4">
       <header className="flex items-center justify-between gap-3">
         <Link
-          href="/tien-ich"
+          href="/kham-pha"
           className="flex min-h-11 items-center text-accent-ink"
         >
-          ← Tiện ích
+          ← Khám phá
         </Link>
         <h1 className="text-2xl font-semibold">Thống kê</h1>
         <span className="w-16" />

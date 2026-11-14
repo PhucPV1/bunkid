@@ -102,6 +102,7 @@ describe("service worker", () => {
         "/icons/maskable-512.png",
         "/nhat-ky",
         "/thong-ke",
+        "/kham-pha",
         "/dang-nhap",
         "/khan-cap",
         "/_next/static/chunks/app.js",

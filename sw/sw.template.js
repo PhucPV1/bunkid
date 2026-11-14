@@ -22,6 +22,7 @@ const PAGES = [
   "/bao-cao",
   "/cam-nang",
   "/tien-ich",
+  "/kham-pha",
   "/cai-dat",
   "/cai-app",
   "/dang-nhap",
