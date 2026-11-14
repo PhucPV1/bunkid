@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import type { Baby, EmergencyContactRow } from "@/lib/supabase/rows";
 import { ICON_PATHS } from "@/lib/ui/icons";
 import { CallList } from "./CallList";
+import { ContactsEditor } from "./ContactsEditor";
 import { ProfileCard } from "./ProfileCard";
 
 const contact = (id: string, label: string, sort: number) =>
@@ -66,5 +67,31 @@ describe("ProfileCard", () => {
     expect(html).toContain(">Nhóm máu</dt>");
     expect(html).toContain(">Sửa nhóm máu, dị ứng</button>");
     expect(html).not.toContain("bg-soft");
+  });
+});
+
+describe("ContactsEditor", () => {
+  it("a glass list with icon arrows, Sửa / Xóa, then the add form with Lưu and Xong", () => {
+    const html = renderToStaticMarkup(
+      <QueryClientProvider client={new QueryClient()}>
+        <ContactsEditor
+          familyId="f1"
+          contacts={[contact("a", "Bác sĩ", 1), contact("b", "Bà nội", 2)]}
+          onClose={() => {}}
+        />
+      </QueryClientProvider>,
+    );
+    expect(html).toContain('aria-label="Đưa Bác sĩ lên"');
+    expect(html).toContain('aria-label="Đưa Bà nội xuống"');
+    expect(html).toContain(`d="${ICON_PATHS.chevronUp}"`);
+    expect(html).toContain(`d="${ICON_PATHS.chevronDown}"`);
+    expect(html).not.toContain("↑");
+    expect(html).toContain(">Sửa</button>");
+    expect(html).toContain("text-danger!");
+    expect(html).toContain(">Thêm số điện thoại</h3>");
+    expect(html).toContain('inputMode="tel"');
+    expect(html).toContain(">Lưu</button>");
+    expect(html).toContain(">Xong</button>");
+    expect(html).not.toContain("rounded-2xl border");
   });
 });

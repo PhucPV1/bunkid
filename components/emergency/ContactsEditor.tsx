@@ -2,6 +2,10 @@
 
 import { useState, type FormEvent } from "react";
 import { OnlineOnly } from "@/components/OnlineOnly";
+import { FIELD_INPUT, FIELD_LABEL } from "@/components/quick/styles";
+import { Button } from "@/components/ui/Button";
+import { IconButton } from "@/components/ui/IconButton";
+import { ListGroup } from "@/components/ui/ListGroup";
 import { useContactActions } from "@/lib/data/emergency";
 import { toVietnameseError } from "@/lib/data/errors";
 import {
@@ -15,7 +19,7 @@ import type { EmergencyContactRow } from "@/lib/supabase/rows";
 
 const EMPTY: ContactInput = { label: "", phone: "" };
 
-// Spec §5.2: every member adds, edits, reorders and deletes contacts.
+// Spec gốc §5.2: every member adds, edits, reorders and deletes contacts.
 export function ContactsEditor({
   familyId,
   contacts,
@@ -58,128 +62,129 @@ export function ContactsEditor({
       actions.add.mutate({ ...parsed.value, sort: nextSort(contacts) }, done);
   }
 
-  const input = "min-h-11 rounded-xl border px-3";
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="text-lg font-medium">Sửa danh bạ</h2>
+      <h2 className="px-1 text-xl leading-[26px] font-bold text-ink">
+        Sửa danh bạ
+      </h2>
       <OnlineOnly>
-        <ul className="divide-y rounded-2xl border">
-          {list.map((contact, index) => (
-            <li key={contact.id} className="flex items-center gap-1 px-2 py-1">
-              <span className="min-w-0 flex-1 px-2">
-                <span className="block truncate font-medium">
-                  {contact.label}
+        {list.length > 0 && (
+          <ListGroup>
+            {list.map((contact, index) => (
+              <li
+                key={contact.id}
+                className="flex items-center gap-1 border-b border-line py-1 pr-2 pl-4 last:border-b-0"
+              >
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-base font-medium text-ink">
+                    {contact.label}
+                  </span>
+                  <span className="block text-[13px] text-muted tabular-nums">
+                    {contact.phone}
+                  </span>
                 </span>
-                <span className="block text-sm text-muted">
-                  {contact.phone}
-                </span>
-              </span>
-              <button
-                type="button"
-                aria-label={`Đưa ${contact.label} lên`}
-                disabled={busy || index === 0}
-                onClick={() =>
-                  actions.reorder.mutate(moveContact(list, contact.id, -1), {
-                    onError,
-                  })
-                }
-                className="min-h-11 min-w-11 rounded-xl disabled:opacity-30"
-              >
-                ↑
-              </button>
-              <button
-                type="button"
-                aria-label={`Đưa ${contact.label} xuống`}
-                disabled={busy || index === list.length - 1}
-                onClick={() =>
-                  actions.reorder.mutate(moveContact(list, contact.id, 1), {
-                    onError,
-                  })
-                }
-                className="min-h-11 min-w-11 rounded-xl disabled:opacity-30"
-              >
-                ↓
-              </button>
-              <button
-                type="button"
-                disabled={busy}
-                onClick={() => startEdit(contact)}
-                className="min-h-11 min-w-11 rounded-xl px-2"
-              >
-                Sửa
-              </button>
-              <button
-                type="button"
-                disabled={busy}
-                onClick={() => {
-                  if (!window.confirm(`Xóa "${contact.label}" khỏi danh bạ?`))
-                    return;
-                  if (contact.id === editingId) startEdit(null);
-                  setMessage(null);
-                  actions.remove.mutate(contact.id, { onError });
-                }}
-                className="min-h-11 min-w-11 rounded-xl px-2 text-danger"
-              >
-                Xóa
-              </button>
-            </li>
-          ))}
-        </ul>
+                <IconButton
+                  label={`Đưa ${contact.label} lên`}
+                  icon="chevronUp"
+                  variant="plain"
+                  disabled={busy || index === 0}
+                  onClick={() =>
+                    actions.reorder.mutate(moveContact(list, contact.id, -1), {
+                      onError,
+                    })
+                  }
+                />
+                <IconButton
+                  label={`Đưa ${contact.label} xuống`}
+                  icon="chevronDown"
+                  variant="plain"
+                  disabled={busy || index === list.length - 1}
+                  onClick={() =>
+                    actions.reorder.mutate(moveContact(list, contact.id, 1), {
+                      onError,
+                    })
+                  }
+                />
+                <Button
+                  variant="ghost"
+                  size="md"
+                  disabled={busy}
+                  onClick={() => startEdit(contact)}
+                >
+                  Sửa
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="md"
+                  disabled={busy}
+                  className="text-danger!"
+                  onClick={() => {
+                    if (!window.confirm(`Xóa "${contact.label}" khỏi danh bạ?`))
+                      return;
+                    if (contact.id === editingId) startEdit(null);
+                    setMessage(null);
+                    actions.remove.mutate(contact.id, { onError });
+                  }}
+                >
+                  Xóa
+                </Button>
+              </li>
+            ))}
+          </ListGroup>
+        )}
         <form onSubmit={submit} className="flex flex-col gap-3">
-          <h3 className="font-medium">
+          <h3 className="px-1 text-[17px] font-semibold text-ink">
             {editingId ? "Sửa số điện thoại" : "Thêm số điện thoại"}
           </h3>
-          <label className="flex flex-col gap-1">
-            Tên (ví dụ: Bác sĩ nhi, Bệnh viện Nhi Đồng 1)
+          <label className="flex flex-col gap-1.5">
+            <span className={FIELD_LABEL}>
+              Tên (ví dụ: Bác sĩ nhi, Bệnh viện Nhi Đồng 1)
+            </span>
             <input
-              className={input}
+              className={FIELD_INPUT}
               maxLength={60}
               value={draft.label}
-              onChange={(e) => setDraft({ ...draft, label: e.target.value })}
+              onChange={(event) =>
+                setDraft({ ...draft, label: event.target.value })
+              }
             />
           </label>
-          <label className="flex flex-col gap-1">
-            Số điện thoại
+          <label className="flex flex-col gap-1.5">
+            <span className={FIELD_LABEL}>Số điện thoại</span>
             <input
               type="tel"
               inputMode="tel"
-              className={input}
+              className={`${FIELD_INPUT} tabular-nums`}
               value={draft.phone}
-              onChange={(e) => setDraft({ ...draft, phone: e.target.value })}
+              onChange={(event) =>
+                setDraft({ ...draft, phone: event.target.value })
+              }
             />
           </label>
           <div className="flex gap-3">
             {editingId && (
-              <button
-                type="button"
+              <Button
+                variant="secondary"
+                className="flex-1"
                 onClick={() => startEdit(null)}
-                className="min-h-12 flex-1 rounded-2xl border"
               >
                 Hủy sửa
-              </button>
+              </Button>
             )}
-            <button
-              type="submit"
-              disabled={busy}
-              className="min-h-12 flex-1 rounded-2xl bg-accent text-on-accent disabled:opacity-50"
-            >
+            <Button type="submit" busy={busy} className="flex-1">
               Lưu
-            </button>
+            </Button>
           </div>
         </form>
       </OnlineOnly>
       {message && (
-        <p role="alert" className="text-danger">
+        <p role="alert" className="text-[15px] text-danger">
           {message}
         </p>
       )}
-      <button
-        type="button"
-        onClick={onClose}
-        className="min-h-12 rounded-2xl border"
-      >
+      <Button variant="secondary" block onClick={onClose}>
         Xong
-      </button>
+      </Button>
     </section>
   );
 }

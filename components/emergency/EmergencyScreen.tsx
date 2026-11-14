@@ -1,9 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "@/components/ui/Button";
+import { ErrorCard } from "@/components/ui/ErrorCard";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { useEmergencyContacts } from "@/lib/data/emergency";
-import { useGrowth } from "@/lib/data/growth";
 import { toVietnameseError } from "@/lib/data/errors";
+import { useGrowth } from "@/lib/data/growth";
 import { latestWeightG } from "@/lib/rules/growthForm";
 import type { Baby } from "@/lib/supabase/rows";
 import { CallList } from "./CallList";
@@ -23,13 +26,17 @@ export function EmergencyScreen({
   const rows = contacts.data ?? [];
 
   return (
-    <main className="mx-auto flex max-w-md flex-col gap-4 p-4">
-      <h1 className="text-2xl font-semibold">Khẩn cấp</h1>
+    <main className="mx-auto flex max-w-md flex-col gap-[18px] px-4 pt-2 pb-4">
+      <PageHeader
+        title="Khẩn cấp"
+        back={{ href: "/kham-pha", label: "Khám phá" }}
+      />
       <CallList contacts={rows} />
       {contacts.isError && !contacts.data && (
-        <p role="alert" className="text-danger">
-          Không tải được danh bạ: {toVietnameseError(contacts.error)}
-        </p>
+        <ErrorCard
+          message={`Không tải được danh bạ: ${toVietnameseError(contacts.error)}`}
+          onRetry={() => void contacts.refetch()}
+        />
       )}
       {editing ? (
         <ContactsEditor
@@ -38,13 +45,9 @@ export function EmergencyScreen({
           onClose={() => setEditing(false)}
         />
       ) : (
-        <button
-          type="button"
-          onClick={() => setEditing(true)}
-          className="min-h-11 rounded-xl border px-4"
-        >
+        <Button variant="secondary" block onClick={() => setEditing(true)}>
           {rows.length === 0 ? "Thêm số bác sĩ, người thân" : "Sửa danh bạ"}
-        </button>
+        </Button>
       )}
       <ProfileCard
         baby={baby}
