@@ -72,7 +72,7 @@ export function HomeScreen({
     logs: rows,
     ageDays: age,
     wetDiapers: ratings.wetDiapers,
-    triageAvailable: false,
+    triageAvailable: true,
     now,
   });
   const statusLines = homeStatusLines({

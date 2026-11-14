@@ -17,7 +17,7 @@ export type MenuItem = { label: string; href: string | null };
 
 export const GUIDE_ITEMS: MenuItem[] = [
   { label: "Tiêm chủng", href: "/tiem-chung" },
-  { label: "Triệu chứng", href: null },
+  { label: "Triệu chứng", href: "/trieu-chung" },
   { label: "Phát triển", href: null },
   { label: "Bồng bế", href: null },
   { label: "Bệnh thường gặp", href: null },

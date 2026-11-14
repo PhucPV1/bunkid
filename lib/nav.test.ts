@@ -41,6 +41,12 @@ describe("nav", () => {
     );
   });
 
+  it("Cẩm nang opens symptom triage", () => {
+    expect(GUIDE_ITEMS.find((i) => i.label === "Triệu chứng")?.href).toBe(
+      "/trieu-chung",
+    );
+  });
+
   it("every menu link opens under its own tab", () => {
     for (const item of GUIDE_ITEMS)
       if (item.href) expect(activeTab(item.href)).toBe("guide");
