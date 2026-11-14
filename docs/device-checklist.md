@@ -79,6 +79,22 @@ Thiết bị: iPhone 11, iPhone 16, iPhone 17 Pro. Ghi Đạt / Không đạt, p
 | iPhone 16     | 18.2 | Đạt     | Đạt (2026-11-14)                          |
 | iPhone 17 Pro | 26.5 | Đạt     | Đạt (2026-11-14)                          |
 
+## Bước 6 — Tiếng ồn trắng khi khóa màn hình (M22)
+
+1. Tiện ích → Ồn trắng → chọn "Trắng", âm lượng vừa, "Hẹn giờ tắt" = "Không" → "Phát". Kỳ vọng: nghe tiếng xì đều, không có tiếng "tách" lặp lại mỗi 2 giây.
+2. Gạt công tắc im lặng của iPhone. Kỳ vọng: vẫn nghe.
+3. Khóa màn hình, chờ 5 phút. Ghi lại: âm còn chạy hết 5 phút / dừng sau khoảng bao lâu.
+4. Mở lại, chọn "Nâu" rồi "Hồng" khi đang phát. Kỳ vọng: âm đổi ngay. Chọn "15 phút". Kỳ vọng: dòng "Tắt sau 15:00" đếm lùi.
+5. Khóa màn hình và để yên khoảng 16 phút. Kỳ vọng (nếu âm còn chạy khi khóa màn hình): khoảng phút thứ 15 âm nhỏ dần trong 10 giây rồi tự tắt.
+
+Nếu iOS dừng âm khi khóa màn hình (spec §10.3 bước 6), ghi giới hạn đó vào README; không chặn phát hành.
+
+| Máy           | iOS | Kết quả | Ghi chú (chạy bao lâu khi khóa màn hình) |
+| ------------- | --- | ------- | ---------------------------------------- |
+| iPhone 11     |     |         |                                          |
+| iPhone 16     |     |         |                                          |
+| iPhone 17 Pro |     |         |                                          |
+
 ## Bước 7 — Tạm tắt (M11, phần nhắc bú)
 
 Nhắc thức cũng bị tạm tắt chặn: kiểm ở bước 11, mục 5.
@@ -187,6 +203,21 @@ Nhắc thức cũng bị tạm tắt chặn: kiểm ở bước 11, mục 5.
 1. Cẩm nang → Bệnh thường gặp. Kỳ vọng: 10 mục (Cảm lạnh, Sổ mũi nghẹt mũi, Nôn trớ, Táo bón, Hăm tã, Chàm sữa, Nấm miệng, Vàng da sinh lý, Viêm tiểu phế quản, Tiêu chảy), nút "Phân loại triệu chứng" và "Gọi 115" ở đầu.
 2. Mở một mục. Kỳ vọng: Dấu hiệu, Chăm bé tại nhà, Nên cho bé đi khám, khung đỏ "Khi nào đi khám ngay", thời gian thường kéo dài, nguồn NHS.
 3. Bật chế độ máy bay, đóng hẳn app rồi mở lại → Cẩm nang → Bệnh thường gặp. Kỳ vọng: vẫn đọc được.
+
+| Máy           | iOS | Kết quả | Ghi chú |
+| ------------- | --- | ------- | ------- |
+| iPhone 11     |     |         |         |
+| iPhone 16     |     |         |         |
+| iPhone 17 Pro |     |         |         |
+
+## Bước 15 — Hút sữa và tummy time (M22)
+
+1. Trang chủ: dưới hàng nút chính có hàng "Hút sữa · Tummy time". Bấm "Hút sữa". Kỳ vọng: nút đổi thành "Dừng hút sữa", thẻ "Đang chạy" hiện Hút sữa.
+2. Bấm "Dừng hút sữa". Kỳ vọng: hiện "Đã hút được bao nhiêu?" với ô trái, phải (ml). Nhập 60 và 45 → Lưu. Nhật ký có dòng "Hút sữa · … · 105 ml".
+3. Lần nữa: bắt đầu rồi bấm "Dừng" ở thẻ "Đang chạy" → "Bỏ qua". Kỳ vọng: bản ghi kết thúc, không có ml.
+4. Bấm "Tummy time", chờ 1–2 phút, bấm lại để dừng.
+5. Tiện ích → Thống kê → tab "Hút sữa": hôm nay 105 ml; tab "Tummy": hôm nay có số phút vừa ghi.
+6. Dọn dẹp: xóa các bản ghi thử trong Nhật ký.
 
 | Máy           | iOS | Kết quả | Ghi chú |
 | ------------- | --- | ------- | ------- |
