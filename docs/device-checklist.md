@@ -83,7 +83,7 @@ Thiết bị: iPhone 11, iPhone 16, iPhone 17 Pro. Ghi Đạt / Không đạt, p
 2. Nhật ký → "+ Thêm" → Bú bình 30 ml, Thời điểm = bây giờ trừ 61 phút → Lưu. Kỳ vọng: 3 phút không có thông báo trên máy này.
 3. Bấm "Bật lại". Kỳ vọng: trong ≤ 2 phút nhận "Đến giờ bú rồi".
 4. Dọn dẹp: xóa hai bản ghi Bú bình thử; Khoảng cách cữ bú đặt lại giá trị cũ (thường "3 giờ").
-5. Phần "nhắc tiêm vẫn đến khi tạm tắt" kiểm ở đợt 2.
+5. Nhắc tiêm vẫn đến khi tạm tắt: kiểm ở bước 9, mục 4.
 
 | Máy           | iOS  | Kết quả | Ghi chú                                   |
 | ------------- | ---- | ------- | ----------------------------------------- |
@@ -97,6 +97,21 @@ Thiết bị: iPhone 11, iPhone 16, iPhone 17 Pro. Ghi Đạt / Không đạt, p
 2. Chọn loại cho các nhóm theo sổ tiêm của bé ("Không tiêm" cho nhóm không định tiêm). Phần "Mũi đã đến hạn trước hôm nay" đã tick sẵn BCG và Viêm gan B sơ sinh; tick thêm mũi bé đã tiêm → Lưu. Kỳ vọng: các mũi đã tick nằm trong "Đã tiêm", nhóm "Quá hạn" chỉ còn mũi chưa tiêm.
 3. Bấm một mũi "Sắp tới" → "Đổi ngày hẹn" → chọn ngày khác → Lưu. Kỳ vọng: dòng đó hiện "Hẹn <ngày mới>". Mở lại → "Xóa đánh dấu". Kỳ vọng: về ngày hẹn cũ.
 4. Trên máy thứ hai (tài khoản thành viên khác) mở Tiêm chủng. Kỳ vọng: thấy đúng các đánh dấu ở bước 2; không có nút "Chọn loại vaccine".
+
+| Máy           | iOS | Kết quả | Ghi chú |
+| ------------- | --- | ------- | ------- |
+| iPhone 11     |     |         |         |
+| iPhone 16     |     |         |         |
+| iPhone 17 Pro |     |         |         |
+
+## Bước 9 — Tiêm chủng khi offline và nhắc lịch tiêm (M16)
+
+1. Bật chế độ máy bay. Tiêm chủng → bấm một mũi "Sắp tới" → Đã tiêm → Lưu. Kỳ vọng: mũi chuyển sang "Đã tiêm" ngay, có dấu ⏳; đầu trang có chip "⏳ 1 mục chờ đồng bộ".
+2. Tắt chế độ máy bay, giữ app mở. Kỳ vọng: trong ≤ 30 giây ⏳ và chip biến mất; máy thứ hai mở Tiêm chủng thấy mũi đó "Đã tiêm". Mở lại mũi → "Xóa đánh dấu".
+3. Cài đặt → Thông báo: công tắc "Nhắc lịch tiêm" đang bật, không còn dòng "Có từ đợt 2". Tiêm chủng → bấm một mũi chưa tiêm **không** có nhãn "Chưa chọn loại" → Đổi ngày hẹn → **ngày kia** (hôm nay + 2) → Lưu.
+4. Sáng hôm sau, khoảng 07:50, Cài đặt → Thông báo → "Tạm tắt 2 giờ".
+5. Kỳ vọng: trong khoảng 08:00–08:59 mọi máy đã bật thông báo nhận "Sắp tới lịch tiêm" / "<tên mũi> vào <Thứ, dd/MM>." dù đang tạm tắt; bấm vào thì mở trang Tiêm chủng.
+6. Dọn dẹp: "Bật lại" thông báo; mở lại mũi ở bước 3 → "Xóa đánh dấu".
 
 | Máy           | iOS | Kết quả | Ghi chú |
 | ------------- | --- | ------- | ------- |
