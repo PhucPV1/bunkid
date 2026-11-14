@@ -59,6 +59,13 @@ describe("nav", () => {
     );
   });
 
+  it("opens the holding guide and music", () => {
+    expect(GUIDE_ITEMS.find((i) => i.label === "Bồng bế")?.href).toBe(
+      "/bong-be",
+    );
+    expect(TOOL_ITEMS.find((i) => i.label === "Nhạc")?.href).toBe("/nhac");
+  });
+
   it("every menu link opens under its own tab", () => {
     for (const item of GUIDE_ITEMS)
       if (item.href) expect(activeTab(item.href)).toBe("guide");
