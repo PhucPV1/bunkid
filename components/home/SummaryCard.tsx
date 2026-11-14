@@ -2,9 +2,9 @@ import type { DayRatings, Rating } from "@/lib/rules/ratings";
 import { metricText, RATING_LABEL } from "@/lib/rules/summaryText";
 
 const TONE: Record<Rating, string> = {
-  green: "bg-emerald-100 text-emerald-900",
-  yellow: "bg-amber-100 text-amber-900",
-  red: "bg-red-100 text-red-900",
+  green: "bg-good-soft text-good-ink",
+  yellow: "bg-warn-soft text-warn-ink",
+  red: "bg-danger-soft text-danger-ink",
 };
 
 export function SummaryCard({
@@ -25,7 +25,7 @@ export function SummaryCard({
         {items.map((item) => (
           <div
             key={item.label}
-            className={`rounded-2xl p-3 ${item.rating ? TONE[item.rating] : "bg-neutral-100"}`}
+            className={`rounded-2xl p-3 ${item.rating ? TONE[item.rating] : "bg-soft"}`}
           >
             <p className="text-sm">{item.label}</p>
             <p className="text-lg font-semibold">{item.value}</p>
@@ -36,7 +36,7 @@ export function SummaryCard({
           </div>
         ))}
       </div>
-      <p className="text-sm text-neutral-600">
+      <p className="text-sm text-muted">
         Bình: {totals.bottleMl} ml · Tã bẩn: {totals.dirtyDiapers}
       </p>
     </div>

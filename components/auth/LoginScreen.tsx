@@ -19,18 +19,16 @@ export function LoginScreen() {
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center gap-6 p-6 text-center">
       <h1 className="text-3xl font-semibold">Bé Yêu</h1>
-      <p className="text-neutral-600">
-        Theo dõi bú, ngủ, tã của bé cùng cả nhà.
-      </p>
+      <p className="text-muted">Theo dõi bú, ngủ, tã của bé cùng cả nhà.</p>
       <button
         type="button"
         onClick={signIn}
-        className="min-h-12 rounded-2xl bg-pink-500 text-lg font-medium text-white"
+        className="min-h-12 rounded-2xl bg-accent text-lg font-medium text-on-accent"
       >
         Đăng nhập bằng Google
       </button>
       {error && (
-        <p role="alert" className="text-red-600">
+        <p role="alert" className="text-danger">
           {error}
         </p>
       )}

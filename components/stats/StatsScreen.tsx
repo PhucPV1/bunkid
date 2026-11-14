@@ -62,12 +62,12 @@ export function StatsScreen({ baby }: { baby: Baby }) {
   const stats = dailyStats(logs.data ?? [], days, now);
   const series = SERIES[tab];
   const pill = (active: boolean) =>
-    `min-h-11 flex-1 rounded-full px-4 ${active ? "bg-pink-500 text-white" : "bg-neutral-100"}`;
+    `min-h-11 flex-1 rounded-full px-4 ${active ? "bg-accent text-on-accent" : "bg-soft"}`;
 
   return (
     <main className="mx-auto flex max-w-md flex-col gap-4 p-4">
       <header className="flex items-center justify-between gap-3">
-        <Link href="/" className="flex min-h-11 items-center text-pink-700">
+        <Link href="/" className="flex min-h-11 items-center text-accent-ink">
           ← Trang chủ
         </Link>
         <h1 className="text-2xl font-semibold">Thống kê</h1>
@@ -102,11 +102,11 @@ export function StatsScreen({ baby }: { baby: Baby }) {
       </div>
 
       {logs.isError ? (
-        <p role="alert" className="text-red-600">
+        <p role="alert" className="text-danger">
           {toVietnameseError(logs.error)}
         </p>
       ) : logs.isPending ? (
-        <p className="h-60 text-neutral-500">Đang tải…</p>
+        <p className="h-60 text-muted">Đang tải…</p>
       ) : (
         <>
           <StatsChart
@@ -117,7 +117,7 @@ export function StatsScreen({ baby }: { baby: Baby }) {
           />
           <table className="w-full text-left">
             <thead>
-              <tr className="text-sm text-neutral-500">
+              <tr className="text-sm text-muted">
                 <th className="py-2 font-normal">Ngày</th>
                 {COLUMNS[tab].map((c) => (
                   <th key={c.label} className="py-2 text-right font-normal">
@@ -139,7 +139,7 @@ export function StatsScreen({ baby }: { baby: Baby }) {
               ))}
             </tbody>
           </table>
-          <p className="text-sm text-neutral-500">
+          <p className="text-sm text-muted">
             Tính theo ngày lịch giờ Việt Nam. Hôm nay tính đến hiện tại.
           </p>
         </>

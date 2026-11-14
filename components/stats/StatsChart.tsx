@@ -26,17 +26,45 @@ export function StatsChart({
     <div className="h-60 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={rows} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
-          <CartesianGrid vertical={false} strokeDasharray="3 3" />
-          <XAxis dataKey="label" tick={{ fontSize: 12 }} interval={0} />
-          <YAxis allowDecimals={decimals} width={32} tick={{ fontSize: 12 }} />
+          <CartesianGrid
+            vertical={false}
+            strokeDasharray="3 3"
+            stroke="var(--color-muted)"
+            strokeOpacity={0.4}
+          />
+          <XAxis
+            dataKey="label"
+            tick={{ fontSize: 12, fill: "var(--color-muted)" }}
+            stroke="var(--color-muted)"
+            interval={0}
+          />
+          <YAxis
+            allowDecimals={decimals}
+            width={32}
+            tick={{ fontSize: 12, fill: "var(--color-muted)" }}
+            stroke="var(--color-muted)"
+          />
           <Tooltip
             formatter={(value) => Number(value).toLocaleString("vi-VN")}
+            contentStyle={{
+              background: "var(--color-surface)",
+              borderColor: "var(--color-accent-line)",
+              color: "var(--color-ink)",
+            }}
+            itemStyle={{ color: "var(--color-ink)" }}
+            cursor={{ fill: "var(--color-soft)" }}
           />
-          {secondaryName && <Legend />}
+          {secondaryName && (
+            <Legend
+              formatter={(value) => (
+                <span style={{ color: "var(--color-ink)" }}>{value}</span>
+              )}
+            />
+          )}
           <Bar
             dataKey="primary"
             name={primaryName}
-            fill="#ec4899"
+            fill="var(--color-accent)"
             radius={[6, 6, 0, 0]}
             isAnimationActive={false}
           />
@@ -44,7 +72,7 @@ export function StatsChart({
             <Bar
               dataKey="secondary"
               name={secondaryName}
-              fill="#a16207"
+              fill="var(--color-warn-ink)"
               radius={[6, 6, 0, 0]}
               isAnimationActive={false}
             />

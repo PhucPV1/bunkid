@@ -69,7 +69,7 @@ export function QuickEntrySheet({
       <form
         onSubmit={submit}
         onClick={(e) => e.stopPropagation()}
-        className="flex w-full flex-col gap-3 rounded-t-3xl bg-white p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))]"
+        className="flex w-full flex-col gap-3 rounded-t-3xl bg-surface p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))]"
       >
         <h2 className="text-xl font-semibold">{TITLES[type]}</h2>
         <QuickFields
@@ -90,13 +90,13 @@ export function QuickEntrySheet({
           <p
             key={warning}
             role="status"
-            className="rounded-xl bg-amber-50 p-3 text-amber-900"
+            className="rounded-xl bg-warn-soft p-3 text-warn-ink"
           >
             {warning}
           </p>
         ))}
         {message && (
-          <p role="alert" className="text-red-600">
+          <p role="alert" className="text-danger">
             {message}
           </p>
         )}
@@ -111,7 +111,7 @@ export function QuickEntrySheet({
           <button
             type="submit"
             disabled={add.isPending}
-            className="min-h-12 flex-1 rounded-2xl bg-pink-500 text-white disabled:opacity-50"
+            className="min-h-12 flex-1 rounded-2xl bg-accent text-on-accent disabled:opacity-50"
           >
             Lưu
           </button>

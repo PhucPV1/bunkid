@@ -46,7 +46,7 @@ export function ActionGrid({
             type="button"
             disabled={busy}
             onClick={() => onTimer(button)}
-            className={`${base} ${active ? "bg-pink-500 text-white" : "bg-pink-50 text-pink-900"}`}
+            className={`${base} ${active ? "bg-accent text-on-accent" : "bg-accent-soft text-accent-ink"}`}
           >
             {active ? `Dừng ${label.toLowerCase()}` : label}
           </button>
@@ -57,7 +57,7 @@ export function ActionGrid({
           key={type}
           type="button"
           onClick={() => onInstant(type)}
-          className={`${base} bg-neutral-100`}
+          className={`${base} bg-soft`}
         >
           {label}
         </button>

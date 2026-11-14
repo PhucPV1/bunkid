@@ -9,7 +9,7 @@ export default function Page() {
       {() => (
         <main className="mx-auto max-w-md p-6 text-center">
           <p className="mb-4">Đăng nhập không thành công.</p>
-          <Link href="/dang-nhap" className="text-pink-600 underline">
+          <Link href="/dang-nhap" className="text-accent-ink underline">
             Thử lại
           </Link>
         </main>

@@ -12,7 +12,7 @@ export default function Page() {
           {ctx?.member.role === "owner" ? (
             <BabyForm familyId={ctx.family.id} />
           ) : (
-            <p className="text-neutral-600">
+            <p className="text-muted">
               Chờ ba/mẹ của bé khai báo thông tin bé.
             </p>
           )}

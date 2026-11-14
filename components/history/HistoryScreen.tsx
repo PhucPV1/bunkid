@@ -44,14 +44,14 @@ export function HistoryScreen({
   return (
     <main className="mx-auto flex max-w-md flex-col gap-4 p-4">
       <header className="flex items-center justify-between gap-3">
-        <Link href="/" className="flex min-h-11 items-center text-pink-700">
+        <Link href="/" className="flex min-h-11 items-center text-accent-ink">
           ← Trang chủ
         </Link>
         <h1 className="text-2xl font-semibold">Nhật ký</h1>
         <button
           type="button"
           onClick={() => setSheet({ log: null })}
-          className="min-h-11 rounded-xl bg-pink-500 px-3 text-white"
+          className="min-h-11 rounded-xl bg-accent px-3 text-on-accent"
         >
           + Thêm
         </button>
@@ -64,7 +64,7 @@ export function HistoryScreen({
             type="button"
             aria-pressed={filter === f.value}
             onClick={() => setFilter(f.value)}
-            className={`min-h-11 shrink-0 rounded-full px-4 ${filter === f.value ? "bg-pink-500 text-white" : "bg-neutral-100"}`}
+            className={`min-h-11 shrink-0 rounded-full px-4 ${filter === f.value ? "bg-accent text-on-accent" : "bg-soft"}`}
           >
             {f.label}
           </button>
@@ -72,13 +72,13 @@ export function HistoryScreen({
       </nav>
 
       {history.isError && (
-        <p role="alert" className="text-red-600">
+        <p role="alert" className="text-danger">
           {toVietnameseError(history.error)}
         </p>
       )}
-      {history.isPending && <p className="text-neutral-500">Đang tải…</p>}
+      {history.isPending && <p className="text-muted">Đang tải…</p>}
       {history.isSuccess && groups.length === 0 && (
-        <p className="text-neutral-500">Không có bản ghi nào.</p>
+        <p className="text-muted">Không có bản ghi nào.</p>
       )}
 
       {groups.map((group) => (
@@ -92,18 +92,18 @@ export function HistoryScreen({
                   onClick={() => setSheet({ log })}
                   className="flex min-h-11 w-full gap-3 p-3 text-left"
                 >
-                  <span className="w-12 shrink-0 tabular-nums text-neutral-500">
+                  <span className="w-12 shrink-0 tabular-nums text-muted">
                     {formatVnTime(new Date(log.started_at))}
                   </span>
                   <span className="flex-1">
                     {describeLog(log, now)}
                     {log.note && (
-                      <span className="block text-sm text-neutral-500">
+                      <span className="block text-sm text-muted">
                         {log.note}
                       </span>
                     )}
                   </span>
-                  <span className="text-sm text-neutral-500">
+                  <span className="text-sm text-muted">
                     {nameOf(log.created_by)}
                   </span>
                 </button>

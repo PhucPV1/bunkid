@@ -41,14 +41,14 @@ export function NotInvited({ email }: { email: string }) {
       <p>
         Đang đăng nhập: <strong>{email}</strong>
       </p>
-      <p className="text-neutral-600">
+      <p className="text-muted">
         Nhờ ba/mẹ của bé thêm Gmail này vào gia đình.
       </p>
 
       {canCreate.data === true && (
         <form
           onSubmit={submit}
-          className="flex flex-col gap-3 rounded-2xl border border-pink-200 p-4"
+          className="flex flex-col gap-3 rounded-2xl border border-accent-line p-4"
         >
           <h2 className="font-medium">Tạo gia đình</h2>
           <label className="flex flex-col gap-1">
@@ -72,12 +72,12 @@ export function NotInvited({ email }: { email: string }) {
           <button
             type="submit"
             disabled={create.isPending}
-            className="min-h-11 rounded-xl bg-pink-500 text-white disabled:opacity-50"
+            className="min-h-11 rounded-xl bg-accent text-on-accent disabled:opacity-50"
           >
             Tạo gia đình
           </button>
           {create.isError && (
-            <p role="alert" className="text-red-600">
+            <p role="alert" className="text-danger">
               Không tạo được gia đình. Thử lại sau.
             </p>
           )}

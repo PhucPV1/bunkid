@@ -105,23 +105,23 @@ export function LogEditSheet({
       <form
         onSubmit={submit}
         onClick={(e) => e.stopPropagation()}
-        className="flex max-h-[90dvh] w-full flex-col gap-3 overflow-y-auto rounded-t-3xl bg-white p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))]"
+        className="flex max-h-[90dvh] w-full flex-col gap-3 overflow-y-auto rounded-t-3xl bg-surface p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))]"
       >
         <h2 className="text-xl font-semibold">
           {log ? "Bản ghi" : "Thêm bản ghi"}
         </h2>
         {log && (
-          <p className="text-neutral-600">
+          <p className="text-muted">
             {formatVnTime(new Date(log.started_at))} ·{" "}
             {describeLog(log, new Date())} · {who}
           </p>
         )}
         {log && !canModify && log.note && (
-          <p className="text-neutral-600">Ghi chú: {log.note}</p>
+          <p className="text-muted">Ghi chú: {log.note}</p>
         )}
         {log && !canModify ? (
           <>
-            <p className="rounded-xl bg-neutral-100 p-3">
+            <p className="rounded-xl bg-soft p-3">
               Chỉ người ghi bản ghi này hoặc chủ gia đình mới sửa hoặc xóa được.
             </p>
             <button
@@ -178,7 +178,7 @@ export function LogEditSheet({
                   onChange={(e) => setEnd(e.target.value)}
                 />
                 {allowOpenEnd && (
-                  <span className="text-sm text-neutral-500">
+                  <span className="text-sm text-muted">
                     Để trống nếu vẫn đang chạy.
                   </span>
                 )}
@@ -197,13 +197,13 @@ export function LogEditSheet({
               <p
                 key={warning}
                 role="status"
-                className="rounded-xl bg-amber-50 p-3 text-amber-900"
+                className="rounded-xl bg-warn-soft p-3 text-warn-ink"
               >
                 {warning}
               </p>
             ))}
             {message && (
-              <p role="alert" className="text-red-600">
+              <p role="alert" className="text-danger">
                 {message}
               </p>
             )}
@@ -218,7 +218,7 @@ export function LogEditSheet({
               <button
                 type="submit"
                 disabled={busy}
-                className="min-h-12 flex-1 rounded-2xl bg-pink-500 text-white disabled:opacity-50"
+                className="min-h-12 flex-1 rounded-2xl bg-accent text-on-accent disabled:opacity-50"
               >
                 Lưu
               </button>
@@ -228,7 +228,7 @@ export function LogEditSheet({
                 type="button"
                 disabled={busy}
                 onClick={confirmDelete}
-                className="min-h-12 rounded-2xl text-red-600 disabled:opacity-50"
+                className="min-h-12 rounded-2xl text-danger disabled:opacity-50"
               >
                 Xóa bản ghi
               </button>

@@ -7,7 +7,7 @@ export function VitaminDRow({
 }) {
   if (doneAt)
     return (
-      <p className="rounded-2xl bg-emerald-50 p-3 text-emerald-900">
+      <p className="rounded-2xl bg-good-soft p-3 text-good-ink">
         ✓ Đã uống Vitamin D hôm nay lúc {doneAt}
       </p>
     );
@@ -15,7 +15,7 @@ export function VitaminDRow({
     <button
       type="button"
       onClick={onRecord}
-      className="min-h-11 rounded-2xl border border-dashed text-neutral-700"
+      className="min-h-11 rounded-2xl border border-dashed text-ink"
     >
       Ghi Vitamin D hôm nay
     </button>

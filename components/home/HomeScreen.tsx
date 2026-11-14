@@ -92,7 +92,7 @@ export function HomeScreen({
 
       <header>
         <h1 className="text-2xl font-semibold">{baby.name}</h1>
-        <p className="text-neutral-500">
+        <p className="text-muted">
           {formatAgeVi(baby.dob, now)} · Xin chào {member.display_name}
         </p>
       </header>
@@ -122,7 +122,7 @@ export function HomeScreen({
       />
 
       {error && (
-        <p role="alert" className="text-red-600">
+        <p role="alert" className="text-danger">
           {toVietnameseError(error)}
         </p>
       )}
@@ -147,7 +147,7 @@ export function HomeScreen({
         <h2 className="text-lg font-medium">24 giờ qua</h2>
         <SummaryCard ratings={ratings} totals={totals} />
         {logs.isError ? (
-          <p className="text-red-600">{toVietnameseError(logs.error)}</p>
+          <p className="text-danger">{toVietnameseError(logs.error)}</p>
         ) : (
           <RecentList logs={recentRows} now={now} nameOf={nameOf} />
         )}

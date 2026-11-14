@@ -46,7 +46,7 @@ export function BabyForm({ familyId }: { familyId: string }) {
   const field = "min-h-11 rounded-xl border px-3";
   const error = (key: keyof BabyFormRaw) =>
     errors[key] ? (
-      <span className="text-sm text-red-600">{errors[key]}</span>
+      <span className="text-sm text-danger">{errors[key]}</span>
     ) : null;
 
   return (
@@ -125,12 +125,12 @@ export function BabyForm({ familyId }: { familyId: string }) {
       <button
         type="submit"
         disabled={save.isPending}
-        className="min-h-12 rounded-2xl bg-pink-500 text-lg text-white disabled:opacity-50"
+        className="min-h-12 rounded-2xl bg-accent text-lg text-on-accent disabled:opacity-50"
       >
         Lưu
       </button>
       {save.isError && (
-        <p role="alert" className="text-red-600">
+        <p role="alert" className="text-danger">
           Không lưu được. Thử lại sau.
         </p>
       )}

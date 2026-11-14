@@ -49,7 +49,7 @@ export function AuthGate({
         </p>
         <button
           type="button"
-          className="min-h-11 rounded-xl bg-pink-500 px-4 text-white"
+          className="min-h-11 rounded-xl bg-accent px-4 text-on-accent"
           onClick={() => family.refetch()}
         >
           Thử lại
@@ -58,6 +58,6 @@ export function AuthGate({
     );
   }
   if (!ready || redirect)
-    return <main className="p-6 text-center text-neutral-500">Đang tải…</main>;
+    return <main className="p-6 text-center text-muted">Đang tải…</main>;
   return <>{children({ session, ctx: family.data ?? null })}</>;
 }

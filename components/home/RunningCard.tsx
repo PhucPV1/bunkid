@@ -18,10 +18,10 @@ export function RunningCard({
   onStop: () => void;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-2xl border border-pink-200 p-4">
+    <div className="flex items-center justify-between gap-3 rounded-2xl border border-accent-line p-4">
       <div>
         <p className="font-medium">{describeLog(log, now)}</p>
-        <p className="text-sm text-neutral-500">
+        <p className="text-sm text-muted">
           {who} bắt đầu lúc {formatVnTime(new Date(log.started_at))}
         </p>
       </div>
@@ -29,7 +29,7 @@ export function RunningCard({
         type="button"
         disabled={busy}
         onClick={onStop}
-        className="min-h-11 rounded-xl bg-pink-500 px-4 text-white disabled:opacity-50"
+        className="min-h-11 rounded-xl bg-accent px-4 text-on-accent disabled:opacity-50"
       >
         Dừng
       </button>
