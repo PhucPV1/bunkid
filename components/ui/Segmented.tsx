@@ -35,7 +35,9 @@ export function Segmented<T extends string>({
             aria-pressed={on}
             onClick={() => onChange(option.value)}
             className={cx(
-              "min-h-11 rounded-[18px] px-2 text-[15px] text-ink transition-colors",
+              // One line like iOS's segmented control; 13 px once there are 3–4 options.
+              "min-h-11 truncate rounded-[18px] px-1.5 text-ink transition-colors",
+              options.length >= 3 ? "text-[13px]" : "text-[15px]",
               on
                 ? "bg-glass-solid font-semibold shadow-[0_2px_8px_rgb(0_0_0/0.08)]"
                 : "font-medium",

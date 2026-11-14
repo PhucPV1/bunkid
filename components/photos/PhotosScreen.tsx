@@ -3,10 +3,11 @@
 import { useState, type FormEvent } from "react";
 import { OnlineOnly } from "@/components/OnlineOnly";
 import { FIELD_INPUT, FIELD_LABEL } from "@/components/quick/styles";
-import { Button } from "@/components/ui/Button";
+import { Button, buttonClass } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorCard } from "@/components/ui/ErrorCard";
 import { Glass } from "@/components/ui/Glass";
+import { Icon } from "@/components/ui/Icon";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Sheet } from "@/components/ui/Sheet";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -27,9 +28,11 @@ import {
 } from "@/lib/rules/photos";
 import { vnDateString } from "@/lib/rules/time";
 import type { Baby, PhotoRow } from "@/lib/supabase/rows";
+import { cx } from "@/lib/ui/cx";
 
 const BAR = {
-  ok: "bg-accent",
+  // accent is dark brown at night (1.69:1 on the track); accent-text stays visible in every theme.
+  ok: "bg-accent-text",
   warn: "bg-warn",
   full: "bg-danger",
 } as const;
@@ -165,16 +168,26 @@ function UploadForm({ baby }: { baby: Baby }) {
   return (
     <OnlineOnly>
       <Glass as="form" onSubmit={submit} className="flex flex-col gap-3 p-4">
-        <label className="flex flex-col gap-1.5">
-          <span className={FIELD_LABEL}>Chọn ảnh</span>
+        {/* The native file input shows English ("Choose File"), so it hides behind a Vietnamese button. */}
+        <label
+          className={cx(
+            buttonClass({ variant: "secondary", block: true }),
+            "cursor-pointer has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-accent-text",
+          )}
+        >
+          <Icon name="image" size={20} />
+          {file ? "Chọn ảnh khác" : "Chọn ảnh"}
           <input
             key={inputKey}
             type="file"
             accept="image/*"
-            className="min-h-11 text-[15px] text-ink"
+            className="sr-only"
             onChange={(e) => void pick(e.target.files?.[0] ?? null)}
           />
         </label>
+        {file && (
+          <p className="truncate px-1 text-[13px] text-muted">{file.name}</p>
+        )}
         {file && (
           <>
             <label className="flex flex-col gap-1.5">

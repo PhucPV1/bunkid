@@ -3,7 +3,6 @@ import { buttonClass } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { CONDITIONS, type ConditionArticle } from "@/lib/content/conditions";
-import { cx } from "@/lib/ui/cx";
 
 const SECTIONS: { key: "signs" | "homeCare" | "seeDoctor"; title: string }[] = [
   { key: "signs", title: "Dấu hiệu" },
@@ -19,22 +18,20 @@ export function ConditionsScreen() {
         back={{ href: "/kham-pha", label: "Khám phá" }}
       />
       <p className="px-1 text-base text-ink">{CONDITIONS.intro}</p>
-      <div className="flex gap-2.5">
+      <div className="flex flex-col gap-2.5">
         <Link
           href="/trieu-chung"
-          className={cx(
-            buttonClass({ variant: "secondary", size: "md" }),
-            "flex-1",
-          )}
+          className={buttonClass({
+            variant: "secondary",
+            size: "md",
+            block: true,
+          })}
         >
           Phân loại triệu chứng
         </Link>
         <a
           href="tel:115"
-          className={cx(
-            buttonClass({ variant: "danger", size: "md" }),
-            "flex-1",
-          )}
+          className={buttonClass({ variant: "danger", size: "md", block: true })}
         >
           <Icon name="phone" size={18} />
           Gọi 115

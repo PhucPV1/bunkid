@@ -25,7 +25,11 @@ describe("PhotosScreen", () => {
     expect(html).toContain(">Ảnh của bé</h1>");
     expect(html).toContain("bg-line");
     expect(html).not.toContain("bg-soft");
-    expect(html).toContain(">Chọn ảnh</span>");
+    expect(html).toMatch(
+      /<label class="[^"]*rounded-full[^"]*">.*Chọn ảnh<input type="file" accept="image\/\*" class="sr-only"/,
+    );
+    expect(html).not.toContain(">Chọn ảnh</span>");
+    expect(html).toContain("bg-accent-text");
     expect(html).toContain(">Tải ảnh lên</button>");
     expect(html.match(/aspect-square/g)?.length).toBeGreaterThanOrEqual(6);
   });
