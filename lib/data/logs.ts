@@ -1,7 +1,15 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type QueryClient,
+} from "@tanstack/react-query";
+import { historyPageRange, nextHistoryPage } from "@/lib/rules/history";
 import type { LogType } from "@/lib/rules/logDetails";
+import type { LogPatch } from "@/lib/rules/logForm";
 import {
   planTimerPress,
   type RunningLog,
@@ -10,6 +18,7 @@ import {
 import { supabase } from "@/lib/supabase/client";
 import type { LogRow } from "@/lib/supabase/rows";
 import type { Json } from "@/lib/supabase/types";
+import { PermissionDeniedError } from "./errors";
 
 export const logsKey = (babyId: string) => ["logs", babyId] as const;
 
@@ -63,6 +72,7 @@ export async function insertLog(row: {
   started_at: string;
   ended_at: string | null;
   details: Record<string, unknown>;
+  note?: string | null;
 }): Promise<void> {
   const { error } = await supabase()
     .from("logs")
@@ -150,5 +160,97 @@ export function useAddInstant(babyId: string) {
     },
     onSettled: () =>
       queryClient.invalidateQueries({ queryKey: logsKey(babyId) }),
+  });
+}
+
+export async function fetchHistoryPage(
+  babyId: string,
+  page: number,
+  now: Date,
+): Promise<LogRow[]> {
+  const range = historyPageRange(now, page);
+  const { data, error } = await supabase()
+    .from("logs")
+    .select("*")
+    .eq("baby_id", babyId)
+    .gte("started_at", range.from)
+    .lt("started_at", range.to)
+    .order("started_at", { ascending: false });
+  if (error) throw error;
+  return data;
+}
+
+export function useHistoryLogs(babyId: string, dob: string) {
+  return useInfiniteQuery({
+    queryKey: [...logsKey(babyId), "history"],
+    initialPageParam: 0,
+    queryFn: ({ pageParam }) => fetchHistoryPage(babyId, pageParam, new Date()),
+    getNextPageParam: (_last, pages) =>
+      nextHistoryPage(dob, new Date(), pages.length),
+  });
+}
+
+export async function updateLog(id: string, patch: LogPatch): Promise<void> {
+  const { data, error } = await supabase()
+    .from("logs")
+    .update({ ...patch, details: patch.details as NonNullable<Json> })
+    .eq("id", id)
+    .select("id");
+  if (error) throw error;
+  if (data.length === 0) throw new PermissionDeniedError();
+}
+
+export async function deleteLog(id: string): Promise<void> {
+  const sb = supabase();
+  const { data, error } = await sb
+    .from("logs")
+    .delete()
+    .eq("id", id)
+    .select("id");
+  if (error) throw error;
+  if (data.length > 0) return;
+  // 0 rows: either another device already deleted it, or RLS refused.
+  const { data: left, error: checkError } = await sb
+    .from("logs")
+    .select("id")
+    .eq("id", id);
+  if (checkError) throw checkError;
+  if (left.length > 0) throw new PermissionDeniedError();
+}
+
+function invalidateLogs(queryClient: QueryClient, babyId: string) {
+  void queryClient.invalidateQueries({ queryKey: logsKey(babyId) });
+  void queryClient.invalidateQueries({ queryKey: ["first-log", babyId] });
+}
+
+export function useSaveLog(babyId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      type,
+      patch,
+    }: {
+      id: string | null;
+      type: LogType;
+      patch: LogPatch;
+    }) =>
+      id
+        ? updateLog(id, patch)
+        : insertLog({
+            id: crypto.randomUUID(),
+            baby_id: babyId,
+            type,
+            ...patch,
+          }),
+    onSettled: () => invalidateLogs(queryClient, babyId),
+  });
+}
+
+export function useDeleteLog(babyId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteLog,
+    onSettled: () => invalidateLogs(queryClient, babyId),
   });
 }

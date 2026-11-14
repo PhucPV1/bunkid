@@ -3,7 +3,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { supabase } from "@/lib/supabase/client";
-import type { LogRow } from "@/lib/supabase/rows";
+import { cacheHasLog } from "./logCache";
 import { logsKey } from "./logs";
 
 export function useLogsRealtime(babyId: string): void {
@@ -35,8 +35,11 @@ export function useLogsRealtime(babyId: string): void {
         { event: "DELETE", schema: "public", table: "logs" },
         (payload) => {
           const id = (payload.old as { id?: string }).id;
-          const cached = queryClient.getQueryData<LogRow[]>(logsKey(babyId));
-          if (id && cached?.some((row) => row.id === id)) invalidate();
+          const cached = queryClient.getQueriesData({
+            queryKey: logsKey(babyId),
+          });
+          if (id && cached.some(([, data]) => cacheHasLog(data, id)))
+            invalidate();
         },
       )
       .subscribe();
