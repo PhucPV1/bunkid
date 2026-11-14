@@ -1,6 +1,12 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { FIELD_INPUT, FIELD_LABEL } from "@/components/quick/styles";
+import { Button } from "@/components/ui/Button";
+import { ErrorCard } from "@/components/ui/ErrorCard";
+import { ListGroup } from "@/components/ui/ListGroup";
+import { Segmented } from "@/components/ui/Segmented";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { memberErrorText } from "@/lib/data/errors";
 import { useMemberActions, useMembers } from "@/lib/data/family";
 import {
@@ -11,7 +17,11 @@ import {
 import type { FamilyMember } from "@/lib/supabase/rows";
 
 const EMPTY: MemberFormRaw = { email: "", displayName: "", role: "member" };
-const FIELD = "min-h-11 rounded-xl border px-3";
+
+const ROLES = [
+  { value: "member", label: "Thành viên" },
+  { value: "owner", label: "Chủ gia đình" },
+];
 
 export function MembersSection({ me }: { me: FamilyMember }) {
   const members = useMembers(me.family_id);
@@ -54,126 +64,138 @@ export function MembersSection({ me }: { me: FamilyMember }) {
   }
 
   return (
-    <section className="flex flex-col gap-2">
-      <h2 className="text-lg font-medium">Thành viên</h2>
-      {members.isPending && <p className="text-muted">Đang tải…</p>}
-      {members.isError && (
-        <p role="alert" className="text-danger">
-          {memberErrorText(members.error)}
-        </p>
+    <div className="flex flex-col gap-6">
+      {members.isPending && (
+        <div aria-busy="true" className="flex flex-col gap-2">
+          {[0, 1, 2].map((i) => (
+            <Skeleton key={i} className="h-[60px]" />
+          ))}
+        </div>
       )}
-      <ul className="divide-y rounded-2xl border">
-        {(members.data ?? []).map((member) => {
-          const self = member.id === me.id;
-          return (
-            <li key={member.id} className="flex flex-col gap-2 p-3">
-              <div>
-                <p className="font-medium">
-                  {member.display_name}
-                  {self && " (bạn)"} · {roleLabel(member.role)}
-                </p>
-                <p className="text-sm text-muted">
-                  {member.email}
-                  {member.user_id === null && " · chưa đăng nhập lần nào"}
-                </p>
-              </div>
-              {isOwner && !self && (
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    disabled={busy}
-                    onClick={() => {
-                      clearErrors();
-                      setRole.mutate({
-                        id: member.id,
-                        role: member.role === "owner" ? "member" : "owner",
-                      });
-                    }}
-                    className="min-h-11 flex-1 rounded-xl border disabled:opacity-50"
-                  >
-                    {member.role === "owner"
-                      ? "Đổi thành Thành viên"
-                      : "Đổi thành Chủ gia đình"}
-                  </button>
-                  <button
-                    type="button"
-                    disabled={busy}
-                    onClick={() => confirmRemove(member)}
-                    className="min-h-11 rounded-xl px-4 text-danger disabled:opacity-50"
-                  >
-                    Xóa
-                  </button>
+      {members.isError && (
+        <ErrorCard
+          message={memberErrorText(members.error)}
+          onRetry={() => void members.refetch()}
+        />
+      )}
+      {members.data && (
+        <ListGroup>
+          {members.data.map((member) => {
+            const self = member.id === me.id;
+            return (
+              <li
+                key={member.id}
+                className="flex flex-col gap-2 border-b border-line px-4 py-3 last:border-b-0"
+              >
+                <div className="flex flex-col">
+                  <span className="text-base font-medium text-ink">
+                    {member.display_name}
+                    {self && " (bạn)"} · {roleLabel(member.role)}
+                  </span>
+                  <span className="text-[13px] text-muted">
+                    {member.email}
+                    {member.user_id === null && " · chưa đăng nhập lần nào"}
+                  </span>
                 </div>
-              )}
-            </li>
-          );
-        })}
-      </ul>
+                {isOwner && !self && (
+                  <div className="flex gap-2">
+                    <Button
+                      variant="secondary"
+                      size="md"
+                      className="flex-1"
+                      disabled={busy}
+                      onClick={() => {
+                        clearErrors();
+                        setRole.mutate({
+                          id: member.id,
+                          role: member.role === "owner" ? "member" : "owner",
+                        });
+                      }}
+                    >
+                      {member.role === "owner"
+                        ? "Đổi thành Thành viên"
+                        : "Đổi thành Chủ gia đình"}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="md"
+                      className="text-danger!"
+                      disabled={busy}
+                      onClick={() => confirmRemove(member)}
+                    >
+                      Xóa
+                    </Button>
+                  </div>
+                )}
+              </li>
+            );
+          })}
+        </ListGroup>
+      )}
       {failure && (
-        <p role="alert" className="text-danger">
+        <p role="alert" className="px-1 text-[15px] text-danger">
           {memberErrorText(failure)}
         </p>
       )}
       {isOwner ? (
+        // Glass's prop type has no noValidate, so the form carries the glass class itself.
         <form
           noValidate
           onSubmit={submit}
-          className="flex flex-col gap-3 rounded-2xl border border-accent-line p-4"
+          className="glass flex flex-col gap-3 rounded-[22px] p-4"
         >
-          <h3 className="font-medium">Thêm người vào gia đình</h3>
-          <label className="flex flex-col gap-1">
-            Gmail
+          <h2 className="text-[17px] font-semibold text-ink">
+            Thêm người vào gia đình
+          </h2>
+          <label className="flex flex-col gap-1.5">
+            <span className={FIELD_LABEL}>Gmail</span>
             <input
               type="email"
               autoCapitalize="none"
-              className={FIELD}
+              className={FIELD_INPUT}
               value={raw.email}
               onChange={(e) => setRaw({ ...raw, email: e.target.value })}
             />
             {errors.email && (
-              <span className="text-sm text-danger">{errors.email}</span>
+              <span className="text-[13px] text-danger">{errors.email}</span>
             )}
           </label>
-          <label className="flex flex-col gap-1">
-            Tên hiển thị (ví dụ Bà nội)
+          <label className="flex flex-col gap-1.5">
+            <span className={FIELD_LABEL}>Tên hiển thị (ví dụ Bà nội)</span>
             <input
-              className={FIELD}
+              className={FIELD_INPUT}
               maxLength={40}
               value={raw.displayName}
               onChange={(e) => setRaw({ ...raw, displayName: e.target.value })}
             />
             {errors.displayName && (
-              <span className="text-sm text-danger">{errors.displayName}</span>
+              <span className="text-[13px] text-danger">
+                {errors.displayName}
+              </span>
             )}
           </label>
-          <label className="flex flex-col gap-1">
-            Vai trò
-            <select
-              className={FIELD}
+          <div className="flex flex-col gap-1.5">
+            <span className={FIELD_LABEL}>Vai trò</span>
+            <Segmented
+              label="Vai trò"
+              options={ROLES}
               value={raw.role}
-              onChange={(e) => setRaw({ ...raw, role: e.target.value })}
-            >
-              <option value="member">Thành viên</option>
-              <option value="owner">Chủ gia đình</option>
-            </select>
-          </label>
-          <button
-            type="submit"
-            disabled={busy}
-            className="min-h-11 rounded-xl bg-accent text-on-accent disabled:opacity-50"
-          >
+              onChange={(role) => setRaw({ ...raw, role })}
+            />
+          </div>
+          <Button type="submit" size="lg" block busy={busy}>
             Thêm
-          </button>
-          <p className="text-sm text-muted">
+          </Button>
+          <p className="text-[13px] text-muted">
             Người được thêm chỉ cần mở Kim Bun và đăng nhập Google bằng đúng
             Gmail này.
           </p>
         </form>
       ) : (
-        <p className="text-sm text-muted">
+        <p className="px-4 text-[13px] text-muted">
           Chỉ chủ gia đình mới thêm, xóa hoặc đổi vai trò thành viên.
         </p>
       )}
-    </section>
+    </div>
   );
 }
