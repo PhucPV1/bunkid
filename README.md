@@ -18,6 +18,15 @@ bun run db:start    # cần OrbStack/Docker đang chạy
 bun run db:test     # pgTAP cho schema và RLS
 ```
 
+## Bảng tăng trưởng WHO
+
+`content/who/*.json` (bảng LMS theo ngày tuổi 0–1856) được tạo một lần từ 6 file "expanded tables" z-score của WHO, link trong `WHO_FILES` (`scripts/build-who.ts`). Chỉ cần tạo lại khi WHO đổi bảng:
+
+```bash
+mkdir -p /tmp/who-xlsx   # tải 6 file .xlsx theo link trong WHO_FILES vào đây
+bun scripts/build-who.ts /tmp/who-xlsx 2026-11-14   # ngày rà soát ghi vào reviewedAt
+```
+
 ## Thiết lập lần đầu
 
 1. Supabase project (Singapore); bật Google provider với OAuth client Web, redirect `https://<ref>.supabase.co/auth/v1/callback`.
