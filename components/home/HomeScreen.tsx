@@ -11,7 +11,9 @@ import {
   useTimerPress,
 } from "@/lib/data/logs";
 import { useLogsRealtime } from "@/lib/data/realtime";
+import { pendingRowIds } from "@/lib/data/outboxCore";
 import { useNow } from "@/lib/hooks/useNow";
+import { useOutboxEntries } from "@/lib/hooks/useOutboxEntries";
 import { homeAlerts, vitaminDToday } from "@/lib/rules/alerts";
 import type { InstantType, QuickValues } from "@/lib/rules/quickEntry";
 import { rateLast24h, WINDOW_MS, windowTotals } from "@/lib/rules/ratings";
@@ -52,6 +54,7 @@ export function HomeScreen({
   const members = useMembers(baby.family_id);
   const press = useTimerPress(baby.id, userId);
   const stop = useStopTimer(baby.id, userId);
+  const pending = pendingRowIds(useOutboxEntries(userId));
   const [sheet, setSheet] = useState<SheetState>(null);
 
   const rows = logs.data ?? [];
@@ -121,6 +124,7 @@ export function HomeScreen({
           now={now}
           busy={stop.isPending}
           onStop={() => stop.mutate(log.id)}
+          pending={pending.has(log.id)}
         />
       ))}
 
@@ -135,7 +139,12 @@ export function HomeScreen({
         {logs.isError && !logs.data ? (
           <p className="text-danger">{toVietnameseError(logs.error)}</p>
         ) : (
-          <RecentList logs={recentRows} now={now} nameOf={nameOf} />
+          <RecentList
+            logs={recentRows}
+            now={now}
+            nameOf={nameOf}
+            pending={pending}
+          />
         )}
       </section>
 

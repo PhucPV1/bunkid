@@ -4,6 +4,7 @@ import type { Session } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
 import { TabBar } from "@/components/nav/TabBar";
+import { SyncBar } from "@/components/sync/SyncBar";
 import { useFamilyContext, type FamilyContext } from "@/lib/data/family";
 import { classifyLoadError, LOAD_ERROR_TEXT } from "@/lib/data/loadError";
 import { useSession } from "@/lib/data/session";
@@ -64,6 +65,7 @@ export function AuthGate({
   if (need !== "baby") return <>{content}</>;
   return (
     <>
+      {session && <SyncBar userId={session.user.id} />}
       <div className="pb-16">{content}</div>
       <TabBar />
     </>

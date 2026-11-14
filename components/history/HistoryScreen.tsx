@@ -5,7 +5,10 @@ import { toVietnameseError } from "@/lib/data/errors";
 import { useMembers } from "@/lib/data/family";
 import { useHistoryLogs } from "@/lib/data/logs";
 import { useLogsRealtime } from "@/lib/data/realtime";
+import { PendingMark } from "@/components/sync/PendingMark";
+import { pendingRowIds } from "@/lib/data/outboxCore";
 import { useNow } from "@/lib/hooks/useNow";
+import { useOutboxEntries } from "@/lib/hooks/useOutboxEntries";
 import { vnDayLabel } from "@/lib/rules/days";
 import { describeLog } from "@/lib/rules/describeLog";
 import {
@@ -34,6 +37,7 @@ export function HistoryScreen({
   useLogsRealtime(baby.id);
   const history = useHistoryLogs(baby.id, baby.dob);
   const members = useMembers(baby.family_id);
+  const pending = pendingRowIds(useOutboxEntries(userId));
   const [filter, setFilter] = useState<HistoryFilter>("all");
   const [sheet, setSheet] = useState<SheetState>(null);
 
@@ -94,7 +98,8 @@ export function HistoryScreen({
                     {formatVnTime(new Date(log.started_at))}
                   </span>
                   <span className="flex-1">
-                    {describeLog(log, now)}
+                    {describeLog(log, now)}{" "}
+                    <PendingMark pending={pending.has(log.id)} />
                     {log.note && (
                       <span className="block text-sm text-muted">
                         {log.note}

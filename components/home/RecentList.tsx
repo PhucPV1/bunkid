@@ -1,5 +1,6 @@
 "use client";
 
+import { PendingMark } from "@/components/sync/PendingMark";
 import { describeLog } from "@/lib/rules/describeLog";
 import { formatVnTime } from "@/lib/rules/time";
 import type { LogRow } from "@/lib/supabase/rows";
@@ -8,10 +9,12 @@ export function RecentList({
   logs,
   now,
   nameOf,
+  pending,
 }: {
   logs: LogRow[];
   now: Date;
   nameOf: (userId: string) => string;
+  pending: Set<string>;
 }) {
   if (logs.length === 0)
     return <p className="text-muted">Chưa có ghi chép nào trong 24 giờ qua.</p>;
@@ -22,7 +25,10 @@ export function RecentList({
           <span className="w-12 shrink-0 tabular-nums text-muted">
             {formatVnTime(new Date(log.started_at))}
           </span>
-          <span className="flex-1">{describeLog(log, now)}</span>
+          <span className="flex-1">
+            {describeLog(log, now)}{" "}
+            <PendingMark pending={pending.has(log.id)} />
+          </span>
           <span className="text-sm text-muted">{nameOf(log.created_by)}</span>
         </li>
       ))}

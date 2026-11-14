@@ -5,6 +5,7 @@ import {
   applyToCache,
   classifyFailure,
   overlayPending,
+  pendingRowIds,
   type OutboxEntry,
 } from "./outboxCore";
 
@@ -182,5 +183,16 @@ describe("applyLogChange", () => {
     );
     expect(result.map((r) => r.id)).toEqual(["c", "a", "b"]);
     expect(result[1].ended_at).toBe(NOW);
+  });
+});
+
+describe("pendingRowIds", () => {
+  it("collects each waiting row once", () => {
+    const ids = pendingRowIds([
+      entry("insert", "a", diaper, 1),
+      entry("stop", "a", { ended_at: NOW }, 2),
+      entry("delete", "b", null, 3),
+    ]);
+    expect([...ids].sort()).toEqual(["a", "b"]);
   });
 });

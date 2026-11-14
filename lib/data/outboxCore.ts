@@ -146,3 +146,8 @@ export function overlayPending(
       rows,
     );
 }
+
+// Ids of log rows that still have a change waiting in the outbox.
+export function pendingRowIds(entries: OutboxEntry[]): Set<string> {
+  return new Set(entries.map((entry) => entry.rowId));
+}
