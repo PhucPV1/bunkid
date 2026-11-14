@@ -1,4 +1,9 @@
-import type { GrowthRow, LogRow, VaccineDoseRow } from "@/lib/supabase/rows";
+import type {
+  GrowthRow,
+  LogRow,
+  MilestoneRow,
+  VaccineDoseRow,
+} from "@/lib/supabase/rows";
 
 // logs: insert / update / delete / stop by row id.
 // vaccine_doses: upsert (mark a dose) / insert (quick tick, keeps an existing row) /
@@ -7,7 +12,7 @@ export type OutboxOp = "insert" | "update" | "delete" | "stop" | "upsert";
 
 export type OutboxEntry = {
   id: string;
-  table: "logs" | "vaccine_doses" | "growth";
+  table: "logs" | "vaccine_doses" | "growth" | "milestones_achieved";
   op: OutboxOp;
   rowId: string;
   babyId: string;
@@ -15,6 +20,8 @@ export type OutboxEntry = {
   // logs — insert: the new row; update: the changed columns; stop: { ended_at }; delete: null.
   // vaccine_doses — always { vaccine_code, dose_no, ... } plus the marked columns.
   // growth — insert: the measurement; update: the changed columns; delete: null.
+  // milestones_achieved — upsert: { milestone_code, achieved_on, note, photo_id };
+  // delete: { milestone_code }. rowId is the milestone code.
   row: Record<string, unknown> | null;
   createdAt: number;
   attempts: number;
@@ -264,4 +271,45 @@ export function overlayPendingGrowth(
   return [...entriesFor(entries, "growth")]
     .sort((a, b) => a.createdAt - b.createdAt)
     .reduce((acc, entry) => applyGrowthChange(acc, entry, nowIso), rows);
+}
+
+// Marks keyed by milestone code (the server's id is never sent, spec §9).
+export function applyMilestoneChange(
+  rows: MilestoneRow[],
+  entry: OutboxEntry,
+  nowIso: string,
+): MilestoneRow[] {
+  if (entry.op === "delete")
+    return rows.filter((row) => row.milestone_code !== entry.rowId);
+  if (entry.op !== "upsert") return rows;
+  const patch = (entry.row ?? {}) as Partial<MilestoneRow>;
+  const existing = rows.find((row) => row.milestone_code === entry.rowId);
+  const marks = {
+    achieved_on: String(patch.achieved_on),
+    note: patch.note ?? null,
+    photo_id: patch.photo_id ?? null,
+  };
+  if (existing)
+    return rows.map((row) => (row === existing ? { ...row, ...marks } : row));
+  return [
+    ...rows,
+    {
+      id: entry.id,
+      baby_id: entry.babyId,
+      milestone_code: entry.rowId,
+      ...marks,
+      created_by: entry.userId,
+      created_at: nowIso,
+    },
+  ];
+}
+
+export function overlayPendingMilestones(
+  rows: MilestoneRow[],
+  entries: OutboxEntry[],
+  nowIso: string,
+): MilestoneRow[] {
+  return [...entriesFor(entries, "milestones_achieved")]
+    .sort((a, b) => a.createdAt - b.createdAt)
+    .reduce((acc, entry) => applyMilestoneChange(acc, entry, nowIso), rows);
 }

@@ -1,15 +1,22 @@
 "use client";
 
 import type { QueryClient } from "@tanstack/react-query";
-import type { GrowthRow, LogRow, VaccineDoseRow } from "@/lib/supabase/rows";
+import type {
+  GrowthRow,
+  LogRow,
+  MilestoneRow,
+  VaccineDoseRow,
+} from "@/lib/supabase/rows";
 import { localDb } from "./localDb";
 import {
   applyDoseChange,
   applyGrowthChange,
+  applyMilestoneChange,
   applyToCache,
   overlayPending,
   overlayPendingDoses,
   overlayPendingGrowth,
+  overlayPendingMilestones,
   type OutboxEntry,
 } from "./outboxCore";
 import { flushRequests } from "./outboxEvents";
@@ -159,6 +166,55 @@ export async function withPendingGrowth(
       .equals(babyId)
       .toArray();
     return overlayPendingGrowth(rows, entries, new Date().toISOString());
+  } catch {
+    return rows;
+  }
+}
+
+export type MilestoneChange = Pick<OutboxEntry, "babyId" | "userId"> & {
+  op: "upsert" | "delete";
+  code: string;
+  marks?: { achieved_on: string; note: string | null; photo_id: string | null };
+};
+
+export const milestonesKey = (babyId: string) =>
+  ["milestones", babyId] as const;
+
+export async function enqueueMilestoneChange(
+  queryClient: QueryClient,
+  change: MilestoneChange,
+): Promise<void> {
+  const entry: OutboxEntry = {
+    id: crypto.randomUUID(),
+    table: "milestones_achieved",
+    op: change.op,
+    rowId: change.code,
+    babyId: change.babyId,
+    userId: change.userId,
+    row: { milestone_code: change.code, ...change.marks },
+    createdAt: await nextCreatedAt(),
+    attempts: 0,
+  };
+  await localDb().outbox.add(entry);
+  const key = milestonesKey(change.babyId);
+  await queryClient.cancelQueries({ queryKey: key });
+  const nowIso = new Date().toISOString();
+  queryClient.setQueryData<MilestoneRow[]>(key, (rows) =>
+    rows ? applyMilestoneChange(rows, entry, nowIso) : rows,
+  );
+  flushRequests.emit();
+}
+
+export async function withPendingMilestones(
+  babyId: string,
+  rows: MilestoneRow[],
+): Promise<MilestoneRow[]> {
+  try {
+    const entries = await localDb()
+      .outbox.where("babyId")
+      .equals(babyId)
+      .toArray();
+    return overlayPendingMilestones(rows, entries, new Date().toISOString());
   } catch {
     return rows;
   }

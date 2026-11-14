@@ -210,7 +210,55 @@ async function sendGrowth(entry: OutboxEntry): Promise<SendOutcome> {
   }
 }
 
+// Spec §9: upsert on (baby_id, milestone_code) without sending id.
+async function sendMilestone(entry: OutboxEntry): Promise<SendOutcome> {
+  const sb = supabase();
+  const row = entry.row ?? {};
+  const code = String(row.milestone_code);
+  if (entry.op === "upsert") {
+    const result = await sb
+      .from("milestones_achieved")
+      .upsert(
+        {
+          baby_id: entry.babyId,
+          milestone_code: code,
+          achieved_on: String(row.achieved_on),
+          note: (row.note as string | null | undefined) ?? null,
+          photo_id: (row.photo_id as string | null | undefined) ?? null,
+        },
+        { onConflict: "baby_id,milestone_code" },
+      )
+      .select("id");
+    if (result.error) return failed(result);
+    return result.data.length > 0
+      ? { ok: true }
+      : { ok: false, failure: { zeroRows: true } };
+  }
+  if (entry.op === "delete") {
+    const result = await sb
+      .from("milestones_achieved")
+      .delete()
+      .eq("baby_id", entry.babyId)
+      .eq("milestone_code", code)
+      .select("id");
+    if (result.error) return failed(result);
+    if (result.data.length > 0) return { ok: true };
+    // 0 rows: already cleared on another device counts as done.
+    const check = await sb
+      .from("milestones_achieved")
+      .select("id")
+      .eq("baby_id", entry.babyId)
+      .eq("milestone_code", code);
+    if (check.error) return failed(check);
+    return check.data.length === 0
+      ? { ok: true }
+      : { ok: false, failure: { zeroRows: true } };
+  }
+  return UNSUPPORTED;
+}
+
 function send(entry: OutboxEntry): Promise<SendOutcome> {
+  if (entry.table === "milestones_achieved") return sendMilestone(entry);
   if (entry.table === "vaccine_doses") return sendDose(entry);
   if (entry.table === "growth") return sendGrowth(entry);
   return sendLog(entry);
