@@ -1,6 +1,9 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useId, useState, type FormEvent } from "react";
+import { FIELD_INPUT, FIELD_LABEL } from "@/components/quick/styles";
+import { Button } from "@/components/ui/Button";
+import { Sheet } from "@/components/ui/Sheet";
 import { toVietnameseError } from "@/lib/data/errors";
 import { useGrowthActions } from "@/lib/data/growth";
 import {
@@ -36,19 +39,23 @@ export function GrowthSheet({
   onClose: () => void;
 }) {
   const actions = useGrowthActions(babyId, userId);
+  const formId = useId();
   const today = vnDateString(new Date());
-  const [raw, setRaw] = useState<GrowthFormRaw>(() =>
+  const [opened] = useState<GrowthFormRaw>(() =>
     row
       ? growthToRaw(row)
       : { measuredOn: today, weightKg: "", lengthCm: "", headCm: "" },
   );
+  const [raw, setRaw] = useState<GrowthFormRaw>(opened);
   const [errors, setErrors] = useState<
     Partial<Record<keyof GrowthFormRaw, string>>
   >({});
   const [message, setMessage] = useState<string | null>(null);
+  const saving = actions.add.isPending || actions.update.isPending;
+  const deleting = actions.remove.isPending;
   const done = {
     onSuccess: onClose,
-    onError: (e: unknown) => setMessage(toVietnameseError(e)),
+    onError: (error: unknown) => setMessage(toVietnameseError(error)),
   };
 
   function submit(event: FormEvent) {
@@ -63,81 +70,81 @@ export function GrowthSheet({
     else actions.add.mutate(parsed.value, done);
   }
 
-  const input = "min-h-11 rounded-xl border px-3";
   const error = (key: keyof GrowthFormRaw) =>
     errors[key] ? (
-      <span className="text-sm text-danger">{errors[key]}</span>
+      <span className="text-[13px] text-danger">{errors[key]}</span>
     ) : null;
+
   return (
-    <div
-      className="fixed inset-0 z-20 flex items-end bg-black/40"
-      onClick={onClose}
+    <Sheet
+      open
+      onClose={onClose}
+      title={row ? "Sửa lần đo" : "Thêm lần đo"}
+      dirty={JSON.stringify(raw) !== JSON.stringify(opened)}
+      footer={
+        <div className="flex flex-col gap-2">
+          {message && (
+            <p role="alert" className="text-[15px] text-danger">
+              {message}
+            </p>
+          )}
+          <Button
+            type="submit"
+            form={formId}
+            block
+            busy={saving}
+            disabled={deleting}
+            className="min-h-14!"
+          >
+            Lưu
+          </Button>
+          {row && canDelete && (
+            <Button
+              variant="ghost"
+              block
+              disabled={saving || deleting}
+              className="text-danger!"
+              onClick={() => {
+                if (window.confirm("Xóa lần đo này?"))
+                  actions.remove.mutate(row.id, done);
+              }}
+            >
+              Xóa lần đo
+            </Button>
+          )}
+        </div>
+      }
     >
-      <form
-        onSubmit={submit}
-        onClick={(e) => e.stopPropagation()}
-        className="flex max-h-[90dvh] w-full flex-col gap-3 overflow-y-auto rounded-t-3xl bg-surface p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))]"
-      >
-        <h2 className="text-xl font-semibold">
-          {row ? "Sửa lần đo" : "Thêm lần đo"}
-        </h2>
-        <label className="flex flex-col gap-1">
-          Ngày đo
+      <form id={formId} onSubmit={submit} className="flex flex-col gap-4 pt-1">
+        <label className="flex flex-col gap-1.5">
+          <span className={FIELD_LABEL}>Ngày đo</span>
           <input
             type="date"
-            className={input}
+            className={FIELD_INPUT}
             min={dob}
             max={today}
             value={raw.measuredOn}
-            onChange={(e) => setRaw({ ...raw, measuredOn: e.target.value })}
+            onChange={(event) =>
+              setRaw({ ...raw, measuredOn: event.target.value })
+            }
           />
           {error("measuredOn")}
         </label>
         {FIELDS.map((field) => (
-          <label key={field.key} className="flex flex-col gap-1">
-            {field.label}
+          <label key={field.key} className="flex flex-col gap-1.5">
+            <span className={FIELD_LABEL}>{field.label}</span>
             <input
               inputMode="decimal"
-              className={input}
+              className={`${FIELD_INPUT} tabular-nums`}
               value={raw[field.key]}
-              onChange={(e) => setRaw({ ...raw, [field.key]: e.target.value })}
+              onChange={(event) =>
+                setRaw({ ...raw, [field.key]: event.target.value })
+              }
             />
             {error(field.key)}
           </label>
         ))}
-        {message && (
-          <p role="alert" className="text-danger">
-            {message}
-          </p>
-        )}
-        <div className="flex gap-3">
-          <button
-            type="button"
-            onClick={onClose}
-            className="min-h-12 flex-1 rounded-2xl border"
-          >
-            Hủy
-          </button>
-          <button
-            type="submit"
-            className="min-h-12 flex-1 rounded-2xl bg-accent text-on-accent"
-          >
-            Lưu
-          </button>
-        </div>
-        {row && canDelete && (
-          <button
-            type="button"
-            onClick={() => {
-              if (window.confirm("Xóa lần đo này?"))
-                actions.remove.mutate(row.id, done);
-            }}
-            className="min-h-11 rounded-2xl text-danger"
-          >
-            Xóa lần đo
-          </button>
-        )}
       </form>
-    </div>
+    </Sheet>
   );
 }
