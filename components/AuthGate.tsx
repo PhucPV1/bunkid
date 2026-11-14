@@ -4,6 +4,7 @@ import type { Session } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
 import { useFamilyContext, type FamilyContext } from "@/lib/data/family";
+import { classifyLoadError, LOAD_ERROR_TEXT } from "@/lib/data/loadError";
 import { useSession } from "@/lib/data/session";
 import { gateRedirect, resolveLanding, type GateNeed } from "@/lib/routing";
 
@@ -36,7 +37,16 @@ export function AuthGate({
   if (session && family.isError) {
     return (
       <main className="p-6 text-center">
-        <p className="mb-4">Không tải được dữ liệu gia đình.</p>
+        <p className="mb-4">
+          {
+            LOAD_ERROR_TEXT[
+              classifyLoadError(
+                family.error,
+                typeof navigator === "undefined" ? true : navigator.onLine,
+              )
+            ]
+          }
+        </p>
         <button
           type="button"
           className="min-h-11 rounded-xl bg-pink-500 px-4 text-white"

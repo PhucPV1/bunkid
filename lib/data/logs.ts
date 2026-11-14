@@ -16,8 +16,9 @@ export const logsKey = (babyId: string) => ["logs", babyId] as const;
 export async function fetchRecentLogs(
   babyId: string,
   now: Date = new Date(),
+  hours = 72,
 ): Promise<LogRow[]> {
-  const since = new Date(now.getTime() - 24 * 3_600_000).toISOString();
+  const since = new Date(now.getTime() - hours * 3_600_000).toISOString();
   const { data, error } = await supabase()
     .from("logs")
     .select("*")
@@ -33,6 +34,25 @@ export function useRecentLogs(babyId: string) {
     queryKey: logsKey(babyId),
     queryFn: () => fetchRecentLogs(babyId),
     refetchInterval: 30_000,
+  });
+}
+
+export async function fetchFirstLogAt(babyId: string): Promise<string | null> {
+  const { data, error } = await supabase()
+    .from("logs")
+    .select("started_at")
+    .eq("baby_id", babyId)
+    .order("started_at", { ascending: true })
+    .limit(1);
+  if (error) throw error;
+  return data[0]?.started_at ?? null;
+}
+
+export function useFirstLogAt(babyId: string) {
+  return useQuery({
+    queryKey: ["first-log", babyId],
+    queryFn: () => fetchFirstLogAt(babyId),
+    staleTime: 10 * 60_000,
   });
 }
 
