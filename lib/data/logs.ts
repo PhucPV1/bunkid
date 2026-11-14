@@ -5,7 +5,6 @@ import {
   useMutation,
   useQuery,
   useQueryClient,
-  type QueryClient,
 } from "@tanstack/react-query";
 import { historyPageRange, nextHistoryPage } from "@/lib/rules/history";
 import type { LogType } from "@/lib/rules/logDetails";
@@ -17,8 +16,7 @@ import {
 } from "@/lib/rules/timer";
 import { supabase } from "@/lib/supabase/client";
 import type { LogRow } from "@/lib/supabase/rows";
-import type { Json } from "@/lib/supabase/types";
-import { PermissionDeniedError } from "./errors";
+import { enqueueLogChange, withPending } from "./outbox";
 
 export const logsKey = (babyId: string) => ["logs", babyId] as const;
 
@@ -33,7 +31,12 @@ export async function fetchLogsSince(
     .or(`started_at.gte.${since},ended_at.is.null`)
     .order("started_at", { ascending: false });
   if (error) throw error;
-  return data;
+  const from = Date.parse(since);
+  return withPending(
+    babyId,
+    data,
+    (row) => row.ended_at === null || Date.parse(row.started_at) >= from,
+  );
 }
 
 export async function fetchRecentLogs(
@@ -74,29 +77,6 @@ export function useFirstLogAt(babyId: string) {
   });
 }
 
-export async function insertLog(row: {
-  id: string;
-  baby_id: string;
-  type: LogType;
-  started_at: string;
-  ended_at: string | null;
-  details: Record<string, unknown>;
-  note?: string | null;
-}): Promise<void> {
-  const { error } = await supabase()
-    .from("logs")
-    .insert({ ...row, details: row.details as NonNullable<Json> });
-  if (error) throw error;
-}
-
-export async function stopTimer(id: string, endedAt: string): Promise<void> {
-  const { error } = await supabase().rpc("stop_timer", {
-    p_log_id: id,
-    p_ended_at: endedAt,
-  });
-  if (error) throw error;
-}
-
 export function toRunning(rows: LogRow[]): RunningLog[] {
   return rows
     .filter((row) => row.ended_at === null)
@@ -107,9 +87,13 @@ export function toRunning(rows: LogRow[]): RunningLog[] {
     }));
 }
 
-export function useTimerPress(babyId: string) {
+// Every write goes through the outbox (spec §9): saved on the device first,
+// shown at once, sent to Supabase by the outbox runner when online.
+// networkMode "always" lets these run offline.
+export function useTimerPress(babyId: string, userId: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    networkMode: "always",
     mutationFn: async ({
       running,
       button,
@@ -119,35 +103,51 @@ export function useTimerPress(babyId: string) {
     }) => {
       const now = new Date().toISOString();
       for (const action of planTimerPress(running, button)) {
-        if (action.kind === "stop") await stopTimer(action.id, now);
+        if (action.kind === "stop")
+          await enqueueLogChange(queryClient, {
+            op: "stop",
+            rowId: action.id,
+            babyId,
+            userId,
+            row: { ended_at: now },
+          });
         else
-          await insertLog({
-            id: crypto.randomUUID(),
-            baby_id: babyId,
-            type: action.type,
-            started_at: now,
-            ended_at: null,
-            details: action.details,
+          await enqueueLogChange(queryClient, {
+            op: "insert",
+            rowId: crypto.randomUUID(),
+            babyId,
+            userId,
+            row: {
+              type: action.type,
+              started_at: now,
+              ended_at: null,
+              details: action.details,
+            },
           });
       }
     },
-    onSettled: () =>
-      queryClient.invalidateQueries({ queryKey: logsKey(babyId) }),
   });
 }
 
-export function useStopTimer(babyId: string) {
+export function useStopTimer(babyId: string, userId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => stopTimer(id, new Date().toISOString()),
-    onSettled: () =>
-      queryClient.invalidateQueries({ queryKey: logsKey(babyId) }),
+    networkMode: "always",
+    mutationFn: (id: string) =>
+      enqueueLogChange(queryClient, {
+        op: "stop",
+        rowId: id,
+        babyId,
+        userId,
+        row: { ended_at: new Date().toISOString() },
+      }),
   });
 }
 
-export function useAddInstant(babyId: string) {
+export function useAddInstant(babyId: string, userId: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    networkMode: "always",
     mutationFn: ({
       type,
       details,
@@ -158,17 +158,14 @@ export function useAddInstant(babyId: string) {
       at: Date;
     }) => {
       const iso = at.toISOString();
-      return insertLog({
-        id: crypto.randomUUID(),
-        baby_id: babyId,
-        type,
-        started_at: iso,
-        ended_at: iso,
-        details,
+      return enqueueLogChange(queryClient, {
+        op: "insert",
+        rowId: crypto.randomUUID(),
+        babyId,
+        userId,
+        row: { type, started_at: iso, ended_at: iso, details },
       });
     },
-    onSettled: () =>
-      queryClient.invalidateQueries({ queryKey: logsKey(babyId) }),
   });
 }
 
@@ -186,7 +183,12 @@ export async function fetchHistoryPage(
     .lt("started_at", range.to)
     .order("started_at", { ascending: false });
   if (error) throw error;
-  return data;
+  const from = Date.parse(range.from);
+  const to = Date.parse(range.to);
+  return withPending(babyId, data, (row) => {
+    const at = Date.parse(row.started_at);
+    return at >= from && at < to;
+  });
 }
 
 export function useHistoryLogs(babyId: string, dob: string) {
@@ -206,42 +208,10 @@ export function useStatsLogs(babyId: string, since: string) {
   });
 }
 
-export async function updateLog(id: string, patch: LogPatch): Promise<void> {
-  const { data, error } = await supabase()
-    .from("logs")
-    .update({ ...patch, details: patch.details as NonNullable<Json> })
-    .eq("id", id)
-    .select("id");
-  if (error) throw error;
-  if (data.length === 0) throw new PermissionDeniedError();
-}
-
-export async function deleteLog(id: string): Promise<void> {
-  const sb = supabase();
-  const { data, error } = await sb
-    .from("logs")
-    .delete()
-    .eq("id", id)
-    .select("id");
-  if (error) throw error;
-  if (data.length > 0) return;
-  // 0 rows: either another device already deleted it, or RLS refused.
-  const { data: left, error: checkError } = await sb
-    .from("logs")
-    .select("id")
-    .eq("id", id);
-  if (checkError) throw checkError;
-  if (left.length > 0) throw new PermissionDeniedError();
-}
-
-function invalidateLogs(queryClient: QueryClient, babyId: string) {
-  void queryClient.invalidateQueries({ queryKey: logsKey(babyId) });
-  void queryClient.invalidateQueries({ queryKey: ["first-log", babyId] });
-}
-
-export function useSaveLog(babyId: string) {
+export function useSaveLog(babyId: string, userId: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    networkMode: "always",
     mutationFn: ({
       id,
       type,
@@ -251,22 +221,32 @@ export function useSaveLog(babyId: string) {
       type: LogType;
       patch: LogPatch;
     }) =>
-      id
-        ? updateLog(id, patch)
-        : insertLog({
-            id: crypto.randomUUID(),
-            baby_id: babyId,
-            type,
-            ...patch,
-          }),
-    onSettled: () => invalidateLogs(queryClient, babyId),
+      enqueueLogChange(
+        queryClient,
+        id
+          ? { op: "update", rowId: id, babyId, userId, row: patch }
+          : {
+              op: "insert",
+              rowId: crypto.randomUUID(),
+              babyId,
+              userId,
+              row: { type, ...patch },
+            },
+      ),
   });
 }
 
-export function useDeleteLog(babyId: string) {
+export function useDeleteLog(babyId: string, userId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: deleteLog,
-    onSettled: () => invalidateLogs(queryClient, babyId),
+    networkMode: "always",
+    mutationFn: (id: string) =>
+      enqueueLogChange(queryClient, {
+        op: "delete",
+        rowId: id,
+        babyId,
+        userId,
+        row: null,
+      }),
   });
 }

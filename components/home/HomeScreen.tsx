@@ -39,17 +39,19 @@ const VITAMIN_D: QuickValues = {
 export function HomeScreen({
   baby,
   member,
+  userId,
 }: {
   baby: Baby;
   member: FamilyMember;
+  userId: string;
 }) {
   const now = useNow(1000);
   useLogsRealtime(baby.id);
   const logs = useRecentLogs(baby.id);
   const firstLogAt = useFirstLogAt(baby.id);
   const members = useMembers(baby.family_id);
-  const press = useTimerPress(baby.id);
-  const stop = useStopTimer(baby.id);
+  const press = useTimerPress(baby.id, userId);
+  const stop = useStopTimer(baby.id, userId);
   const [sheet, setSheet] = useState<SheetState>(null);
 
   const rows = logs.data ?? [];
@@ -143,6 +145,7 @@ export function HomeScreen({
           initial={sheet.initial}
           recentLogs={rows}
           babyId={baby.id}
+          userId={userId}
           onClose={() => setSheet(null)}
         />
       )}

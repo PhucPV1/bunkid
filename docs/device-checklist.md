@@ -9,8 +9,8 @@ Thiết bị: iPhone 11, iPhone 16, iPhone 17 Pro. Ghi Đạt / Không đạt, p
 3. Kỳ vọng: quay lại **bên trong** app (không phải tab Safari), trang "Bạn chưa được mời" hiện đúng Gmail.
 4. Vuốt tắt hẳn app, mở lại từ biểu tượng. Kỳ vọng: vẫn ở trang có Gmail, không phải trang đăng nhập.
 
-| Máy           | iOS | Kết quả | Ghi chú |
-| ------------- | --- | ------- | ------- |
+| Máy           | iOS  | Kết quả | Ghi chú                    |
+| ------------- | ---- | ------- | -------------------------- |
 | iPhone 11     | 16.4 | Đạt     | Đạt cả 4 bước (2026-11-14) |
 | iPhone 16     | 18.2 | Đạt     | Đạt cả 4 bước (2026-11-14) |
 | iPhone 17 Pro | 26.5 | Đạt     | Đạt cả 4 bước (2026-11-14) |
@@ -21,11 +21,24 @@ Thiết bị: iPhone 11, iPhone 16, iPhone 17 Pro. Ghi Đạt / Không đạt, p
 2. Nhật ký → "+ Thêm" → Bú bình 30 ml, Thời điểm = bây giờ trừ 59 phút → Lưu. Khóa màn hình.
 3. Kỳ vọng: trong ≤ 2 phút nhận thông báo "Đến giờ bú rồi" / "Cữ trước lúc HH:mm (1 giờ … trước)." trên mọi máy đã bật thông báo; bấm vào thì mở trang chủ Bé Yêu.
 
-| Máy           | iOS | Kết quả | Ghi chú |
-| ------------- | --- | ------- | ------- |
+| Máy           | iOS | Kết quả | Ghi chú                         |
+| ------------- | --- | ------- | ------------------------------- |
 | iPhone 11     |     |         | Chỉ khi đã lên iOS 16.4 trở lên |
-| iPhone 16     |     |         |         |
-| iPhone 17 Pro |     |         |         |
+| iPhone 16     |     |         |                                 |
+| iPhone 17 Pro |     |         |                                 |
+
+## Bước 4 — Ghi khi offline rồi đồng bộ (M12)
+
+1. Mở Bé Yêu từ màn hình chính khi có mạng, rồi bật chế độ máy bay.
+2. Trang chủ → "Tã" → Lưu, làm hai lần. Kỳ vọng: hai dòng tã hiện ngay trong "24 giờ qua".
+3. Tắt chế độ máy bay, giữ app mở. Kỳ vọng: trong ≤ 30 giây máy thứ hai (hoặc Supabase → Table Editor → `logs`) thấy đủ hai tã, đúng giờ đã ghi lúc offline.
+4. Xóa hai bản ghi tã thử ở Nhật ký.
+
+| Máy           | iOS | Kết quả | Ghi chú                         |
+| ------------- | --- | ------- | ------------------------------- |
+| iPhone 11     |     |         | Chỉ khi đã lên iOS 16.4 trở lên |
+| iPhone 16     |     |         |                                 |
+| iPhone 17 Pro |     |         |                                 |
 
 ## Bước 7 — Tạm tắt (M11, phần nhắc bú)
 
@@ -35,8 +48,8 @@ Thiết bị: iPhone 11, iPhone 16, iPhone 17 Pro. Ghi Đạt / Không đạt, p
 4. Dọn dẹp: xóa hai bản ghi Bú bình thử; Khoảng cách cữ bú đặt lại giá trị cũ (thường "3 giờ").
 5. Phần "nhắc tiêm vẫn đến khi tạm tắt" kiểm ở đợt 2.
 
-| Máy           | iOS | Kết quả | Ghi chú |
-| ------------- | --- | ------- | ------- |
+| Máy           | iOS | Kết quả | Ghi chú                         |
+| ------------- | --- | ------- | ------------------------------- |
 | iPhone 11     |     |         | Chỉ khi đã lên iOS 16.4 trở lên |
-| iPhone 16     |     |         |         |
-| iPhone 17 Pro |     |         |         |
+| iPhone 16     |     |         |                                 |
+| iPhone 17 Pro |     |         |                                 |

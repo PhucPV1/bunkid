@@ -25,17 +25,19 @@ const TITLES: Record<InstantType, string> = {
 export function QuickEntrySheet({
   type,
   babyId,
+  userId,
   onClose,
   initial,
   recentLogs = [],
 }: {
   type: InstantType;
   babyId: string;
+  userId: string;
   onClose: () => void;
   initial?: QuickValues;
   recentLogs?: LogRow[];
 }) {
-  const add = useAddInstant(babyId);
+  const add = useAddInstant(babyId, userId);
   const [values, setValues] = useState<QuickValues>(() => ({
     ...defaultQuickValues(type),
     ...initial,

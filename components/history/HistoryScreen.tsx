@@ -24,9 +24,11 @@ type SheetState = { log: LogRow | null } | null;
 export function HistoryScreen({
   baby,
   member,
+  userId,
 }: {
   baby: Baby;
   member: FamilyMember;
+  userId: string;
 }) {
   const now = useNow(30_000);
   useLogsRealtime(baby.id);
@@ -123,6 +125,7 @@ export function HistoryScreen({
       {sheet && (
         <LogEditSheet
           babyId={baby.id}
+          userId={userId}
           log={sheet.log}
           canModify={
             sheet.log === null || canModifyLog(member, sheet.log.created_by)

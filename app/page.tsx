@@ -6,8 +6,14 @@ import { HomeScreen } from "@/components/home/HomeScreen";
 export default function Page() {
   return (
     <AuthGate need="baby">
-      {({ ctx }) =>
-        ctx?.baby ? <HomeScreen baby={ctx.baby} member={ctx.member} /> : null
+      {({ ctx, session }) =>
+        ctx?.baby && session ? (
+          <HomeScreen
+            baby={ctx.baby}
+            member={ctx.member}
+            userId={session.user.id}
+          />
+        ) : null
       }
     </AuthGate>
   );

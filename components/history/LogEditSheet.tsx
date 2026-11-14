@@ -26,6 +26,7 @@ const INPUT = "min-h-11 rounded-xl border px-3";
 
 export function LogEditSheet({
   babyId,
+  userId,
   log,
   canModify,
   who,
@@ -33,14 +34,15 @@ export function LogEditSheet({
   onClose,
 }: {
   babyId: string;
+  userId: string;
   log: LogRow | null;
   canModify: boolean;
   who: string;
   recentLogs: LogRow[];
   onClose: () => void;
 }) {
-  const save = useSaveLog(babyId);
-  const remove = useDeleteLog(babyId);
+  const save = useSaveLog(babyId, userId);
+  const remove = useDeleteLog(babyId, userId);
   const [type, setType] = useState<LogType>(
     () => (log?.type as LogType | undefined) ?? "breast",
   );
