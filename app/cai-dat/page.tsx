@@ -7,11 +7,12 @@ export default function Page() {
   return (
     <AuthGate need="baby">
       {({ session, ctx }) =>
-        ctx?.baby ? (
+        ctx?.baby && session ? (
           <SettingsScreen
             member={ctx.member}
             baby={ctx.baby}
-            email={session?.user.email ?? ""}
+            email={session.user.email ?? ""}
+            userId={session.user.id}
           />
         ) : null
       }

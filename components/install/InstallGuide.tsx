@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { DevicePushControl } from "@/components/push/DevicePushControl";
 import { useEffect, useState } from "react";
 
 function isStandalone(): boolean {
@@ -21,9 +22,12 @@ export function InstallGuide() {
       </Link>
       <h1 className="text-2xl font-semibold">Cài Bé Yêu</h1>
       {standalone === true && (
-        <p className="rounded-2xl bg-good-soft p-4 text-good-ink">
-          Bé Yêu đã được cài và đang chạy từ màn hình chính.
-        </p>
+        <>
+          <p className="rounded-2xl bg-good-soft p-4 text-good-ink">
+            Bé Yêu đã được cài và đang chạy từ màn hình chính.
+          </p>
+          <DevicePushControl />
+        </>
       )}
       {standalone === false && (
         <>

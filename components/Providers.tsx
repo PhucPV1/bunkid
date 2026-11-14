@@ -5,6 +5,7 @@ import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client
 import { useState, type ReactNode } from "react";
 import { trackBrowserOnline } from "@/lib/data/onlineStatus";
 import { createDexiePersister, PERSIST_MAX_AGE_MS } from "@/lib/data/persister";
+import { usePushRefresh } from "@/lib/hooks/usePushRefresh";
 import { useServiceWorker } from "@/lib/hooks/useServiceWorker";
 import { useSystemThemeSync } from "@/lib/hooks/useTheme";
 
@@ -14,6 +15,7 @@ const PERSIST_BUSTER = "1";
 export function Providers({ children }: { children: ReactNode }) {
   useSystemThemeSync();
   useServiceWorker();
+  usePushRefresh();
   const [client] = useState(() => {
     if (typeof window !== "undefined") trackBrowserOnline(navigator, window);
     return new QueryClient({

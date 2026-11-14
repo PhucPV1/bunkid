@@ -26,3 +26,11 @@ bun run db:test     # pgTAP cho schema và RLS
 4. Vercel: import repo, đặt `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
 5. Người đăng nhập đầu tiên tạo gia đình và thành chủ nhà; Gmail khác phải được chủ nhà thêm.
 6. Gói Supabase Free tạm dừng project sau 7 ngày không có hoạt động: vào dashboard bấm Restore.
+7. Thông báo đẩy (M10):
+   - Chạy `bunx web-push@3.6.7 generate-vapid-keys` một lần. Giữ kín Private Key.
+   - Trên Vercel → Settings → Environment Variables, thêm:
+     - `NEXT_PUBLIC_VAPID_PUBLIC_KEY` = Public Key
+     - `VAPID_PRIVATE_KEY` = Private Key
+     - `VAPID_SUBJECT` = `mailto:<email của bạn>`
+     - `SUPABASE_SERVICE_ROLE_KEY` = khóa `service_role` ở Supabase → Project Settings → API Keys
+   - Deploy lại để Vercel chép khóa công khai vào app.

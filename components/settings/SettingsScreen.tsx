@@ -11,15 +11,18 @@ import { THEME_OPTIONS } from "@/lib/theme";
 import { BabyProfileSection } from "./BabyProfileSection";
 import { FeedIntervalSection } from "./FeedIntervalSection";
 import { MembersSection } from "./MembersSection";
+import { NotificationsSection } from "./NotificationsSection";
 
 export function SettingsScreen({
   member,
   baby,
   email,
+  userId,
 }: {
   member: FamilyMember;
   baby: Baby;
   email: string;
+  userId: string;
 }) {
   const queryClient = useQueryClient();
   const [theme, setTheme] = useThemePref();
@@ -43,6 +46,7 @@ export function SettingsScreen({
       <BabyProfileSection baby={baby} isOwner={isOwner} />
       <FeedIntervalSection baby={baby} isOwner={isOwner} />
       <MembersSection me={member} />
+      <NotificationsSection userId={userId} />
 
       <section className="flex flex-col gap-2">
         <h2 className="text-lg font-medium">Giao diện</h2>
