@@ -2,6 +2,10 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { FIELD_INPUT, FIELD_LABEL } from "@/components/quick/styles";
+import { Button } from "@/components/ui/Button";
+import { Glass } from "@/components/ui/Glass";
+import { ListGroup, ListRow } from "@/components/ui/ListGroup";
 import { updateBaby } from "@/lib/data/baby";
 import { toVietnameseError } from "@/lib/data/errors";
 import {
@@ -9,6 +13,8 @@ import {
   formatInterval,
 } from "@/lib/rules/familySettings";
 import type { Baby } from "@/lib/supabase/rows";
+
+const HINT = 'Dùng để tính "Cữ bú tiếp theo khoảng …" ở trang chủ.';
 
 export function FeedIntervalSection({
   baby,
@@ -26,50 +32,60 @@ export function FeedIntervalSection({
   });
 
   return (
-    <section className="flex flex-col gap-2">
-      <h2 className="text-lg font-medium">Khoảng cách cữ bú</h2>
-      <p className="text-muted">
-        Dùng để tính "Cữ bú tiếp theo khoảng …" ở trang chủ.
-      </p>
+    <div className="flex flex-col gap-3">
       {isOwner ? (
-        <div className="flex gap-3">
-          <select
-            aria-label="Khoảng cách cữ bú"
-            className="min-h-11 flex-1 rounded-xl border px-3"
-            value={minutes}
-            onChange={(e) => {
-              setMinutes(Number(e.target.value));
-              save.reset();
-            }}
-          >
-            {FEED_INTERVAL_OPTIONS.map((option) => (
-              <option key={option} value={option}>
-                {formatInterval(option)}
-              </option>
-            ))}
-          </select>
-          <button
-            type="button"
-            disabled={save.isPending || minutes === baby.feed_interval_min}
+        <Glass className="flex flex-col gap-3 p-4">
+          <label className="flex flex-col gap-1.5">
+            <span className={FIELD_LABEL}>Khoảng cách cữ bú</span>
+            <select
+              className={`${FIELD_INPUT} tabular-nums accent-accent`}
+              value={minutes}
+              onChange={(e) => {
+                setMinutes(Number(e.target.value));
+                save.reset();
+              }}
+            >
+              {FEED_INTERVAL_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {formatInterval(option)}
+                </option>
+              ))}
+            </select>
+          </label>
+          <p className="text-[13px] text-muted">{HINT}</p>
+          <Button
+            size="lg"
+            block
+            busy={save.isPending}
+            disabled={minutes === baby.feed_interval_min}
             onClick={() => save.mutate()}
-            className="min-h-11 rounded-xl bg-accent px-4 text-on-accent disabled:opacity-50"
           >
             Lưu
-          </button>
-        </div>
+          </Button>
+        </Glass>
       ) : (
-        <p>{formatInterval(baby.feed_interval_min)}</p>
+        <>
+          <ListGroup>
+            <ListRow
+              icon="clock"
+              iconColor="cat-feed"
+              label="Khoảng cách cữ bú"
+              value={formatInterval(baby.feed_interval_min)}
+            />
+          </ListGroup>
+          <p className="px-4 text-[13px] text-muted">{HINT}</p>
+        </>
       )}
       {save.isSuccess && (
-        <p role="status" className="text-good-ink">
+        <p role="status" className="px-1 text-[15px] text-good-ink">
           Đã lưu.
         </p>
       )}
       {save.isError && (
-        <p role="alert" className="text-danger">
+        <p role="alert" className="px-1 text-[15px] text-danger">
           {toVietnameseError(save.error)}
         </p>
       )}
-    </section>
+    </div>
   );
 }
