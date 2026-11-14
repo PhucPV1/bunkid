@@ -1,0 +1,40 @@
+import { readFileSync } from "node:fs";
+import { describe, expect, it } from "vitest";
+import { ALIASES, THEME_NAMES, THEMES, TOKEN_NAMES } from "./tokens";
+
+const css = readFileSync("app/globals.css", "utf8");
+
+const OPENERS = {
+  light: "@theme {",
+  dark: ':root[data-theme="dark"] {',
+  night: ':root[data-theme="night"] {',
+} as const;
+
+function block(opener: string): Record<string, string> {
+  const start = css.indexOf(opener);
+  if (start < 0) throw new Error(`missing block ${opener}`);
+  const body = css.slice(start + opener.length, css.indexOf("}", start));
+  const vars: Record<string, string> = {};
+  for (const m of body.matchAll(/--color-([a-z0-9-]+)\s*:\s*([^;]+);/g))
+    vars[m[1]] = m[2].trim().replace(/\s+/g, " ");
+  return vars;
+}
+
+describe("globals.css matches lib/ui/tokens.ts", () => {
+  it.each(THEME_NAMES)(
+    "%s block declares every token with the same value",
+    (name) => {
+      const vars = block(OPENERS[name]);
+      for (const token of TOKEN_NAMES)
+        expect(vars[token]?.toUpperCase(), `--color-${token}`).toBe(
+          THEMES[name][token].toUpperCase(),
+        );
+    },
+  );
+
+  it("the light block declares the legacy aliases", () => {
+    const vars = block(OPENERS.light);
+    for (const [alias, target] of Object.entries(ALIASES))
+      expect(vars[alias], `--color-${alias}`).toBe(`var(--color-${target})`);
+  });
+});

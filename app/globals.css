@@ -1,77 +1,215 @@
 @import "tailwindcss";
 
 @theme {
-  --color-surface: #ffffff;
-  --color-ink: oklch(20.5% 0 0);
-  --color-muted: oklch(55.6% 0 0);
-  --color-soft: oklch(97% 0 0);
-  --color-accent: oklch(65.6% 0.241 354.308);
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto,
+    "Noto Sans", sans-serif;
+  --font-rounded: ui-rounded, "SF Pro Rounded", -apple-system, sans-serif;
+
+  --color-bg: #fbf3f0;
+  --color-blob-1: #ffc2a6;
+  --color-blob-2: #d9c9ff;
+  --color-blob-3: #ffb8cb;
+  --color-ink: #2b1b22;
+  --color-muted: #6e5560;
+  --color-glass: rgb(255 255 255 / 0.55);
+  --color-glass-strong: rgb(255 255 255 / 0.82);
+  --color-glass-solid: #ffffff;
+  --color-edge: rgb(255 255 255 / 0.85);
+  --color-line: rgb(43 27 34 / 0.07);
+  --color-scrim: rgb(43 27 34 / 0.22);
+  --color-accent: #b8285e;
   --color-on-accent: #ffffff;
-  --color-accent-soft: oklch(97.1% 0.014 343.198);
-  --color-accent-ink: oklch(52.5% 0.223 3.958);
-  --color-accent-line: oklch(89.9% 0.061 343.231);
-  --color-danger: oklch(57.7% 0.245 27.325);
-  --color-alarm: oklch(57.7% 0.245 27.325);
-  --color-danger-soft: oklch(93.6% 0.032 17.717);
-  --color-danger-ink: oklch(39.6% 0.141 25.723);
-  --color-warn-soft: oklch(96.2% 0.059 95.617);
-  --color-warn-ink: oklch(41.4% 0.112 45.904);
-  --color-good-soft: oklch(95% 0.052 163.051);
-  --color-good-ink: oklch(37.8% 0.077 168.94);
+  --color-accent-text: #b8285e;
+  --color-accent-tint: rgb(184 40 94 / 0.12);
+  --color-good: #1f7a3a;
+  --color-warn: #955700;
+  --color-danger: #c4142b;
+  --color-danger-solid: #c4142b;
+  --color-on-danger: #ffffff;
+  --color-switch-on: #1f7a3a;
+  --color-soft: #f3e8e4;
+  --color-accent-line: #e9b9cb;
+  --color-danger-soft: #fce4e2;
+  --color-danger-ink: #8a0f1f;
+  --color-warn-soft: #fcebd0;
+  --color-warn-ink: #7a4300;
+  --color-good-soft: #ddf1e3;
+  --color-good-ink: #1a5a30;
+  --color-cat-feed: #c2185b;
+  --color-cat-bottle: #b0365d;
+  --color-cat-sleep: #5b4bc4;
+  --color-cat-diaper: #955700;
+  --color-cat-pump: #8e3fc4;
+  --color-cat-tummy: #2e7d46;
+  --color-cat-med: #c0392b;
+  --color-cat-temp: #1b6f87;
+
+  --color-surface: var(--color-bg);
+  --color-accent-soft: var(--color-accent-tint);
+  --color-accent-ink: var(--color-accent-text);
+  --color-alarm: var(--color-danger-solid);
 }
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --color-surface: #121212;
-  --color-ink: #f5f5f5;
-  --color-muted: #a3a3a3;
-  --color-soft: #262626;
-  --color-accent: #ec4899;
-  --color-on-accent: #ffffff;
-  --color-accent-soft: #3b0d24;
-  --color-accent-ink: #f9a8d4;
-  --color-accent-line: #831843;
-  --color-danger: #f87171;
-  --color-alarm: #b91c1c;
-  --color-danger-soft: #450a0a;
-  --color-danger-ink: #fecaca;
-  --color-warn-soft: #422006;
-  --color-warn-ink: #fde68a;
-  --color-good-soft: #022c22;
-  --color-good-ink: #a7f3d0;
+  --color-bg: #0f0b12;
+  --color-blob-1: #6b2e46;
+  --color-blob-2: #33295c;
+  --color-blob-3: #5a1f38;
+  --color-ink: #f5eef2;
+  --color-muted: #b8a9b1;
+  --color-glass: rgb(255 255 255 / 0.08);
+  --color-glass-strong: rgb(36 26 34 / 0.82);
+  --color-glass-solid: #221f25;
+  --color-edge: rgb(255 255 255 / 0.14);
+  --color-line: rgb(255 255 255 / 0.08);
+  --color-scrim: rgb(0 0 0 / 0.45);
+  --color-accent: #ff7aa8;
+  --color-on-accent: #2b0a17;
+  --color-accent-text: #ff9ebf;
+  --color-accent-tint: rgb(255 122 168 / 0.18);
+  --color-good: #8fdda0;
+  --color-warn: #ffc56b;
+  --color-danger: #ff8a7a;
+  --color-danger-solid: #b3261e;
+  --color-on-danger: #ffffff;
+  --color-switch-on: #30d158;
+  --color-soft: #221f25;
+  --color-accent-line: #5a2340;
+  --color-danger-soft: #3a1515;
+  --color-danger-ink: #ffd4cf;
+  --color-warn-soft: #3a2a10;
+  --color-warn-ink: #ffe2a8;
+  --color-good-soft: #0f2a1a;
+  --color-good-ink: #bff0cb;
+  --color-cat-feed: #ff7aa8;
+  --color-cat-bottle: #ffa3b8;
+  --color-cat-sleep: #a99bff;
+  --color-cat-diaper: #ffc56b;
+  --color-cat-pump: #d6a6ff;
+  --color-cat-tummy: #8fdda0;
+  --color-cat-med: #ff8a7a;
+  --color-cat-temp: #7fd4ea;
 }
 
 :root[data-theme="night"] {
   color-scheme: dark;
-  --color-surface: #0b0b0b;
-  --color-ink: #c2603a;
-  --color-muted: #a5512f;
-  --color-soft: #1a0f0a;
-  --color-accent: #5a200e;
-  --color-on-accent: #e07a4f;
-  --color-accent-soft: #24110a;
-  --color-accent-ink: #d0693f;
+  --color-bg: #0a0705;
+  --color-blob-1: #3a170a;
+  --color-blob-2: #2b1407;
+  --color-blob-3: #2b1407;
+  --color-ink: #d9895c;
+  --color-muted: #b5734f;
+  --color-glass: rgb(217 137 92 / 0.06);
+  --color-glass-strong: rgb(22 15 10 / 0.9);
+  --color-glass-solid: #160f0a;
+  --color-edge: rgb(217 137 92 / 0.16);
+  --color-line: rgb(217 137 92 / 0.1);
+  --color-scrim: rgb(0 0 0 / 0.55);
+  --color-accent: #6b2a12;
+  --color-on-accent: #f4a070;
+  --color-accent-text: #f4a070;
+  --color-accent-tint: rgb(107 42 18 / 0.6);
+  --color-good: #d9895c;
+  --color-warn: #d9895c;
+  --color-danger: #e0704a;
+  --color-danger-solid: #4a140a;
+  --color-on-danger: #e0704a;
+  --color-switch-on: #c06a34;
+  --color-soft: #160f0a;
   --color-accent-line: #4a1d0e;
-  --color-danger: #e0583a;
-  --color-alarm: #4a140a;
   --color-danger-soft: #2a0d07;
   --color-danger-ink: #e0704a;
   --color-warn-soft: #23140a;
-  --color-warn-ink: #cf7a3f;
+  --color-warn-ink: #d9895c;
   --color-good-soft: #17140a;
-  --color-good-ink: #b98a45;
+  --color-good-ink: #d9895c;
+  --color-cat-feed: #d9895c;
+  --color-cat-bottle: #d9895c;
+  --color-cat-sleep: #d9895c;
+  --color-cat-diaper: #d9895c;
+  --color-cat-pump: #d9895c;
+  --color-cat-tummy: #d9895c;
+  --color-cat-med: #d9895c;
+  --color-cat-temp: #d9895c;
 }
 
-html {
-  -webkit-text-size-adjust: 100%;
+@layer base {
+  *,
+  ::before,
+  ::after {
+    border-color: var(--color-line);
+  }
+  :where(input, select, textarea) {
+    border-color: color-mix(in srgb, var(--color-muted) 45%, transparent);
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background: var(--color-bg);
+    color: var(--color-ink);
+    padding: env(safe-area-inset-top) env(safe-area-inset-right)
+      env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-accent-text);
+    outline-offset: 2px;
+  }
+  input[type="checkbox"],
+  input[type="radio"] {
+    accent-color: var(--color-accent);
+  }
 }
 
-body {
-  padding: env(safe-area-inset-top) env(safe-area-inset-right)
-    env(safe-area-inset-bottom) env(safe-area-inset-left);
+@utility glass {
+  background: var(--color-glass);
+  border: 1px solid var(--color-edge);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
 }
 
-/* Spec §6.15: the doctor report prints on A4 portrait, black on white whatever the theme. */
+@utility glass-strong {
+  background: var(--color-glass-strong);
+  border: 1px solid var(--color-edge);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  backdrop-filter: blur(40px) saturate(180%);
+}
+
+@supports not (
+  (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
+) {
+  .glass,
+  .glass-strong {
+    background: var(--color-glass-solid);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .glass,
+  .glass-strong {
+    background: var(--color-glass-solid);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  [data-backdrop] {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Spec §6.15 (spec gốc): the doctor report prints on A4 portrait, black on white whatever the theme. */
 @media print {
   @page {
     size: A4 portrait;
@@ -80,11 +218,21 @@ body {
   :root,
   :root[data-theme] {
     color-scheme: light;
-    --color-surface: #ffffff;
+    --color-bg: #ffffff;
     --color-ink: #000000;
     --color-muted: #444444;
   }
   body {
     background: #ffffff;
+  }
+  [data-backdrop] {
+    display: none !important;
+  }
+  .glass,
+  .glass-strong {
+    background: #ffffff !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
   }
 }
