@@ -266,3 +266,16 @@ Nhắc thức cũng bị tạm tắt chặn: kiểm ở bước 11, mục 5.
 | iPhone 11     |     |         |         |
 | iPhone 16     |     |         |         |
 | iPhone 17 Pro |     |         |         |
+
+## Bước 18 — Mốc phát triển (M25)
+
+1. Cẩm nang → Phát triển. Kỳ vọng: phần "Mốc vận động lớn" (Lật, Ngồi không cần đỡ, … Tự đi) có nhãn khoảng tuổi; tiếp theo là mốc của tháng hiện tại và tháng kế tiếp, chia 4 lĩnh vực, mỗi tháng có khung "Khi nào nên hỏi bác sĩ" và link "Nguồn: CDC".
+2. Bấm một mốc bé đã làm được → chọn ngày, ghi chú, chọn một ảnh (nếu đã có ảnh ở Tiện ích → Ảnh) → Lưu. Kỳ vọng: mốc có dấu ✓ và dòng "Đạt ngày … · có ảnh"; máy thứ hai thấy giống vậy.
+3. Bật chế độ máy bay, đánh dấu thêm một mốc. Kỳ vọng: hiện ngay với ⏳ và chip chờ đồng bộ. Tắt máy bay. Kỳ vọng: ⏳ biến mất trong ≤ 30 giây.
+4. "Xem tất cả các mốc" hiện đủ các tháng 2 đến 24. Mở lại mốc thử → "Bỏ đánh dấu".
+
+| Máy           | iOS | Kết quả | Ghi chú |
+| ------------- | --- | ------- | ------- |
+| iPhone 11     |     |         |         |
+| iPhone 16     |     |         |         |
+| iPhone 17 Pro |     |         |         |
