@@ -1,6 +1,7 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { ALIASES, THEME_NAMES, THEMES, TOKEN_NAMES } from "./tokens";
+import { THEME_NAMES, THEMES, TOKEN_NAMES } from "./tokens";
 
 const css = readFileSync("app/globals.css", "utf8");
 
@@ -32,9 +33,43 @@ describe("globals.css matches lib/ui/tokens.ts", () => {
     },
   );
 
-  it("the light block declares the legacy aliases", () => {
-    const vars = block(OPENERS.light);
-    for (const [alias, target] of Object.entries(ALIASES))
-      expect(vars[alias], `--color-${alias}`).toBe(`var(--color-${target})`);
+  it("the legacy tokens are gone", () => {
+    for (const name of LEGACY)
+      expect(css, `--color-${name}`).not.toMatch(
+        new RegExp(`--color-${name}\\s*:`),
+      );
+  });
+});
+
+const LEGACY = [
+  "surface",
+  "soft",
+  "accent-soft",
+  "accent-ink",
+  "accent-line",
+  "alarm",
+];
+
+function sourceFiles(dir: string): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(dir, entry.name);
+    if (entry.isDirectory()) return sourceFiles(path);
+    return /\.tsx?$/.test(entry.name) && !/\.test\.tsx?$/.test(entry.name)
+      ? [path]
+      : [];
+  });
+}
+
+describe("no legacy colour classes", () => {
+  it("app and components use only current tokens", () => {
+    const pattern = new RegExp(
+      `\\b(?:bg|text|border|from|to|via|ring|outline|fill|stroke|decoration|divide|accent)-(?:${LEGACY.join("|")})\\b(?!-)`,
+    );
+    const problems = [...sourceFiles("app"), ...sourceFiles("components")]
+      .filter((file) => pattern.test(readFileSync(file, "utf8")))
+      .map(
+        (file) => `${file}: ${readFileSync(file, "utf8").match(pattern)?.[0]}`,
+      );
+    expect(problems).toEqual([]);
   });
 });

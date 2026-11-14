@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/Button";
 import {
   deviceState,
   disablePush,
@@ -42,44 +43,47 @@ export function DevicePushControl() {
     }
   }
 
-  if (state === null) return <p className="text-muted">Đang kiểm tra…</p>;
+  if (state === null)
+    return <p className="text-[15px] text-muted">Đang kiểm tra…</p>;
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2.5">
       {MESSAGE[state] && (
-        <p className={state === "on" ? "text-good-ink" : "text-muted"}>
+        <p
+          className={
+            state === "on"
+              ? "text-[15px] text-good-ink"
+              : "text-[15px] text-muted"
+          }
+        >
           {MESSAGE[state]}
         </p>
       )}
       {state === "needs-install" && (
         <Link
           href="/cai-app"
-          className="flex min-h-11 items-center text-accent-ink underline"
+          className="flex min-h-11 items-center text-[15px] font-semibold text-accent-text"
         >
           Cách cài Kim Bun lên màn hình chính
         </Link>
       )}
       {state === "off" && (
-        <button
-          type="button"
-          disabled={busy}
-          onClick={() => run(enablePush)}
-          className="min-h-11 rounded-xl bg-accent text-on-accent disabled:opacity-50"
-        >
+        <Button size="md" block busy={busy} onClick={() => run(enablePush)}>
           Bật thông báo trên máy này
-        </button>
+        </Button>
       )}
       {state === "on" && (
-        <button
-          type="button"
-          disabled={busy}
+        <Button
+          variant="secondary"
+          size="md"
+          block
+          busy={busy}
           onClick={() => run(disablePush)}
-          className="min-h-11 rounded-xl border disabled:opacity-50"
         >
           Tắt thông báo trên máy này
-        </button>
+        </Button>
       )}
       {error && (
-        <p role="alert" className="text-danger">
+        <p role="alert" className="text-[15px] text-danger">
           {error}
         </p>
       )}

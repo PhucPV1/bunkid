@@ -462,4 +462,24 @@ Kết quả: Chờ người dùng.
 | iPhone 11     |     |         |         |
 | iPhone 16     |     |         |         |
 | iPhone 17 Pro |     |         |         |
-```
+
+## Bước 29 — Các màn còn lại, dòng đồng bộ và bản in (UI đợt 5)
+
+1. Mở lần lượt mọi màn trong Khám phá, Nhật ký, Thống kê, Cài đặt và 3 trang con, Cài app, Đăng nhập (sau khi đăng xuất), Offline (bật chế độ máy bay rồi mở một trang chưa từng mở). Kỳ vọng:
+   - không còn khung viền đen hoặc trắng kiểu cũ, mọi khối là thẻ kính;
+   - không có emoji làm icon;
+   - nhãn nút gạt ("Hậu môn", "Đổi ngày hẹn", "30 phút", "Tự động") nằm trên một dòng;
+   - ô chọn ảnh là nút "Chọn ảnh" tiếng Việt;
+   - thanh dung lượng ảnh nhìn thấy rõ ở cả 3 theme.
+2. Tắt mạng, ghi một lần "Thay tã" (tài khoản thật, sau đó Hoàn tác hoặc xóa). Kỳ vọng: viên "1 mục chờ đồng bộ" nằm ngay dưới header Trang chủ; mở Nhật ký thấy viên này dưới tiêu đề "Nhật ký". Bật mạng lại: viên biến mất.
+3. Mở app khi mạng chậm (Cài đặt nhà phát triển → Network Link Conditioner "3G", nếu có). Kỳ vọng: Trang chủ hiện các khối xám nhấp nháy theo hình thẻ chính, 3 ô số, 4 hàng rồi mới hiện dữ liệu.
+4. In `/bao-cao` (Chia sẻ → In, hoặc lưu PDF). Kỳ vọng: khổ A4, chữ đen trên nền trắng, không có vệt màu nền, không có tab bar, nút "+" hay viên đồng bộ.
+5. Lặp lại mục 1 ở theme Sáng, Tối, Ban đêm: chữ đọc rõ.
+
+Kết quả: Chờ người dùng.
+
+| Máy           | iOS | Kết quả | Ghi chú |
+| ------------- | --- | ------- | ------- |
+| iPhone 11     |     |         |         |
+| iPhone 16     |     |         |         |
+| iPhone 17 Pro |     |         |         |

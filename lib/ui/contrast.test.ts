@@ -24,8 +24,6 @@ const PAIRS: [TokenName, TokenName][] = [
   ["danger-ink", "danger-soft"],
   ["warn-ink", "warn-soft"],
   ["good-ink", "good-soft"],
-  ["ink", "soft"],
-  ["muted", "soft"],
 ];
 
 describe.each(THEME_NAMES)("theme %s", (name) => {

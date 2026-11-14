@@ -24,8 +24,6 @@ export const TOKEN_NAMES = [
   "danger-solid",
   "on-danger",
   "switch-on",
-  "soft",
-  "accent-line",
   "danger-soft",
   "danger-ink",
   "warn-soft",
@@ -42,14 +40,6 @@ export const TOKEN_NAMES = [
   "cat-temp",
 ] as const;
 export type TokenName = (typeof TOKEN_NAMES)[number];
-
-// Legacy token names kept so screens not yet redesigned still render. Value: the token each one points at.
-export const ALIASES = {
-  surface: "bg",
-  "accent-soft": "accent-tint",
-  "accent-ink": "accent-text",
-  alarm: "danger-solid",
-} as const satisfies Record<string, TokenName>;
 
 export const THEMES: Record<ThemeName, Record<TokenName, string>> = {
   light: {
@@ -75,8 +65,6 @@ export const THEMES: Record<ThemeName, Record<TokenName, string>> = {
     "danger-solid": "#C4142B",
     "on-danger": "#FFFFFF",
     "switch-on": "#1F7A3A",
-    soft: "#F3E8E4",
-    "accent-line": "#E9B9CB",
     "danger-soft": "#FCE4E2",
     "danger-ink": "#8A0F1F",
     "warn-soft": "#FCEBD0",
@@ -115,8 +103,6 @@ export const THEMES: Record<ThemeName, Record<TokenName, string>> = {
     "danger-solid": "#B3261E",
     "on-danger": "#FFFFFF",
     "switch-on": "#30D158",
-    soft: "#221F25",
-    "accent-line": "#5A2340",
     "danger-soft": "#3A1515",
     "danger-ink": "#FFD4CF",
     "warn-soft": "#3A2A10",
@@ -155,8 +141,6 @@ export const THEMES: Record<ThemeName, Record<TokenName, string>> = {
     "danger-solid": "#4A140A",
     "on-danger": "#E0704A",
     "switch-on": "#C06A34",
-    soft: "#160F0A",
-    "accent-line": "#4A1D0E",
     "danger-soft": "#2A0D07",
     "danger-ink": "#E0704A",
     "warn-soft": "#23140A",

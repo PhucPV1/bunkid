@@ -30,7 +30,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
-      <body className="min-h-dvh bg-surface text-ink antialiased">
+      <body className="min-h-dvh bg-bg text-ink antialiased">
         <Providers>{children}</Providers>
       </body>
     </html>

@@ -24,7 +24,7 @@ import { MilestoneSheet } from "./MilestoneSheet";
 const STATE_CLASS: Record<MotorState, string> = {
   done: "bg-good-soft text-good-ink",
   early: "bg-muted/15 text-ink",
-  window: "bg-accent-soft text-accent-ink",
+  window: "bg-accent-tint text-accent-text",
   late: "bg-warn-soft text-warn-ink",
 };
 
