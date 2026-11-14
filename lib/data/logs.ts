@@ -250,3 +250,25 @@ export function useDeleteLog(babyId: string, userId: string) {
       }),
   });
 }
+
+// Spec §6.13: ml per side, asked after a pumping timer has been stopped.
+export function useSetPumpAmounts(babyId: string, userId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    networkMode: "always",
+    mutationFn: ({
+      id,
+      details,
+    }: {
+      id: string;
+      details: { mlLeft?: number; mlRight?: number };
+    }) =>
+      enqueueLogChange(queryClient, {
+        op: "update",
+        rowId: id,
+        babyId,
+        userId,
+        row: { details },
+      }),
+  });
+}

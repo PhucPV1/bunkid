@@ -23,6 +23,7 @@ import { ageDays, formatAgeVi } from "@/lib/rules/time";
 import type { Baby, FamilyMember } from "@/lib/supabase/rows";
 import { ActionGrid } from "./ActionGrid";
 import { AlertBanners } from "./AlertBanners";
+import { PumpSheet } from "./PumpSheet";
 import { QuickEntrySheet } from "./QuickEntrySheet";
 import { RecentList } from "./RecentList";
 import { RunningCard } from "./RunningCard";
@@ -59,6 +60,13 @@ export function HomeScreen({
   const stop = useStopTimer(baby.id, userId);
   const pending = pendingRowIds(entriesFor(useOutboxEntries(userId), "logs"));
   const [sheet, setSheet] = useState<SheetState>(null);
+  // Id of a pumping log that was just stopped: ask for ml (spec §6.13).
+  const [pumpStopped, setPumpStopped] = useState<string | null>(null);
+  // Only whoever may edit the log is asked (RLS: owner or the log's creator).
+  const askPumpAmounts = (log: { id: string; created_by: string }) => {
+    if (member.role === "owner" || log.created_by === userId)
+      setPumpStopped(log.id);
+  };
 
   const rows = logs.data ?? [];
   const age = ageDays(baby.dob, now);
@@ -109,7 +117,16 @@ export function HomeScreen({
       <ActionGrid
         running={running}
         busy={press.isPending}
-        onTimer={(button) => press.mutate({ running, button })}
+        onTimer={(button) => {
+          const pump =
+            button.type === "pump"
+              ? runningRows.find((r) => r.type === "pump")
+              : undefined;
+          press.mutate(
+            { running, button },
+            { onSuccess: () => pump && askPumpAmounts(pump) },
+          );
+        }}
         onInstant={(type) => setSheet({ type })}
       />
 
@@ -126,7 +143,11 @@ export function HomeScreen({
           who={nameOf(log.created_by)}
           now={now}
           busy={stop.isPending}
-          onStop={() => stop.mutate(log.id)}
+          onStop={() =>
+            stop.mutate(log.id, {
+              onSuccess: () => log.type === "pump" && askPumpAmounts(log),
+            })
+          }
           pending={pending.has(log.id)}
         />
       ))}
@@ -159,6 +180,14 @@ export function HomeScreen({
           babyId={baby.id}
           userId={userId}
           onClose={() => setSheet(null)}
+        />
+      )}
+      {pumpStopped && (
+        <PumpSheet
+          logId={pumpStopped}
+          babyId={baby.id}
+          userId={userId}
+          onClose={() => setPumpStopped(null)}
         />
       )}
     </main>
