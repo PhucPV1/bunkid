@@ -6,6 +6,8 @@ import { useState } from "react";
 import { AuthGate } from "@/components/AuthGate";
 import { BabyForm } from "@/components/baby/BabyForm";
 import { OnlineOnly } from "@/components/OnlineOnly";
+import { Glass } from "@/components/ui/Glass";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { VaccineSetup } from "@/components/vaccines/VaccineSetup";
 import type { Baby } from "@/lib/supabase/rows";
 
@@ -22,10 +24,8 @@ export default function Page() {
   return (
     <AuthGate need="family" keep={created !== null}>
       {({ session, ctx }) => (
-        <main className="mx-auto flex max-w-md flex-col gap-4 p-6">
-          <h1 className="text-2xl font-semibold">
-            {created ? "Lịch tiêm của bé" : "Khai báo bé"}
-          </h1>
+        <main className="mx-auto flex max-w-md flex-col gap-[18px] px-4 pt-2 pb-4">
+          <PageHeader title={created ? "Lịch tiêm của bé" : "Khai báo bé"} />
           {created && session ? (
             <VaccineSetup
               baby={created}
@@ -36,13 +36,15 @@ export default function Page() {
               onLater={finish}
             />
           ) : ctx?.member.role === "owner" ? (
-            <OnlineOnly>
-              <BabyForm familyId={ctx.family.id} onCreated={setCreated} />
-            </OnlineOnly>
+            <Glass className="p-4">
+              <OnlineOnly>
+                <BabyForm familyId={ctx.family.id} onCreated={setCreated} />
+              </OnlineOnly>
+            </Glass>
           ) : (
-            <p className="text-muted">
+            <Glass className="p-4 text-base text-muted">
               Chờ ba/mẹ của bé khai báo thông tin bé.
-            </p>
+            </Glass>
           )}
         </main>
       )}

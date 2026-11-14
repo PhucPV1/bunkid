@@ -2,6 +2,9 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
+import { FIELD_INPUT, FIELD_LABEL } from "@/components/quick/styles";
+import { Button } from "@/components/ui/Button";
+import { Segmented } from "@/components/ui/Segmented";
 import { createBaby, updateBaby } from "@/lib/data/baby";
 import { toVietnameseError } from "@/lib/data/errors";
 import {
@@ -21,6 +24,11 @@ const EMPTY: BabyFormRaw = {
   birthLengthCm: "",
   birthHeadCm: "",
 };
+
+const SEXES = [
+  { value: "female", label: "Bé gái" },
+  { value: "male", label: "Bé trai" },
+];
 
 export function BabyForm({
   familyId,
@@ -68,101 +76,71 @@ export function BabyForm({
     save.mutate(result.value);
   }
 
-  const field = "min-h-11 rounded-xl border px-3";
   const error = (key: keyof BabyFormRaw) =>
     errors[key] ? (
-      <span className="text-sm text-danger">{errors[key]}</span>
+      <span className="text-[13px] text-danger">{errors[key]}</span>
     ) : null;
+
+  const text = (
+    key: "name" | "birthWeightG" | "birthLengthCm" | "birthHeadCm",
+    label: string,
+    inputMode?: "numeric" | "decimal",
+  ) => (
+    <label className="flex flex-col gap-1.5">
+      <span className={FIELD_LABEL}>{label}</span>
+      <input
+        inputMode={inputMode}
+        className={inputMode ? `${FIELD_INPUT} tabular-nums` : FIELD_INPUT}
+        value={raw[key]}
+        onChange={(e) => set(key, e.target.value)}
+      />
+      {error(key)}
+    </label>
+  );
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-4">
-      <label className="flex flex-col gap-1">
-        Tên bé
-        <input
-          className={field}
-          value={raw.name}
-          onChange={(e) => set("name", e.target.value)}
-        />
-        {error("name")}
-      </label>
-      <label className="flex flex-col gap-1">
-        Ngày sinh
+      {text("name", "Tên bé")}
+      <label className="flex flex-col gap-1.5">
+        <span className={FIELD_LABEL}>Ngày sinh</span>
         <input
           type="date"
-          className={field}
+          className={FIELD_INPUT}
           max={vnDateString(new Date())}
           value={raw.dob}
           onChange={(e) => set("dob", e.target.value)}
         />
         {error("dob")}
       </label>
-      <fieldset className="flex flex-col gap-1">
-        <legend>Giới tính</legend>
-        <div className="flex gap-3">
-          {(["female", "male"] as const).map((sex) => (
-            <label
-              key={sex}
-              className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border"
-            >
-              <input
-                type="radio"
-                name="sex"
-                value={sex}
-                checked={raw.sex === sex}
-                onChange={() => set("sex", sex)}
-              />
-              {sex === "female" ? "Bé gái" : "Bé trai"}
-            </label>
-          ))}
-        </div>
+      <div className="flex flex-col gap-1.5">
+        <span className={FIELD_LABEL}>Giới tính</span>
+        <Segmented
+          label="Giới tính"
+          options={SEXES}
+          value={raw.sex}
+          onChange={(sex) => set("sex", sex)}
+        />
         {error("sex")}
-      </fieldset>
-      <label className="flex flex-col gap-1">
-        Cân nặng lúc sinh (g, không bắt buộc)
-        <input
-          inputMode="numeric"
-          className={field}
-          value={raw.birthWeightG}
-          onChange={(e) => set("birthWeightG", e.target.value)}
-        />
-        {error("birthWeightG")}
-      </label>
-      <label className="flex flex-col gap-1">
-        Chiều dài lúc sinh (cm, không bắt buộc)
-        <input
-          inputMode="decimal"
-          className={field}
-          value={raw.birthLengthCm}
-          onChange={(e) => set("birthLengthCm", e.target.value)}
-        />
-        {error("birthLengthCm")}
-      </label>
-      <label className="flex flex-col gap-1">
-        Vòng đầu lúc sinh (cm, không bắt buộc)
-        <input
-          inputMode="decimal"
-          className={field}
-          value={raw.birthHeadCm}
-          onChange={(e) => set("birthHeadCm", e.target.value)}
-        />
-        {error("birthHeadCm")}
-      </label>
-      <button
-        type="submit"
-        disabled={save.isPending}
-        className="min-h-12 rounded-2xl bg-accent text-lg text-on-accent disabled:opacity-50"
-      >
+      </div>
+      {text("birthWeightG", "Cân nặng lúc sinh (g, không bắt buộc)", "numeric")}
+      {text(
+        "birthLengthCm",
+        "Chiều dài lúc sinh (cm, không bắt buộc)",
+        "decimal",
+      )}
+      {text("birthHeadCm", "Vòng đầu lúc sinh (cm, không bắt buộc)", "decimal")}
+      <Button type="submit" size="lg" block busy={save.isPending}>
         Lưu
-      </button>
+      </Button>
       {save.isError && (
-        <p role="alert" className="text-danger">
+        <p role="alert" className="text-[15px] text-danger">
           {baby
             ? toVietnameseError(save.error)
             : "Không lưu được. Thử lại sau."}
         </p>
       )}
       {baby && save.isSuccess && (
-        <p role="status" className="text-good-ink">
+        <p role="status" className="text-[15px] text-good-ink">
           Đã lưu.
         </p>
       )}
