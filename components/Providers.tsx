@@ -1,18 +1,48 @@
 "use client";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient } from "@tanstack/react-query";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { useState, type ReactNode } from "react";
+import { trackBrowserOnline } from "@/lib/data/onlineStatus";
+import { createDexiePersister, PERSIST_MAX_AGE_MS } from "@/lib/data/persister";
 import { useServiceWorker } from "@/lib/hooks/useServiceWorker";
 import { useSystemThemeSync } from "@/lib/hooks/useTheme";
+
+// Bump when a cached query's data shape changes, so old saved data is dropped.
+const PERSIST_BUSTER = "1";
 
 export function Providers({ children }: { children: ReactNode }) {
   useSystemThemeSync();
   useServiceWorker();
-  const [client] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: true } },
-      }),
+  const [client] = useState(() => {
+    if (typeof window !== "undefined") trackBrowserOnline(navigator, window);
+    return new QueryClient({
+      defaultOptions: {
+        queries: {
+          retry: 1,
+          refetchOnWindowFocus: true,
+          gcTime: PERSIST_MAX_AGE_MS,
+        },
+      },
+    });
+  });
+  const [persister] = useState(() => createDexiePersister());
+  return (
+    <PersistQueryClientProvider
+      client={client}
+      persistOptions={{
+        persister,
+        maxAge: PERSIST_MAX_AGE_MS,
+        buster: PERSIST_BUSTER,
+        dehydrateOptions: {
+          // Keep queries whose last refetch failed offline, as long as they hold data.
+          shouldDehydrateQuery: (query) => query.state.data !== undefined,
+          // Paused writes cannot resume after a reload (no mutation defaults).
+          shouldDehydrateMutation: () => false,
+        },
+      }}
+    >
+      {children}
+    </PersistQueryClientProvider>
   );
-  return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
 }
