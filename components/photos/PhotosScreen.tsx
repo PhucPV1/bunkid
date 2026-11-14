@@ -2,6 +2,14 @@
 
 import { useState, type FormEvent } from "react";
 import { OnlineOnly } from "@/components/OnlineOnly";
+import { FIELD_INPUT, FIELD_LABEL } from "@/components/quick/styles";
+import { Button } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { ErrorCard } from "@/components/ui/ErrorCard";
+import { Glass } from "@/components/ui/Glass";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Sheet } from "@/components/ui/Sheet";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { toVietnameseError } from "@/lib/data/errors";
 import {
   usePhotoActions,
@@ -22,9 +30,11 @@ import type { Baby, PhotoRow } from "@/lib/supabase/rows";
 
 const BAR = {
   ok: "bg-accent",
-  warn: "bg-warn-ink",
+  warn: "bg-warn",
   full: "bg-danger",
 } as const;
+
+const dmy = (day: string) => day.split("-").reverse().join("/");
 
 export function PhotosScreen({
   baby,
@@ -45,39 +55,51 @@ export function PhotosScreen({
   const groups = groupByAgeMonth(rows, baby.dob);
 
   return (
-    <main className="mx-auto flex max-w-md flex-col gap-4 p-4">
-      <h1 className="text-2xl font-semibold">Ảnh của bé</h1>
-      <section className="flex flex-col gap-1">
-        <div className="h-2 overflow-hidden rounded-full bg-soft">
+    <main className="mx-auto flex max-w-md flex-col gap-[18px] px-4 pt-2 pb-4">
+      <PageHeader
+        title="Ảnh của bé"
+        back={{ href: "/kham-pha", label: "Khám phá" }}
+      />
+      <section className="flex flex-col gap-1.5 px-1">
+        <div className="h-2 overflow-hidden rounded-full bg-line">
           <div
-            className={`h-full ${BAR[used.level]}`}
+            className={`h-full rounded-full ${BAR[used.level]}`}
             style={{ width: `${used.percent}%` }}
           />
         </div>
         <p
           role={used.level === "ok" ? undefined : "status"}
-          className={`text-sm ${used.level === "ok" ? "text-muted" : "text-danger-ink"}`}
+          className={`text-[13px] ${used.level === "ok" ? "text-muted" : "text-danger"}`}
         >
           {used.text}
         </p>
       </section>
       {used.level !== "full" && <UploadForm baby={baby} />}
-      {photos.isError && !photos.data && (
-        <p role="alert" className="text-danger">
-          {toVietnameseError(photos.error)}
-        </p>
-      )}
-      {photos.data && rows.length === 0 && (
-        <p className="text-muted">Chưa có ảnh nào.</p>
-      )}
-      {groups.map((group) => (
-        <PhotoGroup
-          key={group.months}
-          label={group.label}
-          photos={group.photos}
-          onOpen={(photo, url) => setOpen({ photo, url })}
+      {photos.isPending && photos.fetchStatus === "paused" ? (
+        <p className="px-1 text-[15px] text-muted">Cần mạng để tải ảnh.</p>
+      ) : photos.isPending ? (
+        <div className="grid grid-cols-3 gap-1.5">
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <Skeleton key={i} className="aspect-square rounded-[12px]" />
+          ))}
+        </div>
+      ) : photos.isError && !photos.data ? (
+        <ErrorCard
+          message={toVietnameseError(photos.error)}
+          onRetry={() => void photos.refetch()}
         />
-      ))}
+      ) : rows.length === 0 ? (
+        <EmptyState icon="image" text="Chưa có ảnh nào." />
+      ) : (
+        groups.map((group) => (
+          <PhotoGroup
+            key={group.months}
+            label={group.label}
+            photos={group.photos}
+            onOpen={(photo, url) => setOpen({ photo, url })}
+          />
+        ))
+      )}
       {open && (
         <PhotoViewer
           photo={open.photo}
@@ -140,40 +162,36 @@ function UploadForm({ baby }: { baby: Baby }) {
     );
   }
 
-  const input = "min-h-11 rounded-xl border px-3";
   return (
     <OnlineOnly>
-      <form
-        onSubmit={submit}
-        className="flex flex-col gap-3 rounded-2xl border p-4"
-      >
-        <label className="flex flex-col gap-1">
-          Chọn ảnh
+      <Glass as="form" onSubmit={submit} className="flex flex-col gap-3 p-4">
+        <label className="flex flex-col gap-1.5">
+          <span className={FIELD_LABEL}>Chọn ảnh</span>
           <input
             key={inputKey}
             type="file"
             accept="image/*"
-            className="min-h-11"
+            className="min-h-11 text-[15px] text-ink"
             onChange={(e) => void pick(e.target.files?.[0] ?? null)}
           />
         </label>
         {file && (
           <>
-            <label className="flex flex-col gap-1">
-              Ngày chụp
+            <label className="flex flex-col gap-1.5">
+              <span className={FIELD_LABEL}>Ngày chụp</span>
               <input
                 type="date"
-                className={input}
+                className={FIELD_INPUT}
                 min={baby.dob}
                 max={today}
                 value={takenOn}
                 onChange={(e) => setTakenOn(e.target.value)}
               />
             </label>
-            <label className="flex flex-col gap-1">
-              Ghi chú (không bắt buộc)
+            <label className="flex flex-col gap-1.5">
+              <span className={FIELD_LABEL}>Ghi chú (không bắt buộc)</span>
               <input
-                className={input}
+                className={FIELD_INPUT}
                 maxLength={200}
                 value={caption}
                 onChange={(e) => setCaption(e.target.value)}
@@ -182,23 +200,24 @@ function UploadForm({ baby }: { baby: Baby }) {
           </>
         )}
         {message && (
-          <p role="status" className="text-sm">
+          <p role="status" className="text-[15px] text-ink">
             {message}
           </p>
         )}
-        <button
+        <Button
           type="submit"
-          disabled={!file || actions.upload.isPending}
-          className="min-h-12 rounded-2xl bg-accent text-on-accent disabled:opacity-50"
+          block
+          disabled={!file}
+          busy={actions.upload.isPending}
         >
           {actions.upload.isPending ? "Đang tải lên…" : "Tải ảnh lên"}
-        </button>
-      </form>
+        </Button>
+      </Glass>
     </OnlineOnly>
   );
 }
 
-function PhotoViewer({
+export function PhotoViewer({
   photo,
   url,
   baby,
@@ -214,37 +233,18 @@ function PhotoViewer({
   const actions = usePhotoActions(baby.id, baby.family_id);
   const [message, setMessage] = useState<string | null>(null);
   return (
-    <div
-      className="fixed inset-0 z-20 flex flex-col bg-black/40 p-4 pt-[calc(1rem+env(safe-area-inset-top))] pb-[calc(1rem+env(safe-area-inset-bottom))]"
-      onClick={onClose}
-    >
-      <div
-        className="m-auto flex max-h-full w-full max-w-md flex-col gap-3 overflow-y-auto rounded-2xl bg-surface p-3"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {url ? (
-          <img
-            src={url}
-            alt={photo.caption ?? ""}
-            className="w-full rounded-xl"
-          />
-        ) : (
-          <p className="text-muted">Cần mạng để xem ảnh.</p>
-        )}
-        <p className="text-sm text-muted">
-          {photo.taken_on.split("-").reverse().join("/")}
-        </p>
-        {photo.caption && <p>{photo.caption}</p>}
-        {message && (
-          <p role="alert" className="text-danger">
-            {message}
-          </p>
-        )}
-        {canDelete && (
+    <Sheet
+      open
+      onClose={onClose}
+      title={dmy(photo.taken_on)}
+      footer={
+        canDelete ? (
           <OnlineOnly>
-            <button
-              type="button"
-              disabled={actions.remove.isPending}
+            <Button
+              variant="ghost"
+              block
+              busy={actions.remove.isPending}
+              className="text-danger!"
               onClick={() => {
                 if (window.confirm("Xóa ảnh này? Không khôi phục được."))
                   actions.remove.mutate(photo, {
@@ -252,21 +252,31 @@ function PhotoViewer({
                     onError: (e) => setMessage(toVietnameseError(e)),
                   });
               }}
-              className="min-h-12 rounded-2xl border text-danger disabled:opacity-50"
             >
               Xóa ảnh
-            </button>
+            </Button>
           </OnlineOnly>
+        ) : undefined
+      }
+    >
+      <div className="flex flex-col gap-3 pt-1">
+        {url ? (
+          <img
+            src={url}
+            alt={photo.caption ?? ""}
+            className="w-full rounded-[16px]"
+          />
+        ) : (
+          <p className="text-[15px] text-muted">Cần mạng để xem ảnh.</p>
         )}
-        <button
-          type="button"
-          onClick={onClose}
-          className="min-h-12 rounded-2xl border"
-        >
-          Đóng
-        </button>
+        {photo.caption && <p className="text-base text-ink">{photo.caption}</p>}
+        {message && (
+          <p role="alert" className="text-[15px] text-danger">
+            {message}
+          </p>
+        )}
       </div>
-    </div>
+    </Sheet>
   );
 }
 
@@ -281,9 +291,11 @@ function PhotoGroup({
 }) {
   const urls = usePhotoUrls(photos.map((p) => p.storage_path));
   return (
-    <section className="flex flex-col gap-2">
-      <h2 className="text-lg font-medium">{label}</h2>
-      <div className="grid grid-cols-3 gap-1">
+    <section className="flex flex-col gap-2.5">
+      <h2 className="px-1 text-xl leading-[26px] font-bold text-ink">
+        {label}
+      </h2>
+      <div className="grid grid-cols-3 gap-1.5">
         {photos.map((photo) => {
           const url = urls.data?.[photo.storage_path];
           return (
@@ -291,7 +303,7 @@ function PhotoGroup({
               key={photo.id}
               type="button"
               onClick={() => onOpen(photo, url)}
-              className="aspect-square overflow-hidden rounded-lg bg-soft"
+              className="aspect-square overflow-hidden rounded-[12px] bg-line"
               aria-label={photo.caption ?? `Ảnh ngày ${photo.taken_on}`}
             >
               {url && (
