@@ -10,19 +10,20 @@ import { entriesFor, pendingRowIds } from "@/lib/data/outboxCore";
 import { useNow } from "@/lib/hooks/useNow";
 import { useOutboxEntries } from "@/lib/hooks/useOutboxEntries";
 import { homeAlerts, vitaminDToday } from "@/lib/rules/alerts";
+import { heroState } from "@/lib/rules/hero";
 import type { QuickValues } from "@/lib/rules/quickEntry";
 import { rateLast24h, WINDOW_MS, windowTotals } from "@/lib/rules/ratings";
-import { homeStatusLines } from "@/lib/rules/status";
+import { sleepStatusLine } from "@/lib/rules/status";
 import { ageDays, formatAgeVi } from "@/lib/rules/time";
 import type { Baby } from "@/lib/supabase/rows";
 import { ActionGrid } from "./ActionGrid";
 import { AlertBanners } from "./AlertBanners";
+import { HeroCardView } from "./HeroCard";
 import { HomeHeader } from "./HomeHeader";
 import { RecentList } from "./RecentList";
-import { RunningCard } from "./RunningCard";
-import { StatusLines } from "./StatusLines";
 import { SummaryCard } from "./SummaryCard";
-import { VitaminDRow } from "./VitaminDRow";
+import { TimerRow } from "./TimerRow";
+import { VitaminDButton } from "./VitaminDButton";
 
 const VITAMIN_D: QuickValues = {
   name: "Vitamin D",
@@ -57,14 +58,21 @@ export function HomeScreen({ baby, userId }: { baby: Baby; userId: string }) {
     triageAvailable: true,
     now,
   });
-  const statusLines = homeStatusLines({
+  const hero = heroState({
     logs: rows,
     feedIntervalMin: baby.feed_interval_min,
     now,
   });
+  const heroLog = hero.kind === "running" ? hero.log : null;
   const totals = windowTotals(rows, now);
   const vitaminD = vitaminDToday(rows, now);
-  const runningRows = rows.filter((row) => row.ended_at === null);
+  const sub =
+    [sleepStatusLine(rows, now), vitaminD && `Vitamin D đã uống ${vitaminD}`]
+      .filter(Boolean)
+      .join(" · ") || null;
+  const otherTimers = rows.filter(
+    (row) => row.ended_at === null && row.id !== heroLog?.id,
+  );
   const recentRows = rows.filter(
     (row) =>
       row.ended_at !== null &&
@@ -74,12 +82,33 @@ export function HomeScreen({ baby, userId }: { baby: Baby; userId: string }) {
     members.data?.find((m) => m.user_id === userId)?.display_name ?? "Ai đó";
 
   return (
-    <main className="mx-auto flex max-w-md flex-col gap-4 p-4">
+    <main className="mx-auto flex max-w-md flex-col gap-[18px] p-4">
       <HomeHeader name={baby.name} age={formatAgeVi(baby.dob, now)} />
 
       <AlertBanners alerts={alerts} />
 
-      <StatusLines lines={statusLines} />
+      <HeroCardView
+        state={hero}
+        now={now}
+        who={heroLog ? nameOf(heroLog.created_by) : ""}
+        sub={sub}
+        pending={heroLog ? pending.has(heroLog.id) : false}
+        busy={actions.busy}
+        onTimer={actions.pressTimer}
+        onStop={actions.stopTimer}
+      />
+
+      {otherTimers.map((log) => (
+        <TimerRow
+          key={log.id}
+          log={log}
+          who={nameOf(log.created_by)}
+          now={now}
+          busy={actions.busy}
+          pending={pending.has(log.id)}
+          onStop={() => actions.stopTimer(log)}
+        />
+      ))}
 
       <ActionGrid
         running={actions.running}
@@ -94,22 +123,11 @@ export function HomeScreen({ baby, userId }: { baby: Baby; userId: string }) {
         </p>
       )}
 
-      {runningRows.map((log) => (
-        <RunningCard
-          key={log.id}
-          log={log}
-          who={nameOf(log.created_by)}
-          now={now}
-          busy={actions.busy}
-          onStop={() => actions.stopTimer(log)}
-          pending={pending.has(log.id)}
+      {vitaminD === null && (
+        <VitaminDButton
+          onRecord={() => actions.openInstant("medicine", VITAMIN_D)}
         />
-      ))}
-
-      <VitaminDRow
-        doneAt={vitaminD}
-        onRecord={() => actions.openInstant("medicine", VITAMIN_D)}
-      />
+      )}
 
       <section className="flex flex-col gap-2">
         <h2 className="text-lg font-medium">24 giờ qua</h2>
