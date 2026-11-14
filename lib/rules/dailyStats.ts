@@ -11,17 +11,22 @@ export type DayStat = {
   bottleMl: number;
   wetDiapers: number;
   dirtyDiapers: number;
+  pumpMl: number;
+  tummyMinutes: number;
 };
 
-export type StatsTab = "sleep" | "feed" | "diaper";
+export type StatsTab = "sleep" | "feed" | "diaper" | "pump" | "tummy";
 
 export const STATS_TABS: { value: StatsTab; label: string }[] = [
   { value: "sleep", label: "Ngủ" },
   { value: "feed", label: "Bú" },
   { value: "diaper", label: "Tã" },
+  { value: "pump", label: "Hút sữa" },
+  { value: "tummy", label: "Tummy" },
 ];
 
-function sleepMinutesBetween(
+function minutesBetween(
+  type: "sleep" | "tummy",
   logs: LogLike[],
   from: number,
   to: number,
@@ -29,7 +34,7 @@ function sleepMinutesBetween(
 ): number {
   let total = 0;
   for (const log of logs) {
-    if (log.type !== "sleep") continue;
+    if (log.type !== type) continue;
     const start = Math.max(Date.parse(log.started_at), from);
     const end = Math.min(
       log.ended_at ? Date.parse(log.ended_at) : now.getTime(),
@@ -45,19 +50,21 @@ export function dailyStats(
   days: string[],
   now: Date,
 ): DayStat[] {
-  const result: DayStat[] = days.map((day) => ({
-    day,
-    sleepMinutes: sleepMinutesBetween(
-      logs,
-      vnDayStartMs(day),
-      Math.min(vnDayStartMs(addDays(day, 1)), now.getTime()),
-      now,
-    ),
-    feeds: 0,
-    bottleMl: 0,
-    wetDiapers: 0,
-    dirtyDiapers: 0,
-  }));
+  const result: DayStat[] = days.map((day) => {
+    const from = vnDayStartMs(day);
+    const to = Math.min(vnDayStartMs(addDays(day, 1)), now.getTime());
+    return {
+      day,
+      sleepMinutes: minutesBetween("sleep", logs, from, to, now),
+      feeds: 0,
+      bottleMl: 0,
+      wetDiapers: 0,
+      dirtyDiapers: 0,
+      pumpMl: 0,
+      // Spec §6.13: tummy minutes per day, split at midnight like sleep.
+      tummyMinutes: minutesBetween("tummy", logs, from, to, now),
+    };
+  });
   const byDay = new Map(result.map((stat) => [stat.day, stat]));
   for (const session of groupFeedSessions(logs, now)) {
     const stat = byDay.get(vnDateString(new Date(session.start)));
@@ -74,6 +81,11 @@ export function dailyStats(
       const p = detailsSchemas.diaper.safeParse(log.details);
       if (p.success && p.data.wet) stat.wetDiapers += 1;
       if (p.success && p.data.dirty) stat.dirtyDiapers += 1;
+    }
+    if (log.type === "pump") {
+      const p = detailsSchemas.pump.safeParse(log.details);
+      if (p.success)
+        stat.pumpMl += (p.data.mlLeft ?? 0) + (p.data.mlRight ?? 0);
     }
   }
   return result;
@@ -98,7 +110,11 @@ export function chartRows(
         ? sleepHours(stat.sleepMinutes)
         : tab === "feed"
           ? stat.feeds
-          : stat.wetDiapers,
+          : tab === "pump"
+            ? stat.pumpMl
+            : tab === "tummy"
+              ? stat.tummyMinutes
+              : stat.wetDiapers,
     secondary: tab === "diaper" ? stat.dirtyDiapers : null,
   }));
 }

@@ -37,6 +37,8 @@ const SERIES: Record<StatsTab, { primary: string; secondary: string | null }> =
     sleep: { primary: "Giờ ngủ", secondary: null },
     feed: { primary: "Số cữ bú", secondary: null },
     diaper: { primary: "Tã ướt", secondary: "Tã bẩn" },
+    pump: { primary: "Sữa hút (ml)", secondary: null },
+    tummy: { primary: "Tummy (phút)", secondary: null },
   };
 
 const COLUMNS: Record<
@@ -57,6 +59,14 @@ const COLUMNS: Record<
   diaper: [
     { label: "Ướt", value: (s) => String(s.wetDiapers) },
     { label: "Bẩn", value: (s) => String(s.dirtyDiapers) },
+  ],
+  pump: [{ label: "Sữa hút (ml)", value: (s) => String(s.pumpMl) }],
+  tummy: [
+    {
+      label: "Tummy",
+      value: (s) =>
+        s.tummyMinutes === 0 ? "—" : formatDuration(s.tummyMinutes * 60_000),
+    },
   ],
 };
 
@@ -85,14 +95,14 @@ export function StatsScreen({ baby }: { baby: Baby }) {
         <span className="w-16" />
       </header>
 
-      <nav className="flex gap-2">
+      <nav className="grid grid-cols-5 gap-1">
         {STATS_TABS.map((t) => (
           <button
             key={t.value}
             type="button"
             aria-pressed={tab === t.value}
             onClick={() => setTab(t.value)}
-            className={pill(tab === t.value)}
+            className={`min-h-11 rounded-full px-1 text-sm ${tab === t.value ? "bg-accent text-on-accent" : "bg-soft"}`}
           >
             {t.label}
           </button>

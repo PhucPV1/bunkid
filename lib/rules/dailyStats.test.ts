@@ -84,6 +84,8 @@ describe("dailyStats", () => {
         bottleMl: 0,
         wetDiapers: 0,
         dirtyDiapers: 0,
+        pumpMl: 0,
+        tummyMinutes: 0,
       },
       {
         day: "2026-11-14",
@@ -92,6 +94,8 @@ describe("dailyStats", () => {
         bottleMl: 0,
         wetDiapers: 1,
         dirtyDiapers: 1,
+        pumpMl: 0,
+        tummyMinutes: 0,
       },
     ]);
   });
@@ -112,6 +116,8 @@ describe("dailyStats", () => {
       bottleMl: 120,
       wetDiapers: 6,
       dirtyDiapers: 2,
+      pumpMl: 150,
+      tummyMinutes: 25,
     };
     expect(chartRows([stat], "sleep")).toEqual([
       { label: "9", primary: 14, secondary: null },
@@ -120,5 +126,28 @@ describe("dailyStats", () => {
     expect(chartRows([stat], "diaper")).toEqual([
       { label: "9", primary: 6, secondary: 2 },
     ]);
+    expect(chartRows([stat], "pump")[0].primary).toBe(150);
+    expect(chartRows([stat], "tummy")[0].primary).toBe(25);
+  });
+
+  it("adds pumped ml of both sides and tummy minutes per VN day (spec §6.13)", () => {
+    const stats = dailyStats(
+      [
+        log("pump", "2026-11-13T02:00:00Z", "2026-11-13T02:20:00Z", {
+          mlLeft: 60,
+          mlRight: 45,
+        }),
+        log("pump", "2026-11-14T01:00:00Z", "2026-11-14T01:15:00Z", {
+          mlRight: 70,
+        }),
+        log("pump", "2026-11-14T02:00:00Z", null, {}),
+        log("tummy", "2026-11-13T16:55:00Z", "2026-11-13T17:05:00Z"), // 23:55 → 00:05
+        log("tummy", "2026-11-14T02:50:00Z", null), // 09:50, running at 10:00
+      ],
+      days,
+      now,
+    );
+    expect(stats.map((s) => s.pumpMl)).toEqual([105, 70]);
+    expect(stats.map((s) => s.tummyMinutes)).toEqual([5, 15]);
   });
 });
