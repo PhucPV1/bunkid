@@ -8,3 +8,4 @@ supabase/.branches/
 supabase/.temp/
 .idea/
 public/sw.js
+public/content/
