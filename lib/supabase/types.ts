@@ -79,6 +79,48 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"notification_log": {
+                  Row: {
+                    "id": string,"kind": string,"ref_key": string,"sent_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "id"?: string,"kind": string,"ref_key": string,"sent_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "id"?: string,"kind"?: string,"ref_key"?: string,"sent_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"notification_prefs": {
+                  Row: {
+                    "feed_reminder": boolean,"snooze_until": string | null,"updated_at": string,"user_id": string,"vaccine": boolean,"wake_window": boolean
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "feed_reminder"?: boolean,"snooze_until"?: string | null,"updated_at"?: string,"user_id": string,"vaccine"?: boolean,"wake_window"?: boolean
+                  }
+                  Update: {
+                    "feed_reminder"?: boolean,"snooze_until"?: string | null,"updated_at"?: string,"user_id"?: string,"vaccine"?: boolean,"wake_window"?: boolean
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"push_subscriptions": {
+                  Row: {
+                    "auth": string,"created_at": string,"endpoint": string,"id": string,"last_success_at": string | null,"p256dh": string,"user_agent": string | null,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "auth": string,"created_at"?: string,"endpoint": string,"id"?: string,"last_success_at"?: string | null,"p256dh": string,"user_agent"?: string | null,"user_id": string
+                  }
+                  Update: {
+                    "auth"?: string,"created_at"?: string,"endpoint"?: string,"id"?: string,"last_success_at"?: string | null,"p256dh"?: string,"user_agent"?: string | null,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 }
           }
           Views: {
