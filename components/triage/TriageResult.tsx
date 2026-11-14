@@ -1,4 +1,6 @@
 import { CallList } from "@/components/emergency/CallList";
+import { Button } from "@/components/ui/Button";
+import { Glass } from "@/components/ui/Glass";
 import { TRIAGE } from "@/lib/content/triage";
 import {
   goNowIf,
@@ -8,14 +10,12 @@ import {
 import type { EmergencyContactRow } from "@/lib/supabase/rows";
 
 const CARD = {
-  red: "bg-alarm text-on-accent",
+  red: "bg-danger-solid text-on-danger",
   yellow: "bg-warn-soft text-warn-ink",
   green: "bg-good-soft text-good-ink",
 } as const;
 
-const ICON = { red: "🔴", yellow: "🟡", green: "🟢" } as const;
-
-// Spec §6.6: every result shows 115, the family's doctor numbers and the disclaimer.
+// Spec gốc §6.6: every result shows 115, the family's doctor numbers and the disclaimer.
 export function TriageResult({
   result,
   ageDays,
@@ -28,17 +28,16 @@ export function TriageResult({
   onRestart: () => void;
 }) {
   return (
-    <section className="flex flex-col gap-4">
+    <section className="flex flex-col gap-[18px]">
       <div
         role="alert"
-        className={`flex flex-col gap-2 rounded-2xl p-4 ${CARD[result.level]}`}
+        className={`flex flex-col gap-2 rounded-[28px] p-4 ${CARD[result.level]}`}
       >
-        <p className="text-xl font-semibold">
-          <span aria-hidden="true">{ICON[result.level]}</span>{" "}
+        <p className="text-xl leading-[26px] font-bold">
           {RESULT_TITLE[result.level]}
         </p>
         {result.findings.length > 0 && (
-          <ul className="list-disc pl-5">
+          <ul className="list-disc pl-5 text-base">
             {result.findings.map((finding) => (
               <li key={finding.text}>{finding.text}</li>
             ))}
@@ -46,27 +45,27 @@ export function TriageResult({
         )}
       </div>
       {result.level === "green" && (
-        <div className="flex flex-col gap-2">
-          <h2 className="text-lg font-medium">Chăm bé tại nhà</h2>
-          <ul className="list-disc pl-5">
+        <Glass className="flex flex-col gap-2 p-4">
+          <h2 className="text-[17px] font-semibold text-ink">
+            Chăm bé tại nhà
+          </h2>
+          <ul className="list-disc pl-5 text-base text-ink">
             {TRIAGE.homeCare.map((line) => (
               <li key={line}>{line}</li>
             ))}
           </ul>
-        </div>
+        </Glass>
       )}
       {result.level !== "red" && (
-        <p className="font-medium">{goNowIf(TRIAGE.questions, ageDays)}</p>
+        <p className="px-1 text-base font-semibold text-ink">
+          {goNowIf(TRIAGE.questions, ageDays)}
+        </p>
       )}
       <CallList contacts={contacts} />
-      <p className="text-sm text-muted">{TRIAGE.disclaimer}</p>
-      <button
-        type="button"
-        onClick={onRestart}
-        className="min-h-12 rounded-2xl border"
-      >
+      <p className="px-1 text-[13px] text-muted">{TRIAGE.disclaimer}</p>
+      <Button variant="secondary" size="lg" block onClick={onRestart}>
         Làm lại
-      </button>
+      </Button>
     </section>
   );
 }

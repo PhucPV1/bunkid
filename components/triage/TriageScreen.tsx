@@ -1,6 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { Call115Button } from "@/components/emergency/CallList";
+import { FIELD_INPUT, FIELD_LABEL } from "@/components/quick/styles";
+import { Button } from "@/components/ui/Button";
+import { Glass } from "@/components/ui/Glass";
+import { ListGroup } from "@/components/ui/ListGroup";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Switch } from "@/components/ui/Switch";
 import { TRIAGE } from "@/lib/content/triage";
 import { useEmergencyContacts } from "@/lib/data/emergency";
 import { useRecentLogs } from "@/lib/data/logs";
@@ -27,7 +34,7 @@ export function TriageScreen({ baby }: { baby: Baby }) {
   const [checked, setChecked] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<Result | null>(null);
-  // Step 1 (spec §6.6): prefilled from a temperature logged in the last 6 hours, editable.
+  // Step 1 (spec gốc §6.6): prefilled from a temperature logged in the last 6 hours, editable.
   const temperature =
     celsius ?? (logged === null ? "" : String(logged).replace(".", ","));
   const questions = visibleQuestions(TRIAGE.questions, age);
@@ -66,17 +73,13 @@ export function TriageScreen({ baby }: { baby: Baby }) {
   }
 
   return (
-    <main className="mx-auto flex max-w-md flex-col gap-4 p-4">
-      <h1 className="text-2xl font-semibold">{TRIAGE.title}</h1>
-      <p className="text-sm text-muted">{TRIAGE.disclaimer}</p>
-      {!result && (
-        <a
-          href="tel:115"
-          className="flex min-h-12 items-center justify-center rounded-2xl bg-alarm font-semibold text-on-accent"
-        >
-          Gọi cấp cứu 115
-        </a>
-      )}
+    <main className="mx-auto flex max-w-md flex-col gap-[18px] px-4 pt-2 pb-4">
+      <PageHeader
+        title={TRIAGE.title}
+        back={{ href: "/kham-pha", label: "Khám phá" }}
+      />
+      <p className="px-1 text-[13px] text-muted">{TRIAGE.disclaimer}</p>
+      {!result && <Call115Button label="Gọi cấp cứu 115" />}
       {result ? (
         <TriageResult
           result={result}
@@ -92,78 +95,71 @@ export function TriageScreen({ baby }: { baby: Baby }) {
         />
       ) : (
         <>
-          <section className="flex flex-col gap-2 rounded-2xl bg-soft p-4">
-            <p>
+          <Glass as="section" className="flex flex-col gap-3 p-4">
+            <p className="text-base text-ink">
               Tuổi của bé: <strong>{formatAgeVi(baby.dob, now)}</strong>
             </p>
-            <label className="flex flex-col gap-1">
-              Nhiệt độ gần nhất (°C, để trống nếu chưa đo)
+            <label className="flex flex-col gap-1.5">
+              <span className={FIELD_LABEL}>
+                Nhiệt độ gần nhất (°C, để trống nếu chưa đo)
+              </span>
               <input
                 inputMode="decimal"
-                className="min-h-11 rounded-xl border bg-surface px-3"
+                className={`${FIELD_INPUT} tabular-nums`}
                 value={temperature}
-                onChange={(e) => setCelsius(e.target.value)}
+                onChange={(event) => setCelsius(event.target.value)}
               />
             </label>
             {logged !== null && celsius === null && (
-              <p className="text-sm text-muted">
+              <p className="text-[13px] text-muted">
                 Lấy từ nhật ký trong 6 giờ qua.
               </p>
             )}
             {error && (
-              <p role="alert" className="text-danger">
+              <p role="alert" className="text-[15px] text-danger">
                 {error}
               </p>
             )}
-          </section>
-          <p>Đánh dấu những gì bé đang có:</p>
+          </Glass>
+          <p className="px-1 text-base text-ink">
+            Đánh dấu những gì bé đang có:
+          </p>
           {TRIAGE.groups.map((group) => {
             const list = questions.filter((q) => q.group === group.code);
             if (list.length === 0) return null;
             return (
-              <fieldset key={group.code} className="flex flex-col gap-1">
-                <legend className="mb-1 text-lg font-medium">
-                  {group.name}
-                </legend>
+              <ListGroup key={group.code} title={group.name}>
                 {list.map((question) => (
-                  <label
+                  <li
                     key={question.code}
-                    className="flex min-h-11 items-start gap-3 py-1"
+                    className="flex min-h-[52px] items-center justify-between gap-3 border-b border-line px-4 py-2 last:border-b-0"
                   >
-                    <input
-                      type="checkbox"
-                      className="mt-1 size-5 shrink-0"
-                      checked={checked.has(question.code)}
-                      onChange={(e) => toggle(question.code, e.target.checked)}
-                    />
-                    <span>
-                      {questionText(question, age)}
+                    <span className="flex min-w-0 flex-col">
+                      <span className="text-base text-ink">
+                        {questionText(question, age)}
+                      </span>
                       {question.code === "few_wet_diapers" && logs.data && (
-                        <span className="block text-sm text-muted">
+                        <span className="text-[13px] text-muted">
                           {diapersLogged
                             ? `Nhật ký ghi ${wet} tã ướt trong 24 giờ qua.`
                             : "Nhật ký chưa ghi tã nào trong 24 giờ qua."}
                         </span>
                       )}
                     </span>
-                  </label>
+                    <Switch
+                      checked={checked.has(question.code)}
+                      label={questionText(question, age)}
+                      onChange={(on) => toggle(question.code, on)}
+                    />
+                  </li>
                 ))}
-              </fieldset>
+              </ListGroup>
             );
           })}
-          <button
-            type="button"
-            onClick={submit}
-            className="min-h-12 rounded-2xl bg-accent text-on-accent"
-          >
+          <Button size="lg" block onClick={submit}>
             Xem kết quả
-          </button>
-          <a
-            href="tel:115"
-            className="flex min-h-12 items-center justify-center rounded-2xl bg-alarm font-semibold text-on-accent"
-          >
-            Gọi cấp cứu 115
-          </a>
+          </Button>
+          <Call115Button label="Gọi cấp cứu 115" />
         </>
       )}
     </main>
