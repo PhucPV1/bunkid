@@ -8,3 +8,4 @@ export type Baby = Tables["babies"]["Row"];
 export type LogRow = Tables["logs"]["Row"];
 export type VaccineDoseRow = Tables["vaccine_doses"]["Row"];
 export type EmergencyContactRow = Tables["emergency_contacts"]["Row"];
+export type GrowthRow = Tables["growth"]["Row"];

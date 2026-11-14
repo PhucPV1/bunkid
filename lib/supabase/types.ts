@@ -79,6 +79,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"growth": {
+                  Row: {
+                    "baby_id": string,"created_at": string,"created_by": string,"head_cm": number | null,"id": string,"length_cm": number | null,"measured_on": string,"updated_at": string,"weight_g": number | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "baby_id": string,"created_at"?: string,"created_by"?: string,"head_cm"?: number | null,"id": string,"length_cm"?: number | null,"measured_on": string,"updated_at"?: string,"weight_g"?: number | null
+                  }
+                  Update: {
+                    "baby_id"?: string,"created_at"?: string,"created_by"?: string,"head_cm"?: number | null,"id"?: string,"length_cm"?: number | null,"measured_on"?: string,"updated_at"?: string,"weight_g"?: number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "growth_baby_id_fkey"
+      columns: ["baby_id"]
+isOneToOne: false
+      referencedRelation: "babies"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"logs": {
                   Row: {
                     "baby_id": string,"created_at": string,"created_by": string,"details": NonNullable<Json>,"ended_at": string | null,"id": string,"note": string | null,"started_at": string,"type": string,"updated_at": string
