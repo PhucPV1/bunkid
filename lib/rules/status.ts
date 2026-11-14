@@ -13,23 +13,34 @@ function latestBy(
   return best;
 }
 
+// When the next feed is expected: last feed start (breast or bottle) plus the interval.
+// null when there is no feed in the last 12 hours.
+export function feedDue(
+  logs: LogLike[],
+  feedIntervalMin: number,
+  now: Date,
+): Date | null {
+  const feeds = logs.filter((l) => l.type === "breast" || l.type === "bottle");
+  const last = latestBy(feeds, (l) => ms(l.started_at));
+  if (!last || now.getTime() - ms(last.started_at) > STALE_MS) return null;
+  return new Date(ms(last.started_at) + feedIntervalMin * 60_000);
+}
+
 function feedLine(
   logs: LogLike[],
   feedIntervalMin: number,
   now: Date,
 ): string | null {
-  const feeds = logs.filter((l) => l.type === "breast" || l.type === "bottle");
-  if (feeds.some((l) => l.type === "breast" && l.ended_at === null))
+  if (logs.some((l) => l.type === "breast" && l.ended_at === null))
     return "Đang bú";
-  const last = latestBy(feeds, (l) => ms(l.started_at));
-  if (!last || now.getTime() - ms(last.started_at) > STALE_MS) return null;
-  const due = new Date(ms(last.started_at) + feedIntervalMin * 60_000);
+  const due = feedDue(logs, feedIntervalMin, now);
+  if (!due) return null;
   return now.getTime() >= due.getTime()
     ? `Đã đến giờ bú (từ ${formatVnTime(due)})`
     : `Cữ bú tiếp theo khoảng ${formatVnTime(due)}`;
 }
 
-function sleepLine(logs: LogLike[], now: Date): string | null {
+export function sleepStatusLine(logs: LogLike[], now: Date): string | null {
   const sleeps = logs.filter((l) => l.type === "sleep");
   const running = sleeps.find((l) => l.ended_at === null);
   if (running)
@@ -46,7 +57,8 @@ export function homeStatusLines(input: {
   now: Date;
 }): string[] {
   const { logs, feedIntervalMin, now } = input;
-  return [feedLine(logs, feedIntervalMin, now), sleepLine(logs, now)].filter(
-    (line): line is string => line !== null,
-  );
+  return [
+    feedLine(logs, feedIntervalMin, now),
+    sleepStatusLine(logs, now),
+  ].filter((line): line is string => line !== null);
 }

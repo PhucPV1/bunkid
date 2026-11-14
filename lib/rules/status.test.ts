@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { LogLike } from "@/lib/rules/describeLog";
-import { homeStatusLines } from "@/lib/rules/status";
+import { feedDue, homeStatusLines, sleepStatusLine } from "@/lib/rules/status";
 
 const NOW = new Date("2026-11-14T05:00:00Z"); // 12:00 giờ VN
 const H = 3_600_000;
@@ -44,5 +44,31 @@ describe("homeStatusLines", () => {
     expect(lines([log("sleep", 1.5, null)])).toEqual([
       "Bé đang ngủ 1 giờ 30 phút",
     ]);
+  });
+});
+
+describe("sleepStatusLine", () => {
+  it("is the sleep line of homeStatusLines", () => {
+    expect(sleepStatusLine([log("sleep", 2, 0.75)], NOW)).toBe(
+      "Bé đã thức 45 phút",
+    );
+    expect(sleepStatusLine([log("sleep", 1.5, null)], NOW)).toBe(
+      "Bé đang ngủ 1 giờ 30 phút",
+    );
+    expect(sleepStatusLine([log("sleep", 14, 13)], NOW)).toBeNull();
+    expect(sleepStatusLine([bottle(1)], NOW)).toBeNull();
+  });
+});
+
+describe("feedDue", () => {
+  it("is the last feed start plus the interval, unless that feed is older than 12 hours", () => {
+    expect(feedDue([bottle(2), bottle(1)], 180, NOW)?.toISOString()).toBe(
+      "2026-11-14T07:00:00.000Z",
+    );
+    expect(feedDue([bottle(12)], 180, NOW)?.toISOString()).toBe(
+      "2026-11-13T20:00:00.000Z",
+    );
+    expect(feedDue([bottle(12.01)], 180, NOW)).toBeNull();
+    expect(feedDue([log("sleep", 1, 0.5)], 180, NOW)).toBeNull();
   });
 });
