@@ -2,6 +2,9 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
+import { FIELD_INPUT, FIELD_LABEL } from "@/components/quick/styles";
+import { Button } from "@/components/ui/Button";
+import { Glass } from "@/components/ui/Glass";
 import { supabase } from "@/lib/supabase/client";
 
 export function NotInvited({ email }: { email: string }) {
@@ -36,61 +39,58 @@ export function NotInvited({ email }: { email: string }) {
   }
 
   return (
-    <main className="mx-auto flex max-w-md flex-col gap-4 p-6">
-      <h1 className="text-2xl font-semibold">Bạn chưa được mời</h1>
-      <p>
-        Đang đăng nhập: <strong>{email}</strong>
-      </p>
-      <p className="text-muted">
-        Nhờ ba/mẹ của bé thêm Gmail này vào gia đình.
-      </p>
+    <main className="mx-auto flex max-w-md flex-col gap-[18px] px-4 pt-2 pb-4">
+      <h1 className="px-1 text-[34px] leading-[41px] font-bold text-ink">
+        Bạn chưa được mời
+      </h1>
+      <Glass className="flex flex-col gap-2 p-4 text-base text-ink">
+        <p>
+          Đang đăng nhập: <strong>{email}</strong>
+        </p>
+        <p className="text-muted">
+          Nhờ ba/mẹ của bé thêm Gmail này vào gia đình.
+        </p>
+      </Glass>
 
       {canCreate.data === true && (
-        <form
-          onSubmit={submit}
-          className="flex flex-col gap-3 rounded-2xl border border-accent-line p-4"
-        >
-          <h2 className="font-medium">Tạo gia đình</h2>
-          <label className="flex flex-col gap-1">
-            Tên gia đình
+        <Glass as="form" onSubmit={submit} className="flex flex-col gap-3 p-4">
+          <h2 className="text-[17px] font-semibold text-ink">Tạo gia đình</h2>
+          <label className="flex flex-col gap-1.5">
+            <span className={FIELD_LABEL}>Tên gia đình</span>
             <input
-              className="min-h-11 rounded-xl border px-3"
+              className={FIELD_INPUT}
               maxLength={80}
               value={familyName}
               onChange={(e) => setFamilyName(e.target.value)}
             />
           </label>
-          <label className="flex flex-col gap-1">
-            Bạn là (ví dụ Mẹ, Ba)
+          <label className="flex flex-col gap-1.5">
+            <span className={FIELD_LABEL}>Bạn là (ví dụ Mẹ, Ba)</span>
             <input
-              className="min-h-11 rounded-xl border px-3"
+              className={FIELD_INPUT}
               maxLength={40}
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
             />
           </label>
-          <button
-            type="submit"
-            disabled={create.isPending}
-            className="min-h-11 rounded-xl bg-accent text-on-accent disabled:opacity-50"
-          >
+          <Button type="submit" block busy={create.isPending}>
             Tạo gia đình
-          </button>
+          </Button>
           {create.isError && (
-            <p role="alert" className="text-danger">
+            <p role="alert" className="text-[15px] text-danger">
               Không tạo được gia đình. Thử lại sau.
             </p>
           )}
-        </form>
+        </Glass>
       )}
 
-      <button
-        type="button"
-        onClick={() => supabase().auth.signOut()}
-        className="min-h-11 rounded-xl border"
+      <Button
+        variant="secondary"
+        block
+        onClick={() => void supabase().auth.signOut()}
       >
         Đăng xuất
-      </button>
+      </Button>
     </main>
   );
 }

@@ -7,12 +7,49 @@ import { ActionChrome } from "@/components/actions/ActionChrome";
 import { QuickActionsProvider } from "@/components/actions/QuickActions";
 import { TabBar } from "@/components/nav/TabBar";
 import { SyncBar } from "@/components/sync/SyncBar";
+import { ErrorCard } from "@/components/ui/ErrorCard";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { useFamilyContext, type FamilyContext } from "@/lib/data/family";
 import { classifyLoadError, LOAD_ERROR_TEXT } from "@/lib/data/loadError";
 import { useSession } from "@/lib/data/session";
 import { gateRedirect, resolveLanding, type GateNeed } from "@/lib/routing";
 
 export type GateState = { session: Session | null; ctx: FamilyContext };
+
+// Spec §10: the gate waits with the home page's shapes (header, hero 300, 3 tiles, 4 rows).
+export function GateLoading() {
+  return (
+    <main
+      aria-busy="true"
+      className="mx-auto flex max-w-md flex-col gap-[18px] p-4"
+    >
+      <Skeleton className="h-11 w-48 rounded-full" />
+      <Skeleton className="h-[300px] rounded-[32px]" />
+      <div className="grid grid-cols-3 gap-2.5">
+        {[0, 1, 2].map((i) => (
+          <Skeleton key={i} className="h-[92px] rounded-[24px]" />
+        ))}
+      </div>
+      {[0, 1, 2, 3].map((i) => (
+        <Skeleton key={i} className="h-[60px]" />
+      ))}
+    </main>
+  );
+}
+
+export function GateError({
+  message,
+  onRetry,
+}: {
+  message: string;
+  onRetry: () => void;
+}) {
+  return (
+    <main className="mx-auto flex max-w-md flex-col gap-4 p-4">
+      <ErrorCard message={message} onRetry={onRetry} />
+    </main>
+  );
+}
 
 export function AuthGate({
   need,
@@ -41,31 +78,21 @@ export function AuthGate({
     if (redirect) router.replace(redirect);
   }, [redirect, router]);
 
-  if (session && family.isError && !family.data) {
+  if (session && family.isError && !family.data)
     return (
-      <main className="p-6 text-center">
-        <p className="mb-4">
-          {
-            LOAD_ERROR_TEXT[
-              classifyLoadError(
-                family.error,
-                typeof navigator === "undefined" ? true : navigator.onLine,
-              )
-            ]
-          }
-        </p>
-        <button
-          type="button"
-          className="min-h-11 rounded-xl bg-accent px-4 text-on-accent"
-          onClick={() => family.refetch()}
-        >
-          Thử lại
-        </button>
-      </main>
+      <GateError
+        message={
+          LOAD_ERROR_TEXT[
+            classifyLoadError(
+              family.error,
+              typeof navigator === "undefined" ? true : navigator.onLine,
+            )
+          ]
+        }
+        onRetry={() => void family.refetch()}
+      />
     );
-  }
-  if (!ready || redirect)
-    return <main className="p-6 text-center text-muted">Đang tải…</main>;
+  if (!ready || redirect) return <GateLoading />;
   const content = children({ session, ctx: family.data ?? null });
   if (need !== "baby") return <>{content}</>;
   const baby = family.data?.baby;
