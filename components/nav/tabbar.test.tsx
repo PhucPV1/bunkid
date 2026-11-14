@@ -65,4 +65,16 @@ describe("TabBarView", () => {
     (button.props.onClick as () => void)();
     expect(onPlus).toHaveBeenCalledOnce();
   });
+  it("sits below the old z-20 sheets and dims while the action sheet is open", () => {
+    const closed = renderToStaticMarkup(
+      <TabBarView current="home" onPlus={() => {}} />,
+    );
+    expect(closed).toContain(" z-10 ");
+    expect(closed).not.toContain("z-20");
+    expect(closed).not.toContain("opacity-60");
+    const open = renderToStaticMarkup(
+      <TabBarView current="home" onPlus={() => {}} plusOpen />,
+    );
+    expect(open).toContain("opacity-60");
+  });
 });

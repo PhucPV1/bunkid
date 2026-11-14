@@ -25,7 +25,7 @@ export function PageHeaderView({
       <div
         aria-hidden={!compact}
         className={cx(
-          "glass-strong fixed inset-x-0 top-0 z-30 flex h-[calc(env(safe-area-inset-top)+44px)] items-end justify-center rounded-none border-x-0! border-t-0! pb-2.5 transition-opacity duration-[160ms] print:hidden",
+          "glass-strong fixed inset-x-0 top-0 z-10 flex h-[calc(env(safe-area-inset-top)+44px)] items-end justify-center rounded-none border-x-0! border-t-0! pb-2.5 transition-opacity duration-[160ms] print:hidden",
           compact ? "opacity-100" : "pointer-events-none opacity-0",
         )}
       >

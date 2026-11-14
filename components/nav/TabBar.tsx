@@ -18,9 +18,14 @@ export function TabBarView({
   return (
     <nav
       aria-label="Điều hướng chính"
-      className="fixed inset-x-4 bottom-[max(calc(env(safe-area-inset-bottom)+10px),26px)] z-20 mx-auto flex max-w-md items-center gap-2.5 print:hidden"
+      className="fixed inset-x-4 bottom-[max(calc(env(safe-area-inset-bottom)+10px),26px)] z-10 mx-auto flex max-w-md items-center gap-2.5 print:hidden"
     >
-      <ul className="glass-strong grid h-[62px] flex-1 grid-cols-3 rounded-full p-1 shadow-[0_10px_30px_rgb(0_0_0/0.15)] in-data-[theme=dark]:shadow-[0_10px_30px_rgb(0_0_0/0.25)] in-data-[theme=night]:shadow-none">
+      <ul
+        className={cx(
+          "glass-strong grid h-[62px] flex-1 grid-cols-3 rounded-full p-1 shadow-[0_10px_30px_rgb(0_0_0/0.15)] in-data-[theme=dark]:shadow-[0_10px_30px_rgb(0_0_0/0.25)] in-data-[theme=night]:shadow-none",
+          plusOpen && "opacity-60",
+        )}
+      >
         {TABS.map((tab) => {
           const active = tab.key === current;
           return (

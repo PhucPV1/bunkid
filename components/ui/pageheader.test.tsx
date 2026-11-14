@@ -42,6 +42,13 @@ describe("PageHeaderView", () => {
     expect(html).toContain("min-h-11");
     expect(html).toContain('<button type="button">Thêm</button>');
   });
+  it("keeps the compact bar below the old z-20 sheets", () => {
+    const html = renderToStaticMarkup(
+      <PageHeaderView title="Khám phá" compact />,
+    );
+    expect(html).toContain(" z-10 ");
+    expect(html).not.toContain("z-30");
+  });
 });
 
 describe("PageHeader", () => {
