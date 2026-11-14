@@ -2,6 +2,8 @@
 
 Thiết bị: iPhone 11, iPhone 16, iPhone 17 Pro. Ghi Đạt / Không đạt, phiên bản iOS và ghi chú.
 
+**Kết luận đợt 1 (2026-11-14):** Đạt — Vitest 173 test và pgTAP 001–005 xanh; bước 0–4 và 7 (nhắc bú) đạt trên iPhone 16 (iOS 18.2) và iPhone 17 Pro (iOS 26.5). iPhone 11 đang iOS 16.3, chưa nhận được Web Push nên chỉ đạt bước 0; người dùng chấp nhận đạt trên 2/3 máy và sẽ kiểm lại iPhone 11 sau khi cập nhật lên iOS 16.4 trở lên.
+
 ## Bước 0 — Đăng nhập Google trong PWA standalone (M1)
 
 1. Safari mở `<APP_URL>/dang-nhap` → Chia sẻ → Thêm vào MH chính → mở từ biểu tượng.
@@ -11,9 +13,20 @@ Thiết bị: iPhone 11, iPhone 16, iPhone 17 Pro. Ghi Đạt / Không đạt, p
 
 | Máy           | iOS  | Kết quả | Ghi chú                    |
 | ------------- | ---- | ------- | -------------------------- |
-| iPhone 11     | 16.4 | Đạt     | Đạt cả 4 bước (2026-11-14) |
+| iPhone 11     | 16.3 | Đạt     | Đạt cả 4 bước (2026-11-14) |
 | iPhone 16     | 18.2 | Đạt     | Đạt cả 4 bước (2026-11-14) |
 | iPhone 17 Pro | 26.5 | Đạt     | Đạt cả 4 bước (2026-11-14) |
+
+## Bước 1 — Cài PWA và chạy standalone (M13)
+
+1. Safari mở `https://bunkid.vercel.app` → Chia sẻ → Thêm vào MH chính → mở từ biểu tượng.
+2. Kỳ vọng: app mở toàn màn hình, không có thanh địa chỉ Safari; Cài đặt → "Cài Bé Yêu lên màn hình chính" ghi "Bé Yêu đã được cài và đang chạy từ màn hình chính."
+
+| Máy           | iOS  | Kết quả | Ghi chú                                   |
+| ------------- | ---- | ------- | ----------------------------------------- |
+| iPhone 11     | 16.3 | Bỏ qua  | Máy đang iOS 16.3, cần 16.4 trở lên       |
+| iPhone 16     | 18.2 | Đạt     | Đạt (2026-11-14)                          |
+| iPhone 17 Pro | 26.5 | Đạt     | Đạt (2026-11-14)                          |
 
 ## Bước 2 — Nhắc bú (M11)
 
@@ -21,11 +34,23 @@ Thiết bị: iPhone 11, iPhone 16, iPhone 17 Pro. Ghi Đạt / Không đạt, p
 2. Nhật ký → "+ Thêm" → Bú bình 30 ml, Thời điểm = bây giờ trừ 59 phút → Lưu. Khóa màn hình.
 3. Kỳ vọng: trong ≤ 2 phút nhận thông báo "Đến giờ bú rồi" / "Cữ trước lúc HH:mm (1 giờ … trước)." trên mọi máy đã bật thông báo; bấm vào thì mở trang chủ Bé Yêu.
 
-| Máy           | iOS | Kết quả | Ghi chú                         |
-| ------------- | --- | ------- | ------------------------------- |
-| iPhone 11     |     |         | Chỉ khi đã lên iOS 16.4 trở lên |
-| iPhone 16     |     |         |                                 |
-| iPhone 17 Pro |     |         |                                 |
+| Máy           | iOS  | Kết quả | Ghi chú                                   |
+| ------------- | ---- | ------- | ----------------------------------------- |
+| iPhone 11     | 16.3 | Bỏ qua  | Máy đang iOS 16.3, cần 16.4 trở lên       |
+| iPhone 16     | 18.2 | Đạt     | Đạt (2026-11-14)                          |
+| iPhone 17 Pro | 26.5 | Đạt     | Đạt (2026-11-14)                          |
+
+## Bước 3 — Hai máy thấy nhau trong 3 giây (M13)
+
+1. Mở Bé Yêu trên hai máy cùng gia đình (hai iPhone, hoặc iPhone và máy tính).
+2. Máy A bấm "Ngủ". Kỳ vọng: máy B hiện thẻ "Ngủ · … (đang chạy)" trong ≤ 3 giây.
+3. Máy B bấm "Dừng". Kỳ vọng: thẻ trên máy A biến mất trong ≤ 3 giây. Xóa bản ghi ngủ thử ở Nhật ký.
+
+| Máy           | iOS  | Kết quả | Ghi chú                                   |
+| ------------- | ---- | ------- | ----------------------------------------- |
+| iPhone 11     | 16.3 | Bỏ qua  | Máy đang iOS 16.3, cần 16.4 trở lên       |
+| iPhone 16     | 18.2 | Đạt     | Đạt (2026-11-14)                          |
+| iPhone 17 Pro | 26.5 | Đạt     | Đạt (2026-11-14)                          |
 
 ## Bước 4 — Ghi khi offline rồi đồng bộ (M12)
 
@@ -36,9 +61,21 @@ Thiết bị: iPhone 11, iPhone 16, iPhone 17 Pro. Ghi Đạt / Không đạt, p
 
 | Máy           | iOS  | Kết quả | Ghi chú                                                                                                          |
 | ------------- | ---- | ------- | ---------------------------------------------------------------------------------------------------------------- |
-| iPhone 11     |      | Bỏ qua  | Không thử ở M12                                                                                                  |
+| iPhone 11     | 16.3 | Bỏ qua  | Không thử ở M12                                                                                                  |
 | iPhone 16     | 18.2 | Đạt     | Đạt (2026-11-14). Lần đầu máy còn chạy bản cũ: phải mở app khi có mạng, tắt hẳn rồi mở lại trước khi bật máy bay |
 | iPhone 17 Pro | 26.5 | Đạt     | Đạt (2026-11-14). Như iPhone 16                                                                                  |
+
+## Bước 4b — Hiển thị chờ đồng bộ và nút cần mạng (M13)
+
+1. Bật chế độ máy bay. Trang chủ → "Tã" → Lưu. Kỳ vọng: dòng tã mới có dấu ⏳; đầu trang có chip "⏳ 1 mục chờ đồng bộ".
+2. Vẫn chế độ máy bay, vào Cài đặt. Kỳ vọng: dòng "Cần kết nối mạng để thay đổi các mục dưới đây."; nút Lưu của hồ sơ bé, khoảng cách cữ bú, thêm thành viên, công tắc thông báo đều mờ, bấm không được. Phần Giao diện vẫn đổi được.
+3. Tắt chế độ máy bay. Kỳ vọng: trong ≤ 30 giây chip và dấu ⏳ biến mất, các nút trong Cài đặt bấm lại được. Xóa bản ghi tã thử.
+
+| Máy           | iOS  | Kết quả | Ghi chú                                   |
+| ------------- | ---- | ------- | ----------------------------------------- |
+| iPhone 11     | 16.3 | Bỏ qua  | Máy đang iOS 16.3, cần 16.4 trở lên       |
+| iPhone 16     | 18.2 | Đạt     | Đạt (2026-11-14)                          |
+| iPhone 17 Pro | 26.5 | Đạt     | Đạt (2026-11-14)                          |
 
 ## Bước 7 — Tạm tắt (M11, phần nhắc bú)
 
@@ -48,8 +85,8 @@ Thiết bị: iPhone 11, iPhone 16, iPhone 17 Pro. Ghi Đạt / Không đạt, p
 4. Dọn dẹp: xóa hai bản ghi Bú bình thử; Khoảng cách cữ bú đặt lại giá trị cũ (thường "3 giờ").
 5. Phần "nhắc tiêm vẫn đến khi tạm tắt" kiểm ở đợt 2.
 
-| Máy           | iOS | Kết quả | Ghi chú                         |
-| ------------- | --- | ------- | ------------------------------- |
-| iPhone 11     |     |         | Chỉ khi đã lên iOS 16.4 trở lên |
-| iPhone 16     |     |         |                                 |
-| iPhone 17 Pro |     |         |                                 |
+| Máy           | iOS  | Kết quả | Ghi chú                                   |
+| ------------- | ---- | ------- | ----------------------------------------- |
+| iPhone 11     | 16.3 | Bỏ qua  | Máy đang iOS 16.3, cần 16.4 trở lên       |
+| iPhone 16     | 18.2 | Đạt     | Đạt (2026-11-14)                          |
+| iPhone 17 Pro | 26.5 | Đạt     | Đạt (2026-11-14)                          |
