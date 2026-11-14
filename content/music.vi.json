@@ -1,0 +1,12 @@
+{
+  "presets": [
+    {"presetCode": "relax_hat_ru", "category": "relax", "title": "Hát ru Việt Nam", "searchQuery": "hát ru con ngủ dân ca Việt Nam"},
+    {"presetCode": "relax_nhac_hop", "category": "relax", "title": "Nhạc hộp ru ngủ", "searchQuery": "nhạc hộp ru ngủ cho bé"},
+    {"presetCode": "relax_piano", "category": "relax", "title": "Piano nhẹ ru ngủ", "searchQuery": "nhạc piano nhẹ ru ngủ cho em bé"},
+    {"presetCode": "relax_mua", "category": "relax", "title": "Tiếng mưa êm", "searchQuery": "tiếng mưa êm ru ngủ em bé"},
+    {"presetCode": "brain_mozart", "category": "brain", "title": "Mozart cho bé", "searchQuery": "Mozart cho trẻ sơ sinh"},
+    {"presetCode": "brain_co_dien", "category": "brain", "title": "Nhạc cổ điển nhẹ nhàng", "searchQuery": "nhạc cổ điển nhẹ nhàng cho em bé"},
+    {"presetCode": "brain_thieu_nhi", "category": "brain", "title": "Bài hát thiếu nhi Việt Nam", "searchQuery": "bài hát thiếu nhi Việt Nam cho bé"},
+    {"presetCode": "brain_dong_dao", "category": "brain", "title": "Đồng dao cho bé", "searchQuery": "đồng dao Việt Nam cho bé"}
+  ]
+}
