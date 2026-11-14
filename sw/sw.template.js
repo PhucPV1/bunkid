@@ -5,8 +5,10 @@ const SHELL = [
   "/",
   "/offline",
   "/manifest.webmanifest",
+  "/icons/icon.svg",
   "/icons/icon-192.png",
   "/icons/icon-512.png",
+  "/icons/maskable-512.png",
   "/icons/apple-touch-icon.png",
 ];
 // Every page is a static client shell, the same for every user, so it is safe to keep.

@@ -98,6 +98,8 @@ describe("service worker", () => {
         "/offline",
         "/manifest.webmanifest",
         "/icons/icon-192.png",
+        "/icons/icon.svg",
+        "/icons/maskable-512.png",
         "/nhat-ky",
         "/thong-ke",
         "/dang-nhap",

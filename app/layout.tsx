@@ -8,7 +8,10 @@ export const metadata: Metadata = {
   title: "Kim Bun",
   manifest: "/manifest.webmanifest",
   appleWebApp: { capable: true, title: "Kim Bun", statusBarStyle: "default" },
-  icons: { apple: "/icons/apple-touch-icon.png" },
+  icons: {
+    icon: "/icons/icon.svg",
+    apple: "/icons/apple-touch-icon.png",
+  },
 };
 
 export const viewport: Viewport = {

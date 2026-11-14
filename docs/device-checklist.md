@@ -293,3 +293,16 @@ Nhắc thức cũng bị tạm tắt chặn: kiểm ở bước 11, mục 5.
 | iPhone 11     |     |         |         |
 | iPhone 16     |     |         |         |
 | iPhone 17 Pro |     |         |         |
+
+## Bước 20 — Kim Bun: tên và icon (UI đợt 1)
+
+1. Trên iPhone đã cài app cũ: xóa biểu tượng cũ khỏi màn hình chính, mở `bunkid.vercel.app` bằng Safari, Chia sẻ → Thêm vào MH chính. Kỳ vọng: tên gợi ý "Kim Bun", biểu tượng bánh bao trên nền đào–hồng; tab Safari hiện favicon bánh bao.
+2. Gửi một thông báo thử (nhắc bú). Kỳ vọng: thông báo có biểu tượng bánh bao.
+
+Kết quả: Chờ người dùng.
+
+| Máy           | iOS | Kết quả | Ghi chú |
+| ------------- | --- | ------- | ------- |
+| iPhone 11     |     |         |         |
+| iPhone 16     |     |         |         |
+| iPhone 17 Pro |     |         |         |
