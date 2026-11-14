@@ -408,3 +408,23 @@ Kết quả: Chờ người dùng.
 | iPhone 11     |     |         |         |
 | iPhone 16     |     |         |         |
 | iPhone 17 Pro |     |         |         |
+
+## Bước 27 — 4 sheet ghi nhanh (UI đợt 4)
+
+1. Mở "Thay tã" từ Trang chủ và từ nút "+". Kỳ vọng: sheet kính trượt lên, đầu sheet có chip icon màu, tiêu đề, nút đóng tròn; đáy có nút "Lưu" to rộng hết.
+2. Thay tã: chọn "Bẩn" → hiện 7 ô màu phân (ô Đen và Bạc màu có viền); chọn "Cả hai" giữ màu đã chọn; chọn "Ướt" thì ẩn màu phân. Lưu → Toast "Đã ghi Tã …".
+3. Bú bình: bấm +10 ba lần → 30; −10 không xuống dưới 0; chip ml gần đây điền số; chọn Sữa mẹ / Sữa công thức. Lưu.
+4. Thuốc: chip tên thuốc gần đây điền tên; bàn phím số khi gõ lượng; chọn đơn vị; bật "Thuốc hạ sốt" khi vừa cho uống hạ sốt dưới 4 giờ → thẻ cảnh báo vàng. Nút "Ghi Vitamin D hôm nay" mở sheet Thuốc điền sẵn Vitamin D 1 giọt.
+5. Nhiệt độ: ô rỗng, bấm +0,1 → 37,1; chọn chỗ đo. Gõ 45 rồi Lưu → báo "Nhập nhiệt độ từ 34 đến 43°C" ngay trên nút Lưu, sheet không đóng.
+6. "Lúc nào?": chọn "15 phút trước" rồi Lưu → bản ghi trong "Gần đây" lùi 15 phút. Chọn "Chọn giờ…" → hiện ô chọn ngày giờ.
+7. Trên iPhone 11: bấm vào ô nhập, bàn phím hiện mà vẫn cuộn tới được nút Lưu.
+8. Kéo tay nắm xuống: sheet đóng. Đang nhập dở mà đóng: hỏi "Bỏ thay đổi?" với "Bỏ" và "Tiếp tục nhập".
+9. Lặp lại ở theme Sáng, Tối, Ban đêm: chữ và ô màu đọc rõ.
+
+Kết quả: Chờ người dùng.
+
+| Máy           | iOS | Kết quả | Ghi chú |
+| ------------- | --- | ------- | ------- |
+| iPhone 11     |     |         |         |
+| iPhone 16     |     |         |         |
+| iPhone 17 Pro |     |         |         |
