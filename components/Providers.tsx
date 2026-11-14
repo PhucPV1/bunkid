@@ -3,6 +3,7 @@
 import { QueryClient } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { useState, type ReactNode } from "react";
+import { OutboxSync } from "@/components/sync/OutboxSync";
 import { trackBrowserOnline } from "@/lib/data/onlineStatus";
 import { createDexiePersister, PERSIST_MAX_AGE_MS } from "@/lib/data/persister";
 import { usePushRefresh } from "@/lib/hooks/usePushRefresh";
@@ -44,6 +45,7 @@ export function Providers({ children }: { children: ReactNode }) {
         },
       }}
     >
+      <OutboxSync />
       {children}
     </PersistQueryClientProvider>
   );
