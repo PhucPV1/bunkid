@@ -10,6 +10,7 @@ import type { Baby, FamilyMember } from "@/lib/supabase/rows";
 import { THEME_OPTIONS } from "@/lib/theme";
 import { BabyProfileSection } from "./BabyProfileSection";
 import { FeedIntervalSection } from "./FeedIntervalSection";
+import { MembersSection } from "./MembersSection";
 
 export function SettingsScreen({
   member,
@@ -41,6 +42,7 @@ export function SettingsScreen({
 
       <BabyProfileSection baby={baby} isOwner={isOwner} />
       <FeedIntervalSection baby={baby} isOwner={isOwner} />
+      <MembersSection me={member} />
 
       <section className="flex flex-col gap-2">
         <h2 className="text-lg font-medium">Giao diện</h2>

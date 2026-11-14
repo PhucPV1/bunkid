@@ -1091,6 +1091,7 @@ export function MembersSection({ me }: { me: FamilyMember }) {
       )}
       {isOwner ? (
         <form
+          noValidate
           onSubmit={submit}
           className="flex flex-col gap-3 rounded-2xl border border-accent-line p-4"
         >

@@ -1,8 +1,15 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type QueryClient,
+} from "@tanstack/react-query";
+import type { MemberInput, Role } from "@/lib/rules/familySettings";
 import { supabase } from "@/lib/supabase/client";
 import type { Baby, Family, FamilyMember } from "@/lib/supabase/rows";
+import { PermissionDeniedError } from "./errors";
 
 export type FamilyContext = {
   family: Family;
@@ -61,4 +68,56 @@ export function useMembers(familyId: string) {
     },
     staleTime: 5 * 60_000,
   });
+}
+
+export async function addMember(
+  familyId: string,
+  input: MemberInput,
+): Promise<void> {
+  const { error } = await supabase()
+    .from("family_members")
+    .insert({ family_id: familyId, ...input });
+  if (error) throw error;
+}
+
+export async function setMemberRole(id: string, role: Role): Promise<void> {
+  const { data, error } = await supabase()
+    .from("family_members")
+    .update({ role })
+    .eq("id", id)
+    .select("id");
+  if (error) throw error;
+  if (data.length === 0) throw new PermissionDeniedError();
+}
+
+export async function removeMember(id: string): Promise<void> {
+  const { data, error } = await supabase()
+    .from("family_members")
+    .delete()
+    .eq("id", id)
+    .select("id");
+  if (error) throw error;
+  if (data.length === 0) throw new PermissionDeniedError();
+}
+
+function invalidateFamily(queryClient: QueryClient, familyId: string) {
+  void queryClient.invalidateQueries({ queryKey: ["members", familyId] });
+  void queryClient.invalidateQueries({ queryKey: ["family-context"] });
+}
+
+export function useMemberActions(familyId: string) {
+  const queryClient = useQueryClient();
+  const onSettled = () => invalidateFamily(queryClient, familyId);
+  return {
+    add: useMutation({
+      mutationFn: (input: MemberInput) => addMember(familyId, input),
+      onSettled,
+    }),
+    setRole: useMutation({
+      mutationFn: ({ id, role }: { id: string; role: Role }) =>
+        setMemberRole(id, role),
+      onSettled,
+    }),
+    remove: useMutation({ mutationFn: removeMember, onSettled }),
+  };
 }
