@@ -11,16 +11,21 @@ import {
   YAxis,
 } from "recharts";
 
+// Colours come in as var(--color-…) strings so the chart follows the active theme.
 export function StatsChart({
   rows,
   primaryName,
   secondaryName,
   decimals,
+  color,
+  secondaryColor,
 }: {
   rows: { label: string; primary: number; secondary: number | null }[];
   primaryName: string;
   secondaryName: string | null;
   decimals: boolean;
+  color: string;
+  secondaryColor: string | null;
 }) {
   return (
     <div className="h-60 w-full">
@@ -47,12 +52,13 @@ export function StatsChart({
           <Tooltip
             formatter={(value) => Number(value).toLocaleString("vi-VN")}
             contentStyle={{
-              background: "var(--color-surface)",
-              borderColor: "var(--color-accent-line)",
+              background: "var(--color-glass-solid)",
+              borderColor: "var(--color-line)",
+              borderRadius: 16,
               color: "var(--color-ink)",
             }}
             itemStyle={{ color: "var(--color-ink)" }}
-            cursor={{ fill: "var(--color-soft)" }}
+            cursor={{ fill: "var(--color-line)" }}
           />
           {secondaryName && (
             <Legend
@@ -64,15 +70,15 @@ export function StatsChart({
           <Bar
             dataKey="primary"
             name={primaryName}
-            fill="var(--color-accent)"
+            fill={color}
             radius={[6, 6, 0, 0]}
             isAnimationActive={false}
           />
-          {secondaryName && (
+          {secondaryName && secondaryColor && (
             <Bar
               dataKey="secondary"
               name={secondaryName}
-              fill="var(--color-warn-ink)"
+              fill={secondaryColor}
               radius={[6, 6, 0, 0]}
               isAnimationActive={false}
             />
