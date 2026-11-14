@@ -14,14 +14,16 @@ import { heroState } from "@/lib/rules/hero";
 import type { QuickValues } from "@/lib/rules/quickEntry";
 import { rateLast24h, WINDOW_MS, windowTotals } from "@/lib/rules/ratings";
 import { sleepStatusLine } from "@/lib/rules/status";
+import { homeStatTiles, totalsLine } from "@/lib/rules/summaryText";
 import { ageDays, formatAgeVi } from "@/lib/rules/time";
 import type { Baby } from "@/lib/supabase/rows";
-import { ActionGrid } from "./ActionGrid";
 import { AlertBanners } from "./AlertBanners";
 import { HeroCardView } from "./HeroCard";
 import { HomeHeader } from "./HomeHeader";
-import { RecentList } from "./RecentList";
-import { SummaryCard } from "./SummaryCard";
+import { QuickLogGrid } from "./QuickLogGrid";
+import { RecentCard } from "./RecentCard";
+import { StatsSection } from "./StatsSection";
+import { TimerButtons } from "./TimerButtons";
 import { TimerRow } from "./TimerRow";
 import { VitaminDButton } from "./VitaminDButton";
 
@@ -64,7 +66,6 @@ export function HomeScreen({ baby, userId }: { baby: Baby; userId: string }) {
     now,
   });
   const heroLog = hero.kind === "running" ? hero.log : null;
-  const totals = windowTotals(rows, now);
   const vitaminD = vitaminDToday(rows, now);
   const sub =
     [sleepStatusLine(rows, now), vitaminD && `Vitamin D đã uống ${vitaminD}`]
@@ -110,15 +111,16 @@ export function HomeScreen({ baby, userId }: { baby: Baby; userId: string }) {
         />
       ))}
 
-      <ActionGrid
+      <TimerButtons
         running={actions.running}
         busy={actions.busy}
         onTimer={actions.pressTimer}
-        onInstant={(type) => actions.openInstant(type)}
       />
 
+      <QuickLogGrid onInstant={(type) => actions.openInstant(type)} />
+
       {actions.error && (
-        <p role="alert" className="text-danger">
+        <p role="alert" className="px-1 text-danger">
           {toVietnameseError(actions.error)}
         </p>
       )}
@@ -129,20 +131,25 @@ export function HomeScreen({ baby, userId }: { baby: Baby; userId: string }) {
         />
       )}
 
-      <section className="flex flex-col gap-2">
-        <h2 className="text-lg font-medium">24 giờ qua</h2>
-        <SummaryCard ratings={ratings} totals={totals} />
-        {logs.isError && !logs.data ? (
-          <p className="text-danger">{toVietnameseError(logs.error)}</p>
-        ) : (
-          <RecentList
-            logs={recentRows}
-            now={now}
-            nameOf={nameOf}
-            pending={pending}
-          />
-        )}
-      </section>
+      {logs.data && (
+        <StatsSection
+          tiles={homeStatTiles({ ratings, logs: rows, now })}
+          totals={totalsLine(windowTotals(rows, now))}
+        />
+      )}
+
+      {logs.isError && !logs.data ? (
+        <p role="alert" className="px-1 text-danger">
+          {toVietnameseError(logs.error)}
+        </p>
+      ) : (
+        <RecentCard
+          logs={recentRows}
+          now={now}
+          nameOf={nameOf}
+          pending={pending}
+        />
+      )}
     </main>
   );
 }
