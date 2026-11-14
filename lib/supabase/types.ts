@@ -121,6 +121,26 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"vaccine_doses": {
+                  Row: {
+                    "baby_id": string,"created_at": string,"created_by": string,"dose_no": number,"due_on_override": string | null,"given_on": string | null,"id": string,"note": string | null,"place": string | null,"status": string,"updated_at": string,"vaccine_code": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "baby_id": string,"created_at"?: string,"created_by"?: string,"dose_no": number,"due_on_override"?: string | null,"given_on"?: string | null,"id"?: string,"note"?: string | null,"place"?: string | null,"status": string,"updated_at"?: string,"vaccine_code": string
+                  }
+                  Update: {
+                    "baby_id"?: string,"created_at"?: string,"created_by"?: string,"dose_no"?: number,"due_on_override"?: string | null,"given_on"?: string | null,"id"?: string,"note"?: string | null,"place"?: string | null,"status"?: string,"updated_at"?: string,"vaccine_code"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "vaccine_doses_baby_id_fkey"
+      columns: ["baby_id"]
+isOneToOne: false
+      referencedRelation: "babies"
+      referencedColumns: ["id"]
+    }
+                  ]
                 }
           }
           Views: {
