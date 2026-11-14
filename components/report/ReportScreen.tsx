@@ -1,6 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "@/components/ui/Button";
+import { ErrorCard } from "@/components/ui/ErrorCard";
+import { Icon } from "@/components/ui/Icon";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Segmented } from "@/components/ui/Segmented";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { VACCINES } from "@/lib/content/vaccines";
 import { whoSex, type LmsRow } from "@/lib/content/who";
 import { toVietnameseError } from "@/lib/data/errors";
@@ -28,6 +34,10 @@ import type { Baby } from "@/lib/supabase/rows";
 
 const decimal = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 1 });
 const dmy = (day: string) => day.split("-").reverse().join("/");
+const RANGES = REPORT_DAYS.map((n) => ({
+  value: String(n),
+  label: `${n} ngày`,
+}));
 
 export function ReportScreen({ baby }: { baby: Baby }) {
   const [range, setRange] = useState<(typeof REPORT_DAYS)[number]>(7);
@@ -64,7 +74,7 @@ export function ReportScreen({ baby }: { baby: Baby }) {
       today: vnDateString(now),
     }),
   );
-  const cell = "border px-2 py-1";
+  const cell = "border border-line px-2 py-1 print:border-ink";
   // A report for a doctor must never print "nothing recorded" while data is
   // still loading or failed to load (offline without a cache).
   const ready = Boolean(logs.data && growth.data && doses.data);
@@ -75,42 +85,42 @@ export function ReportScreen({ baby }: { baby: Baby }) {
   ].filter(({ query }) => query.isError && !query.data);
 
   return (
-    <main className="mx-auto flex max-w-2xl flex-col gap-4 p-4 print:max-w-none print:p-0 print:text-sm">
-      <div className="flex flex-col gap-3 print:hidden">
-        <h1 className="text-2xl font-semibold">Báo cáo cho bác sĩ</h1>
-        <div className="grid grid-cols-2 gap-2">
-          {REPORT_DAYS.map((n) => (
-            <button
-              key={n}
-              type="button"
-              aria-pressed={range === n}
-              onClick={() => setRange(n)}
-              className={`min-h-11 rounded-full ${range === n ? "bg-accent text-on-accent" : "bg-soft"}`}
-            >
-              {n} ngày
-            </button>
-          ))}
-        </div>
-        <button
-          type="button"
-          disabled={!ready}
-          onClick={() => window.print()}
-          className="min-h-12 rounded-2xl bg-accent text-on-accent disabled:opacity-50"
-        >
+    <main className="mx-auto flex max-w-2xl flex-col gap-[18px] px-4 pt-2 pb-4 print:max-w-none print:p-0 print:text-sm">
+      <div className="flex flex-col gap-[18px] print:hidden">
+        <PageHeader
+          title="Báo cáo cho bác sĩ"
+          back={{ href: "/kham-pha", label: "Khám phá" }}
+        />
+        <Segmented
+          label="Khoảng thời gian"
+          options={RANGES}
+          value={String(range)}
+          onChange={(value) =>
+            setRange(Number(value) as (typeof REPORT_DAYS)[number])
+          }
+        />
+        <Button block disabled={!ready} onClick={() => window.print()}>
+          <Icon name="doc" size={18} />
           In / Lưu PDF
-        </button>
+        </Button>
         {failures.map(({ label, query }) => (
-          <p key={label} role="alert" className="text-danger">
-            {label}: {toVietnameseError(query.error)}
-          </p>
+          <ErrorCard
+            key={label}
+            message={`${label}: ${toVietnameseError(query.error)}`}
+            onRetry={() => void query.refetch()}
+          />
         ))}
         {!ready && failures.length === 0 && (
-          <p className="text-muted">Đang tải dữ liệu…</p>
+          <div className="flex flex-col gap-2.5">
+            {[0, 1, 2].map((i) => (
+              <Skeleton key={i} className="h-[60px]" />
+            ))}
+          </div>
         )}
       </div>
 
       {ready && (
-        <>
+        <div className="glass flex flex-col gap-4 rounded-[28px] p-4 text-ink print:rounded-none print:border-0 print:p-0">
           <h1 className="hidden text-xl font-semibold print:block">
             Báo cáo cho bác sĩ
           </h1>
@@ -227,7 +237,7 @@ export function ReportScreen({ baby }: { baby: Baby }) {
             Số liệu do gia đình ghi bằng ứng dụng Kim Bun. Thông tin tham khảo,
             không thay thế bác sĩ.
           </p>
-        </>
+        </div>
       )}
     </main>
   );
