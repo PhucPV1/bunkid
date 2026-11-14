@@ -1,7 +1,7 @@
 import { vnDateString } from "./time";
 
 const DAY_MS = 86_400_000;
-const WEEKDAYS = [
+export const WEEKDAYS = [
   "Chủ nhật",
   "Thứ Hai",
   "Thứ Ba",
