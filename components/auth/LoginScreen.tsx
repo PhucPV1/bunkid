@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 
@@ -27,6 +28,12 @@ export function LoginScreen() {
       >
         Đăng nhập bằng Google
       </button>
+      <Link
+        href="/cai-app"
+        className="flex min-h-11 items-center justify-center text-accent-ink underline"
+      >
+        Cách cài Bé Yêu lên màn hình chính
+      </Link>
       {error && (
         <p role="alert" className="text-danger">
           {error}
