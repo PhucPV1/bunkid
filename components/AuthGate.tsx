@@ -2,7 +2,8 @@
 
 import type { Session } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { ActionSheet } from "@/components/actions/ActionSheet";
 import { QuickActionsProvider } from "@/components/actions/QuickActions";
 import { TabBar } from "@/components/nav/TabBar";
 import { SyncBar } from "@/components/sync/SyncBar";
@@ -24,6 +25,8 @@ export function AuthGate({
   children: (state: GateState) => ReactNode;
 }) {
   const router = useRouter();
+  // The + button's action sheet (spec §6.3); hooks stay above the early returns.
+  const [plusOpen, setPlusOpen] = useState(false);
   const { session, loading } = useSession();
   const family = useFamilyContext(session?.user.id);
   const ready = !loading && (!session || family.data !== undefined);
@@ -80,7 +83,12 @@ export function AuthGate({
     <QuickActionsProvider baby={baby} member={member} userId={session.user.id}>
       <SyncBar userId={session.user.id} />
       <div className="pb-[120px]">{content}</div>
-      <TabBar />
+      <TabBar onPlus={() => setPlusOpen((open) => !open)} plusOpen={plusOpen} />
+      <ActionSheet
+        open={plusOpen}
+        onClose={() => setPlusOpen(false)}
+        babyName={baby.name}
+      />
     </QuickActionsProvider>
   );
 }
