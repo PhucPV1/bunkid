@@ -119,6 +119,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"music_links": {
+                  Row: {
+                    "category": string,"created_at": string,"created_by": string,"family_id": string,"hidden": boolean,"id": string,"preset_code": string | null,"title": string | null,"youtube_playlist_id": string | null,"youtube_video_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "category": string,"created_at"?: string,"created_by"?: string,"family_id": string,"hidden"?: boolean,"id"?: string,"preset_code"?: string | null,"title"?: string | null,"youtube_playlist_id"?: string | null,"youtube_video_id"?: string | null
+                  }
+                  Update: {
+                    "category"?: string,"created_at"?: string,"created_by"?: string,"family_id"?: string,"hidden"?: boolean,"id"?: string,"preset_code"?: string | null,"title"?: string | null,"youtube_playlist_id"?: string | null,"youtube_video_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "music_links_family_id_fkey"
+      columns: ["family_id"]
+isOneToOne: false
+      referencedRelation: "families"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"notification_log": {
                   Row: {
                     "id": string,"kind": string,"ref_key": string,"sent_at": string,"user_id": string
