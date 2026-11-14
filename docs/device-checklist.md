@@ -6,6 +6,8 @@ Thiết bị: iPhone 11, iPhone 16, iPhone 17 Pro. Ghi Đạt / Không đạt, p
 
 **Kết luận đợt 2 (2026-11-14):** Chờ người dùng. Phần tự động đạt: Vitest 265 test và pgTAP 001–008 xanh. Tiêu chí §11 còn chờ trên điện thoại thật: nhận push nhắc tiêm (bước 9, mục 5) trên ít nhất 1 máy, bước 7 đầy đủ (nhắc thức bị tạm tắt chặn — bước 11 mục 5; nhắc tiêm vẫn đến — bước 9 mục 4–5), và các bước 8–14.
 
+**Kết luận đợt 3 (2026-11-14):** Chờ người dùng. Phần tự động đạt: Vitest 313 test và pgTAP 001–011 xanh. Tiêu chí §11 còn chờ trên điện thoại thật: checklist bước 5 (nhạc mở app YouTube, kể cả khi gỡ app) và bước 6 (tiếng ồn trắng khi khóa màn hình), cùng các bước 15–19.
+
 ## Bước 0 — Đăng nhập Google trong PWA standalone (M1)
 
 1. Safari mở `<APP_URL>/dang-nhap` → Chia sẻ → Thêm vào MH chính → mở từ biểu tượng.
@@ -273,6 +275,17 @@ Nhắc thức cũng bị tạm tắt chặn: kiểm ở bước 11, mục 5.
 2. Bấm một mốc bé đã làm được → chọn ngày, ghi chú, chọn một ảnh (nếu đã có ảnh ở Tiện ích → Ảnh) → Lưu. Kỳ vọng: mốc có dấu ✓ và dòng "Đạt ngày … · có ảnh"; máy thứ hai thấy giống vậy.
 3. Bật chế độ máy bay, đánh dấu thêm một mốc. Kỳ vọng: hiện ngay với ⏳ và chip chờ đồng bộ. Tắt máy bay. Kỳ vọng: ⏳ biến mất trong ≤ 30 giây.
 4. "Xem tất cả các mốc" hiện đủ các tháng 2 đến 24. Mở lại mốc thử → "Bỏ đánh dấu".
+
+| Máy           | iOS | Kết quả | Ghi chú |
+| ------------- | --- | ------- | ------- |
+| iPhone 11     |     |         |         |
+| iPhone 16     |     |         |         |
+| iPhone 17 Pro |     |         |         |
+
+## Bước 19 — Báo cáo cho bác sĩ (M26)
+
+1. Tiện ích → Báo cáo → "7 ngày". Kỳ vọng: tên, tuổi, ngày sinh, giới tính (nhóm máu, dị ứng nếu đã ghi); bảng 7 ngày (giờ ngủ, cữ bú, ml bình, tã ướt / bẩn); nhiệt độ; thuốc đã dùng; lần đo tăng trưởng gần nhất kèm phân vị; mũi tiêm gần nhất và mũi sắp tới. Đổi sang "14 ngày" thì bảng có 14 dòng.
+2. Bấm "In / Lưu PDF" → Chia sẻ → Lưu vào Tệp (hoặc In). Kỳ vọng: khổ A4 dọc, chữ đen nền trắng kể cả khi đang dùng giao diện Tối hoặc Ban đêm; không có thanh tab, nút chọn ngày hay nút In trong bản in.
 
 | Máy           | iOS | Kết quả | Ghi chú |
 | ------------- | --- | ------- | ------- |
