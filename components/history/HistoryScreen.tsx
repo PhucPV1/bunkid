@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import { toVietnameseError } from "@/lib/data/errors";
 import { useMembers } from "@/lib/data/family";
@@ -44,9 +43,6 @@ export function HistoryScreen({
   return (
     <main className="mx-auto flex max-w-md flex-col gap-4 p-4">
       <header className="flex items-center justify-between gap-3">
-        <Link href="/" className="flex min-h-11 items-center text-accent-ink">
-          ← Trang chủ
-        </Link>
         <h1 className="text-2xl font-semibold">Nhật ký</h1>
         <button
           type="button"

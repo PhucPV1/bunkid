@@ -1,0 +1,32 @@
+import { describe, expect, it } from "vitest";
+import { activeTab, GUIDE_ITEMS, TABS, TOOL_ITEMS } from "./nav";
+
+describe("nav", () => {
+  it("has the five tabs of spec §6.18 in order", () => {
+    expect(TABS.map((t) => t.label)).toEqual([
+      "Trang chủ",
+      "Nhật ký",
+      "Cẩm nang",
+      "Tiện ích",
+      "Cài đặt",
+    ]);
+  });
+
+  it("activeTab maps each page to its tab", () => {
+    expect(activeTab("/")).toBe("home");
+    expect(activeTab("/nhat-ky")).toBe("history");
+    expect(activeTab("/thong-ke")).toBe("tools");
+    expect(activeTab("/tien-ich")).toBe("tools");
+    expect(activeTab("/tiem-chung")).toBe("guide");
+    expect(activeTab("/cai-dat")).toBe("settings");
+    expect(activeTab("/nhat-ky-cu")).toBeNull();
+    expect(activeTab("/dang-nhap")).toBeNull();
+  });
+
+  it("every menu link opens under its own tab", () => {
+    for (const item of GUIDE_ITEMS)
+      if (item.href) expect(activeTab(item.href)).toBe("guide");
+    for (const item of TOOL_ITEMS)
+      if (item.href) expect(activeTab(item.href)).toBe("tools");
+  });
+});

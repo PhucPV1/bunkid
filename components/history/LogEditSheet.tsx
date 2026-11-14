@@ -99,7 +99,7 @@ export function LogEditSheet({
 
   return (
     <div
-      className="fixed inset-0 z-10 flex items-end bg-black/40"
+      className="fixed inset-0 z-20 flex items-end bg-black/40"
       onClick={onClose}
     >
       <form

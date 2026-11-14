@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import { toVietnameseError } from "@/lib/data/errors";
 import { useMembers } from "@/lib/data/family";
@@ -96,21 +95,6 @@ export function HomeScreen({
           {formatAgeVi(baby.dob, now)} · Xin chào {member.display_name}
         </p>
       </header>
-
-      <nav className="flex gap-3">
-        <Link
-          href="/nhat-ky"
-          className="flex min-h-11 flex-1 items-center justify-center rounded-xl border"
-        >
-          Nhật ký
-        </Link>
-        <Link
-          href="/thong-ke"
-          className="flex min-h-11 flex-1 items-center justify-center rounded-xl border"
-        >
-          Thống kê
-        </Link>
-      </nav>
 
       <StatusLines lines={statusLines} />
 
