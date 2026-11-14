@@ -1,4 +1,5 @@
-import { detailsSchemas } from "./logDetails";
+import type { LogLike } from "./describeLog";
+import { detailsSchemas, type StoolColor } from "./logDetails";
 
 export type InstantType = "bottle" | "diaper" | "medicine" | "temperature";
 export type QuickValues = Record<string, string | boolean>;
@@ -135,3 +136,92 @@ export function buildDetails(
     ? { ok: true, details: result.data as Record<string, unknown> }
     : { ok: false, message: MESSAGES[type] };
 }
+
+const byNewest = (logs: LogLike[]) =>
+  [...logs].sort((a, b) => Date.parse(b.started_at) - Date.parse(a.started_at));
+
+// Spec §2.3: up to 3 different ml amounts from bottle logs, newest first.
+export function recentBottleAmounts(logs: LogLike[]): number[] {
+  const amounts: number[] = [];
+  for (const log of byNewest(logs)) {
+    if (log.type !== "bottle") continue;
+    const parsed = detailsSchemas.bottle.safeParse(log.details);
+    if (!parsed.success || amounts.includes(parsed.data.ml)) continue;
+    amounts.push(parsed.data.ml);
+    if (amounts.length === 3) break;
+  }
+  return amounts;
+}
+
+// Spec §2.3: up to 4 different medicine names, case-insensitive, latest spelling kept.
+export function recentMedicineNames(logs: LogLike[]): string[] {
+  const names: string[] = [];
+  const seen = new Set<string>();
+  for (const log of byNewest(logs)) {
+    if (log.type !== "medicine") continue;
+    const parsed = detailsSchemas.medicine.safeParse(log.details);
+    if (!parsed.success) continue;
+    const name = parsed.data.name.trim();
+    const key = name.toLocaleLowerCase("vi");
+    if (seen.has(key)) continue;
+    seen.add(key);
+    names.push(name);
+    if (names.length === 4) break;
+  }
+  return names;
+}
+
+export type StepRule = { start: number; min: number; decimals: number };
+export const ML_STEP: StepRule = { start: 0, min: 0, decimals: 0 };
+export const TEMP_STEP: StepRule = { start: 37, min: 0, decimals: 1 };
+
+// The −/+ buttons next to a number field. An empty or unreadable field starts at `rule.start`.
+export function stepAmount(
+  value: string,
+  delta: number,
+  rule: StepRule,
+): string {
+  const current = toNumber(value);
+  const base = Number.isNaN(current) ? rule.start : current;
+  const scale = 10 ** rule.decimals;
+  const next = Math.max(rule.min, Math.round((base + delta) * scale) / scale);
+  return rule.decimals === 0
+    ? String(next)
+    : next.toFixed(rule.decimals).replace(".", ",");
+}
+
+export type DiaperKind = "wet" | "dirty" | "both";
+
+export function diaperKind(values: QuickValues): DiaperKind {
+  if (values.dirty === true) return values.wet === true ? "both" : "dirty";
+  return "wet";
+}
+
+export function withDiaperKind(
+  values: QuickValues,
+  kind: DiaperKind,
+): QuickValues {
+  return {
+    ...values,
+    wet: kind !== "dirty",
+    dirty: kind !== "wet",
+    stoolColor: kind === "wet" ? "" : (values.stoolColor ?? ""),
+  };
+}
+
+function optionsOf(type: InstantType, key: string) {
+  return QUICK_FIELDS[type].find((field) => field.key === key)?.options ?? [];
+}
+
+export const MILK_OPTIONS = optionsOf("bottle", "milk");
+export const UNIT_OPTIONS = optionsOf("medicine", "unit");
+export const METHOD_OPTIONS = optionsOf("temperature", "method");
+export const STOOL_OPTIONS = optionsOf("diaper", "stoolColor") as {
+  value: "" | StoolColor;
+  label: string;
+}[];
+export const DIAPER_KIND_OPTIONS: { value: DiaperKind; label: string }[] = [
+  { value: "wet", label: "Ướt" },
+  { value: "dirty", label: "Bẩn" },
+  { value: "both", label: "Cả hai" },
+];
