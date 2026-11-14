@@ -104,6 +104,12 @@ export function HomeScreen({
         >
           Nhật ký
         </Link>
+        <Link
+          href="/thong-ke"
+          className="flex min-h-11 flex-1 items-center justify-center rounded-xl border"
+        >
+          Thống kê
+        </Link>
       </nav>
 
       <StatusLines lines={statusLines} />

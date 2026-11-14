@@ -22,12 +22,10 @@ import { PermissionDeniedError } from "./errors";
 
 export const logsKey = (babyId: string) => ["logs", babyId] as const;
 
-export async function fetchRecentLogs(
+export async function fetchLogsSince(
   babyId: string,
-  now: Date = new Date(),
-  hours = 72,
+  since: string,
 ): Promise<LogRow[]> {
-  const since = new Date(now.getTime() - hours * 3_600_000).toISOString();
   const { data, error } = await supabase()
     .from("logs")
     .select("*")
@@ -36,6 +34,17 @@ export async function fetchRecentLogs(
     .order("started_at", { ascending: false });
   if (error) throw error;
   return data;
+}
+
+export async function fetchRecentLogs(
+  babyId: string,
+  now: Date = new Date(),
+  hours = 72,
+): Promise<LogRow[]> {
+  return fetchLogsSince(
+    babyId,
+    new Date(now.getTime() - hours * 3_600_000).toISOString(),
+  );
 }
 
 export function useRecentLogs(babyId: string) {
@@ -187,6 +196,13 @@ export function useHistoryLogs(babyId: string, dob: string) {
     queryFn: ({ pageParam }) => fetchHistoryPage(babyId, pageParam, new Date()),
     getNextPageParam: (_last, pages) =>
       nextHistoryPage(dob, new Date(), pages.length),
+  });
+}
+
+export function useStatsLogs(babyId: string, since: string) {
+  return useQuery({
+    queryKey: [...logsKey(babyId), "stats", since],
+    queryFn: () => fetchLogsSince(babyId, since),
   });
 }
 
