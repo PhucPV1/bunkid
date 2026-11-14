@@ -79,6 +79,21 @@ Thiết bị: iPhone 11, iPhone 16, iPhone 17 Pro. Ghi Đạt / Không đạt, p
 | iPhone 16     | 18.2 | Đạt     | Đạt (2026-11-14)                          |
 | iPhone 17 Pro | 26.5 | Đạt     | Đạt (2026-11-14)                          |
 
+## Bước 5 — Nhạc mở app YouTube (M23)
+
+1. Tiện ích → Nhạc → tab "Thư giãn / ru ngủ" → bấm "▶ Hát ru Việt Nam". Kỳ vọng: app YouTube mở trang kết quả tìm kiếm "hát ru con ngủ dân ca Việt Nam".
+2. Quay lại Bé Yêu → tab "Phát triển trí não". Kỳ vọng: dòng "Chỉ cho bé nghe, không cho bé xem màn hình. WHO khuyến nghị trẻ dưới 2 tuổi không xem màn hình."
+3. Dán một link YouTube (ví dụ copy từ nút Chia sẻ của app YouTube) → "Thêm vào …". Bấm mục vừa thêm. Kỳ vọng: app YouTube mở đúng video. Dán chữ "abc". Kỳ vọng: "Link YouTube không hợp lệ." ngay dưới ô.
+4. Bấm "Ẩn" ở một mục có sẵn. Kỳ vọng: mục biến mất, có nút "Hiện các mục đã ẩn (1)"; máy thứ hai cũng không thấy mục đó.
+5. Gỡ app YouTube (hoặc dùng máy không cài) → bấm một mục. Kỳ vọng: sau khoảng 1,5 giây trang web YouTube mở trong Bé Yêu; link "Mở trên web" cũng mở được.
+6. Dọn dẹp: "Hiện lại" mục đã ẩn; xóa link thử.
+
+| Máy           | iOS | Kết quả | Ghi chú (có / không cài app YouTube) |
+| ------------- | --- | ------- | ------------------------------------ |
+| iPhone 11     |     |         |                                      |
+| iPhone 16     |     |         |                                      |
+| iPhone 17 Pro |     |         |                                      |
+
 ## Bước 6 — Tiếng ồn trắng khi khóa màn hình (M22)
 
 1. Tiện ích → Ồn trắng → chọn "Trắng", âm lượng vừa, "Hẹn giờ tắt" = "Không" → "Phát". Kỳ vọng: nghe tiếng xì đều, không có tiếng "tách" lặp lại mỗi 2 giây.
@@ -218,6 +233,18 @@ Nhắc thức cũng bị tạm tắt chặn: kiểm ở bước 11, mục 5.
 4. Bấm "Tummy time", chờ 1–2 phút, bấm lại để dừng.
 5. Tiện ích → Thống kê → tab "Hút sữa": hôm nay 105 ml; tab "Tummy": hôm nay có số phút vừa ghi.
 6. Dọn dẹp: xóa các bản ghi thử trong Nhật ký.
+
+| Máy           | iOS | Kết quả | Ghi chú |
+| ------------- | --- | ------- | ------- |
+| iPhone 11     |     |         |         |
+| iPhone 16     |     |         |         |
+| iPhone 17 Pro |     |         |         |
+
+## Bước 16 — Bồng bế (M23)
+
+1. Cẩm nang → Bồng bế. Kỳ vọng: tab đúng nhóm tuổi của bé đang được chọn (0–3 tháng, 3–6 tháng hoặc Trên 6 tháng); mỗi tư thế có các bước, khung "Lưu ý an toàn", nút "Xem video", link "Nguồn".
+2. Bấm "Xem video" ở một tư thế. Kỳ vọng: app YouTube mở trang tìm kiếm tư thế đó.
+3. Bật chế độ máy bay, đóng hẳn app rồi mở lại → Cẩm nang → Bồng bế. Kỳ vọng: vẫn đọc được.
 
 | Máy           | iOS | Kết quả | Ghi chú |
 | ------------- | --- | ------- | ------- |
