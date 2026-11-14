@@ -11,6 +11,8 @@ import {
   type QuickValues,
 } from "@/lib/rules/quickEntry";
 import { fromVnLocalInput, toVnLocalInput } from "@/lib/rules/time";
+import { medicineWarnings } from "@/lib/rules/alerts";
+import type { LogRow } from "@/lib/supabase/rows";
 
 const TITLES: Record<InstantType, string> = {
   bottle: "Bú bình",
@@ -23,17 +25,26 @@ export function QuickEntrySheet({
   type,
   babyId,
   onClose,
+  initial,
+  recentLogs = [],
 }: {
   type: InstantType;
   babyId: string;
   onClose: () => void;
+  initial?: QuickValues;
+  recentLogs?: LogRow[];
 }) {
   const add = useAddInstant(babyId);
-  const [values, setValues] = useState<QuickValues>(() =>
-    defaultQuickValues(type),
-  );
+  const [values, setValues] = useState<QuickValues>(() => ({
+    ...defaultQuickValues(type),
+    ...initial,
+  }));
   const [at, setAt] = useState(() => toVnLocalInput(new Date()));
   const [message, setMessage] = useState<string | null>(null);
+  const warnings =
+    type === "medicine" && values.antipyretic === true
+      ? medicineWarnings({ logs: recentLogs, at: fromVnLocalInput(at) })
+      : [];
 
   function submit(event: FormEvent) {
     event.preventDefault();
@@ -121,6 +132,15 @@ export function QuickEntrySheet({
             onChange={(e) => setAt(e.target.value)}
           />
         </label>
+        {warnings.map((warning) => (
+          <p
+            key={warning}
+            role="status"
+            className="rounded-xl bg-amber-50 p-3 text-amber-900"
+          >
+            {warning}
+          </p>
+        ))}
         {message && (
           <p role="alert" className="text-red-600">
             {message}
