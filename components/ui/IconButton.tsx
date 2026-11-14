@@ -17,6 +17,7 @@ export function IconButton({
   icon,
   variant = "glass",
   small = false,
+  large = false,
   filled = false,
   type = "button",
   className,
@@ -26,6 +27,7 @@ export function IconButton({
   icon: IconName;
   variant?: IconButtonVariant;
   small?: boolean;
+  large?: boolean;
   filled?: boolean;
 } & Omit<ButtonHTMLAttributes<HTMLButtonElement>, "aria-label" | "children">) {
   return (
@@ -35,12 +37,12 @@ export function IconButton({
       aria-label={label}
       className={cx(
         "inline-flex shrink-0 items-center justify-center rounded-full transition-transform duration-[120ms] active:scale-[0.97] disabled:opacity-50",
-        small ? "size-9" : "size-11",
+        large ? "size-16" : small ? "size-9" : "size-11",
         VARIANT[variant],
         className,
       )}
     >
-      <Icon name={icon} size={small ? 16 : 20} filled={filled} />
+      <Icon name={icon} size={large ? 28 : small ? 16 : 20} filled={filled} />
     </button>
   );
 }

@@ -1,6 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Glass } from "@/components/ui/Glass";
+import { IconButton } from "@/components/ui/IconButton";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Segmented } from "@/components/ui/Segmented";
 import {
   BUFFER_SECONDS,
   FADE_MS,
@@ -40,6 +44,11 @@ function scheduleVolume(player: Player, volume: number) {
     gain.gain.linearRampToValueAtTime(0, end);
   }
 }
+
+const TIMER_CHOICES = TIMER_OPTIONS.map((option) => ({
+  value: String(option),
+  label: option === 0 ? "Không" : `${option} phút`,
+}));
 
 export function NoiseScreen() {
   const [color, setColor] = useState<NoiseColor>("white");
@@ -118,74 +127,71 @@ export function NoiseScreen() {
 
   useEffect(() => stop, []);
 
-  const pill = (active: boolean) =>
-    `min-h-11 flex-1 rounded-xl border px-2 ${active ? "border-accent bg-accent-soft text-accent-ink" : ""}`;
-
   return (
-    <main className="mx-auto flex max-w-md flex-col gap-5 p-4">
-      <h1 className="text-2xl font-semibold">Tiếng ồn trắng</h1>
-      <section className="flex flex-col gap-2">
-        <h2 className="text-lg font-medium">Loại âm</h2>
-        <div className="flex gap-2">
-          {NOISE_OPTIONS.map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              aria-pressed={color === option.value}
-              onClick={() => {
-                setColor(option.value);
-                if (playing) start(option.value, minutes);
-              }}
-              className={pill(color === option.value)}
-            >
-              {option.label}
-            </button>
-          ))}
+    <main className="mx-auto flex max-w-md flex-col gap-[18px] px-4 pt-2 pb-4">
+      <PageHeader
+        title="Tiếng ồn trắng"
+        back={{ href: "/kham-pha", label: "Khám phá" }}
+      />
+      <Glass as="section" className="flex flex-col gap-4 p-4">
+        <div className="flex flex-col gap-2">
+          <span className="text-[13px] font-semibold text-muted">Loại âm</span>
+          <Segmented
+            label="Loại âm"
+            options={NOISE_OPTIONS}
+            value={color}
+            onChange={(next) => {
+              setColor(next);
+              if (playing) start(next, minutes);
+            }}
+          />
+          <p className="text-[13px] text-muted">
+            {NOISE_OPTIONS.find((o) => o.value === color)?.hint}
+          </p>
         </div>
-        <p className="text-sm text-muted">
-          {NOISE_OPTIONS.find((o) => o.value === color)?.hint}
-        </p>
-      </section>
-      <label className="flex flex-col gap-2">
-        <span className="text-lg font-medium">Âm lượng</span>
-        <input
-          type="range"
-          min={0.05}
-          max={1}
-          step={0.05}
-          value={volume}
-          onChange={(e) => setVolume(Number(e.target.value))}
-          className="min-h-11 accent-accent"
+        <label className="flex flex-col gap-2">
+          <span className="text-[13px] font-semibold text-muted">Âm lượng</span>
+          <input
+            type="range"
+            min={0.05}
+            max={1}
+            step={0.05}
+            value={volume}
+            onChange={(e) => setVolume(Number(e.target.value))}
+            className="min-h-11 accent-accent"
+          />
+        </label>
+        <div className="flex flex-col gap-2">
+          <span className="text-[13px] font-semibold text-muted">
+            Hẹn giờ tắt
+          </span>
+          <Segmented
+            label="Hẹn giờ tắt"
+            options={TIMER_CHOICES}
+            value={String(minutes)}
+            onChange={(next) => {
+              const option = Number(next);
+              setMinutes(option);
+              if (playing) start(color, option);
+            }}
+          />
+        </div>
+      </Glass>
+      <div className="flex flex-col items-center gap-2">
+        <IconButton
+          label={playing ? "Dừng" : "Phát"}
+          icon={playing ? "stop" : "play"}
+          filled
+          large
+          variant="accent"
+          onClick={() => (playing ? stop() : start(color, minutes))}
         />
-      </label>
-      <section className="flex flex-col gap-2">
-        <h2 className="text-lg font-medium">Hẹn giờ tắt</h2>
-        <div className="flex gap-2">
-          {TIMER_OPTIONS.map((option) => (
-            <button
-              key={option}
-              type="button"
-              aria-pressed={minutes === option}
-              onClick={() => {
-                setMinutes(option);
-                if (playing) start(color, option);
-              }}
-              className={pill(minutes === option)}
-            >
-              {option === 0 ? "Không" : `${option} phút`}
-            </button>
-          ))}
-        </div>
-      </section>
-      <button
-        type="button"
-        onClick={() => (playing ? stop() : start(color, minutes))}
-        className={`min-h-14 rounded-2xl text-lg font-semibold ${playing ? "bg-soft" : "bg-accent text-on-accent"}`}
-      >
-        {playing ? "Dừng" : "Phát"}
-      </button>
+        <span aria-hidden="true" className="text-[13px] font-semibold text-ink">
+          {playing ? "Dừng" : "Phát"}
+        </span>
+      </div>
       {playing && (
-        <p role="status" className="text-center text-muted">
+        <p role="status" className="text-center text-[15px] text-muted">
           {interrupted
             ? "Âm đang bị ngắt. Bấm Dừng rồi Phát để chạy lại."
             : remaining === null
@@ -193,7 +199,7 @@ export function NoiseScreen() {
               : `Tắt sau ${formatRemaining(remaining)}`}
         </p>
       )}
-      <p className="text-sm text-muted">
+      <p className="px-1 text-[13px] text-muted">
         Đặt điện thoại cách xa bé ít nhất 2 m, để âm lượng vừa đủ nghe. iPhone
         có thể dừng âm khi khóa màn hình; nếu vậy, để màn hình sáng với độ sáng
         thấp.
