@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { addDays, formatDayShort, vnDayLabel, vnDayStartMs } from "./days";
+import {
+  addDays,
+  formatDayShort,
+  vnDayLabel,
+  vnDayRange,
+  vnDayStartMs,
+} from "./days";
 
 describe("days", () => {
   it("vnDayStartMs is VN midnight in UTC", () => {
@@ -12,6 +18,15 @@ describe("days", () => {
     expect(addDays("2026-11-30", 1)).toBe("2026-12-01");
     expect(addDays("2026-03-01", -1)).toBe("2026-02-28");
     expect(addDays("2026-12-31", 1)).toBe("2027-01-01");
+  });
+
+  it("vnDayRange ends on today in VN time, oldest first", () => {
+    const now = new Date("2026-11-13T18:30:00Z"); // 01:30 on 14/11 in VN
+    expect(vnDayRange(now, 3)).toEqual([
+      "2026-11-12",
+      "2026-11-13",
+      "2026-11-14",
+    ]);
   });
 
   it("formatDayShort gives dd/MM", () => {

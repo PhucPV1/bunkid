@@ -21,6 +21,11 @@ export function addDays(day: string, n: number): string {
     .slice(0, 10);
 }
 
+export function vnDayRange(now: Date, count: number): string[] {
+  const today = vnDateString(now);
+  return Array.from({ length: count }, (_, i) => addDays(today, i - count + 1));
+}
+
 export function formatDayShort(day: string): string {
   const [, month, date] = day.split("-");
   return `${date}/${month}`;
