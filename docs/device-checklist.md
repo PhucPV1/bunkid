@@ -79,6 +79,8 @@ Thiết bị: iPhone 11, iPhone 16, iPhone 17 Pro. Ghi Đạt / Không đạt, p
 
 ## Bước 7 — Tạm tắt (M11, phần nhắc bú)
 
+Nhắc thức cũng bị tạm tắt chặn: kiểm ở bước 11, mục 5.
+
 1. Cài đặt → Thông báo → "2 giờ".
 2. Nhật ký → "+ Thêm" → Bú bình 30 ml, Thời điểm = bây giờ trừ 61 phút → Lưu. Kỳ vọng: 3 phút không có thông báo trên máy này.
 3. Bấm "Bật lại". Kỳ vọng: trong ≤ 2 phút nhận "Đến giờ bú rồi".
@@ -112,6 +114,35 @@ Thiết bị: iPhone 11, iPhone 16, iPhone 17 Pro. Ghi Đạt / Không đạt, p
 4. Sáng hôm sau, khoảng 07:50, Cài đặt → Thông báo → "Tạm tắt 2 giờ".
 5. Kỳ vọng: trong khoảng 08:00–08:59 mọi máy đã bật thông báo nhận "Sắp tới lịch tiêm" / "<tên mũi> vào <Thứ, dd/MM>." dù đang tạm tắt; bấm vào thì mở trang Tiêm chủng.
 6. Dọn dẹp: "Bật lại" thông báo; mở lại mũi ở bước 3 → "Xóa đánh dấu".
+
+| Máy           | iOS | Kết quả | Ghi chú |
+| ------------- | --- | ------- | ------- |
+| iPhone 11     |     |         |         |
+| iPhone 16     |     |         |         |
+| iPhone 17 Pro |     |         |         |
+
+## Bước 10 — Khẩn cấp (M17)
+
+1. Tiện ích → Khẩn cấp. Kỳ vọng: nút đỏ "Cấp cứu 115" ở đầu; thẻ "Hồ sơ của bé" có tên, tuổi, nhóm máu, dị ứng, cân nặng (lúc sinh nếu chưa có lần đo).
+2. "Thêm số bác sĩ, người thân" → thêm hai số (ví dụ bác sĩ nhi và ông bà) → Lưu từng số. Bấm ↑ ở số thứ hai. Kỳ vọng: thứ tự đổi; máy thứ hai thấy cùng thứ tự sau khi mở lại trang.
+3. Bấm một số trong danh sách. Kỳ vọng: iPhone hỏi gọi đúng số đó (bấm Hủy).
+4. Chủ gia đình: "Sửa nhóm máu, dị ứng" → chọn nhóm máu, ghi dị ứng → Lưu. Kỳ vọng: thẻ hồ sơ hiện giá trị mới.
+5. Bật chế độ máy bay, đóng hẳn app rồi mở lại → Tiện ích → Khẩn cấp. Kỳ vọng: vẫn thấy nút 115, danh bạ và hồ sơ; nút Lưu trong phần sửa bị mờ kèm "Cần kết nối mạng".
+
+| Máy           | iOS | Kết quả | Ghi chú |
+| ------------- | --- | ------- | ------- |
+| iPhone 11     |     |         |         |
+| iPhone 16     |     |         |         |
+| iPhone 17 Pro |     |         |         |
+
+## Bước 11 — Nhắc khi bé thức quá lâu (M17)
+
+1. Cài đặt → Thông báo: công tắc "Nhắc khi bé thức quá lâu" đang bật, không còn dòng "Có từ đợt 2".
+2. Tra ngưỡng theo tuổi bé hôm nay: 0–27 ngày 60 phút; 28–90 ngày 90 phút; 91–150 ngày 120 phút; 151–240 ngày 180 phút; 241–365 ngày 210 phút; trên 365 ngày 240 phút. Gọi ngưỡng là W.
+3. Nhật ký → "+ Thêm" → Ngủ, kết thúc lúc bây giờ trừ (W − 1) phút → Lưu. Đảm bảo không có giấc ngủ nào đang chạy và không có giấc ngủ thật nào kết thúc muộn hơn giấc thử. Khóa màn hình.
+4. Kỳ vọng: trong ≤ 3 phút nhận "Bé thức đã W phút" (có thể là W + 1 hoặc W + 2 tùy lúc cron chạy) / "Bé có thể đang mệt, thử cho bé ngủ." trên mọi máy đã bật thông báo; bấm vào mở trang chủ.
+5. Lặp lại bước 3 với một giấc ngủ khác sau khi bấm Cài đặt → Thông báo → "2 giờ". Kỳ vọng: không có nhắc thức trong 5 phút. Bấm "Bật lại". Kỳ vọng: nhắc đến trong ≤ 2 phút.
+6. Dọn dẹp: xóa các giấc ngủ thử.
 
 | Máy           | iOS | Kết quả | Ghi chú |
 | ------------- | --- | ------- | ------- |
