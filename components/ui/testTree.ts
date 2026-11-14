@@ -21,3 +21,23 @@ export function hostElements(
   visit(node);
   return found;
 }
+
+// Like hostElements, but matches any element (host or component) and also looks inside
+// element-valued props such as ListRow's `trailing`. Components are still not called.
+export function findElements(
+  node: ReactNode,
+  predicate: (element: ReactElement<TreeProps>) => boolean,
+): ReactElement<TreeProps>[] {
+  const found: ReactElement<TreeProps>[] = [];
+  const visit = (n: unknown): void => {
+    if (Array.isArray(n)) {
+      n.forEach(visit);
+      return;
+    }
+    if (!isValidElement<TreeProps>(n)) return;
+    if (predicate(n)) found.push(n);
+    for (const value of Object.values(n.props)) visit(value);
+  };
+  visit(node);
+  return found;
+}
