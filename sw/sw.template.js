@@ -26,6 +26,7 @@ const GUIDES = [
   "/khan-cap",
   "/tiem-chung",
   "/trieu-chung",
+  "/benh-thuong-gap",
   "/bong-be",
   "/phat-trien",
 ];

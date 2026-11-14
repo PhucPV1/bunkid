@@ -47,6 +47,12 @@ describe("nav", () => {
     );
   });
 
+  it("Cẩm nang opens the common illnesses guide", () => {
+    expect(GUIDE_ITEMS.find((i) => i.label === "Bệnh thường gặp")?.href).toBe(
+      "/benh-thuong-gap",
+    );
+  });
+
   it("every menu link opens under its own tab", () => {
     for (const item of GUIDE_ITEMS)
       if (item.href) expect(activeTab(item.href)).toBe("guide");

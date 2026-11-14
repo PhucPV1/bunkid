@@ -20,7 +20,7 @@ export const GUIDE_ITEMS: MenuItem[] = [
   { label: "Triệu chứng", href: "/trieu-chung" },
   { label: "Phát triển", href: null },
   { label: "Bồng bế", href: null },
-  { label: "Bệnh thường gặp", href: null },
+  { label: "Bệnh thường gặp", href: "/benh-thuong-gap" },
 ];
 
 export const TOOL_ITEMS: MenuItem[] = [
@@ -41,6 +41,7 @@ const OWNERS: { tab: TabKey; prefixes: string[] }[] = [
       "/cam-nang",
       "/tiem-chung",
       "/trieu-chung",
+      "/benh-thuong-gap",
       "/phat-trien",
       "/bong-be",
     ],
