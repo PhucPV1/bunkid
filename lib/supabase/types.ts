@@ -25,6 +25,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"emergency_contacts": {
+                  Row: {
+                    "created_at": string,"created_by": string,"family_id": string,"id": string,"label": string,"phone": string,"sort": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"created_by"?: string,"family_id": string,"id"?: string,"label": string,"phone": string,"sort"?: number
+                  }
+                  Update: {
+                    "created_at"?: string,"created_by"?: string,"family_id"?: string,"id"?: string,"label"?: string,"phone"?: string,"sort"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "emergency_contacts_family_id_fkey"
+      columns: ["family_id"]
+isOneToOne: false
+      referencedRelation: "families"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"families": {
                   Row: {
                     "created_at": string,"id": string,"name": string
