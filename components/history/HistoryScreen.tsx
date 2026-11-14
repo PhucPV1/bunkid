@@ -67,7 +67,7 @@ export function HistoryScreen({
         ))}
       </nav>
 
-      {history.isError && (
+      {history.isError && !history.data && (
         <p role="alert" className="text-danger">
           {toVietnameseError(history.error)}
         </p>

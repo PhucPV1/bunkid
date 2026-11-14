@@ -130,7 +130,7 @@ export function HomeScreen({
       <section className="flex flex-col gap-2">
         <h2 className="text-lg font-medium">24 giờ qua</h2>
         <SummaryCard ratings={ratings} totals={totals} />
-        {logs.isError ? (
+        {logs.isError && !logs.data ? (
           <p className="text-danger">{toVietnameseError(logs.error)}</p>
         ) : (
           <RecentList logs={recentRows} now={now} nameOf={nameOf} />

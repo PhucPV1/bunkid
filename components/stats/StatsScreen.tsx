@@ -19,8 +19,16 @@ import { vnDayLabel, vnDayRange } from "@/lib/rules/days";
 import { formatDuration } from "@/lib/rules/time";
 import type { Baby } from "@/lib/supabase/rows";
 
+function ChartUnavailable() {
+  return <p className="h-60 text-muted">Biểu đồ cần mạng để tải lần đầu.</p>;
+}
+
 const StatsChart = dynamic(
-  () => import("./StatsChart").then((m) => m.StatsChart),
+  () =>
+    import("./StatsChart")
+      .then((m) => m.StatsChart)
+      // Offline before the chart was ever loaded: keep the table, skip the chart.
+      .catch(() => ChartUnavailable),
   { ssr: false, loading: () => <div className="h-60" /> },
 );
 
@@ -104,7 +112,7 @@ export function StatsScreen({ baby }: { baby: Baby }) {
         ))}
       </div>
 
-      {logs.isError ? (
+      {logs.isError && !logs.data ? (
         <p role="alert" className="text-danger">
           {toVietnameseError(logs.error)}
         </p>

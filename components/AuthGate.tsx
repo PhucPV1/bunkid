@@ -21,7 +21,7 @@ export function AuthGate({
   const router = useRouter();
   const { session, loading } = useSession();
   const family = useFamilyContext(session?.user.id);
-  const ready = !loading && (!session || family.isSuccess);
+  const ready = !loading && (!session || family.data !== undefined);
   const landing = ready
     ? resolveLanding({
         hasSession: Boolean(session),
@@ -35,7 +35,7 @@ export function AuthGate({
     if (redirect) router.replace(redirect);
   }, [redirect, router]);
 
-  if (session && family.isError) {
+  if (session && family.isError && !family.data) {
     return (
       <main className="p-6 text-center">
         <p className="mb-4">
