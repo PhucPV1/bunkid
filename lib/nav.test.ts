@@ -53,6 +53,12 @@ describe("nav", () => {
     );
   });
 
+  it("Tiện ích opens white noise", () => {
+    expect(TOOL_ITEMS.find((i) => i.label === "Ồn trắng")?.href).toBe(
+      "/on-trang",
+    );
+  });
+
   it("every menu link opens under its own tab", () => {
     for (const item of GUIDE_ITEMS)
       if (item.href) expect(activeTab(item.href)).toBe("guide");
