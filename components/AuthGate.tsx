@@ -3,6 +3,7 @@
 import type { Session } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
+import { QuickActionsProvider } from "@/components/actions/QuickActions";
 import { TabBar } from "@/components/nav/TabBar";
 import { SyncBar } from "@/components/sync/SyncBar";
 import { useFamilyContext, type FamilyContext } from "@/lib/data/family";
@@ -66,11 +67,20 @@ export function AuthGate({
     return <main className="p-6 text-center text-muted">Đang tải…</main>;
   const content = children({ session, ctx: family.data ?? null });
   if (need !== "baby") return <>{content}</>;
+  const baby = family.data?.baby;
+  const member = family.data?.member;
+  if (!session || !baby || !member)
+    return (
+      <>
+        <div className="pb-[120px]">{content}</div>
+        <TabBar />
+      </>
+    );
   return (
-    <>
-      {session && <SyncBar userId={session.user.id} />}
+    <QuickActionsProvider baby={baby} member={member} userId={session.user.id}>
+      <SyncBar userId={session.user.id} />
       <div className="pb-[120px]">{content}</div>
       <TabBar />
-    </>
+    </QuickActionsProvider>
   );
 }
