@@ -25,7 +25,7 @@ export function SyncBar({ userId }: { userId: string }) {
 
   if (count === 0 && !dropped) return null;
   return (
-    <div className="mx-auto flex max-w-md flex-col gap-2 px-4 pt-4">
+    <div className="mx-auto flex max-w-md flex-col gap-2 px-4 pt-4 print:hidden">
       {count > 0 && (
         <p
           role="status"

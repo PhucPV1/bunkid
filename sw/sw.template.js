@@ -17,6 +17,7 @@ const PAGES = [
   "/on-trang",
   "/nhac",
   "/anh",
+  "/bao-cao",
   "/cam-nang",
   "/tien-ich",
   "/cai-dat",

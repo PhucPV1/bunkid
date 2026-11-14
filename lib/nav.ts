@@ -30,7 +30,7 @@ export const TOOL_ITEMS: MenuItem[] = [
   { label: "Nhạc", href: "/nhac" },
   { label: "Ồn trắng", href: "/on-trang" },
   { label: "Ảnh", href: "/anh" },
-  { label: "Báo cáo", href: null },
+  { label: "Báo cáo", href: "/bao-cao" },
 ];
 
 const OWNERS: { tab: TabKey; prefixes: string[] }[] = [
