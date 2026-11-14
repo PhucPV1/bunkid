@@ -1,6 +1,9 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useId, useState, type FormEvent } from "react";
+import { FIELD_INPUT, FIELD_LABEL } from "@/components/quick/styles";
+import { Button } from "@/components/ui/Button";
+import { Sheet } from "@/components/ui/Sheet";
 import { toVietnameseError } from "@/lib/data/errors";
 import { useSetPumpAmounts } from "@/lib/data/logs";
 import { parsePumpAmounts } from "@/lib/rules/pumpForm";
@@ -17,6 +20,7 @@ export function PumpSheet({
   onClose: () => void;
 }) {
   const save = useSetPumpAmounts(babyId, userId);
+  const formId = useId();
   const [left, setLeft] = useState("");
   const [right, setRight] = useState("");
   const [message, setMessage] = useState<string | null>(null);
@@ -30,64 +34,67 @@ export function PumpSheet({
     }
     save.mutate(
       { id: logId, details: parsed.details },
-      { onSuccess: onClose, onError: (e) => setMessage(toVietnameseError(e)) },
+      {
+        onSuccess: onClose,
+        onError: (error) => setMessage(toVietnameseError(error)),
+      },
     );
   }
 
-  const input = "min-h-11 rounded-xl border px-3";
+  const field = (
+    label: string,
+    value: string,
+    setValue: (next: string) => void,
+  ) => (
+    <label className="flex flex-col gap-1.5">
+      <span className={FIELD_LABEL}>{label}</span>
+      <input
+        inputMode="numeric"
+        className={`${FIELD_INPUT} tabular-nums`}
+        value={value}
+        onChange={(event) => setValue(event.target.value)}
+      />
+    </label>
+  );
+
   return (
-    <div
-      className="fixed inset-0 z-20 flex items-end bg-black/40"
-      onClick={onClose}
-    >
-      <form
-        onSubmit={submit}
-        onClick={(e) => e.stopPropagation()}
-        className="flex w-full flex-col gap-3 rounded-t-3xl bg-surface p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))]"
-      >
-        <h2 className="text-xl font-semibold">Đã hút được bao nhiêu?</h2>
-        <div className="flex gap-3">
-          <label className="flex flex-1 flex-col gap-1">
-            Bên trái (ml)
-            <input
-              inputMode="numeric"
-              className={input}
-              value={left}
-              onChange={(e) => setLeft(e.target.value)}
-            />
-          </label>
-          <label className="flex flex-1 flex-col gap-1">
-            Bên phải (ml)
-            <input
-              inputMode="numeric"
-              className={input}
-              value={right}
-              onChange={(e) => setRight(e.target.value)}
-            />
-          </label>
-        </div>
-        {message && (
-          <p role="alert" className="text-danger">
-            {message}
-          </p>
-        )}
-        <div className="flex gap-3">
-          <button
-            type="button"
-            onClick={onClose}
-            className="min-h-12 flex-1 rounded-2xl border"
-          >
-            Bỏ qua
-          </button>
-          <button
+    <Sheet
+      open
+      onClose={onClose}
+      title="Đã hút được bao nhiêu?"
+      icon="cup"
+      iconColor="cat-pump"
+      dirty={left !== "" || right !== ""}
+      footer={
+        <div className="flex flex-col gap-2">
+          {message && (
+            <p role="alert" className="text-[15px] text-danger">
+              {message}
+            </p>
+          )}
+          <Button
             type="submit"
-            disabled={save.isPending}
-            className="min-h-12 flex-1 rounded-2xl bg-accent text-on-accent disabled:opacity-50"
+            form={formId}
+            block
+            busy={save.isPending}
+            className="min-h-14!"
           >
             Lưu
-          </button>
+          </Button>
+          <Button variant="ghost" block onClick={onClose}>
+            Bỏ qua
+          </Button>
         </div>
+      }
+    >
+      <form
+        id={formId}
+        onSubmit={submit}
+        className="grid grid-cols-2 gap-3 pt-1"
+      >
+        {field("Bên trái (ml)", left, setLeft)}
+        {field("Bên phải (ml)", right, setRight)}
       </form>
-    </div>
+    </Sheet>
   );
 }
