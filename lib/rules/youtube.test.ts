@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   FALLBACK_MS,
   openYouTube,
+  parseOpenMode,
   parseYouTubeUrl,
   youtubePath,
   type OpenDeps,
@@ -107,5 +108,14 @@ describe("openYouTube (spec §6.11)", () => {
       `youtube://www.youtube.com/watch?v=${V}`,
       `https://www.youtube.com/watch?v=${V}`,
     ]);
+  });
+});
+
+describe("parseOpenMode", () => {
+  it("defaults to the app and keeps an explicit web choice", () => {
+    expect(parseOpenMode(null)).toBe("app");
+    expect(parseOpenMode("app")).toBe("app");
+    expect(parseOpenMode("web")).toBe("web");
+    expect(parseOpenMode("other")).toBe("app");
   });
 });

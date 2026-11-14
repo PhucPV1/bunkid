@@ -2,12 +2,15 @@
 
 import { useState } from "react";
 import { HOLDING } from "@/lib/content/holding";
-import { browserOpenDeps, openYouTube, youtubePath } from "@/lib/rules/youtube";
+import { useYouTubeOpener } from "@/lib/hooks/useYouTubeOpener";
+import { youtubePath } from "@/lib/rules/youtube";
 
 // Spec §6.10: stage picked by the baby's age, positions as text, no pictures.
 export function HoldingScreen({ ageDays }: { ageDays: number }) {
   const initial = ageDays < 91 ? "0_3" : ageDays < 183 ? "3_6" : "6_plus";
   const [stage, setStage] = useState(initial);
+  // Same per-device choice as the music page (app or browser).
+  const youtube = useYouTubeOpener();
   const current = HOLDING.stages.find((s) => s.code === stage)!;
   return (
     <main className="mx-auto flex max-w-md flex-col gap-4 p-4">
@@ -49,9 +52,8 @@ export function HoldingScreen({ ageDays }: { ageDays: number }) {
           <button
             type="button"
             onClick={() =>
-              openYouTube(
+              youtube.open(
                 youtubePath({ kind: "search", query: position.searchQuery }),
-                browserOpenDeps(),
               )
             }
             className="min-h-11 rounded-xl border px-3"

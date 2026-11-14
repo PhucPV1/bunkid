@@ -46,6 +46,16 @@ export function youtubePath(
 }
 
 export const appUrl = (path: string) => `youtube://www.youtube.com/${path}`;
+
+// Per-device choice: "app" tries youtube:// first (spec §6.11); "web" opens
+// www.youtube.com directly, for phones whose YouTube app does not handle
+// youtube:// (for example one installed outside the App Store).
+export type OpenMode = "app" | "web";
+export const OPEN_MODE_KEY = "be-yeu:youtube-open";
+
+export function parseOpenMode(value: string | null): OpenMode {
+  return value === "web" ? "web" : "app";
+}
 export const webUrl = (path: string) => `https://www.youtube.com/${path}`;
 
 export type OpenDeps = {

@@ -88,7 +88,8 @@ Thiết bị: iPhone 11, iPhone 16, iPhone 17 Pro. Ghi Đạt / Không đạt, p
 3. Dán một link YouTube (ví dụ copy từ nút Chia sẻ của app YouTube) → "Thêm vào …". Bấm mục vừa thêm. Kỳ vọng: app YouTube mở đúng video. Dán chữ "abc". Kỳ vọng: "Link YouTube không hợp lệ." ngay dưới ô.
 4. Bấm "Ẩn" ở một mục có sẵn. Kỳ vọng: mục biến mất, có nút "Hiện các mục đã ẩn (1)"; máy thứ hai cũng không thấy mục đó.
 5. Gỡ app YouTube (hoặc dùng máy không cài) → bấm một mục. Kỳ vọng: sau khoảng 1,5 giây trang web YouTube mở trong Bé Yêu; link "Mở trên web" cũng mở được.
-6. Dọn dẹp: "Hiện lại" mục đã ẩn; xóa link thử.
+6. Máy dùng YouTube cài ngoài App Store (iPhone báo "address is invalid" khi bấm): chọn "Mở YouTube bằng" → "Trình duyệt", bấm lại một mục. Kỳ vọng: trang YouTube mở trong trình duyệt; lựa chọn còn nguyên sau khi đóng mở lại app; nút "Xem video" ở Bồng bế cũng mở theo cách này.
+7. Dọn dẹp: "Hiện lại" mục đã ẩn; xóa link thử.
 
 | Máy           | iOS | Kết quả | Ghi chú (có / không cài app YouTube) |
 | ------------- | --- | ------- | ------------------------------------ |

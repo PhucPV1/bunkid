@@ -6,19 +6,15 @@ import { MUSIC_PRESETS, type MusicCategory } from "@/lib/content/music";
 import { toVietnameseError } from "@/lib/data/errors";
 import { useMusicActions, useMusicLinks } from "@/lib/data/music";
 import { useOnline } from "@/lib/hooks/useOnline";
+import { useYouTubeOpener } from "@/lib/hooks/useYouTubeOpener";
+import { YouTubeModePicker } from "./YouTubeModePicker";
 import {
   BRAIN_NOTE,
   musicItems,
   parseLinkTitle,
   type MusicItem,
 } from "@/lib/rules/music";
-import {
-  browserOpenDeps,
-  openYouTube,
-  parseYouTubeUrl,
-  webUrl,
-  youtubePath,
-} from "@/lib/rules/youtube";
+import { parseYouTubeUrl, webUrl, youtubePath } from "@/lib/rules/youtube";
 
 const TABS: { value: MusicCategory; label: string }[] = [
   { value: "relax", label: "Thư giãn / ru ngủ" },
@@ -38,6 +34,7 @@ export function MusicScreen({
   const actions = useMusicActions(familyId);
   // Hiding and deleting need the network (spec §9); the add form says so once.
   const online = useOnline();
+  const youtube = useYouTubeOpener();
   const [tab, setTab] = useState<MusicCategory>("relax");
   const [showHidden, setShowHidden] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -86,6 +83,7 @@ export function MusicScreen({
           </button>
         ))}
       </div>
+      <YouTubeModePicker mode={youtube.mode} onChange={youtube.setMode} />
       {tab === "brain" && (
         <p className="rounded-xl bg-warn-soft p-3 text-sm text-warn-ink">
           {BRAIN_NOTE}
@@ -107,7 +105,7 @@ export function MusicScreen({
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => openYouTube(path, browserOpenDeps())}
+                  onClick={() => youtube.open(path)}
                   className={`flex min-h-12 flex-1 items-center text-left font-medium ${item.hidden ? "text-muted" : ""}`}
                 >
                   ▶ {item.title}
