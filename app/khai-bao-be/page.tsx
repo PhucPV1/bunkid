@@ -21,14 +21,15 @@ export default function Page() {
   }
   return (
     <AuthGate need="family" keep={created !== null}>
-      {({ ctx }) => (
+      {({ session, ctx }) => (
         <main className="mx-auto flex max-w-md flex-col gap-4 p-6">
           <h1 className="text-2xl font-semibold">
             {created ? "Lịch tiêm của bé" : "Khai báo bé"}
           </h1>
-          {created ? (
+          {created && session ? (
             <VaccineSetup
               baby={created}
+              userId={session.user.id}
               records={[]}
               initialChoices={{}}
               onDone={finish}

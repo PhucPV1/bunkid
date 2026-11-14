@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { OnlineOnly } from "@/components/OnlineOnly";
 import { toVietnameseError } from "@/lib/data/errors";
 import { useDoseActions } from "@/lib/data/vaccines";
 import { vnDateString } from "@/lib/rules/time";
@@ -24,16 +23,18 @@ export function DoseSheet({
   item,
   row,
   babyId,
+  userId,
   dob,
   onClose,
 }: {
   item: ScheduleItem;
   row: VaccineDoseRow | null;
   babyId: string;
+  userId: string;
   dob: string;
   onClose: () => void;
 }) {
-  const actions = useDoseActions(babyId);
+  const actions = useDoseActions(babyId, userId);
   const today = vnDateString(new Date());
   const ref = { code: item.dose.code, doseNo: item.dose.doseNo };
   const [raw, setRaw] = useState<DoseFormRaw>(() => {
@@ -106,77 +107,75 @@ export function DoseSheet({
         <p className="text-muted">
           Phòng: {item.dose.protects.join(", ")}. Hẹn {formatDueDate(item.due)}.
         </p>
-        <OnlineOnly>
-          <div className="flex flex-col gap-3">
-            <div role="radiogroup" className="flex gap-2">
-              {ACTIONS.map((action) => (
-                <label
-                  key={action.value}
-                  className="flex min-h-11 flex-1 items-center justify-center gap-1 rounded-xl border px-2 text-center has-[:checked]:border-accent has-[:checked]:bg-accent-soft"
-                >
-                  <input
-                    type="radio"
-                    name="dose-action"
-                    className="sr-only"
-                    checked={raw.action === action.value}
-                    onChange={() => chooseAction(action.value)}
-                  />
-                  {action.label}
-                </label>
-              ))}
-            </div>
-            {raw.action !== "skipped" && (
-              <label className="flex flex-col gap-1">
-                {raw.action === "done" ? "Ngày tiêm" : "Ngày hẹn mới"}
+        <div className="flex flex-col gap-3">
+          <div role="radiogroup" className="flex gap-2">
+            {ACTIONS.map((action) => (
+              <label
+                key={action.value}
+                className="flex min-h-11 flex-1 items-center justify-center gap-1 rounded-xl border px-2 text-center has-[:checked]:border-accent has-[:checked]:bg-accent-soft"
+              >
                 <input
-                  type="date"
-                  className={input}
-                  min={raw.action === "done" ? dob : today}
-                  max={raw.action === "done" ? today : undefined}
-                  value={raw.date}
-                  onChange={(e) => set("date", e.target.value)}
+                  type="radio"
+                  name="dose-action"
+                  className="sr-only"
+                  checked={raw.action === action.value}
+                  onChange={() => chooseAction(action.value)}
                 />
+                {action.label}
               </label>
-            )}
-            {raw.action === "done" && (
-              <label className="flex flex-col gap-1">
-                Nơi tiêm (không bắt buộc)
-                <input
-                  className={input}
-                  maxLength={120}
-                  value={raw.place}
-                  onChange={(e) => set("place", e.target.value)}
-                />
-              </label>
-            )}
+            ))}
+          </div>
+          {raw.action !== "skipped" && (
             <label className="flex flex-col gap-1">
-              Ghi chú (không bắt buộc)
-              <textarea
-                className="min-h-20 rounded-xl border p-3"
-                maxLength={500}
-                value={raw.note}
-                onChange={(e) => set("note", e.target.value)}
+              {raw.action === "done" ? "Ngày tiêm" : "Ngày hẹn mới"}
+              <input
+                type="date"
+                className={input}
+                min={raw.action === "done" ? dob : today}
+                max={raw.action === "done" ? today : undefined}
+                value={raw.date}
+                onChange={(e) => set("date", e.target.value)}
               />
             </label>
+          )}
+          {raw.action === "done" && (
+            <label className="flex flex-col gap-1">
+              Nơi tiêm (không bắt buộc)
+              <input
+                className={input}
+                maxLength={120}
+                value={raw.place}
+                onChange={(e) => set("place", e.target.value)}
+              />
+            </label>
+          )}
+          <label className="flex flex-col gap-1">
+            Ghi chú (không bắt buộc)
+            <textarea
+              className="min-h-20 rounded-xl border p-3"
+              maxLength={500}
+              value={raw.note}
+              onChange={(e) => set("note", e.target.value)}
+            />
+          </label>
+          <button
+            type="submit"
+            disabled={busy}
+            className="min-h-12 rounded-2xl bg-accent text-on-accent disabled:opacity-50"
+          >
+            Lưu
+          </button>
+          {row && (
             <button
-              type="submit"
+              type="button"
               disabled={busy}
-              className="min-h-12 rounded-2xl bg-accent text-on-accent disabled:opacity-50"
+              onClick={clear}
+              className="min-h-11 rounded-2xl text-danger disabled:opacity-50"
             >
-              Lưu
+              Xóa đánh dấu
             </button>
-            {row && (
-              <button
-                type="button"
-                disabled={busy}
-                onClick={clear}
-                className="min-h-11 rounded-2xl text-danger disabled:opacity-50"
-              >
-                Xóa đánh dấu
-              </button>
-            )}
-          </div>
-        </OnlineOnly>
+          )}
+        </div>
         {message && (
           <p role="alert" className="text-danger">
             {message}

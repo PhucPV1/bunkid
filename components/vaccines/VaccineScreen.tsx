@@ -4,7 +4,9 @@ import { useState } from "react";
 import { OnlineOnly } from "@/components/OnlineOnly";
 import { VACCINES } from "@/lib/content/vaccines";
 import { toVietnameseError } from "@/lib/data/errors";
+import { entriesFor, pendingRowIds } from "@/lib/data/outboxCore";
 import { useUpdateChoices, useVaccineDoses } from "@/lib/data/vaccines";
+import { useOutboxEntries } from "@/lib/hooks/useOutboxEntries";
 import { vnDateString } from "@/lib/rules/time";
 import {
   cleanChoices,
@@ -25,12 +27,17 @@ import { VaccineSetup } from "./VaccineSetup";
 
 export function VaccineScreen({
   baby,
+  userId,
   isOwner,
 }: {
   baby: Baby;
+  userId: string;
   isOwner: boolean;
 }) {
   const doses = useVaccineDoses(baby.id);
+  const pending = pendingRowIds(
+    entriesFor(useOutboxEntries(userId), "vaccine_doses"),
+  );
   const choices = parseChoices(baby.vaccine_choices);
   const [setupLater, setSetupLater] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -84,6 +91,7 @@ export function VaccineScreen({
           <h2 className="text-lg font-medium">Thiết lập lịch tiêm</h2>
           <VaccineSetup
             baby={baby}
+            userId={userId}
             records={records}
             initialChoices={choices}
             onDone={() => setSetupLater(true)}
@@ -116,7 +124,12 @@ export function VaccineScreen({
                     onClick={() => setOpen(item)}
                     className="flex min-h-12 w-full flex-col items-start gap-0.5 px-4 py-2 text-left"
                   >
-                    <DoseLine item={item} />
+                    <DoseLine
+                      item={item}
+                      pending={pending.has(
+                        doseKey(item.dose.code, item.dose.doseNo),
+                      )}
+                    />
                   </button>
                 </li>
               ))}
@@ -129,6 +142,7 @@ export function VaccineScreen({
           item={open}
           row={rowFor(open)}
           babyId={baby.id}
+          userId={userId}
           dob={baby.dob}
           onClose={() => setOpen(null)}
         />

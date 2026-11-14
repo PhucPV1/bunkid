@@ -6,7 +6,7 @@ import { useMembers } from "@/lib/data/family";
 import { useHistoryLogs } from "@/lib/data/logs";
 import { useLogsRealtime } from "@/lib/data/realtime";
 import { PendingMark } from "@/components/sync/PendingMark";
-import { pendingRowIds } from "@/lib/data/outboxCore";
+import { entriesFor, pendingRowIds } from "@/lib/data/outboxCore";
 import { useNow } from "@/lib/hooks/useNow";
 import { useOutboxEntries } from "@/lib/hooks/useOutboxEntries";
 import { vnDayLabel } from "@/lib/rules/days";
@@ -37,7 +37,7 @@ export function HistoryScreen({
   useLogsRealtime(baby.id);
   const history = useHistoryLogs(baby.id, baby.dob);
   const members = useMembers(baby.family_id);
-  const pending = pendingRowIds(useOutboxEntries(userId));
+  const pending = pendingRowIds(entriesFor(useOutboxEntries(userId), "logs"));
   const [filter, setFilter] = useState<HistoryFilter>("all");
   const [sheet, setSheet] = useState<SheetState>(null);
 

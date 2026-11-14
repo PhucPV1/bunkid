@@ -1,7 +1,14 @@
+import { PendingMark } from "@/components/sync/PendingMark";
 import { formatDueDate } from "@/lib/rules/vaccineForm";
 import type { ScheduleItem } from "@/lib/rules/vaccines";
 
-export function DoseLine({ item }: { item: ScheduleItem }) {
+export function DoseLine({
+  item,
+  pending,
+}: {
+  item: ScheduleItem;
+  pending: boolean;
+}) {
   const { dose, record } = item;
   const when =
     item.state === "done"
@@ -13,7 +20,9 @@ export function DoseLine({ item }: { item: ScheduleItem }) {
         : `Hẹn ${formatDueDate(item.due)}`;
   return (
     <>
-      <span className="font-medium">{dose.name}</span>
+      <span className="font-medium">
+        {dose.name} <PendingMark pending={pending} />
+      </span>
       <span className="text-sm text-muted">
         {when} · {dose.program === "tcmr" ? "Tiêm chủng mở rộng" : "Dịch vụ"}
       </span>

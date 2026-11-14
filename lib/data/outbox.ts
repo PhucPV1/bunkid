@@ -1,9 +1,15 @@
 "use client";
 
 import type { QueryClient } from "@tanstack/react-query";
-import type { LogRow } from "@/lib/supabase/rows";
+import type { LogRow, VaccineDoseRow } from "@/lib/supabase/rows";
 import { localDb } from "./localDb";
-import { applyToCache, overlayPending, type OutboxEntry } from "./outboxCore";
+import {
+  applyDoseChange,
+  applyToCache,
+  overlayPending,
+  overlayPendingDoses,
+  type OutboxEntry,
+} from "./outboxCore";
 import { flushRequests } from "./outboxEvents";
 
 export type LogChange = Pick<
@@ -58,6 +64,56 @@ export async function withPending(
       .equals(babyId)
       .toArray();
     return overlayPending(rows, entries, inRange, new Date().toISOString());
+  } catch {
+    return rows;
+  }
+}
+
+export type DoseChange = Pick<OutboxEntry, "babyId" | "userId"> & {
+  op: "upsert" | "insert" | "delete";
+  code: string;
+  doseNo: number;
+  marks?: Record<string, unknown>;
+};
+
+export const vaccineDosesKey = (babyId: string) =>
+  ["vaccine-doses", babyId] as const;
+
+export async function enqueueDoseChange(
+  queryClient: QueryClient,
+  change: DoseChange,
+): Promise<void> {
+  const entry: OutboxEntry = {
+    id: crypto.randomUUID(),
+    table: "vaccine_doses",
+    op: change.op,
+    rowId: `${change.code}#${change.doseNo}`,
+    babyId: change.babyId,
+    userId: change.userId,
+    row: { vaccine_code: change.code, dose_no: change.doseNo, ...change.marks },
+    createdAt: await nextCreatedAt(),
+    attempts: 0,
+  };
+  await localDb().outbox.add(entry);
+  const key = vaccineDosesKey(change.babyId);
+  await queryClient.cancelQueries({ queryKey: key });
+  const nowIso = new Date().toISOString();
+  queryClient.setQueryData<VaccineDoseRow[]>(key, (rows) =>
+    rows ? applyDoseChange(rows, entry, nowIso) : rows,
+  );
+  flushRequests.emit();
+}
+
+export async function withPendingDoses(
+  babyId: string,
+  rows: VaccineDoseRow[],
+): Promise<VaccineDoseRow[]> {
+  try {
+    const entries = await localDb()
+      .outbox.where("babyId")
+      .equals(babyId)
+      .toArray();
+    return overlayPendingDoses(rows, entries, new Date().toISOString());
   } catch {
     return rows;
   }

@@ -11,7 +11,7 @@ import {
   useTimerPress,
 } from "@/lib/data/logs";
 import { useLogsRealtime } from "@/lib/data/realtime";
-import { pendingRowIds } from "@/lib/data/outboxCore";
+import { entriesFor, pendingRowIds } from "@/lib/data/outboxCore";
 import { useNow } from "@/lib/hooks/useNow";
 import { useOutboxEntries } from "@/lib/hooks/useOutboxEntries";
 import { homeAlerts, vitaminDToday } from "@/lib/rules/alerts";
@@ -54,7 +54,7 @@ export function HomeScreen({
   const members = useMembers(baby.family_id);
   const press = useTimerPress(baby.id, userId);
   const stop = useStopTimer(baby.id, userId);
-  const pending = pendingRowIds(useOutboxEntries(userId));
+  const pending = pendingRowIds(entriesFor(useOutboxEntries(userId), "logs"));
   const [sheet, setSheet] = useState<SheetState>(null);
 
   const rows = logs.data ?? [];

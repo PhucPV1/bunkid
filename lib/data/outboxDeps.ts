@@ -23,7 +23,12 @@ function failed(result: Result): SendOutcome {
   };
 }
 
-async function send(entry: OutboxEntry): Promise<SendOutcome> {
+const UNSUPPORTED: SendOutcome = {
+  ok: false,
+  failure: { status: 400, code: null, message: "unsupported outbox entry" },
+};
+
+async function sendLog(entry: OutboxEntry): Promise<SendOutcome> {
   const sb = supabase();
   const row = entry.row ?? {};
   switch (entry.op) {
@@ -76,7 +81,80 @@ async function send(entry: OutboxEntry): Promise<SendOutcome> {
       });
       return result.error ? failed(result) : { ok: true };
     }
+    case "upsert":
+      return UNSUPPORTED;
   }
+}
+
+const DOSE_CONFLICT = "baby_id,vaccine_code,dose_no";
+
+// Spec §9: upsert on the natural key and never send id, so the update branch
+// keeps the server's primary key.
+async function sendDose(entry: OutboxEntry): Promise<SendOutcome> {
+  const sb = supabase();
+  const row = entry.row ?? {};
+  const key = {
+    baby_id: entry.babyId,
+    vaccine_code: String(row.vaccine_code),
+    dose_no: Number(row.dose_no),
+  };
+  const marks = {
+    status: String(row.status),
+    given_on: (row.given_on as string | null | undefined) ?? null,
+    due_on_override: (row.due_on_override as string | null | undefined) ?? null,
+    place: (row.place as string | null | undefined) ?? null,
+    note: (row.note as string | null | undefined) ?? null,
+  };
+  switch (entry.op) {
+    case "upsert": {
+      const result = await sb
+        .from("vaccine_doses")
+        .upsert({ ...key, ...marks }, { onConflict: DOSE_CONFLICT })
+        .select("id");
+      if (result.error) return failed(result);
+      return result.data.length > 0
+        ? { ok: true }
+        : { ok: false, failure: { zeroRows: true } };
+    }
+    case "insert": {
+      // Quick tick: a dose someone already marked keeps its mark.
+      const result = await sb
+        .from("vaccine_doses")
+        .upsert(
+          { ...key, status: marks.status },
+          { onConflict: DOSE_CONFLICT, ignoreDuplicates: true },
+        );
+      return result.error ? failed(result) : { ok: true };
+    }
+    case "delete": {
+      const result = await sb
+        .from("vaccine_doses")
+        .delete()
+        .eq("baby_id", key.baby_id)
+        .eq("vaccine_code", key.vaccine_code)
+        .eq("dose_no", key.dose_no)
+        .select("id");
+      if (result.error) return failed(result);
+      if (result.data.length > 0) return { ok: true };
+      // 0 rows: already cleared on another device counts as done.
+      const check = await sb
+        .from("vaccine_doses")
+        .select("id")
+        .eq("baby_id", key.baby_id)
+        .eq("vaccine_code", key.vaccine_code)
+        .eq("dose_no", key.dose_no);
+      if (check.error) return failed(check);
+      return check.data.length === 0
+        ? { ok: true }
+        : { ok: false, failure: { zeroRows: true } };
+    }
+    default:
+      return UNSUPPORTED;
+  }
+}
+
+function send(entry: OutboxEntry): Promise<SendOutcome> {
+  return entry.table === "vaccine_doses" ? sendDose(entry) : sendLog(entry);
 }
 
 export function outboxDeps(): FlushDeps {

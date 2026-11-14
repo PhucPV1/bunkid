@@ -6,10 +6,11 @@ import { VaccineScreen } from "@/components/vaccines/VaccineScreen";
 export default function Page() {
   return (
     <AuthGate need="baby">
-      {({ ctx }) =>
-        ctx?.baby ? (
+      {({ session, ctx }) =>
+        ctx?.baby && session ? (
           <VaccineScreen
             baby={ctx.baby}
+            userId={session.user.id}
             isOwner={ctx.member.role === "owner"}
           />
         ) : null

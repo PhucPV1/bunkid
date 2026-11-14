@@ -20,18 +20,20 @@ import { ChoiceFields } from "./ChoiceFields";
 // Spec §6.1: pick a series per group, then tick the doses already given.
 export function VaccineSetup({
   baby,
+  userId,
   records,
   initialChoices,
   onDone,
   onLater,
 }: {
   baby: Baby;
+  userId: string;
   records: DoseRecord[];
   initialChoices: Record<string, string>;
   onDone: () => void;
   onLater: () => void;
 }) {
-  const setup = useVaccineSetup(baby.id);
+  const setup = useVaccineSetup(baby.id, userId);
   const [draft, setDraft] = useState(initialChoices);
   const [ticked, setTicked] = useState(() => new Set(DEFAULT_TICKED));
   const candidates = quickTickCandidates(
