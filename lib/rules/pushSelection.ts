@@ -1,11 +1,19 @@
-import { formatVnTime } from "./time";
+import { VACCINES } from "@/lib/content/vaccines";
+import type { VaccineDose } from "@/lib/content/vaccineSchema";
+import { addDays, formatDayShort, WEEKDAYS } from "./days";
+import { formatVnTime, vnDateString } from "./time";
+import { buildSchedule, type DoseRecord } from "./vaccines";
 
 export type NotificationKind = "feed" | "wake" | "vaccine";
 
 export type Recipient = {
   userId: string;
   // null: the user never saved preferences, so every switch is on (spec §5.2).
-  prefs: { feed_reminder: boolean; snooze_until: string | null } | null;
+  prefs: {
+    feed_reminder: boolean;
+    vaccine: boolean;
+    snooze_until: string | null;
+  } | null;
 };
 
 export type BabyDispatchState = {
@@ -14,6 +22,12 @@ export type BabyDispatchState = {
   // Latest breast/bottle log by started_at, or null when there is none.
   lastFeed: { id: string; startedAt: string } | null;
   breastRunning: boolean;
+  // null: vaccine reminders are not evaluated for this baby.
+  vaccine: {
+    dob: string;
+    choices: Record<string, string>;
+    records: DoseRecord[];
+  } | null;
   // Members with a user_id and at least one push subscription.
   recipients: Recipient[];
 };
@@ -70,10 +84,63 @@ function feedReminders(baby: BabyDispatchState, now: Date): DueNotification[] {
     }));
 }
 
-// Spec §8.3. Release 1 sends only "feed"; "wake" and "vaccine" come in release 2.
+// Vaccine reminders ignore snooze (spec §8.3); only the "Nhắc lịch tiêm" switch counts.
+const wantsVaccine = (recipient: Recipient) =>
+  recipient.prefs === null || recipient.prefs.vaccine;
+
+function weekdayDate(day: string): string {
+  const weekday = WEEKDAYS[new Date(`${day}T00:00:00Z`).getUTCDay()];
+  return `${weekday}, ${formatDayShort(day)}`;
+}
+
+// Spec §8.3 row "vaccine": 08:00–08:59 VN time, open doses of a chosen series
+// due in 3 days (D3) or tomorrow (D1).
+function vaccineReminders(
+  baby: BabyDispatchState,
+  now: Date,
+  doses: VaccineDose[],
+): DueNotification[] {
+  if (!baby.vaccine || formatVnTime(now).slice(0, 2) !== "08") return [];
+  const today = vnDateString(now);
+  const marks: Record<string, "D3" | "D1"> = {
+    [addDays(today, 3)]: "D3",
+    [addDays(today, 1)]: "D1",
+  };
+  const items = buildSchedule({
+    doses,
+    choices: baby.vaccine.choices,
+    dob: baby.vaccine.dob,
+    records: baby.vaccine.records,
+    today,
+  }).filter(
+    (item) =>
+      !item.unchosen &&
+      item.state !== "done" &&
+      item.state !== "skipped" &&
+      marks[item.due] !== undefined,
+  );
+  return items.flatMap((item) =>
+    baby.recipients.filter(wantsVaccine).map((recipient): DueNotification => ({
+      userId: recipient.userId,
+      kind: "vaccine",
+      refKey: `vax:${baby.babyId}:${item.dose.code}:${item.dose.doseNo}:${marks[item.due]}`,
+      title: "Sắp tới lịch tiêm",
+      body: `${item.dose.name} vào ${weekdayDate(item.due)}.`,
+      url: "/tiem-chung",
+      // One tag per dose: several doses often fall on the same day.
+      tag: `vaccine:${baby.babyId}:${item.dose.code}:${item.dose.doseNo}`,
+    })),
+  );
+}
+
+// Spec §8.3: "feed" and "vaccine". "wake" comes later in release 2.
 export function selectDueNotifications(
   babies: BabyDispatchState[],
   now: Date,
+  vaccineDoses: VaccineDose[] = VACCINES.doses,
 ): DueNotification[] {
-  return babies.flatMap((baby) => feedReminders(baby, now));
+  return babies.flatMap((baby) => [
+    ...feedReminders(baby, now),
+    ...vaccineReminders(baby, now, vaccineDoses),
+  ]);
 }

@@ -1,5 +1,6 @@
 import webpush from "web-push";
 import type { BabyDispatchState } from "@/lib/rules/pushSelection";
+import { parseChoices, toDoseRecords } from "@/lib/rules/vaccineForm";
 import type { DispatchDeps } from "./dispatch";
 import { pushEnv } from "./pushEnv";
 import { supabaseServiceRole } from "./supabaseServer";
@@ -10,13 +11,13 @@ async function loadState(now: Date): Promise<BabyDispatchState[]> {
   const db = supabaseServiceRole();
   const { data: babies, error } = await db
     .from("babies")
-    .select("id, family_id, feed_interval_min");
+    .select("id, family_id, feed_interval_min, dob, vaccine_choices");
   if (error) throw error;
 
   const states: BabyDispatchState[] = [];
   for (const baby of babies) {
     const since = new Date(now.getTime() - TWELVE_HOURS_MS).toISOString();
-    const [feeds, running, members] = await Promise.all([
+    const [feeds, running, members, doses] = await Promise.all([
       db
         .from("logs")
         .select("id, started_at")
@@ -37,8 +38,12 @@ async function loadState(now: Date): Promise<BabyDispatchState[]> {
         .select("user_id")
         .eq("family_id", baby.family_id)
         .not("user_id", "is", null),
+      db
+        .from("vaccine_doses")
+        .select("vaccine_code, dose_no, status, given_on, due_on_override")
+        .eq("baby_id", baby.id),
     ]);
-    for (const result of [feeds, running, members])
+    for (const result of [feeds, running, members, doses])
       if (result.error) throw result.error;
 
     const userIds = (members.data ?? []).flatMap((m) =>
@@ -48,7 +53,7 @@ async function loadState(now: Date): Promise<BabyDispatchState[]> {
       db.from("push_subscriptions").select("user_id").in("user_id", userIds),
       db
         .from("notification_prefs")
-        .select("user_id, feed_reminder, snooze_until")
+        .select("user_id, feed_reminder, vaccine, snooze_until")
         .in("user_id", userIds),
     ]);
     if (subscribed.error) throw subscribed.error;
@@ -61,6 +66,11 @@ async function loadState(now: Date): Promise<BabyDispatchState[]> {
       feedIntervalMin: baby.feed_interval_min,
       lastFeed: last ? { id: last.id, startedAt: last.started_at } : null,
       breastRunning: (running.data ?? []).length > 0,
+      vaccine: {
+        dob: baby.dob,
+        choices: parseChoices(baby.vaccine_choices),
+        records: toDoseRecords(doses.data ?? []),
+      },
       recipients: userIds
         .filter((id) => withSubscription.has(id))
         .map((userId) => {
@@ -70,6 +80,7 @@ async function loadState(now: Date): Promise<BabyDispatchState[]> {
             prefs: row
               ? {
                   feed_reminder: row.feed_reminder,
+                  vaccine: row.vaccine,
                   snooze_until: row.snooze_until,
                 }
               : null,

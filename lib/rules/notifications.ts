@@ -16,7 +16,7 @@ export const PREF_OPTIONS: {
     label: "Nhắc khi bé thức quá lâu",
     note: "Có từ đợt 2",
   },
-  { key: "vaccine", label: "Nhắc lịch tiêm", note: "Có từ đợt 2" },
+  { key: "vaccine", label: "Nhắc lịch tiêm", note: null },
 ];
 
 export function snoozeUntil(now: Date, hours: number): string {

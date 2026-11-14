@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { VaccineDose } from "@/lib/content/vaccineSchema";
 import {
   agoText,
   selectDueNotifications,
@@ -15,6 +16,7 @@ function baby(over: Partial<BabyDispatchState> = {}): BabyDispatchState {
     feedIntervalMin: 180,
     lastFeed: { id: "L1", startedAt: minutesAgo(190) },
     breastRunning: false,
+    vaccine: null,
     recipients: [{ userId: "u1", prefs: null }],
     ...over,
   };
@@ -91,19 +93,31 @@ describe("selectDueNotifications — feed (spec §8.3)", () => {
           recipients: [
             {
               userId: "off",
-              prefs: { feed_reminder: false, snooze_until: null },
+              prefs: {
+                feed_reminder: false,
+                vaccine: true,
+                snooze_until: null,
+              },
             },
             {
               userId: "snoozed",
-              prefs: { feed_reminder: true, snooze_until: minutesAgo(-30) },
+              prefs: {
+                feed_reminder: true,
+                vaccine: true,
+                snooze_until: minutesAgo(-30),
+              },
             },
             {
               userId: "woke",
-              prefs: { feed_reminder: true, snooze_until: minutesAgo(1) },
+              prefs: {
+                feed_reminder: true,
+                vaccine: true,
+                snooze_until: minutesAgo(1),
+              },
             },
             {
               userId: "plain",
-              prefs: { feed_reminder: true, snooze_until: null },
+              prefs: { feed_reminder: true, vaccine: true, snooze_until: null },
             },
           ],
         }),
@@ -131,5 +145,149 @@ describe("selectDueNotifications — feed (spec §8.3)", () => {
     expect(agoText(185 * 60_000)).toBe("3 giờ 5 phút trước");
     expect(agoText(120 * 60_000)).toBe("2 giờ trước");
     expect(agoText(45 * 60_000 + 59_000)).toBe("45 phút trước");
+  });
+});
+
+describe("selectDueNotifications — vaccine (spec §8.3)", () => {
+  // Monday 16/11/2026 08:30 in VN. D3 = Thursday 19/11, D1 = Tuesday 17/11.
+  const at = (iso: string) => new Date(iso);
+  const morning = at("2026-11-16T01:30:00Z");
+  const dob = "2026-09-14"; // 19/11 is day 66, 17/11 is day 64
+  const vaxDose = (
+    code: string,
+    rec: number,
+    extra: Partial<VaccineDose> = {},
+  ): VaccineDose => ({
+    code,
+    doseNo: 1,
+    name: `${code} mũi 1`,
+    protects: ["X"],
+    program: "dich_vu",
+    recommendedAgeDays: rec,
+    minAgeDays: rec,
+    source: "https://example.org",
+    reviewedAt: "2026-11-14",
+    ...extra,
+  });
+  const doses = [
+    vaxDose("hexa", 66, { group: "dtp_combo", series: "6in1" }),
+    vaxDose("opv", 64),
+    vaxDose("rotarix", 64, { group: "rota", series: "rotarix" }),
+    vaxDose("bcg", 64),
+    vaxDose("later", 65),
+  ];
+  const vaxBaby = (over: Partial<BabyDispatchState> = {}) =>
+    baby({
+      lastFeed: null,
+      vaccine: {
+        dob,
+        choices: { dtp_combo: "6in1" },
+        records: [
+          {
+            vaccine_code: "bcg",
+            dose_no: 1,
+            status: "done",
+            given_on: null,
+            due_on_override: null,
+          },
+        ],
+      },
+      ...over,
+    });
+
+  it("reminds 3 days and 1 day before open doses of chosen series, 08:00–08:59 VN", () => {
+    expect(selectDueNotifications([vaxBaby()], morning, doses)).toEqual([
+      {
+        userId: "u1",
+        kind: "vaccine",
+        refKey: "vax:b1:opv:1:D1",
+        title: "Sắp tới lịch tiêm",
+        body: "opv mũi 1 vào Thứ Ba, 17/11.",
+        url: "/tiem-chung",
+        tag: "vaccine:b1:opv:1",
+      },
+      {
+        userId: "u1",
+        kind: "vaccine",
+        refKey: "vax:b1:hexa:1:D3",
+        title: "Sắp tới lịch tiêm",
+        body: "hexa mũi 1 vào Thứ Năm, 19/11.",
+        url: "/tiem-chung",
+        tag: "vaccine:b1:hexa:1",
+      },
+    ]);
+  });
+
+  it("sends nothing outside 08:00–08:59 VN or without vaccine data", () => {
+    for (const iso of ["2026-11-16T00:59:00Z", "2026-11-16T02:00:00Z"])
+      expect(selectDueNotifications([vaxBaby()], at(iso), doses)).toEqual([]);
+    expect(
+      selectDueNotifications([vaxBaby({ vaccine: null })], morning, doses),
+    ).toEqual([]);
+  });
+
+  it("uses a rescheduled date and skips doses marked skipped", () => {
+    const due = selectDueNotifications(
+      [
+        vaxBaby({
+          vaccine: {
+            dob,
+            choices: { dtp_combo: "6in1" },
+            records: [
+              {
+                vaccine_code: "hexa",
+                dose_no: 1,
+                status: "rescheduled",
+                given_on: null,
+                due_on_override: "2026-11-17",
+              },
+              {
+                vaccine_code: "opv",
+                dose_no: 1,
+                status: "skipped",
+                given_on: null,
+                due_on_override: null,
+              },
+            ],
+          },
+        }),
+      ],
+      morning,
+      doses,
+    );
+    expect(due.map((d) => d.refKey)).toEqual([
+      "vax:b1:bcg:1:D1",
+      "vax:b1:hexa:1:D1",
+    ]);
+  });
+
+  it("follows the vaccine switch and ignores snooze", () => {
+    const due = selectDueNotifications(
+      [
+        vaxBaby({
+          recipients: [
+            {
+              userId: "off",
+              prefs: {
+                feed_reminder: true,
+                vaccine: false,
+                snooze_until: null,
+              },
+            },
+            {
+              userId: "snoozed",
+              prefs: {
+                feed_reminder: true,
+                vaccine: true,
+                snooze_until: "2026-11-16T05:00:00Z",
+              },
+            },
+          ],
+        }),
+      ],
+      morning,
+      doses,
+    );
+    expect(new Set(due.map((d) => d.userId))).toEqual(new Set(["snoozed"]));
   });
 });
