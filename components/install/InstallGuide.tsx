@@ -21,11 +21,11 @@ export function InstallGuide() {
       <Link href="/" className="flex min-h-11 items-center text-accent-ink">
         ← Quay lại
       </Link>
-      <h1 className="text-2xl font-semibold">Cài Bé Yêu</h1>
+      <h1 className="text-2xl font-semibold">Cài Kim Bun</h1>
       {standalone === true && (
         <>
           <p className="rounded-2xl bg-good-soft p-4 text-good-ink">
-            Bé Yêu đã được cài và đang chạy từ màn hình chính.
+            Kim Bun đã được cài và đang chạy từ màn hình chính.
           </p>
           <OnlineOnly>
             <DevicePushControl />
@@ -35,7 +35,7 @@ export function InstallGuide() {
       {standalone === false && (
         <>
           <p className="rounded-2xl bg-warn-soft p-4 text-warn-ink">
-            Phải cài Bé Yêu lên màn hình chính thì iPhone mới nhận được thông
+            Phải cài Kim Bun lên màn hình chính thì iPhone mới nhận được thông
             báo.
           </p>
           <ol className="flex flex-col gap-3">
@@ -48,7 +48,7 @@ export function InstallGuide() {
               <strong>Thêm</strong>.
             </li>
             <li>
-              3. Mở Bé Yêu từ biểu tượng mới trên màn hình chính và đăng nhập
+              3. Mở Kim Bun từ biểu tượng mới trên màn hình chính và đăng nhập
               lại.
             </li>
           </ol>

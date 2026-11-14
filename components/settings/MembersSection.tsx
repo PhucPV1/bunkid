@@ -165,7 +165,7 @@ export function MembersSection({ me }: { me: FamilyMember }) {
             Thêm
           </button>
           <p className="text-sm text-muted">
-            Người được thêm chỉ cần mở Bé Yêu và đăng nhập Google bằng đúng
+            Người được thêm chỉ cần mở Kim Bun và đăng nhập Google bằng đúng
             Gmail này.
           </p>
         </form>

@@ -19,7 +19,7 @@ export function LoginScreen() {
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center gap-6 p-6 text-center">
-      <h1 className="text-3xl font-semibold">Bé Yêu</h1>
+      <h1 className="text-3xl font-semibold">Kim Bun</h1>
       <p className="text-muted">Theo dõi bú, ngủ, tã của bé cùng cả nhà.</p>
       <button
         type="button"
@@ -32,7 +32,7 @@ export function LoginScreen() {
         href="/cai-app"
         className="flex min-h-11 items-center justify-center text-accent-ink underline"
       >
-        Cách cài Bé Yêu lên màn hình chính
+        Cách cài Kim Bun lên màn hình chính
       </Link>
       {error && (
         <p role="alert" className="text-danger">

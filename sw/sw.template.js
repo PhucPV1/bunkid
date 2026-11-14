@@ -34,7 +34,7 @@ const GUIDES = [
   "/bong-be",
   "/phat-trien",
 ];
-const FALLBACK_TITLE = "Bé Yêu có thông báo mới";
+const FALLBACK_TITLE = "Kim Bun có thông báo mới";
 
 function staticAssets(html) {
   return [...new Set(html.match(/\/_next\/static\/[^"'\s)<>\\]+/g) || [])];

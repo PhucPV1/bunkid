@@ -187,7 +187,7 @@ describe("service worker", () => {
     );
     expect(self.registration.showNotification).toHaveBeenNthCalledWith(
       2,
-      "Bé Yêu có thông báo mới",
+      "Kim Bun có thông báo mới",
       expect.objectContaining({ data: { url: "/" } }),
     );
   });

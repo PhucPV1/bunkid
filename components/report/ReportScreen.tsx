@@ -224,7 +224,7 @@ export function ReportScreen({ baby }: { baby: Baby }) {
           </section>
 
           <p className="text-sm text-muted">
-            Số liệu do gia đình ghi bằng ứng dụng Bé Yêu. Thông tin tham khảo,
+            Số liệu do gia đình ghi bằng ứng dụng Kim Bun. Thông tin tham khảo,
             không thay thế bác sĩ.
           </p>
         </>

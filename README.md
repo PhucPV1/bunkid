@@ -1,4 +1,4 @@
-# Bé Yêu
+# Kim Bun
 
 PWA theo dõi chăm sóc bé. Spec: `docs/blueprint/specs/2026-11-13-baby-tracker-web-design.md`.
 

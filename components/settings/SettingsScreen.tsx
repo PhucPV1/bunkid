@@ -74,7 +74,7 @@ export function SettingsScreen({
           href="/cai-app"
           className="flex min-h-11 items-center justify-between rounded-xl border px-4"
         >
-          Cài Bé Yêu lên màn hình chính
+          Cài Kim Bun lên màn hình chính
           <span aria-hidden="true">›</span>
         </Link>
       </section>

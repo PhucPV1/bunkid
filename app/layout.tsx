@@ -5,9 +5,9 @@ import { THEME_INIT_SCRIPT } from "@/lib/theme";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Bé Yêu",
+  title: "Kim Bun",
   manifest: "/manifest.webmanifest",
-  appleWebApp: { capable: true, title: "Bé Yêu", statusBarStyle: "default" },
+  appleWebApp: { capable: true, title: "Kim Bun", statusBarStyle: "default" },
   icons: { apple: "/icons/apple-touch-icon.png" },
 };
 

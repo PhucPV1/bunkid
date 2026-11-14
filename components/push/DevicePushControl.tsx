@@ -11,11 +11,11 @@ import {
 
 const MESSAGE: Partial<Record<DeviceState, string>> = {
   "needs-install":
-    "Cài Bé Yêu lên màn hình chính rồi mở từ biểu tượng để nhận thông báo.",
+    "Cài Kim Bun lên màn hình chính rồi mở từ biểu tượng để nhận thông báo.",
   unsupported: "Trình duyệt này không nhận được thông báo.",
   "not-configured": "Thông báo chưa được thiết lập trên máy chủ.",
   denied:
-    "Bạn đã chặn thông báo. Mở Cài đặt iOS → Thông báo → Bé Yêu, bật Cho phép thông báo.",
+    "Bạn đã chặn thông báo. Mở Cài đặt iOS → Thông báo → Kim Bun, bật Cho phép thông báo.",
   on: "Máy này đang nhận thông báo.",
 };
 
@@ -55,7 +55,7 @@ export function DevicePushControl() {
           href="/cai-app"
           className="flex min-h-11 items-center text-accent-ink underline"
         >
-          Cách cài Bé Yêu lên màn hình chính
+          Cách cài Kim Bun lên màn hình chính
         </Link>
       )}
       {state === "off" && (
