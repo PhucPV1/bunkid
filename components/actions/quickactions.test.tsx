@@ -1,6 +1,8 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { ToastProvider } from "@/components/ui/Toast";
 import type { Baby, FamilyMember } from "@/lib/supabase/rows";
 import { QuickActionsProvider, useQuickActions } from "./QuickActions";
 
@@ -26,17 +28,35 @@ function Probe() {
   );
 }
 
+const withQuery = (node: ReactNode) => (
+  <QueryClientProvider client={new QueryClient()}>{node}</QueryClientProvider>
+);
+
 describe("QuickActionsProvider", () => {
   it("gives every page the shared timer and quick-entry actions", () => {
     const html = renderToStaticMarkup(
-      <QueryClientProvider client={new QueryClient()}>
-        <QuickActionsProvider baby={baby} member={member} userId="u1">
-          <Probe />
-        </QuickActionsProvider>
-      </QueryClientProvider>,
+      withQuery(
+        <ToastProvider>
+          <QuickActionsProvider baby={baby} member={member} userId="u1">
+            <Probe />
+          </QuickActionsProvider>
+        </ToastProvider>,
+      ),
     );
     expect(html).toContain("<span>function,function,function,0,false</span>");
     expect(html).not.toContain("<form");
+  });
+
+  it("shows its Undo toasts, so it needs the ToastProvider", () => {
+    expect(() =>
+      renderToStaticMarkup(
+        withQuery(
+          <QuickActionsProvider baby={baby} member={member} userId="u1">
+            <Probe />
+          </QuickActionsProvider>,
+        ),
+      ),
+    ).toThrow("useToast must be used inside ToastProvider");
   });
 
   it("useQuickActions throws outside the provider", () => {

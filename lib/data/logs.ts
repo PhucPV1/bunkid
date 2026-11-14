@@ -148,7 +148,8 @@ export function useAddInstant(babyId: string, userId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     networkMode: "always",
-    mutationFn: ({
+    // Resolves to the new row's id so the Undo toast can delete exactly that row.
+    mutationFn: async ({
       type,
       details,
       at,
@@ -156,15 +157,17 @@ export function useAddInstant(babyId: string, userId: string) {
       type: LogType;
       details: Record<string, unknown>;
       at: Date;
-    }) => {
+    }): Promise<string> => {
       const iso = at.toISOString();
-      return enqueueLogChange(queryClient, {
+      const rowId = crypto.randomUUID();
+      await enqueueLogChange(queryClient, {
         op: "insert",
-        rowId: crypto.randomUUID(),
+        rowId,
         babyId,
         userId,
         row: { type, started_at: iso, ended_at: iso, details },
       });
+      return rowId;
     },
   });
 }

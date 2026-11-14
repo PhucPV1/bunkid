@@ -27,6 +27,7 @@ export function QuickEntrySheet({
   babyId,
   userId,
   onClose,
+  onSaved,
   initial,
   recentLogs = [],
 }: {
@@ -34,6 +35,12 @@ export function QuickEntrySheet({
   babyId: string;
   userId: string;
   onClose: () => void;
+  onSaved?: (saved: {
+    id: string;
+    type: InstantType;
+    details: Record<string, unknown>;
+    at: Date;
+  }) => void;
   initial?: QuickValues;
   recentLogs?: LogRow[];
 }) {
@@ -56,9 +63,16 @@ export function QuickEntrySheet({
       setMessage(built.message);
       return;
     }
+    const when = fromVnLocalInput(at);
     add.mutate(
-      { type, details: built.details, at: fromVnLocalInput(at) },
-      { onSuccess: onClose, onError: (e) => setMessage(toVietnameseError(e)) },
+      { type, details: built.details, at: when },
+      {
+        onSuccess: (id) => {
+          onSaved?.({ id, type, details: built.details, at: when });
+          onClose();
+        },
+        onError: (e) => setMessage(toVietnameseError(e)),
+      },
     );
   }
 

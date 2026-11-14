@@ -381,3 +381,30 @@ Kết quả: Chờ người dùng.
 | iPhone 11     |     |         |         |
 | iPhone 16     |     |         |         |
 | iPhone 17 Pro |     |         |         |
+
+## Bước 26 — Trang chủ mới và Hoàn tác (UI đợt 3)
+
+1. Thẻ chính, đủ 4 trạng thái:
+   - Bấm "Ngủ". Kỳ vọng: vòng màu tím chạy, đồng hồ "0:05"… tăng từng giây, dòng "<tên> · từ HH:mm", một nút "Dừng" rộng.
+   - Bấm "Bú trái". Kỳ vọng: thẻ chính đổi sang bú trái (timer mới nhất), giấc ngủ xuống hàng kính bên dưới có nút "Dừng".
+   - Bấm "Đổi bên". Kỳ vọng: thành bú phải, không hiện Toast.
+   - Dừng hết. Kỳ vọng: thẻ chính là "Cữ bú tiếp theo" (giờ to, "còn …").
+   - Chờ quá giờ dự kiến (hoặc đổi cữ bú ngắn trong Cài đặt). Kỳ vọng: "Trễ cữ bú" viền vàng.
+   - Khi không có cữ bú nào trong 12 giờ: "Chưa có cữ bú nào gần đây".
+2. Bấm "Dừng" một timer. Kỳ vọng: Toast "Đã ghi … lúc HH:mm" có nút "Hoàn tác" hiện 5 giây phía trên tab bar. Bấm "Hoàn tác". Kỳ vọng: timer chạy tiếp từ giờ cũ.
+3. Ghi nhanh "Thay tã" → Lưu. Kỳ vọng: Toast "Đã ghi Tã … lúc HH:mm". Bấm "Hoàn tác". Kỳ vọng: bản ghi biến mất khỏi "Gần đây". Làm lại khi tắt mạng: vẫn hoàn tác được, "N mục chờ đồng bộ" về 0 sau khi có mạng.
+4. Bắt đầu một timer. Kỳ vọng: không có Toast.
+5. Dừng "Hút sữa" (tài khoản có quyền sửa). Kỳ vọng: sheet hỏi ml mở ra trước; Toast chỉ hiện sau khi đóng sheet. Nếu bấm Hoàn tác lúc này, số ml vừa nhập bị bỏ (lần dừng sau sẽ hỏi lại).
+6. Tài khoản thành viên thường dừng timer do người khác bắt đầu. Kỳ vọng: Toast "Đã ghi …" không có nút Hoàn tác.
+7. Dừng "Bú trái", bấm "Bú trái" lại ngay, rồi bấm "Hoàn tác" trên Toast cũ. Kỳ vọng: "Không hoàn tác được: đang có timer cùng loại chạy"; chỉ một timer bú trái chạy.
+8. Android (nếu có): bấm nút bấm giờ thấy rung nhẹ. iPhone: không rung, không lỗi.
+9. "24 giờ qua": 3 ô luôn có số; nhãn "Bình thường" / "Cần chú ý" / "Báo bác sĩ" chỉ khi đã đủ 24 giờ dữ liệu. "Gần đây" tối đa 6 hàng, "Tất cả" mở Nhật ký.
+10. Lặp lại mục 1–2 ở theme Sáng, Tối, Ban đêm: chữ rõ, vòng đúng màu (Ban đêm: tông hổ phách).
+
+Kết quả: Chờ người dùng.
+
+| Máy           | iOS | Kết quả | Ghi chú |
+| ------------- | --- | ------- | ------- |
+| iPhone 11     |     |         |         |
+| iPhone 16     |     |         |         |
+| iPhone 17 Pro |     |         |         |
