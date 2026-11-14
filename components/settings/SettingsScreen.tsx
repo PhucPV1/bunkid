@@ -3,32 +3,33 @@
 import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useState } from "react";
-import { useNightSchedule, useThemePref } from "@/lib/hooks/useTheme";
-import { roleLabel } from "@/lib/rules/familySettings";
-import { HALF_HOURS } from "@/lib/rules/theme";
+import { OnlineOnly } from "@/components/OnlineOnly";
+import { Icon } from "@/components/ui/Icon";
+import { ListGroup, ListRow } from "@/components/ui/ListGroup";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { LOGO_GRADIENT, LOGO_INK } from "@/lib/brand/logo";
+import { useMembers } from "@/lib/data/family";
+import { formatInterval, roleLabel } from "@/lib/rules/familySettings";
+import { babySubtitle, memberCountText } from "@/lib/rules/settingsText";
 import { supabase } from "@/lib/supabase/client";
 import type { Baby, FamilyMember } from "@/lib/supabase/rows";
-import { THEME_OPTIONS } from "@/lib/theme";
-import { OnlineOnly } from "@/components/OnlineOnly";
-import { BabyProfileSection } from "./BabyProfileSection";
-import { FeedIntervalSection } from "./FeedIntervalSection";
-import { MembersSection } from "./MembersSection";
-import { NotificationsSection } from "./NotificationsSection";
+import { AppearanceGroup } from "./AppearanceGroup";
+import { NotificationsGroup } from "./NotificationsGroup";
+
+const PROFILE_CARD =
+  "glass flex items-center gap-3.5 rounded-[26px] p-4 text-ink";
 
 export function SettingsScreen({
   member,
   baby,
-  email,
   userId,
 }: {
   member: FamilyMember;
   baby: Baby;
-  email: string;
   userId: string;
 }) {
   const queryClient = useQueryClient();
-  const [theme, setTheme] = useThemePref();
-  const [nightSchedule, setNightSchedule] = useNightSchedule();
+  const members = useMembers(baby.family_id);
   const [signingOut, setSigningOut] = useState(false);
   const isOwner = member.role === "owner";
 
@@ -42,113 +43,87 @@ export function SettingsScreen({
     }
   }
 
+  const profile = (
+    <>
+      <span
+        aria-hidden="true"
+        className="flex size-[60px] shrink-0 items-center justify-center rounded-full text-2xl font-bold in-data-[theme=night]:opacity-60"
+        style={{
+          backgroundImage: `linear-gradient(140deg, ${LOGO_GRADIENT.from}, ${LOGO_GRADIENT.to})`,
+          color: LOGO_INK,
+        }}
+      >
+        {baby.name.trim().charAt(0).toUpperCase()}
+      </span>
+      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className="truncate text-xl font-bold">{baby.name}</span>
+        <span className="text-sm text-muted">{babySubtitle(baby)}</span>
+      </span>
+    </>
+  );
+
   return (
-    <main className="mx-auto flex max-w-md flex-col gap-6 p-4">
-      <h1 className="text-2xl font-semibold">Cài đặt</h1>
+    <main className="mx-auto flex max-w-md flex-col gap-[22px] px-4 pt-2">
+      <PageHeader title="Cài đặt" back={{ href: "/", label: "Hôm nay" }} />
+
+      {isOwner ? (
+        <Link href="/cai-dat/ho-so" className={PROFILE_CARD}>
+          {profile}
+          <Icon name="chevronRight" size={16} className="text-muted" />
+        </Link>
+      ) : (
+        <div className={PROFILE_CARD}>{profile}</div>
+      )}
 
       <OnlineOnly>
-        <BabyProfileSection baby={baby} isOwner={isOwner} />
-        <FeedIntervalSection baby={baby} isOwner={isOwner} />
-        <MembersSection me={member} />
-        <NotificationsSection userId={userId} />
+        <ListGroup title="Gia đình">
+          <ListRow
+            label="Thành viên"
+            icon="users"
+            iconColor="cat-sleep"
+            value={
+              members.data ? memberCountText(members.data.length) : undefined
+            }
+            href="/cai-dat/thanh-vien"
+          />
+          <ListRow
+            label="Khoảng cách cữ bú"
+            icon="clock"
+            iconColor="cat-feed"
+            value={formatInterval(baby.feed_interval_min)}
+            href={isOwner ? "/cai-dat/cu-bu" : undefined}
+          />
+        </ListGroup>
+        <NotificationsGroup userId={userId} />
       </OnlineOnly>
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-medium">Giao diện</h2>
-        <div className="grid grid-cols-3 gap-2">
-          {THEME_OPTIONS.map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              aria-pressed={theme === option.value}
-              onClick={() => setTheme(option.value)}
-              className={`min-h-11 rounded-xl px-3 ${theme === option.value ? "bg-accent text-on-accent" : "bg-soft"}`}
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
-        <label className="flex min-h-11 items-center justify-between gap-3">
-          <span>
-            Ban đêm theo lịch
-            <span className="block text-sm text-muted">
-              Tông hổ phách dịu mắt khi cho bé bú đêm
-            </span>
-          </span>
-          <input
-            type="checkbox"
-            role="switch"
-            className="size-6"
-            checked={nightSchedule.enabled}
-            onChange={(e) =>
-              setNightSchedule({ ...nightSchedule, enabled: e.target.checked })
-            }
-          />
-        </label>
-        <div className="grid grid-cols-2 gap-2">
-          <label className="flex flex-col gap-1 text-sm text-muted">
-            Bắt đầu
-            <select
-              className="min-h-11 rounded-xl border bg-surface px-3 text-base text-ink"
-              disabled={!nightSchedule.enabled}
-              value={nightSchedule.start}
-              onChange={(e) =>
-                setNightSchedule({ ...nightSchedule, start: e.target.value })
-              }
-            >
-              {HALF_HOURS.map((hm) => (
-                <option key={hm} value={hm}>
-                  {hm}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="flex flex-col gap-1 text-sm text-muted">
-            Kết thúc
-            <select
-              className="min-h-11 rounded-xl border bg-surface px-3 text-base text-ink"
-              disabled={!nightSchedule.enabled}
-              value={nightSchedule.end}
-              onChange={(e) =>
-                setNightSchedule({ ...nightSchedule, end: e.target.value })
-              }
-            >
-              {HALF_HOURS.map((hm) => (
-                <option key={hm} value={hm}>
-                  {hm}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-      </section>
+      <AppearanceGroup />
 
-      <section className="flex flex-col gap-2">
-        <h2 className="text-lg font-medium">Ứng dụng</h2>
-        <Link
+      <ListGroup title="Ứng dụng">
+        <ListRow
+          label="Cài Kim Bun lên màn hình chính"
+          icon="phoneApp"
+          iconColor="cat-temp"
           href="/cai-app"
-          className="flex min-h-11 items-center justify-between rounded-xl border px-4"
-        >
-          Cài Kim Bun lên màn hình chính
-          <span aria-hidden="true">›</span>
-        </Link>
-      </section>
+        />
+      </ListGroup>
 
-      <section className="flex flex-col gap-2">
-        <h2 className="text-lg font-medium">Tài khoản</h2>
-        <p>
-          {member.display_name} · {roleLabel(member.role)}
-        </p>
-        <p className="text-muted">{email}</p>
-        <button
-          type="button"
-          disabled={signingOut}
-          onClick={signOut}
-          className="min-h-11 rounded-xl border disabled:opacity-50"
-        >
-          Đăng xuất
-        </button>
-      </section>
+      <ListGroup title="Tài khoản">
+        <ListRow
+          label={`${member.display_name} · ${roleLabel(member.role)}`}
+          detail="Đăng nhập bằng Google"
+        />
+        <li>
+          <button
+            type="button"
+            disabled={signingOut}
+            onClick={signOut}
+            className="flex min-h-[52px] w-full items-center justify-center text-base font-semibold text-danger disabled:opacity-50"
+          >
+            Đăng xuất
+          </button>
+        </li>
+      </ListGroup>
     </main>
   );
 }

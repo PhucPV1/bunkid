@@ -11,7 +11,6 @@ export default function Page() {
           <SettingsScreen
             member={ctx.member}
             baby={ctx.baby}
-            email={session.user.email ?? ""}
             userId={session.user.id}
           />
         ) : null

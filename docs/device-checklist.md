@@ -365,3 +365,19 @@ Kết quả: Chờ người dùng.
 | iPhone 11     |     |         |         |
 | iPhone 16     |     |         |         |
 | iPhone 17 Pro |     |         |         |
+
+## Bước 25 — Cài đặt kiểu iOS (UI đợt 2)
+
+1. Bấm avatar ở Trang chủ. Kỳ vọng: trang Cài đặt có nút "‹ Hôm nay", tiêu đề lớn, thẻ hồ sơ bé (tên, giới tính, ngày sinh, cân nặng lúc sinh), rồi các nhóm GIA ĐÌNH, THÔNG BÁO, GIAO DIỆN, ỨNG DỤNG, TÀI KHOẢN. Không hiện email.
+2. Bấm thẻ hồ sơ, Thành viên, Khoảng cách cữ bú (chủ nhà). Kỳ vọng: mỗi trang con có nút "‹ Cài đặt" và nội dung như trước. Tài khoản thành viên thường: thẻ hồ sơ và hàng Cữ bú không có "›", không mở được. Trang con đang hiện tiêu đề hai lần (tiêu đề lớn và tiêu đề cũ của form): đã biết, Đợt 5 làm lại.
+3. Thông báo: gạt một công tắc nhắc; đóng mở lại app vẫn giữ. Bấm "Tạm tắt nhắc" → chọn 2 giờ. Kỳ vọng: hàng hiện "Đến HH:mm"; mở lại sheet có "Bật lại ngay".
+4. Giao diện: đổi Sáng / Tối / Tự động; tắt bật "Ban đêm theo lịch"; đổi "Giờ ban đêm" trong sheet. Kỳ vọng: app đổi theme ngay, giá trị hàng Giờ ban đêm cập nhật.
+5. Bật "Giảm độ trong suốt" (Cài đặt iOS → Trợ năng → Màn hình & cỡ chữ). Kỳ vọng: các khối kính thành nền đặc, chữ vẫn rõ ở cả 3 theme.
+
+Kết quả: Chờ người dùng.
+
+| Máy           | iOS | Kết quả | Ghi chú |
+| ------------- | --- | ------- | ------- |
+| iPhone 11     |     |         |         |
+| iPhone 16     |     |         |         |
+| iPhone 17 Pro |     |         |         |
