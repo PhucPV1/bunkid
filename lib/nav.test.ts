@@ -66,6 +66,10 @@ describe("nav", () => {
     expect(TOOL_ITEMS.find((i) => i.label === "Nhạc")?.href).toBe("/nhac");
   });
 
+  it("Tiện ích opens photos", () => {
+    expect(TOOL_ITEMS.find((i) => i.label === "Ảnh")?.href).toBe("/anh");
+  });
+
   it("every menu link opens under its own tab", () => {
     for (const item of GUIDE_ITEMS)
       if (item.href) expect(activeTab(item.href)).toBe("guide");

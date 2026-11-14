@@ -29,7 +29,7 @@ export const TOOL_ITEMS: MenuItem[] = [
   { label: "Khẩn cấp", href: "/khan-cap" },
   { label: "Nhạc", href: "/nhac" },
   { label: "Ồn trắng", href: "/on-trang" },
-  { label: "Ảnh", href: null },
+  { label: "Ảnh", href: "/anh" },
   { label: "Báo cáo", href: null },
 ];
 
