@@ -17,3 +17,15 @@ export const CATEGORIES: Record<
   medicine: { token: "cat-med", icon: "pill", label: "Thuốc" },
   temperature: { token: "cat-temp", icon: "thermo", label: "Nhiệt độ" },
 };
+
+// Chip behind a category icon: the category colour at 15% under the icon in full colour.
+export const CATEGORY_CHIP: Record<CategoryToken, string> = {
+  "cat-feed": "bg-cat-feed/15 text-cat-feed",
+  "cat-bottle": "bg-cat-bottle/15 text-cat-bottle",
+  "cat-sleep": "bg-cat-sleep/15 text-cat-sleep",
+  "cat-diaper": "bg-cat-diaper/15 text-cat-diaper",
+  "cat-pump": "bg-cat-pump/15 text-cat-pump",
+  "cat-tummy": "bg-cat-tummy/15 text-cat-tummy",
+  "cat-med": "bg-cat-med/15 text-cat-med",
+  "cat-temp": "bg-cat-temp/15 text-cat-temp",
+};
