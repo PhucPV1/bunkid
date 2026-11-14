@@ -46,6 +46,11 @@ export type QuickActionsValue = {
   pressTimer: (button: TimerButton) => void;
   stopTimer: (log: LogRow) => void;
   openInstant: (type: InstantType, initial?: QuickValues) => void;
+  // The "+" action sheet (spec §6.3), open from any page inside the provider.
+  actionSheetOpen: boolean;
+  openActionSheet: () => void;
+  toggleActionSheet: () => void;
+  closeActionSheet: () => void;
 };
 
 const QuickActionsContext = createContext<QuickActionsValue | null>(null);
@@ -71,6 +76,7 @@ export function QuickActionsProvider({
     type: InstantType;
     initial?: QuickValues;
   } | null>(null);
+  const [actionSheetOpen, setActionSheetOpen] = useState(false);
   // Id of a pumping log that was just stopped: ask for ml (spec gốc §6.13).
   const [pumpStopped, setPumpStopped] = useState<string | null>(null);
   // Spec §7.4: the Undo toast for that stop waits until the ml sheet closes.
@@ -137,6 +143,10 @@ export function QuickActionsProvider({
     stopTimer: (log) =>
       stop.mutate(log.id, { onSuccess: () => afterStop(log) }),
     openInstant: (type, initial) => setSheet({ type, initial }),
+    actionSheetOpen,
+    openActionSheet: () => setActionSheetOpen(true),
+    toggleActionSheet: () => setActionSheetOpen((open) => !open),
+    closeActionSheet: () => setActionSheetOpen(false),
   };
 
   return (
