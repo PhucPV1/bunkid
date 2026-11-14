@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { ICON_FILES, iconFile, svgDataUri } from "./iconFiles";
 import {
   LOGO_GRADIENT,
+  LOGO_INK,
   LOGO_SVG_MASKABLE,
   LOGO_SVG_ROUNDED,
   LOGO_SVG_SQUARE,
@@ -36,6 +37,11 @@ describe("logo", () => {
       '<g transform="translate(12 12) scale(0.8)">',
     );
     expect(LOGO_SVG_SQUARE).not.toContain("<g ");
+  });
+
+  it("exports the face colour used for text on the logo gradient", () => {
+    expect(LOGO_INK).toBe("#2B1B22");
+    expect(LOGO_SVG_ROUNDED).toContain(`stroke="${LOGO_INK}"`);
   });
 });
 

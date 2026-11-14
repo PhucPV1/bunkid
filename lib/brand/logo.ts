@@ -1,4 +1,6 @@
 export const LOGO_GRADIENT = { from: "#FFD9C7", to: "#EE7AA3" } as const;
+// The bun's face colour; also the text colour on the logo gradient (e.g. the baby's avatar).
+export const LOGO_INK = "#2B1B22";
 
 const DEFS =
   '<defs><linearGradient id="kb1" x1="0" y1="0" x2="1" y2="1">' +
@@ -9,8 +11,8 @@ const DEFS =
 const ART =
   '<path d="M20 80c0-23 18-42 40-42s40 19 40 42c0 8-6 13-14 13H34c-8 0-14-5-14-13z" fill="#FFF8F2"/>' +
   '<path d="M50 41c3-7 7-10 10-10s7 3 10 10" fill="none" stroke="#F0C3B2" stroke-width="3.5" stroke-linecap="round"/>' +
-  '<path d="M43 67c2.5 3 7.5 3 10 0M67 67c2.5 3 7.5 3 10 0" fill="none" stroke="#2B1B22" stroke-width="3.6" stroke-linecap="round"/>' +
-  '<path d="M55 76c3 2.4 7 2.4 10 0" fill="none" stroke="#2B1B22" stroke-width="3" stroke-linecap="round"/>' +
+  `<path d="M43 67c2.5 3 7.5 3 10 0M67 67c2.5 3 7.5 3 10 0" fill="none" stroke="${LOGO_INK}" stroke-width="3.6" stroke-linecap="round"/>` +
+  `<path d="M55 76c3 2.4 7 2.4 10 0" fill="none" stroke="${LOGO_INK}" stroke-width="3" stroke-linecap="round"/>` +
   '<circle cx="40" cy="76" r="4.5" fill="#FF9EB5" opacity="0.75"/>' +
   '<circle cx="80" cy="76" r="4.5" fill="#FF9EB5" opacity="0.75"/>' +
   '<path d="M93 14l3.4 9.6 9.6 3.4-9.6 3.4L93 40l-3.4-9.6L80 27l9.6-3.4z" fill="#FFC94A"/>';

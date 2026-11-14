@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useState } from "react";
 import {
   DEFAULT_NIGHT_SCHEDULE,
   resolveActiveTheme,
+  toggleNightOverride,
   type NightSchedule,
 } from "@/lib/rules/theme";
 import {
@@ -116,4 +117,35 @@ export function useNightSchedule(): [
     setSchedule(next);
   }
   return [schedule, save];
+}
+
+function currentTheme(): ThemeName {
+  const value = document.documentElement.dataset.theme;
+  return value === "dark" || value === "night" ? value : "light";
+}
+
+// Spec §6.6: the moon button turns Ban đêm on/off until the next schedule boundary.
+export function useNightMode(): { night: boolean; toggle: () => void } {
+  const [night, setNight] = useState(false);
+  useEffect(() => {
+    const sync = () => setNight(currentTheme() === "night");
+    sync();
+    // applyTheme() (schedule tick, system change, settings) rewrites data-theme; follow it.
+    const observer = new MutationObserver(sync);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
+    return () => observer.disconnect();
+  }, []);
+  function toggle() {
+    const now = new Date();
+    const { schedule } = readThemeState(storageGet, now);
+    storageSet(
+      NIGHT_OVERRIDE_KEY,
+      JSON.stringify(toggleNightOverride(currentTheme(), schedule, now)),
+    );
+    applyTheme();
+  }
+  return { night, toggle };
 }
