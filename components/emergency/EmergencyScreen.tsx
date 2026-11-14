@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { useEmergencyContacts } from "@/lib/data/emergency";
+import { useGrowth } from "@/lib/data/growth";
 import { toVietnameseError } from "@/lib/data/errors";
+import { latestWeightG } from "@/lib/rules/growthForm";
 import type { Baby } from "@/lib/supabase/rows";
 import { CallList } from "./CallList";
 import { ContactsEditor } from "./ContactsEditor";
@@ -16,6 +18,7 @@ export function EmergencyScreen({
   isOwner: boolean;
 }) {
   const contacts = useEmergencyContacts(baby.family_id);
+  const growth = useGrowth(baby.id);
   const [editing, setEditing] = useState(false);
   const rows = contacts.data ?? [];
 
@@ -43,7 +46,11 @@ export function EmergencyScreen({
           {rows.length === 0 ? "Thêm số bác sĩ, người thân" : "Sửa danh bạ"}
         </button>
       )}
-      <ProfileCard baby={baby} isOwner={isOwner} latestWeightG={null} />
+      <ProfileCard
+        baby={baby}
+        isOwner={isOwner}
+        latestWeightG={latestWeightG(growth.data ?? [])}
+      />
     </main>
   );
 }

@@ -25,7 +25,7 @@ export const GUIDE_ITEMS: MenuItem[] = [
 
 export const TOOL_ITEMS: MenuItem[] = [
   { label: "Thống kê", href: "/thong-ke" },
-  { label: "Tăng trưởng", href: null },
+  { label: "Tăng trưởng", href: "/tang-truong" },
   { label: "Khẩn cấp", href: "/khan-cap" },
   { label: "Nhạc", href: null },
   { label: "Ồn trắng", href: null },

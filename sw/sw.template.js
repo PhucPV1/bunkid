@@ -13,6 +13,7 @@ const SHELL = [
 const PAGES = [
   "/nhat-ky",
   "/thong-ke",
+  "/tang-truong",
   "/cam-nang",
   "/tien-ich",
   "/cai-dat",
