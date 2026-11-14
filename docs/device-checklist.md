@@ -251,3 +251,18 @@ Nhắc thức cũng bị tạm tắt chặn: kiểm ở bước 11, mục 5.
 | iPhone 11     |     |         |         |
 | iPhone 16     |     |         |         |
 | iPhone 17 Pro |     |         |         |
+
+## Bước 17 — Ảnh (M24)
+
+1. Tiện ích → Ảnh. Kỳ vọng: thanh dung lượng "Đã dùng … MB / 1 GB".
+2. "Chọn ảnh" → chọn một ảnh chụp bằng camera iPhone từ vài ngày trước. Kỳ vọng: "Ngày chụp" tự điền đúng ngày chụp (đọc từ thông tin ảnh; ảnh không có thông tin này thì là hôm nay, sửa được); thêm ghi chú → "Tải ảnh lên". Kỳ vọng: "Đã tải ảnh lên."; ảnh hiện trong nhóm "N tháng tuổi", không bị xoay ngang.
+3. Bấm ảnh. Kỳ vọng: xem ảnh lớn, ngày, ghi chú. Máy thứ hai mở Ảnh cũng thấy ảnh này.
+4. Tải ảnh về máy tính từ Supabase → Storage → photos và xem thông tin ảnh. Kỳ vọng: cạnh dài tối đa 1600 px, không còn vị trí GPS hay thông tin máy chụp.
+5. Bật chế độ máy bay → Ảnh. Kỳ vọng: form tải lên mờ kèm "Cần kết nối mạng".
+6. Tắt máy bay, mở ảnh thử → "Xóa ảnh" → xác nhận. Kỳ vọng: ảnh biến mất; tài khoản thành viên khác không thấy nút xóa ảnh của chủ gia đình.
+
+| Máy           | iOS | Kết quả | Ghi chú |
+| ------------- | --- | ------- | ------- |
+| iPhone 11     |     |         |         |
+| iPhone 16     |     |         |         |
+| iPhone 17 Pro |     |         |         |
