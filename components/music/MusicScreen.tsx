@@ -2,12 +2,18 @@
 
 import { useState, type FormEvent } from "react";
 import { OnlineOnly } from "@/components/OnlineOnly";
+import { FIELD_INPUT, FIELD_LABEL } from "@/components/quick/styles";
+import { Button } from "@/components/ui/Button";
+import { ErrorCard } from "@/components/ui/ErrorCard";
+import { Icon } from "@/components/ui/Icon";
+import { ListGroup } from "@/components/ui/ListGroup";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Segmented } from "@/components/ui/Segmented";
 import { MUSIC_PRESETS, type MusicCategory } from "@/lib/content/music";
 import { toVietnameseError } from "@/lib/data/errors";
 import { useMusicActions, useMusicLinks } from "@/lib/data/music";
 import { useOnline } from "@/lib/hooks/useOnline";
 import { useYouTubeOpener } from "@/lib/hooks/useYouTubeOpener";
-import { YouTubeModePicker } from "./YouTubeModePicker";
 import {
   BRAIN_NOTE,
   musicItems,
@@ -15,6 +21,7 @@ import {
   type MusicItem,
 } from "@/lib/rules/music";
 import { parseYouTubeUrl, webUrl, youtubePath } from "@/lib/rules/youtube";
+import { YouTubeModePicker } from "./YouTubeModePicker";
 
 const TABS: { value: MusicCategory; label: string }[] = [
   { value: "relax", label: "Thư giãn / ru ngủ" },
@@ -32,7 +39,7 @@ export function MusicScreen({
 }) {
   const links = useMusicLinks(familyId);
   const actions = useMusicActions(familyId);
-  // Hiding and deleting need the network (spec §9); the add form says so once.
+  // Hiding and deleting need the network (spec gốc §9); the add form says so once.
   const online = useOnline();
   const youtube = useYouTubeOpener();
   const [tab, setTab] = useState<MusicCategory>("relax");
@@ -67,106 +74,113 @@ export function MusicScreen({
   }
 
   return (
-    <main className="mx-auto flex max-w-md flex-col gap-4 p-4">
-      <h1 className="text-2xl font-semibold">Nhạc cho bé</h1>
-      <div role="tablist" className="grid grid-cols-2 gap-2">
-        {TABS.map((t) => (
-          <button
-            key={t.value}
-            type="button"
-            role="tab"
-            aria-selected={tab === t.value}
-            onClick={() => setTab(t.value)}
-            className={`min-h-11 rounded-xl border px-2 ${tab === t.value ? "border-accent bg-accent-soft text-accent-ink" : ""}`}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
+    <main className="mx-auto flex max-w-md flex-col gap-[18px] px-4 pt-2 pb-4">
+      <PageHeader
+        title="Nhạc cho bé"
+        back={{ href: "/kham-pha", label: "Khám phá" }}
+      />
+      <Segmented
+        label="Loại nhạc"
+        options={TABS}
+        value={tab}
+        onChange={setTab}
+      />
       <YouTubeModePicker mode={youtube.mode} onChange={youtube.setMode} />
       {tab === "brain" && (
-        <p className="rounded-xl bg-warn-soft p-3 text-sm text-warn-ink">
+        <p className="rounded-[16px] bg-warn-soft p-3 text-[15px] text-warn-ink">
           {BRAIN_NOTE}
         </p>
       )}
       {!online && (
-        <p role="status" className="text-sm text-muted">
+        <p role="status" className="px-1 text-[13px] text-muted">
           Cần kết nối mạng để ẩn, hiện lại hoặc xóa.
         </p>
       )}
-      <ul className="divide-y rounded-2xl border">
+      <ListGroup>
         {visible.map((item) => {
           const path = youtubePath(item.target);
           const canDelete =
             item.kind === "link" &&
             (isOwner || item.link.created_by === userId);
           return (
-            <li key={item.key} className="flex flex-col gap-1 px-4 py-2">
-              <div className="flex items-center gap-2">
+            <li
+              key={item.key}
+              className="flex flex-col gap-1 border-b border-line px-4 py-2 last:border-b-0"
+            >
+              <div className="flex items-center gap-3">
                 <button
                   type="button"
                   onClick={() => youtube.open(path)}
-                  className={`flex min-h-12 flex-1 items-center text-left font-medium ${item.hidden ? "text-muted" : ""}`}
+                  className="flex min-h-12 min-w-0 flex-1 items-center gap-3 text-left"
                 >
-                  ▶ {item.title}
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-cat-sleep/15 text-cat-sleep">
+                    <Icon name="play" size={16} filled />
+                  </span>
+                  <span
+                    className={`text-base font-medium ${item.hidden ? "text-muted" : "text-ink"}`}
+                  >
+                    {item.title}
+                  </span>
                 </button>
                 <a
                   href={webUrl(path)}
                   target="_blank"
                   rel="noopener"
-                  className="flex min-h-11 items-center px-2 text-sm text-accent-ink underline"
+                  className="flex min-h-11 shrink-0 items-center text-[13px] font-semibold text-accent-text"
                 >
                   Mở trên web
                 </a>
               </div>
-              <div className="flex gap-2 text-sm">
-                <button
-                  type="button"
+              <div className="flex gap-1 pl-12">
+                <Button
+                  variant="ghost"
+                  size="md"
                   disabled={!online}
                   onClick={() => toggleHidden(item)}
-                  className="min-h-11 rounded-xl border px-3 disabled:opacity-50"
                 >
                   {item.hidden ? "Hiện lại" : "Ẩn"}
-                </button>
+                </Button>
                 {canDelete && (
-                  <button
-                    type="button"
+                  <Button
+                    variant="ghost"
+                    size="md"
+                    disabled={!online}
+                    className="text-danger!"
                     onClick={() => {
                       if (window.confirm(`Xóa "${item.title}"?`)) {
                         setMessage(null);
                         actions.remove.mutate(item.link.id, { onError });
                       }
                     }}
-                    disabled={!online}
-                    className="min-h-11 rounded-xl border px-3 text-danger disabled:opacity-50"
                   >
                     Xóa
-                  </button>
+                  </Button>
                 )}
               </div>
             </li>
           );
         })}
-      </ul>
+      </ListGroup>
       {hiddenCount > 0 && (
-        <button
-          type="button"
+        <Button
+          variant="secondary"
+          size="md"
           onClick={() => setShowHidden(!showing)}
-          className="min-h-11 rounded-xl border px-4"
         >
           {showing ? "Ẩn các mục đã ẩn" : `Hiện các mục đã ẩn (${hiddenCount})`}
-        </button>
+        </Button>
       )}
       {message && (
-        <p role="alert" className="text-danger">
+        <p role="alert" className="px-1 text-[15px] text-danger">
           {message}
         </p>
       )}
       <AddLinkForm category={tab} familyId={familyId} />
       {links.isError && !links.data && (
-        <p role="alert" className="text-danger">
-          {toVietnameseError(links.error)}
-        </p>
+        <ErrorCard
+          message={toVietnameseError(links.error)}
+          onRetry={() => void links.refetch()}
+        />
       )}
     </main>
   );
@@ -184,7 +198,7 @@ function AddLinkForm({
   const [title, setTitle] = useState("");
   const [error, setError] = useState<string | null>(null);
   const target = url.trim() === "" ? null : parseYouTubeUrl(url);
-  // Spec §6.11: an invalid link is reported right at the input.
+  // Spec gốc §6.11: an invalid link is reported right at the input.
   const urlError =
     url.trim() !== "" && !target ? "Link YouTube không hợp lệ." : null;
 
@@ -212,45 +226,48 @@ function AddLinkForm({
     );
   }
 
-  const input = "min-h-11 rounded-xl border px-3";
   return (
     <OnlineOnly>
-      {/* noValidate: links without https:// are accepted (spec §6.11). */}
-      <form noValidate onSubmit={submit} className="flex flex-col gap-3">
-        <h2 className="text-lg font-medium">Thêm link YouTube</h2>
-        <label className="flex flex-col gap-1">
-          Link
+      {/* noValidate: links without https:// are accepted (spec gốc §6.11). */}
+      <form
+        noValidate
+        onSubmit={submit}
+        className="glass flex flex-col gap-3 rounded-[28px] p-4"
+      >
+        <h2 className="text-[17px] font-semibold text-ink">
+          Thêm link YouTube
+        </h2>
+        <label className="flex flex-col gap-1.5">
+          <span className={FIELD_LABEL}>Link</span>
           <input
             type="url"
             inputMode="url"
-            className={input}
+            className={FIELD_INPUT}
             placeholder="https://youtu.be/…"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
           />
-          {urlError && <span className="text-sm text-danger">{urlError}</span>}
+          {urlError && (
+            <span className="text-[13px] text-danger">{urlError}</span>
+          )}
         </label>
-        <label className="flex flex-col gap-1">
-          Tên (không bắt buộc)
+        <label className="flex flex-col gap-1.5">
+          <span className={FIELD_LABEL}>Tên (không bắt buộc)</span>
           <input
-            className={input}
+            className={FIELD_INPUT}
             maxLength={80}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
         </label>
         {error && (
-          <p role="alert" className="text-danger">
+          <p role="alert" className="text-[15px] text-danger">
             {error}
           </p>
         )}
-        <button
-          type="submit"
-          disabled={actions.add.isPending}
-          className="min-h-12 rounded-2xl bg-accent text-on-accent disabled:opacity-50"
-        >
+        <Button type="submit" block busy={actions.add.isPending}>
           Thêm vào {category === "relax" ? "Thư giãn" : "Phát triển trí não"}
-        </button>
+        </Button>
       </form>
     </OnlineOnly>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import { Segmented } from "@/components/ui/Segmented";
 import type { OpenMode } from "@/lib/rules/youtube";
 
 const OPTIONS: { value: OpenMode; label: string }[] = [
@@ -16,21 +17,16 @@ export function YouTubeModePicker({
 }) {
   return (
     <section className="flex flex-col gap-2">
-      <p className="text-sm font-medium">Mở YouTube bằng</p>
-      <div className="grid grid-cols-2 gap-2">
-        {OPTIONS.map((option) => (
-          <button
-            key={option.value}
-            type="button"
-            aria-pressed={mode === option.value}
-            onClick={() => onChange(option.value)}
-            className={`min-h-11 rounded-xl border px-2 ${mode === option.value ? "border-accent bg-accent-soft text-accent-ink" : ""}`}
-          >
-            {option.label}
-          </button>
-        ))}
-      </div>
-      <p className="text-sm text-muted">
+      <p className="px-1 text-[13px] font-semibold text-muted">
+        Mở YouTube bằng
+      </p>
+      <Segmented
+        label="Mở YouTube bằng"
+        options={OPTIONS}
+        value={mode}
+        onChange={onChange}
+      />
+      <p className="px-1 text-[13px] text-muted">
         Chọn "Trình duyệt" nếu bấm vào mà iPhone báo địa chỉ không hợp lệ (ví dụ
         YouTube cài ngoài App Store). Lựa chọn lưu trên máy này.
       </p>
