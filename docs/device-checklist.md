@@ -428,3 +428,38 @@ Kết quả: Chờ người dùng.
 | iPhone 11     |     |         |         |
 | iPhone 16     |     |         |         |
 | iPhone 17 Pro |     |         |         |
+
+## Bước 28 — Các sheet còn lại (UI đợt 4)
+
+1. Nhật ký → bấm một bản ghi của mình. Kỳ vọng:
+   - sheet kính "Bản ghi" có chip icon màu loại, công tắc thay cho ô tick, ô chọn Trái/Phải hoặc chỗ đo dạng nút liền;
+   - nút "Lưu" to và "Xóa bản ghi" chữ đỏ (bấm Xóa vẫn hỏi lại).
+
+   Bản ghi của người khác (tài khoản thành viên): chỉ xem, không có nút.
+
+2. Nhật ký → "+ Thêm". Đổi "Loại". Kỳ vọng: chip và các ô đổi theo; Lưu tạo bản ghi đúng giờ đã chọn.
+3. Dừng "Hút sữa". Kỳ vọng:
+   - sheet "Đã hút được bao nhiêu?" có chip cốc, 2 ô ml, "Lưu" và "Bỏ qua";
+   - Lưu ghi ml vào bản ghi;
+   - Toast "Đã ghi …" hiện sau khi sheet đóng.
+4. Tăng trưởng → thêm lần đo. Kỳ vọng: bàn phím số khi gõ cân nặng; nhập sai thì báo đỏ ngay dưới ô; "Xóa lần đo" hỏi lại.
+5. Tiêm chủng → bấm một mũi. Kỳ vọng:
+   - ba nút liền "Đã tiêm / Bỏ qua / Đổi ngày hẹn";
+   - đổi lựa chọn thì ô ngày đổi theo, ô "Nơi tiêm" chỉ hiện khi Đã tiêm;
+   - bấm lại lựa chọn đang chọn thì ngày không đổi;
+   - "Xóa đánh dấu" chỉ có khi mũi đã được đánh dấu.
+6. Phát triển → bấm một mốc. Kỳ vọng: ngày đạt, ghi chú, lưới ảnh (nếu có ảnh) với ô "Không"; ảnh được chọn có vòng viền; "Bỏ đánh dấu" cho mốc đã đánh dấu.
+7. Với mọi sheet trên:
+   - kéo tay nắm xuống thì đóng;
+   - đang nhập dở mà đóng thì hỏi "Bỏ thay đổi?";
+   - trên iPhone 11 khi bàn phím bật vẫn cuộn tới nút Lưu;
+   - ở 3 theme chữ đều rõ.
+
+Kết quả: Chờ người dùng.
+
+| Máy           | iOS | Kết quả | Ghi chú |
+| ------------- | --- | ------- | ------- |
+| iPhone 11     |     |         |         |
+| iPhone 16     |     |         |         |
+| iPhone 17 Pro |     |         |         |
+```

@@ -1,6 +1,10 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useId, useState, type FormEvent } from "react";
+import { FIELD_INPUT, FIELD_LABEL } from "@/components/quick/styles";
+import { Button } from "@/components/ui/Button";
+import { Segmented } from "@/components/ui/Segmented";
+import { Sheet } from "@/components/ui/Sheet";
 import { toVietnameseError } from "@/lib/data/errors";
 import { useDoseActions } from "@/lib/data/vaccines";
 import { vnDateString } from "@/lib/rules/time";
@@ -35,9 +39,10 @@ export function DoseSheet({
   onClose: () => void;
 }) {
   const actions = useDoseActions(babyId, userId);
+  const formId = useId();
   const today = vnDateString(new Date());
   const ref = { code: item.dose.code, doseNo: item.dose.doseNo };
-  const [raw, setRaw] = useState<DoseFormRaw>(() => {
+  const [opened] = useState<DoseFormRaw>(() => {
     const action: DoseAction =
       row?.status === "skipped" || row?.status === "rescheduled"
         ? row.status
@@ -52,8 +57,10 @@ export function DoseSheet({
       note: row?.note ?? "",
     };
   });
+  const [raw, setRaw] = useState<DoseFormRaw>(opened);
   const [message, setMessage] = useState<string | null>(null);
-  const busy = actions.save.isPending || actions.clear.isPending;
+  const saving = actions.save.isPending;
+  const clearing = actions.clear.isPending;
 
   function set<K extends keyof DoseFormRaw>(key: K, value: DoseFormRaw[K]) {
     setRaw((prev) => ({ ...prev, [key]: value }));
@@ -61,6 +68,9 @@ export function DoseSheet({
   }
 
   function chooseAction(action: DoseAction) {
+    // Segmented fires on every tap; the old radios only fired on a real change.
+    // Tapping the option already chosen keeps the date and place as they are.
+    if (action === raw.action) return;
     setRaw((prev) => ({
       ...prev,
       action,
@@ -81,114 +91,103 @@ export function DoseSheet({
     }
     actions.save.mutate(
       { ref, patch: parsed.value },
-      { onSuccess: onClose, onError: (e) => setMessage(toVietnameseError(e)) },
+      {
+        onSuccess: onClose,
+        onError: (error) => setMessage(toVietnameseError(error)),
+      },
     );
   }
 
   function clear() {
     actions.clear.mutate(ref, {
       onSuccess: onClose,
-      onError: (e) => setMessage(toVietnameseError(e)),
+      onError: (error) => setMessage(toVietnameseError(error)),
     });
   }
 
-  const input = "min-h-11 rounded-xl border px-3";
   return (
-    <div
-      className="fixed inset-0 z-20 flex items-end bg-black/40"
-      onClick={onClose}
-    >
-      <form
-        onSubmit={submit}
-        onClick={(e) => e.stopPropagation()}
-        className="flex max-h-[90dvh] w-full flex-col gap-3 overflow-y-auto rounded-t-3xl bg-surface p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))]"
-      >
-        <h2 className="text-xl font-semibold">{item.dose.name}</h2>
-        <p className="text-muted">
-          Phòng: {item.dose.protects.join(", ")}. Hẹn {formatDueDate(item.due)}.
-        </p>
-        <div className="flex flex-col gap-3">
-          <div role="radiogroup" className="flex gap-2">
-            {ACTIONS.map((action) => (
-              <label
-                key={action.value}
-                className="flex min-h-11 flex-1 items-center justify-center gap-1 rounded-xl border px-2 text-center has-[:checked]:border-accent has-[:checked]:bg-accent-soft"
-              >
-                <input
-                  type="radio"
-                  name="dose-action"
-                  className="sr-only"
-                  checked={raw.action === action.value}
-                  onChange={() => chooseAction(action.value)}
-                />
-                {action.label}
-              </label>
-            ))}
-          </div>
-          {raw.action !== "skipped" && (
-            <label className="flex flex-col gap-1">
-              {raw.action === "done" ? "Ngày tiêm" : "Ngày hẹn mới"}
-              <input
-                type="date"
-                className={input}
-                min={raw.action === "done" ? dob : today}
-                max={raw.action === "done" ? today : undefined}
-                value={raw.date}
-                onChange={(e) => set("date", e.target.value)}
-              />
-            </label>
+    <Sheet
+      open
+      onClose={onClose}
+      title={item.dose.name}
+      dirty={JSON.stringify(raw) !== JSON.stringify(opened)}
+      footer={
+        <div className="flex flex-col gap-2">
+          {message && (
+            <p role="alert" className="text-[15px] text-danger">
+              {message}
+            </p>
           )}
-          {raw.action === "done" && (
-            <label className="flex flex-col gap-1">
-              Nơi tiêm (không bắt buộc)
-              <input
-                className={input}
-                maxLength={120}
-                value={raw.place}
-                onChange={(e) => set("place", e.target.value)}
-              />
-            </label>
-          )}
-          <label className="flex flex-col gap-1">
-            Ghi chú (không bắt buộc)
-            <textarea
-              className="min-h-20 rounded-xl border p-3"
-              maxLength={500}
-              value={raw.note}
-              onChange={(e) => set("note", e.target.value)}
-            />
-          </label>
-          <button
+          <Button
             type="submit"
-            disabled={busy}
-            className="min-h-12 rounded-2xl bg-accent text-on-accent disabled:opacity-50"
+            form={formId}
+            block
+            busy={saving}
+            disabled={clearing}
+            className="min-h-14!"
           >
             Lưu
-          </button>
+          </Button>
           {row && (
-            <button
-              type="button"
-              disabled={busy}
+            <Button
+              variant="ghost"
+              block
+              disabled={saving || clearing}
+              className="text-danger!"
               onClick={clear}
-              className="min-h-11 rounded-2xl text-danger disabled:opacity-50"
             >
               Xóa đánh dấu
-            </button>
+            </Button>
           )}
         </div>
-        {message && (
-          <p role="alert" className="text-danger">
-            {message}
-          </p>
+      }
+    >
+      <form id={formId} onSubmit={submit} className="flex flex-col gap-4 pt-1">
+        <p className="text-[15px] text-muted">
+          Phòng: {item.dose.protects.join(", ")}. Hẹn {formatDueDate(item.due)}.
+        </p>
+        <Segmented
+          label="Trạng thái mũi tiêm"
+          options={ACTIONS}
+          value={raw.action}
+          onChange={chooseAction}
+        />
+        {raw.action !== "skipped" && (
+          <label className="flex flex-col gap-1.5">
+            <span className={FIELD_LABEL}>
+              {raw.action === "done" ? "Ngày tiêm" : "Ngày hẹn mới"}
+            </span>
+            <input
+              type="date"
+              className={FIELD_INPUT}
+              min={raw.action === "done" ? dob : today}
+              max={raw.action === "done" ? today : undefined}
+              value={raw.date}
+              onChange={(event) => set("date", event.target.value)}
+            />
+          </label>
         )}
-        <button
-          type="button"
-          onClick={onClose}
-          className="min-h-12 rounded-2xl border"
-        >
-          Đóng
-        </button>
+        {raw.action === "done" && (
+          <label className="flex flex-col gap-1.5">
+            <span className={FIELD_LABEL}>Nơi tiêm (không bắt buộc)</span>
+            <input
+              className={FIELD_INPUT}
+              maxLength={120}
+              value={raw.place}
+              onChange={(event) => set("place", event.target.value)}
+            />
+          </label>
+        )}
+        <label className="flex flex-col gap-1.5">
+          <span className={FIELD_LABEL}>Ghi chú (không bắt buộc)</span>
+          <textarea
+            className={`${FIELD_INPUT} min-h-20 py-2.5`}
+            maxLength={500}
+            value={raw.note}
+            onChange={(event) => set("note", event.target.value)}
+          />
+        </label>
       </form>
-    </div>
+    </Sheet>
   );
 }
