@@ -69,7 +69,7 @@ export function AuthGate({
   return (
     <>
       {session && <SyncBar userId={session.user.id} />}
-      <div className="pb-16">{content}</div>
+      <div className="pb-[120px]">{content}</div>
       <TabBar />
     </>
   );
