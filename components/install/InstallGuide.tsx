@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { OnlineOnly } from "@/components/OnlineOnly";
 import { DevicePushControl } from "@/components/push/DevicePushControl";
 import { useEffect, useState } from "react";
 
@@ -26,7 +27,9 @@ export function InstallGuide() {
           <p className="rounded-2xl bg-good-soft p-4 text-good-ink">
             Bé Yêu đã được cài và đang chạy từ màn hình chính.
           </p>
-          <DevicePushControl />
+          <OnlineOnly>
+            <DevicePushControl />
+          </OnlineOnly>
         </>
       )}
       {standalone === false && (

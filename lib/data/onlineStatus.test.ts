@@ -1,6 +1,6 @@
 import { onlineManager } from "@tanstack/react-query";
-import { afterEach, describe, expect, it } from "vitest";
-import { trackBrowserOnline } from "./onlineStatus";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { onlineStore, trackBrowserOnline } from "./onlineStatus";
 
 afterEach(() => onlineManager.setOnline(true));
 
@@ -13,5 +13,17 @@ describe("trackBrowserOnline", () => {
     expect(onlineManager.isOnline()).toBe(true);
     events.dispatchEvent(new Event("offline"));
     expect(onlineManager.isOnline()).toBe(false);
+  });
+});
+
+describe("onlineStore", () => {
+  it("reports React Query's online state and tells subscribers when it changes", () => {
+    const onChange = vi.fn();
+    const unsubscribe = onlineStore.subscribe(onChange);
+    onlineManager.setOnline(false);
+    expect(onlineStore.getSnapshot()).toBe(false);
+    expect(onChange).toHaveBeenCalled();
+    unsubscribe();
+    expect(onlineStore.getServerSnapshot()).toBe(true);
   });
 });

@@ -8,6 +8,7 @@ import { roleLabel } from "@/lib/rules/familySettings";
 import { supabase } from "@/lib/supabase/client";
 import type { Baby, FamilyMember } from "@/lib/supabase/rows";
 import { THEME_OPTIONS } from "@/lib/theme";
+import { OnlineOnly } from "@/components/OnlineOnly";
 import { BabyProfileSection } from "./BabyProfileSection";
 import { FeedIntervalSection } from "./FeedIntervalSection";
 import { MembersSection } from "./MembersSection";
@@ -43,10 +44,12 @@ export function SettingsScreen({
     <main className="mx-auto flex max-w-md flex-col gap-6 p-4">
       <h1 className="text-2xl font-semibold">Cài đặt</h1>
 
-      <BabyProfileSection baby={baby} isOwner={isOwner} />
-      <FeedIntervalSection baby={baby} isOwner={isOwner} />
-      <MembersSection me={member} />
-      <NotificationsSection userId={userId} />
+      <OnlineOnly>
+        <BabyProfileSection baby={baby} isOwner={isOwner} />
+        <FeedIntervalSection baby={baby} isOwner={isOwner} />
+        <MembersSection me={member} />
+        <NotificationsSection userId={userId} />
+      </OnlineOnly>
 
       <section className="flex flex-col gap-2">
         <h2 className="text-lg font-medium">Giao diện</h2>

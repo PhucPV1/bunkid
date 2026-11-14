@@ -2,6 +2,7 @@
 
 import { AuthGate } from "@/components/AuthGate";
 import { BabyForm } from "@/components/baby/BabyForm";
+import { OnlineOnly } from "@/components/OnlineOnly";
 
 export default function Page() {
   return (
@@ -10,7 +11,9 @@ export default function Page() {
         <main className="mx-auto flex max-w-md flex-col gap-4 p-6">
           <h1 className="text-2xl font-semibold">Khai báo bé</h1>
           {ctx?.member.role === "owner" ? (
-            <BabyForm familyId={ctx.family.id} />
+            <OnlineOnly>
+              <BabyForm familyId={ctx.family.id} />
+            </OnlineOnly>
           ) : (
             <p className="text-muted">
               Chờ ba/mẹ của bé khai báo thông tin bé.

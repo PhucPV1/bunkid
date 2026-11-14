@@ -23,3 +23,11 @@ export function trackBrowserOnline(
     };
   });
 }
+
+// useSyncExternalStore source for React Query's online state; prerender counts as online.
+export const onlineStore = {
+  subscribe: (onChange: () => void) =>
+    onlineManager.subscribe(() => onChange()),
+  getSnapshot: () => onlineManager.isOnline(),
+  getServerSnapshot: () => true,
+};
