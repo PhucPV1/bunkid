@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   canModifyLog,
+  daySummary,
   groupByVnDay,
   historyPageRange,
   matchesFilter,
@@ -52,5 +53,42 @@ describe("history", () => {
     expect(canModifyLog({ role: "member", user_id: "u1" }, "u1")).toBe(true);
     expect(canModifyLog({ role: "member", user_id: "u1" }, "u2")).toBe(false);
     expect(canModifyLog({ role: "member", user_id: null }, "u2")).toBe(false);
+  });
+});
+
+describe("daySummary", () => {
+  const at = (hhmm: string) => `2026-11-14T${hhmm}:00.000Z`; // UTC; VN = UTC+7
+  const entry = (
+    type: string,
+    start: string,
+    end: string | null,
+    details: unknown = {},
+  ) => ({
+    type,
+    started_at: at(start),
+    ended_at: end === null ? null : at(end),
+    details,
+  });
+
+  it("counts feed sessions, diapers and sleep of one day", () => {
+    const logs = [
+      entry("breast", "01:00", "01:20", { side: "left" }),
+      entry("bottle", "01:30", "01:30", { ml: 60, milk: "formula" }),
+      entry("bottle", "05:00", "05:00", { ml: 90, milk: "formula" }),
+      entry("diaper", "02:00", "02:00", { wet: true, dirty: false }),
+      entry("diaper", "06:00", "06:00", { wet: true, dirty: true }),
+      entry("sleep", "02:00", "03:30"),
+      entry("sleep", "06:00", "06:45"),
+    ];
+    expect(daySummary(logs, new Date(at("08:00")))).toBe(
+      "2 cữ · 2 tã · ngủ 2g 15p",
+    );
+  });
+
+  it("counts a running sleep up to now, and says 0 when nothing happened", () => {
+    expect(
+      daySummary([entry("sleep", "07:00", null)], new Date(at("07:30"))),
+    ).toBe("0 cữ · 0 tã · ngủ 30p");
+    expect(daySummary([], new Date(at("07:30")))).toBe("0 cữ · 0 tã · ngủ 0p");
   });
 });

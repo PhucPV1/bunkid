@@ -118,3 +118,22 @@ export function chartRows(
     secondary: tab === "diaper" ? stat.dirtyDiapers : null,
   }));
 }
+
+export function hasStatsData(stats: DayStat[], tab: StatsTab): boolean {
+  return chartRows(stats, tab).some(
+    (row) => row.primary > 0 || (row.secondary ?? 0) > 0,
+  );
+}
+
+const EMPTY_NOUN: Record<StatsTab, string> = {
+  sleep: "giấc ngủ",
+  feed: "cữ bú",
+  diaper: "tã",
+  pump: "lần hút sữa",
+  tummy: "lần nằm sấp",
+};
+
+// Spec §9 Thống kê: shown instead of the chart when the range has nothing.
+export function emptyStatsText(tab: StatsTab, days: number): string {
+  return `Chưa có ${EMPTY_NOUN[tab]} nào trong ${days} ngày`;
+}

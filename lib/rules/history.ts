@@ -1,5 +1,8 @@
 import { addDays, vnDayStartMs } from "./days";
 import { vnDateString } from "./time";
+import type { LogLike } from "./describeLog";
+import { groupFeedSessions } from "./ratings";
+import { shortDuration } from "./summaryText";
 
 export type HistoryFilter =
   "all" | "feed" | "sleep" | "diaper" | "medicine" | "temperature";
@@ -78,4 +81,17 @@ export function canModifyLog(
     viewer.role === "owner" ||
     (viewer.user_id !== null && viewer.user_id === createdBy)
   );
+}
+
+// Spec §9 Nhật ký: "N cữ · N tã · ngủ Xg Yp" for the logs of one VN day.
+export function daySummary(logs: LogLike[], now: Date): string {
+  const feeds = groupFeedSessions(logs, now).length;
+  const diapers = logs.filter((log) => log.type === "diaper").length;
+  let sleepMs = 0;
+  for (const log of logs) {
+    if (log.type !== "sleep") continue;
+    const end = log.ended_at ? Date.parse(log.ended_at) : now.getTime();
+    sleepMs += Math.max(0, end - Date.parse(log.started_at));
+  }
+  return `${feeds} cữ · ${diapers} tã · ngủ ${shortDuration(Math.round(sleepMs / 60_000))}`;
 }

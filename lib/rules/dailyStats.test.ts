@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   chartRows,
   dailyStats,
+  type DayStat,
+  emptyStatsText,
+  hasStatsData,
   sleepHours,
   statsFetchSince,
 } from "./dailyStats";
@@ -149,5 +152,40 @@ describe("dailyStats", () => {
     );
     expect(stats.map((s) => s.pumpMl)).toEqual([105, 70]);
     expect(stats.map((s) => s.tummyMinutes)).toEqual([5, 15]);
+  });
+});
+
+describe("empty stats", () => {
+  const stat = (day: string, over: Partial<DayStat> = {}): DayStat => ({
+    day,
+    sleepMinutes: 0,
+    feeds: 0,
+    bottleMl: 0,
+    wetDiapers: 0,
+    dirtyDiapers: 0,
+    pumpMl: 0,
+    tummyMinutes: 0,
+    ...over,
+  });
+
+  it("hasStatsData looks at the series the tab draws, including dirty diapers", () => {
+    const stats = [stat("2026-11-13"), stat("2026-11-14", { dirtyDiapers: 1 })];
+    expect(hasStatsData(stats, "diaper")).toBe(true);
+    expect(hasStatsData(stats, "sleep")).toBe(false);
+    expect(hasStatsData([stat("2026-11-14", { pumpMl: 40 })], "pump")).toBe(
+      true,
+    );
+  });
+
+  it("emptyStatsText names what is missing and the range", () => {
+    expect(emptyStatsText("sleep", 7)).toBe(
+      "Chưa có giấc ngủ nào trong 7 ngày",
+    );
+    expect(emptyStatsText("pump", 14)).toBe(
+      "Chưa có lần hút sữa nào trong 14 ngày",
+    );
+    expect(emptyStatsText("tummy", 7)).toBe(
+      "Chưa có lần nằm sấp nào trong 7 ngày",
+    );
   });
 });
