@@ -34,11 +34,11 @@ Thiết bị: iPhone 11, iPhone 16, iPhone 17 Pro. Ghi Đạt / Không đạt, p
 3. Tắt chế độ máy bay, giữ app mở. Kỳ vọng: trong ≤ 30 giây máy thứ hai (hoặc Supabase → Table Editor → `logs`) thấy đủ hai tã, đúng giờ đã ghi lúc offline.
 4. Xóa hai bản ghi tã thử ở Nhật ký.
 
-| Máy           | iOS | Kết quả | Ghi chú                         |
-| ------------- | --- | ------- | ------------------------------- |
-| iPhone 11     |     |         | Chỉ khi đã lên iOS 16.4 trở lên |
-| iPhone 16     |     |         |                                 |
-| iPhone 17 Pro |     |         |                                 |
+| Máy           | iOS  | Kết quả | Ghi chú                                                                                                          |
+| ------------- | ---- | ------- | ---------------------------------------------------------------------------------------------------------------- |
+| iPhone 11     |      | Bỏ qua  | Không thử ở M12                                                                                                  |
+| iPhone 16     | 18.2 | Đạt     | Đạt (2026-11-14). Lần đầu máy còn chạy bản cũ: phải mở app khi có mạng, tắt hẳn rồi mở lại trước khi bật máy bay |
+| iPhone 17 Pro | 26.5 | Đạt     | Đạt (2026-11-14). Như iPhone 16                                                                                  |
 
 ## Bước 7 — Tạm tắt (M11, phần nhắc bú)
 
