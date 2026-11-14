@@ -153,8 +153,67 @@ async function sendDose(entry: OutboxEntry): Promise<SendOutcome> {
   }
 }
 
+type GrowthColumns = {
+  measured_on?: string;
+  weight_g?: number | null;
+  length_cm?: number | null;
+  head_cm?: number | null;
+};
+
+async function sendGrowth(entry: OutboxEntry): Promise<SendOutcome> {
+  const sb = supabase();
+  const row = (entry.row ?? {}) as GrowthColumns;
+  switch (entry.op) {
+    case "insert": {
+      // ignoreDuplicates: a retry after a lost response must not overwrite the row.
+      const result = await sb.from("growth").upsert(
+        {
+          id: entry.rowId,
+          baby_id: entry.babyId,
+          measured_on: String(row.measured_on),
+          weight_g: row.weight_g ?? null,
+          length_cm: row.length_cm ?? null,
+          head_cm: row.head_cm ?? null,
+        },
+        { onConflict: "id", ignoreDuplicates: true },
+      );
+      return result.error ? failed(result) : { ok: true };
+    }
+    case "update": {
+      const result = await sb
+        .from("growth")
+        .update(row)
+        .eq("id", entry.rowId)
+        .select("id");
+      if (result.error) return failed(result);
+      return result.data.length > 0
+        ? { ok: true }
+        : { ok: false, failure: { zeroRows: true } };
+    }
+    case "delete": {
+      const result = await sb
+        .from("growth")
+        .delete()
+        .eq("id", entry.rowId)
+        .select("id");
+      if (result.error) return failed(result);
+      if (result.data.length > 0) return { ok: true };
+      // 0 rows: gone already (another device deleted it) counts as done.
+      const check = await sb.from("growth").select("id").eq("id", entry.rowId);
+      if (check.error) return failed(check);
+      return check.data.length === 0
+        ? { ok: true }
+        : { ok: false, failure: { zeroRows: true } };
+    }
+    default:
+      return UNSUPPORTED;
+  }
+}
+
 function send(entry: OutboxEntry): Promise<SendOutcome> {
-  return entry.table === "vaccine_doses" ? sendDose(entry) : sendLog(entry);
+  if (entry.table === "vaccine_doses") return sendDose(entry);
+  if (entry.table === "growth") return sendGrowth(entry);
+  return sendLog(entry);
 }
 
 export function outboxDeps(): FlushDeps {

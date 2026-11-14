@@ -1,4 +1,4 @@
-import type { LogRow, VaccineDoseRow } from "@/lib/supabase/rows";
+import type { GrowthRow, LogRow, VaccineDoseRow } from "@/lib/supabase/rows";
 
 // logs: insert / update / delete / stop by row id.
 // vaccine_doses: upsert (mark a dose) / insert (quick tick, keeps an existing row) /
@@ -7,13 +7,14 @@ export type OutboxOp = "insert" | "update" | "delete" | "stop" | "upsert";
 
 export type OutboxEntry = {
   id: string;
-  table: "logs" | "vaccine_doses";
+  table: "logs" | "vaccine_doses" | "growth";
   op: OutboxOp;
   rowId: string;
   babyId: string;
   userId: string;
   // logs — insert: the new row; update: the changed columns; stop: { ended_at }; delete: null.
   // vaccine_doses — always { vaccine_code, dose_no, ... } plus the marked columns.
+  // growth — insert: the measurement; update: the changed columns; delete: null.
   row: Record<string, unknown> | null;
   createdAt: number;
   attempts: number;
@@ -212,4 +213,55 @@ export function overlayPendingDoses(
   return [...entriesFor(entries, "vaccine_doses")]
     .sort((a, b) => a.createdAt - b.createdAt)
     .reduce((acc, entry) => applyDoseChange(acc, entry, nowIso), rows);
+}
+
+const byMeasuredOn = (a: GrowthRow, b: GrowthRow) =>
+  b.measured_on.localeCompare(a.measured_on) ||
+  b.created_at.localeCompare(a.created_at);
+
+// growth rows use a client id, so entries match rows by id (like logs).
+export function applyGrowthChange(
+  rows: GrowthRow[],
+  entry: OutboxEntry,
+  nowIso: string,
+): GrowthRow[] {
+  const patch = (entry.row ?? {}) as Partial<GrowthRow>;
+  switch (entry.op) {
+    case "insert":
+      if (rows.some((r) => r.id === entry.rowId)) return rows;
+      return [
+        ...rows,
+        {
+          id: entry.rowId,
+          baby_id: entry.babyId,
+          measured_on: String(patch.measured_on),
+          weight_g: patch.weight_g ?? null,
+          length_cm: patch.length_cm ?? null,
+          head_cm: patch.head_cm ?? null,
+          created_by: entry.userId,
+          created_at: nowIso,
+          updated_at: nowIso,
+        },
+      ].sort(byMeasuredOn);
+    case "update":
+      return rows
+        .map((r) =>
+          r.id === entry.rowId ? { ...r, ...patch, updated_at: nowIso } : r,
+        )
+        .sort(byMeasuredOn);
+    case "delete":
+      return rows.filter((r) => r.id !== entry.rowId);
+    default:
+      return rows;
+  }
+}
+
+export function overlayPendingGrowth(
+  rows: GrowthRow[],
+  entries: OutboxEntry[],
+  nowIso: string,
+): GrowthRow[] {
+  return [...entriesFor(entries, "growth")]
+    .sort((a, b) => a.createdAt - b.createdAt)
+    .reduce((acc, entry) => applyGrowthChange(acc, entry, nowIso), rows);
 }

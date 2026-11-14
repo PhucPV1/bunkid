@@ -46,6 +46,7 @@ export function OutboxSync() {
           void queryClient.invalidateQueries({ queryKey: ["first-log"] });
           // Also rolls back a refused dose mark (spec §9) and drops temporary rows.
           void queryClient.invalidateQueries({ queryKey: ["vaccine-doses"] });
+          void queryClient.invalidateQueries({ queryKey: ["growth"] });
         }
       } catch (error) {
         console.warn("Không gửi được dữ liệu chờ đồng bộ", error);

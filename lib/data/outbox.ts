@@ -1,13 +1,15 @@
 "use client";
 
 import type { QueryClient } from "@tanstack/react-query";
-import type { LogRow, VaccineDoseRow } from "@/lib/supabase/rows";
+import type { GrowthRow, LogRow, VaccineDoseRow } from "@/lib/supabase/rows";
 import { localDb } from "./localDb";
 import {
   applyDoseChange,
+  applyGrowthChange,
   applyToCache,
   overlayPending,
   overlayPendingDoses,
+  overlayPendingGrowth,
   type OutboxEntry,
 } from "./outboxCore";
 import { flushRequests } from "./outboxEvents";
@@ -114,6 +116,49 @@ export async function withPendingDoses(
       .equals(babyId)
       .toArray();
     return overlayPendingDoses(rows, entries, new Date().toISOString());
+  } catch {
+    return rows;
+  }
+}
+
+export type GrowthChange = Pick<
+  OutboxEntry,
+  "rowId" | "babyId" | "userId" | "row"
+> & { op: "insert" | "update" | "delete" };
+
+export const growthKey = (babyId: string) => ["growth", babyId] as const;
+
+export async function enqueueGrowthChange(
+  queryClient: QueryClient,
+  change: GrowthChange,
+): Promise<void> {
+  const entry: OutboxEntry = {
+    ...change,
+    id: crypto.randomUUID(),
+    table: "growth",
+    createdAt: await nextCreatedAt(),
+    attempts: 0,
+  };
+  await localDb().outbox.add(entry);
+  const key = growthKey(change.babyId);
+  await queryClient.cancelQueries({ queryKey: key });
+  const nowIso = new Date().toISOString();
+  queryClient.setQueryData<GrowthRow[]>(key, (rows) =>
+    rows ? applyGrowthChange(rows, entry, nowIso) : rows,
+  );
+  flushRequests.emit();
+}
+
+export async function withPendingGrowth(
+  babyId: string,
+  rows: GrowthRow[],
+): Promise<GrowthRow[]> {
+  try {
+    const entries = await localDb()
+      .outbox.where("babyId")
+      .equals(babyId)
+      .toArray();
+    return overlayPendingGrowth(rows, entries, new Date().toISOString());
   } catch {
     return rows;
   }
