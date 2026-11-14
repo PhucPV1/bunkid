@@ -29,6 +29,12 @@ describe("nav", () => {
     );
   });
 
+  it("Tiện ích opens the emergency page", () => {
+    expect(TOOL_ITEMS.find((i) => i.label === "Khẩn cấp")?.href).toBe(
+      "/khan-cap",
+    );
+  });
+
   it("every menu link opens under its own tab", () => {
     for (const item of GUIDE_ITEMS)
       if (item.href) expect(activeTab(item.href)).toBe("guide");

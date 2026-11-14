@@ -21,6 +21,8 @@ export async function updateBaby(
   patch: Partial<BabyInput> & {
     feed_interval_min?: number;
     vaccine_choices?: Record<string, string>;
+    blood_type?: string | null;
+    allergies?: string | null;
   },
 ): Promise<void> {
   const { data, error } = await supabase()

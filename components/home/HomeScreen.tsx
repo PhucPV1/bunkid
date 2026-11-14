@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useEmergencyContacts } from "@/lib/data/emergency";
 import { toVietnameseError } from "@/lib/data/errors";
 import { useMembers } from "@/lib/data/family";
 import {
@@ -52,6 +53,8 @@ export function HomeScreen({
   const logs = useRecentLogs(baby.id);
   const firstLogAt = useFirstLogAt(baby.id);
   const members = useMembers(baby.family_id);
+  // Loaded here too so /khan-cap has the family's numbers even when first opened offline.
+  useEmergencyContacts(baby.family_id);
   const press = useTimerPress(baby.id, userId);
   const stop = useStopTimer(baby.id, userId);
   const pending = pendingRowIds(entriesFor(useOutboxEntries(userId), "logs"));
