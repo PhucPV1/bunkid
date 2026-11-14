@@ -20,24 +20,24 @@ export function DoseLine({
         : `Hẹn ${formatDueDate(item.due)}`;
   return (
     <>
-      <span className="font-medium">
+      <span className="text-base font-medium text-ink">
         {dose.name} <PendingMark pending={pending} />
       </span>
-      <span className="text-sm text-muted">
+      <span className="text-[13px] text-muted tabular-nums">
         {when} · {dose.program === "tcmr" ? "Tiêm chủng mở rộng" : "Dịch vụ"}
       </span>
       {item.unchosen && (
-        <span className="rounded-full bg-soft px-2 text-sm">
+        <span className="mt-0.5 rounded-full bg-muted/15 px-2 text-[13px] text-ink">
           Chưa chọn loại
         </span>
       )}
       {item.pastMaxAge && (
-        <span className="text-sm text-danger-ink">
+        <span className="text-[13px] text-danger">
           Đã quá tuổi khuyến cáo của loại vaccine này, hỏi bác sĩ.
         </span>
       )}
       {dose.note && item.state !== "done" && (
-        <span className="text-sm text-muted">{dose.note}</span>
+        <span className="text-[13px] text-muted">{dose.note}</span>
       )}
     </>
   );
