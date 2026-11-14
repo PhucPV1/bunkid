@@ -44,6 +44,8 @@ export const ICON_PATHS = {
   check: "M20 6 9 17l-5-5",
   chevronLeft: "m15 6-6 6 6 6",
   chevronRight: "m9 6 6 6-6 6",
+  chevronUp: "m6 15 6-6 6 6",
+  chevronDown: "m6 9 6 6 6-6",
   calendar:
     "M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z",
   stop: "M7 7h10v10H7z",

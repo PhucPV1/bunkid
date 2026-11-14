@@ -31,8 +31,8 @@ describe("log categories", () => {
 });
 
 describe("icon paths", () => {
-  it("has the 37 icons the spec lists, each a non-empty path", () => {
-    expect(Object.keys(ICON_PATHS)).toHaveLength(37);
+  it("has the 39 icons the app uses, each a non-empty path", () => {
+    expect(Object.keys(ICON_PATHS)).toHaveLength(39);
     for (const d of Object.values(ICON_PATHS)) expect(d).toMatch(/^[Mm]/);
   });
 });

@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { OnlineOnly } from "@/components/OnlineOnly";
+import { FIELD_INPUT, FIELD_LABEL } from "@/components/quick/styles";
+import { Button } from "@/components/ui/Button";
+import { Glass } from "@/components/ui/Glass";
 import { useSaveMedicalInfo } from "@/lib/data/emergency";
 import { toVietnameseError } from "@/lib/data/errors";
 import {
@@ -22,13 +25,17 @@ export function ProfileCard({
 }) {
   const [editing, setEditing] = useState(false);
   return (
-    <section className="flex flex-col gap-3 rounded-2xl bg-soft p-4">
-      <h2 className="text-lg font-medium">Hồ sơ của bé</h2>
-      <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
+    <Glass as="section" className="flex flex-col gap-3 p-4">
+      <h2 className="text-xl leading-[26px] font-bold text-ink">
+        Hồ sơ của bé
+      </h2>
+      <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-[15px]">
         {profileLines(baby, latestWeightG, new Date()).map((line) => (
           <div key={line.label} className="contents">
             <dt className="text-muted">{line.label}</dt>
-            <dd className="font-medium">{line.value}</dd>
+            <dd className="font-semibold text-ink tabular-nums">
+              {line.value}
+            </dd>
           </div>
         ))}
       </dl>
@@ -36,15 +43,15 @@ export function ProfileCard({
         (editing ? (
           <MedicalInfoForm baby={baby} onClose={() => setEditing(false)} />
         ) : (
-          <button
-            type="button"
+          <Button
+            variant="secondary"
+            size="md"
             onClick={() => setEditing(true)}
-            className="min-h-11 rounded-xl border px-4"
           >
             Sửa nhóm máu, dị ứng
-          </button>
+          </Button>
         ))}
-    </section>
+    </Glass>
   );
 }
 
@@ -61,12 +68,12 @@ function MedicalInfoForm({
   return (
     <div className="flex flex-col gap-3">
       <OnlineOnly>
-        <label className="flex flex-col gap-1">
-          Nhóm máu
+        <label className="flex flex-col gap-1.5">
+          <span className={FIELD_LABEL}>Nhóm máu</span>
           <select
-            className="min-h-11 rounded-xl border px-3"
+            className={`${FIELD_INPUT} accent-accent`}
             value={bloodType}
-            onChange={(e) => setBloodType(e.target.value)}
+            onChange={(event) => setBloodType(event.target.value)}
           >
             <option value="">Chưa biết</option>
             {BLOOD_TYPES.map((type) => (
@@ -76,18 +83,18 @@ function MedicalInfoForm({
             ))}
           </select>
         </label>
-        <label className="flex flex-col gap-1">
-          Dị ứng (thuốc, thức ăn…)
+        <label className="flex flex-col gap-1.5">
+          <span className={FIELD_LABEL}>Dị ứng (thuốc, thức ăn…)</span>
           <textarea
-            className="min-h-20 rounded-xl border p-3"
+            className={`${FIELD_INPUT} min-h-20 py-2.5`}
             maxLength={ALLERGIES_MAX}
             value={allergies}
-            onChange={(e) => setAllergies(e.target.value)}
+            onChange={(event) => setAllergies(event.target.value)}
           />
         </label>
-        <button
-          type="button"
-          disabled={save.isPending}
+        <Button
+          block
+          busy={save.isPending}
           onClick={() =>
             save.mutate(
               {
@@ -97,23 +104,18 @@ function MedicalInfoForm({
               { onSuccess: onClose },
             )
           }
-          className="min-h-12 rounded-2xl bg-accent text-on-accent disabled:opacity-50"
         >
           Lưu
-        </button>
+        </Button>
       </OnlineOnly>
       {save.isError && (
-        <p role="alert" className="text-danger">
+        <p role="alert" className="text-[15px] text-danger">
           {toVietnameseError(save.error)}
         </p>
       )}
-      <button
-        type="button"
-        onClick={onClose}
-        className="min-h-11 rounded-xl border"
-      >
+      <Button variant="secondary" size="md" block onClick={onClose}>
         Đóng
-      </button>
+      </Button>
     </div>
   );
 }
