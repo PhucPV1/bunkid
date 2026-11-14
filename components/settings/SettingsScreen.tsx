@@ -3,8 +3,9 @@
 import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useState } from "react";
-import { useThemePref } from "@/lib/hooks/useTheme";
+import { useNightSchedule, useThemePref } from "@/lib/hooks/useTheme";
 import { roleLabel } from "@/lib/rules/familySettings";
+import { HALF_HOURS } from "@/lib/rules/theme";
 import { supabase } from "@/lib/supabase/client";
 import type { Baby, FamilyMember } from "@/lib/supabase/rows";
 import { THEME_OPTIONS } from "@/lib/theme";
@@ -27,6 +28,7 @@ export function SettingsScreen({
 }) {
   const queryClient = useQueryClient();
   const [theme, setTheme] = useThemePref();
+  const [nightSchedule, setNightSchedule] = useNightSchedule();
   const [signingOut, setSigningOut] = useState(false);
   const isOwner = member.role === "owner";
 
@@ -51,9 +53,9 @@ export function SettingsScreen({
         <NotificationsSection userId={userId} />
       </OnlineOnly>
 
-      <section className="flex flex-col gap-2">
+      <section className="flex flex-col gap-3">
         <h2 className="text-lg font-medium">Giao diện</h2>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           {THEME_OPTIONS.map((option) => (
             <button
               key={option.value}
@@ -65,6 +67,59 @@ export function SettingsScreen({
               {option.label}
             </button>
           ))}
+        </div>
+        <label className="flex min-h-11 items-center justify-between gap-3">
+          <span>
+            Ban đêm theo lịch
+            <span className="block text-sm text-muted">
+              Tông hổ phách dịu mắt khi cho bé bú đêm
+            </span>
+          </span>
+          <input
+            type="checkbox"
+            role="switch"
+            className="size-6"
+            checked={nightSchedule.enabled}
+            onChange={(e) =>
+              setNightSchedule({ ...nightSchedule, enabled: e.target.checked })
+            }
+          />
+        </label>
+        <div className="grid grid-cols-2 gap-2">
+          <label className="flex flex-col gap-1 text-sm text-muted">
+            Bắt đầu
+            <select
+              className="min-h-11 rounded-xl border bg-surface px-3 text-base text-ink"
+              disabled={!nightSchedule.enabled}
+              value={nightSchedule.start}
+              onChange={(e) =>
+                setNightSchedule({ ...nightSchedule, start: e.target.value })
+              }
+            >
+              {HALF_HOURS.map((hm) => (
+                <option key={hm} value={hm}>
+                  {hm}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex flex-col gap-1 text-sm text-muted">
+            Kết thúc
+            <select
+              className="min-h-11 rounded-xl border bg-surface px-3 text-base text-ink"
+              disabled={!nightSchedule.enabled}
+              value={nightSchedule.end}
+              onChange={(e) =>
+                setNightSchedule({ ...nightSchedule, end: e.target.value })
+              }
+            >
+              {HALF_HOURS.map((hm) => (
+                <option key={hm} value={hm}>
+                  {hm}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
       </section>
 

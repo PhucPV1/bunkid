@@ -2,51 +2,118 @@
 
 import { useEffect, useLayoutEffect, useState } from "react";
 import {
-  parseThemePref,
-  resolveTheme,
+  DEFAULT_NIGHT_SCHEDULE,
+  resolveActiveTheme,
+  type NightSchedule,
+} from "@/lib/rules/theme";
+import {
+  NIGHT_OVERRIDE_KEY,
+  NIGHT_SCHEDULE_KEY,
+  readThemeState,
+  THEME_COLORS,
   THEME_STORAGE_KEY,
   type ThemePref,
 } from "@/lib/theme";
+import type { ThemeName } from "@/lib/ui/tokens";
 
 const DARK_QUERY = "(prefers-color-scheme: dark)";
 
-function readPref(): ThemePref {
-  if (typeof window === "undefined") return "system";
+function storageGet(key: string): string | null {
   try {
-    return parseThemePref(window.localStorage.getItem(THEME_STORAGE_KEY));
+    return window.localStorage.getItem(key);
   } catch {
-    return "system";
+    return null;
   }
 }
 
-function applyTheme(pref: ThemePref): void {
-  document.documentElement.dataset.theme = resolveTheme(
-    pref,
-    window.matchMedia(DARK_QUERY).matches,
-  );
+function storageSet(key: string, value: string): void {
+  try {
+    window.localStorage.setItem(key, value);
+  } catch {
+    // Private mode: the choice still applies until the app is closed.
+  }
+}
+
+function storageRemove(key: string): void {
+  try {
+    window.localStorage.removeItem(key);
+  } catch {
+    // Private mode: nothing was stored.
+  }
+}
+
+export function applyTheme(): ThemeName {
+  const now = new Date();
+  const state = readThemeState(storageGet, now);
+  if (state.migrated) {
+    storageSet(THEME_STORAGE_KEY, state.pref);
+    storageSet(NIGHT_OVERRIDE_KEY, JSON.stringify(state.override));
+  }
+  const theme = resolveActiveTheme({
+    pref: state.pref,
+    prefersDark: window.matchMedia(DARK_QUERY).matches,
+    schedule: state.schedule,
+    override: state.override,
+    now,
+  });
+  document.documentElement.dataset.theme = theme;
+  for (const meta of document.querySelectorAll('meta[name="theme-color"]'))
+    meta.setAttribute("content", THEME_COLORS[theme]);
+  return theme;
 }
 
 export function useSystemThemeSync(): void {
   // Dev Strict Mode remounts <html> and clears the attribute the inline script set.
-  useLayoutEffect(() => applyTheme(readPref()), []);
+  useLayoutEffect(() => {
+    applyTheme();
+  }, []);
   useEffect(() => {
     const media = window.matchMedia(DARK_QUERY);
-    const onChange = () => applyTheme(readPref());
+    const onChange = () => {
+      applyTheme();
+    };
     media.addEventListener("change", onChange);
-    return () => media.removeEventListener("change", onChange);
+    window.addEventListener("storage", onChange);
+    // The night schedule switches on its own while the app stays open.
+    const timer = window.setInterval(onChange, 60_000);
+    return () => {
+      media.removeEventListener("change", onChange);
+      window.removeEventListener("storage", onChange);
+      window.clearInterval(timer);
+    };
   }, []);
 }
 
 export function useThemePref(): [ThemePref, (next: ThemePref) => void] {
-  const [pref, setPref] = useState<ThemePref>(readPref);
+  const [pref, setPref] = useState<ThemePref>(() =>
+    typeof window === "undefined"
+      ? "system"
+      : readThemeState(storageGet, new Date()).pref,
+  );
   function choose(next: ThemePref) {
-    try {
-      window.localStorage.setItem(THEME_STORAGE_KEY, next);
-    } catch {
-      // Private mode: the choice still applies until the app is closed.
-    }
-    applyTheme(next);
+    storageSet(THEME_STORAGE_KEY, next);
+    // A deliberate choice in Cài đặt ends any temporary night on/off.
+    storageRemove(NIGHT_OVERRIDE_KEY);
+    applyTheme();
     setPref(next);
   }
   return [pref, choose];
+}
+
+export function useNightSchedule(): [
+  NightSchedule,
+  (next: NightSchedule) => void,
+] {
+  const [schedule, setSchedule] = useState<NightSchedule>(() =>
+    typeof window === "undefined"
+      ? DEFAULT_NIGHT_SCHEDULE
+      : readThemeState(storageGet, new Date()).schedule,
+  );
+  function save(next: NightSchedule) {
+    storageSet(NIGHT_SCHEDULE_KEY, JSON.stringify(next));
+    storageRemove(NIGHT_OVERRIDE_KEY);
+    applyTheme();
+    setSchedule(next);
+  }
+  return [schedule, save];
 }

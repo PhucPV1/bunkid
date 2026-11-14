@@ -306,3 +306,17 @@ Kết quả: Chờ người dùng.
 | iPhone 11     |     |         |         |
 | iPhone 16     |     |         |         |
 | iPhone 17 Pro |     |         |         |
+
+## Bước 21 — Ban đêm theo lịch (UI đợt 1)
+
+1. Cài đặt → Giao diện: bật "Ban đêm theo lịch", chọn "Bắt đầu" là mốc :00 hoặc :30 sắp tới gần nhất và "Kết thúc" là mốc sau đó 1 tiếng, để app mở. Kỳ vọng: tới giờ bắt đầu, trong ≤ 1 phút app tự chuyển sang tông hổ phách, thanh trạng thái tối; tới giờ kết thúc tự về giao diện ban ngày.
+2. Tắt "Ban đêm theo lịch". Kỳ vọng: giao diện theo lựa chọn Sáng / Tối / Tự động.
+3. Đặt lại 21:00–06:00 và bật lại.
+
+Kết quả: Chờ người dùng.
+
+| Máy           | iOS | Kết quả | Ghi chú |
+| ------------- | --- | ------- | ------- |
+| iPhone 11     |     |         |         |
+| iPhone 16     |     |         |         |
+| iPhone 17 Pro |     |         |         |
