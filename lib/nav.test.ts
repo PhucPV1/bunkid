@@ -1,91 +1,94 @@
 import { describe, expect, it } from "vitest";
-import { activeTab, GUIDE_ITEMS, TABS, TOOL_ITEMS } from "./nav";
+import {
+  activeTab,
+  EXPLORE_EMERGENCY,
+  EXPLORE_GUIDES,
+  EXPLORE_REPORT,
+  EXPLORE_SOOTHE,
+  EXPLORE_TRACK,
+  TABS,
+} from "./nav";
+
+const ALL_EXPLORE = [
+  ...EXPLORE_TRACK,
+  ...EXPLORE_GUIDES,
+  ...EXPLORE_SOOTHE,
+  EXPLORE_REPORT,
+];
 
 describe("nav", () => {
-  it("has the five tabs of spec §6.18 in order", () => {
-    expect(TABS.map((t) => t.label)).toEqual([
-      "Trang chủ",
-      "Nhật ký",
-      "Cẩm nang",
-      "Tiện ích",
-      "Cài đặt",
+  it("has the three tabs of spec §6.1 with SVG icons", () => {
+    expect(TABS).toEqual([
+      { key: "home", href: "/", label: "Hôm nay", icon: "home" },
+      { key: "history", href: "/nhat-ky", label: "Nhật ký", icon: "list" },
+      { key: "explore", href: "/kham-pha", label: "Khám phá", icon: "explore" },
     ]);
   });
 
-  it("activeTab maps each page to its tab", () => {
+  it("Khám phá lists the sections of spec §6.4 in order", () => {
+    expect(EXPLORE_EMERGENCY).toEqual({
+      label: "Khẩn cấp",
+      href: "/khan-cap",
+      detail: "Gọi 115, bác sĩ, hồ sơ nhóm máu và dị ứng",
+    });
+    expect(
+      EXPLORE_TRACK.map((i) => [i.label, i.href, i.icon, i.color]),
+    ).toEqual([
+      ["Thống kê", "/thong-ke", "chart", "cat-sleep"],
+      ["Tăng trưởng", "/tang-truong", "ruler", "cat-tummy"],
+      ["Tiêm chủng", "/tiem-chung", "syringe", "cat-temp"],
+      ["Phát triển", "/phat-trien", "star", "cat-diaper"],
+    ]);
+    expect(
+      EXPLORE_GUIDES.map((i) => [i.label, i.href, i.icon, i.color]),
+    ).toEqual([
+      ["Triệu chứng", "/trieu-chung", "thermo", "cat-med"],
+      ["Bệnh thường gặp", "/benh-thuong-gap", "book", "cat-feed"],
+      ["Bồng bế", "/bong-be", "hands", "cat-tummy"],
+    ]);
+    expect(
+      EXPLORE_SOOTHE.map((i) => [i.label, i.href, i.icon, i.color]),
+    ).toEqual([
+      ["Ồn trắng", "/on-trang", "wave", "cat-sleep"],
+      ["Nhạc", "/nhac", "music", "cat-feed"],
+      ["Ảnh", "/anh", "image", "cat-diaper"],
+    ]);
+    expect(EXPLORE_REPORT).toEqual({
+      label: "Báo cáo cho bác sĩ",
+      href: "/bao-cao",
+      icon: "doc",
+      color: "cat-temp",
+      detail: "In A4 tóm tắt 14 ngày gần nhất",
+    });
+  });
+
+  it("track and guide cards carry the spec's one-line descriptions", () => {
+    expect(EXPLORE_TRACK.map((i) => i.detail)).toEqual([
+      "Biểu đồ ngủ, bú, tã 7 và 14 ngày",
+      "Cân nặng, chiều dài theo chuẩn WHO",
+      "Mũi tiếp theo và lịch đã tiêm",
+      "Các mốc theo tháng tuổi",
+    ]);
+    expect(EXPLORE_GUIDES.map((i) => i.detail)).toEqual([
+      "Hỏi từng bước, biết khi nào đi khám",
+      "10 bài theo NHS",
+      "Tư thế bế, ợ hơi, cho bú",
+    ]);
+  });
+
+  it("activeTab maps pages to the three tabs", () => {
     expect(activeTab("/")).toBe("home");
+    expect(activeTab("/cai-dat")).toBe("home");
+    expect(activeTab("/cai-dat/thanh-vien")).toBe("home");
     expect(activeTab("/nhat-ky")).toBe("history");
-    expect(activeTab("/thong-ke")).toBe("tools");
-    expect(activeTab("/tien-ich")).toBe("tools");
-    expect(activeTab("/tiem-chung")).toBe("guide");
-    expect(activeTab("/cai-dat")).toBe("settings");
+    expect(activeTab("/kham-pha")).toBe("explore");
+    expect(activeTab("/cam-nang")).toBe("explore");
+    expect(activeTab("/tien-ich")).toBe("explore");
+    expect(activeTab(EXPLORE_EMERGENCY.href)).toBe("explore");
+    for (const item of ALL_EXPLORE)
+      expect(activeTab(item.href)).toBe("explore");
     expect(activeTab("/nhat-ky-cu")).toBeNull();
     expect(activeTab("/dang-nhap")).toBeNull();
-  });
-
-  it("Cẩm nang opens the vaccine page", () => {
-    expect(GUIDE_ITEMS.find((i) => i.label === "Tiêm chủng")?.href).toBe(
-      "/tiem-chung",
-    );
-  });
-
-  it("Tiện ích opens the emergency page", () => {
-    expect(TOOL_ITEMS.find((i) => i.label === "Khẩn cấp")?.href).toBe(
-      "/khan-cap",
-    );
-  });
-
-  it("Tiện ích opens the growth page", () => {
-    expect(TOOL_ITEMS.find((i) => i.label === "Tăng trưởng")?.href).toBe(
-      "/tang-truong",
-    );
-  });
-
-  it("Cẩm nang opens symptom triage", () => {
-    expect(GUIDE_ITEMS.find((i) => i.label === "Triệu chứng")?.href).toBe(
-      "/trieu-chung",
-    );
-  });
-
-  it("Cẩm nang opens the common illnesses guide", () => {
-    expect(GUIDE_ITEMS.find((i) => i.label === "Bệnh thường gặp")?.href).toBe(
-      "/benh-thuong-gap",
-    );
-  });
-
-  it("Tiện ích opens white noise", () => {
-    expect(TOOL_ITEMS.find((i) => i.label === "Ồn trắng")?.href).toBe(
-      "/on-trang",
-    );
-  });
-
-  it("opens the holding guide and music", () => {
-    expect(GUIDE_ITEMS.find((i) => i.label === "Bồng bế")?.href).toBe(
-      "/bong-be",
-    );
-    expect(TOOL_ITEMS.find((i) => i.label === "Nhạc")?.href).toBe("/nhac");
-  });
-
-  it("Tiện ích opens photos", () => {
-    expect(TOOL_ITEMS.find((i) => i.label === "Ảnh")?.href).toBe("/anh");
-  });
-
-  it("Cẩm nang opens development milestones", () => {
-    expect(GUIDE_ITEMS.find((i) => i.label === "Phát triển")?.href).toBe(
-      "/phat-trien",
-    );
-  });
-
-  it("Tiện ích opens the doctor report", () => {
-    expect(TOOL_ITEMS.find((i) => i.label === "Báo cáo")?.href).toBe(
-      "/bao-cao",
-    );
-  });
-
-  it("every menu link opens under its own tab", () => {
-    for (const item of GUIDE_ITEMS)
-      if (item.href) expect(activeTab(item.href)).toBe("guide");
-    for (const item of TOOL_ITEMS)
-      if (item.href) expect(activeTab(item.href)).toBe("tools");
+    expect(activeTab("/cai-app")).toBeNull();
   });
 });
