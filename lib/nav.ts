@@ -16,7 +16,7 @@ export const TABS: {
 export type MenuItem = { label: string; href: string | null };
 
 export const GUIDE_ITEMS: MenuItem[] = [
-  { label: "Tiêm chủng", href: null },
+  { label: "Tiêm chủng", href: "/tiem-chung" },
   { label: "Triệu chứng", href: null },
   { label: "Phát triển", href: null },
   { label: "Bồng bế", href: null },

@@ -23,6 +23,12 @@ describe("nav", () => {
     expect(activeTab("/dang-nhap")).toBeNull();
   });
 
+  it("Cẩm nang opens the vaccine page", () => {
+    expect(GUIDE_ITEMS.find((i) => i.label === "Tiêm chủng")?.href).toBe(
+      "/tiem-chung",
+    );
+  });
+
   it("every menu link opens under its own tab", () => {
     for (const item of GUIDE_ITEMS)
       if (item.href) expect(activeTab(item.href)).toBe("guide");

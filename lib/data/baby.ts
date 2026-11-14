@@ -18,7 +18,10 @@ export async function createBaby(
 
 export async function updateBaby(
   id: string,
-  patch: Partial<BabyInput> & { feed_interval_min?: number },
+  patch: Partial<BabyInput> & {
+    feed_interval_min?: number;
+    vaccine_choices?: Record<string, string>;
+  },
 ): Promise<void> {
   const { data, error } = await supabase()
     .from("babies")
