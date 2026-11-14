@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { ICON_PATHS } from "@/lib/ui/icons";
-import { Sheet } from "./Sheet";
+import { markAutofocus, Sheet } from "./Sheet";
 
 const noop = () => {};
 
@@ -57,5 +57,27 @@ describe("Sheet", () => {
     expect(html).toContain(
       "animate-[kb-sheet-in_280ms_cubic-bezier(0.32,0.72,0,1)]",
     );
+  });
+});
+
+describe("Sheet initial focus", () => {
+  it("starts with an on-screen focus target, so iOS does not scroll to the sliding close button", () => {
+    const html = renderToStaticMarkup(
+      <Sheet open title="Thay tã" onClose={noop}>
+        <p>Thân</p>
+      </Sheet>,
+    );
+    expect(html).toMatch(
+      /<dialog[^>]*><span tabindex="-1" class="fixed top-0 left-0 size-px outline-none"><\/span>/,
+    );
+  });
+
+  it("marks that target with the real autofocus attribute that showModal() looks for", () => {
+    const set: string[] = [];
+    markAutofocus({
+      setAttribute: (name: string) => set.push(name),
+    } as unknown as HTMLElement);
+    markAutofocus(null);
+    expect(set).toEqual(["autofocus"]);
   });
 });

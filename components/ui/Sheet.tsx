@@ -24,6 +24,12 @@ const CHIP: Record<CategoryToken, string> = {
 
 const BOTTOM_PAD = "pb-[calc(20px+env(safe-area-inset-bottom))]";
 
+// showModal() focuses the first [autofocus] element. React's autoFocus prop only calls
+// focus() on mount and never writes the attribute, so it is set here.
+export function markAutofocus(element: HTMLElement | null) {
+  element?.setAttribute("autofocus", "");
+}
+
 export function Sheet({
   open,
   onClose,
@@ -98,6 +104,13 @@ export function Sheet({
       }}
       className="m-0 h-dvh max-h-none w-full max-w-none flex-col justify-end bg-transparent p-2 text-ink backdrop:animate-[kb-fade-in_200ms_ease-out] backdrop:bg-scrim open:flex"
     >
+      {/* Without this, showModal() focuses the close button while the panel is still below
+          the screen, and iOS Safari scrolls up to it: the sheet shows at the top, then drops. */}
+      <span
+        ref={markAutofocus}
+        tabIndex={-1}
+        className="fixed top-0 left-0 size-px outline-none"
+      />
       <div
         onAnimationEnd={(event) => {
           if (closing && event.target === event.currentTarget) {
