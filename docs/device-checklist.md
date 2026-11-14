@@ -335,3 +335,18 @@ Kết quả: Chờ người dùng.
 | iPhone 11     |     |         |         |
 | iPhone 16     |     |         |         |
 | iPhone 17 Pro |     |         |         |
+
+## Bước 23 — Nút "+" và bảng 9 hành động (UI đợt 2)
+
+1. Ở mỗi tab (Hôm nay, Nhật ký, Khám phá) bấm nút "+". Kỳ vọng: bảng "Ghi lại cho <tên bé>" nổi trên tab bar, 9 ô, 5 ô có đồng hồ; nút "+" thành "×".
+2. Chọn "Bú trái". Kỳ vọng: bảng đóng, timer bú trái chạy (thấy ở Trang chủ). Mở lại "+": ô Bú trái có viền và chữ "Dừng bú trái"; bấm để dừng.
+3. Chọn "Hút sữa", đợi vài giây, mở "+" chọn lại để dừng. Kỳ vọng: hiện sheet nhập số ml như khi dừng ở Trang chủ.
+4. Chọn "Thay tã" từ tab Nhật ký. Kỳ vọng: sheet Thay tã mở, nút Lưu không bị tab bar che; lưu xong bản ghi hiện ở Nhật ký.
+
+Kết quả: Chờ người dùng.
+
+| Máy           | iOS | Kết quả | Ghi chú |
+| ------------- | --- | ------- | ------- |
+| iPhone 11     |     |         |         |
+| iPhone 16     |     |         |         |
+| iPhone 17 Pro |     |         |         |
