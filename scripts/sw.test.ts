@@ -103,6 +103,7 @@ describe("service worker", () => {
         "/nhat-ky",
         "/thong-ke",
         "/kham-pha",
+        "/cai-dat/thanh-vien",
         "/dang-nhap",
         "/khan-cap",
         "/_next/static/chunks/app.js",
