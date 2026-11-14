@@ -1,15 +1,19 @@
-import type { LogRow } from "@/lib/supabase/rows";
+import type { LogRow, VaccineDoseRow } from "@/lib/supabase/rows";
 
-export type OutboxOp = "insert" | "update" | "delete" | "stop";
+// logs: insert / update / delete / stop by row id.
+// vaccine_doses: upsert (mark a dose) / insert (quick tick, keeps an existing row) /
+// delete (clear the mark), keyed by "code#doseNo" because the row id is the server's.
+export type OutboxOp = "insert" | "update" | "delete" | "stop" | "upsert";
 
 export type OutboxEntry = {
   id: string;
-  table: "logs";
+  table: "logs" | "vaccine_doses";
   op: OutboxOp;
   rowId: string;
   babyId: string;
   userId: string;
-  // insert: the new row; update: the changed columns; stop: { ended_at }; delete: null
+  // logs — insert: the new row; update: the changed columns; stop: { ended_at }; delete: null.
+  // vaccine_doses — always { vaccine_code, dose_no, ... } plus the marked columns.
   row: Record<string, unknown> | null;
   createdAt: number;
   attempts: number;
@@ -83,6 +87,9 @@ export function applyLogChange(
         .sort(byNewest);
     case "delete":
       return rows.filter((r) => r.id !== entry.rowId);
+    case "upsert":
+      // Only vaccine_doses entries use upsert.
+      return rows;
     case "stop": {
       const endedAt = String(entry.row?.ended_at);
       return rows.map((r) =>
@@ -136,7 +143,7 @@ export function overlayPending(
   inRange: (row: LogRow) => boolean,
   nowIso: string,
 ): LogRow[] {
-  return [...entries]
+  return [...entriesFor(entries, "logs")]
     .sort((a, b) => a.createdAt - b.createdAt)
     .reduce(
       (acc, entry) =>
@@ -150,4 +157,59 @@ export function overlayPending(
 // Ids of log rows that still have a change waiting in the outbox.
 export function pendingRowIds(entries: OutboxEntry[]): Set<string> {
   return new Set(entries.map((entry) => entry.rowId));
+}
+
+// Entries of one table, for overlays and pending marks that must not mix tables.
+export function entriesFor(
+  entries: OutboxEntry[],
+  table: OutboxEntry["table"],
+): OutboxEntry[] {
+  return entries.filter((entry) => entry.table === table);
+}
+
+const doseKeyOf = (row: { vaccine_code: string; dose_no: number }) =>
+  `${row.vaccine_code}#${row.dose_no}`;
+
+export function applyDoseChange(
+  rows: VaccineDoseRow[],
+  entry: OutboxEntry,
+  nowIso: string,
+): VaccineDoseRow[] {
+  const existing = rows.find((row) => doseKeyOf(row) === entry.rowId);
+  if (entry.op === "delete")
+    return rows.filter((row) => doseKeyOf(row) !== entry.rowId);
+  if (entry.op === "insert" && existing) return rows;
+  const patch = (entry.row ?? {}) as Partial<VaccineDoseRow>;
+  if (existing)
+    return rows.map((row) =>
+      row === existing ? { ...row, ...patch, updated_at: nowIso } : row,
+    );
+  return [
+    ...rows,
+    {
+      id: entry.id,
+      baby_id: entry.babyId,
+      vaccine_code: String(patch.vaccine_code),
+      dose_no: Number(patch.dose_no),
+      status: String(patch.status),
+      given_on: patch.given_on ?? null,
+      due_on_override: patch.due_on_override ?? null,
+      place: patch.place ?? null,
+      note: patch.note ?? null,
+      created_by: entry.userId,
+      created_at: nowIso,
+      updated_at: nowIso,
+    },
+  ];
+}
+
+// Fresh server rows plus the dose marks still waiting in the outbox.
+export function overlayPendingDoses(
+  rows: VaccineDoseRow[],
+  entries: OutboxEntry[],
+  nowIso: string,
+): VaccineDoseRow[] {
+  return [...entriesFor(entries, "vaccine_doses")]
+    .sort((a, b) => a.createdAt - b.createdAt)
+    .reduce((acc, entry) => applyDoseChange(acc, entry, nowIso), rows);
 }
