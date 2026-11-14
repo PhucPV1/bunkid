@@ -34,3 +34,15 @@ bun run db:test     # pgTAP cho schema và RLS
      - `VAPID_SUBJECT` = `mailto:<email của bạn>`
      - `SUPABASE_SERVICE_ROLE_KEY` = khóa `service_role` ở Supabase → Project Settings → API Keys
    - Deploy lại để Vercel chép khóa công khai vào app.
+8. Gửi nhắc bú (M11):
+   - Tạo một chuỗi bí mật: `openssl rand -hex 32`.
+   - Vercel → Environment Variables: thêm `CRON_SECRET` = chuỗi đó, rồi deploy lại.
+   - Supabase → SQL Editor, chạy (thay hai giá trị trong nháy đơn):
+
+     ```sql
+     select vault.create_secret('https://bunkid.vercel.app', 'app_url'); -- không có dấu / ở cuối
+     select vault.create_secret('<chuỗi CRON_SECRET ở trên>', 'cron_secret');
+     ```
+
+   - Cron `push-dispatch` (migration `20261114000300_push_cron.sql`) gọi `/api/push/dispatch` mỗi phút. Xem lịch sử ở Supabase → Integrations → Cron.
+   - Khi project Supabase bị tạm dừng (bước 6) thì cron cũng dừng, không có nhắc.
