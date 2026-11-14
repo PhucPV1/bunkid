@@ -4,6 +4,8 @@ Thiết bị: iPhone 11, iPhone 16, iPhone 17 Pro. Ghi Đạt / Không đạt, p
 
 **Kết luận đợt 1 (2026-11-14):** Đạt — Vitest 173 test và pgTAP 001–005 xanh; bước 0–4 và 7 (nhắc bú) đạt trên iPhone 16 (iOS 18.2) và iPhone 17 Pro (iOS 26.5). iPhone 11 đang iOS 16.3, chưa nhận được Web Push nên chỉ đạt bước 0; người dùng chấp nhận đạt trên 2/3 máy và sẽ kiểm lại iPhone 11 sau khi cập nhật lên iOS 16.4 trở lên.
 
+**Kết luận đợt 2 (2026-11-14):** Chờ người dùng. Phần tự động đạt: Vitest 265 test và pgTAP 001–008 xanh. Tiêu chí §11 còn chờ trên điện thoại thật: nhận push nhắc tiêm (bước 9, mục 5) trên ít nhất 1 máy, bước 7 đầy đủ (nhắc thức bị tạm tắt chặn — bước 11 mục 5; nhắc tiêm vẫn đến — bước 9 mục 4–5), và các bước 8–14.
+
 ## Bước 0 — Đăng nhập Google trong PWA standalone (M1)
 
 1. Safari mở `<APP_URL>/dang-nhap` → Chia sẻ → Thêm vào MH chính → mở từ biểu tượng.
@@ -173,6 +175,18 @@ Nhắc thức cũng bị tạm tắt chặn: kiểm ở bước 11, mục 5.
 5. "Làm lại" → nhập nhiệt độ 38 (bé dưới 3 tháng) hoặc 40 (mọi tuổi) → Xem kết quả. Kỳ vọng: 🔴.
 6. Không có kết quả nào hiện tên bệnh.
 7. Trang chủ: khi có banner đỏ (ví dụ ghi nhiệt độ 40°C rồi xóa sau khi xem), banner có nút "Gọi 115" và nút "Phân loại triệu chứng" mở đúng trang.
+
+| Máy           | iOS | Kết quả | Ghi chú |
+| ------------- | --- | ------- | ------- |
+| iPhone 11     |     |         |         |
+| iPhone 16     |     |         |         |
+| iPhone 17 Pro |     |         |         |
+
+## Bước 14 — Bệnh thường gặp (M21)
+
+1. Cẩm nang → Bệnh thường gặp. Kỳ vọng: 10 mục (Cảm lạnh, Sổ mũi nghẹt mũi, Nôn trớ, Táo bón, Hăm tã, Chàm sữa, Nấm miệng, Vàng da sinh lý, Viêm tiểu phế quản, Tiêu chảy), nút "Phân loại triệu chứng" và "Gọi 115" ở đầu.
+2. Mở một mục. Kỳ vọng: Dấu hiệu, Chăm bé tại nhà, Nên cho bé đi khám, khung đỏ "Khi nào đi khám ngay", thời gian thường kéo dài, nguồn NHS.
+3. Bật chế độ máy bay, đóng hẳn app rồi mở lại → Cẩm nang → Bệnh thường gặp. Kỳ vọng: vẫn đọc được.
 
 | Máy           | iOS | Kết quả | Ghi chú |
 | ------------- | --- | ------- | ------- |
