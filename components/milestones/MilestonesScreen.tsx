@@ -1,8 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { PendingMark } from "@/components/sync/PendingMark";
+import { Button } from "@/components/ui/Button";
+import { ErrorCard } from "@/components/ui/ErrorCard";
+import { ListGroup } from "@/components/ui/ListGroup";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { MILESTONES } from "@/lib/content/milestones";
+import { toVietnameseError } from "@/lib/data/errors";
 import { useMilestones } from "@/lib/data/milestones";
 import { entriesFor, pendingRowIds } from "@/lib/data/outboxCore";
 import { useOutboxEntries } from "@/lib/hooks/useOutboxEntries";
@@ -14,11 +18,12 @@ import {
 } from "@/lib/rules/milestones";
 import { ageDays } from "@/lib/rules/time";
 import type { Baby, MilestoneRow } from "@/lib/supabase/rows";
+import { MilestoneItem } from "./MilestoneItem";
 import { MilestoneSheet } from "./MilestoneSheet";
 
 const STATE_CLASS: Record<MotorState, string> = {
   done: "bg-good-soft text-good-ink",
-  early: "bg-soft text-muted",
+  early: "bg-muted/15 text-ink",
   window: "bg-accent-soft text-accent-ink",
   late: "bg-warn-soft text-warn-ink",
 };
@@ -51,82 +56,66 @@ export function MilestonesScreen({
   const item = (code: string, title: string, extra?: React.ReactNode) => {
     const row = byCode.get(code);
     return (
-      <li key={code}>
-        <button
-          type="button"
-          disabled={!canEdit(row)}
-          onClick={() => setOpen({ code, title })}
-          className="flex min-h-12 w-full items-start gap-3 px-4 py-2 text-left disabled:opacity-100"
-        >
-          <span
-            aria-hidden="true"
-            className={`mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md border ${row ? "border-accent bg-accent text-on-accent" : ""}`}
-          >
-            {row ? "✓" : ""}
-          </span>
-          <span className="flex flex-col">
-            <span>
-              {title} <PendingMark pending={pending.has(code)} />
-            </span>
-            {row && (
-              <span className="text-sm text-muted">
-                Đạt ngày {row.achieved_on.split("-").reverse().join("/")}
-                {row.note ? ` · ${row.note}` : ""}
-                {row.photo_id ? " · có ảnh" : ""}
-              </span>
-            )}
-            {extra}
-          </span>
-        </button>
-      </li>
+      <MilestoneItem
+        key={code}
+        title={title}
+        row={row}
+        pending={pending.has(code)}
+        disabled={!canEdit(row)}
+        extra={extra}
+        onOpen={() => setOpen({ code, title })}
+      />
     );
   };
 
   return (
-    <main className="mx-auto flex max-w-md flex-col gap-4 p-4">
-      <h1 className="text-2xl font-semibold">{MILESTONES.title}</h1>
-      <p className="text-sm text-muted">{MILESTONES.intro}</p>
-      <section className="flex flex-col gap-2">
-        <h2 className="text-lg font-medium">Mốc vận động lớn</h2>
-        <ul className="divide-y rounded-2xl border">
-          {MILESTONES.motor.map((m) => {
-            const status = motorStatus(m, months, byCode.has(m.code));
-            return item(
-              m.code,
-              m.name,
-              status.state === "done" ? null : (
-                <span
-                  className={`mt-1 self-start rounded-full px-2 text-sm ${STATE_CLASS[status.state]}`}
-                >
-                  {status.text}
-                </span>
-              ),
-            );
-          })}
-        </ul>
-      </section>
+    <main className="mx-auto flex max-w-md flex-col gap-[18px] px-4 pt-2 pb-4">
+      <PageHeader
+        title={MILESTONES.title}
+        back={{ href: "/kham-pha", label: "Khám phá" }}
+      />
+      <p className="px-1 text-[15px] text-muted">{MILESTONES.intro}</p>
+      {marks.isError && !marks.data && (
+        <ErrorCard
+          message={toVietnameseError(marks.error)}
+          onRetry={() => void marks.refetch()}
+        />
+      )}
+      <ListGroup title="Mốc vận động lớn">
+        {MILESTONES.motor.map((m) => {
+          const status = motorStatus(m, months, byCode.has(m.code));
+          return item(
+            m.code,
+            m.name,
+            status.state === "done" ? null : (
+              <span
+                className={`mt-1 self-start rounded-full px-2 text-[13px] font-semibold ${STATE_CLASS[status.state]}`}
+              >
+                {status.text}
+              </span>
+            ),
+          );
+        })}
+      </ListGroup>
       {groups.map((group) => (
-        <section key={group.months} className="flex flex-col gap-2">
-          <h2 className="text-lg font-medium">Mốc {group.months} tháng</h2>
+        <section key={group.months} className="flex flex-col gap-3">
+          <h2 className="px-1 text-xl leading-[26px] font-bold text-ink">
+            Mốc {group.months} tháng
+          </h2>
           {(["social", "language", "cognitive", "movement"] as const).map(
             (domain) => {
               const list = group.items.filter((i) => i.domain === domain);
               if (list.length === 0) return null;
               return (
-                <div key={domain} className="flex flex-col gap-1">
-                  <h3 className="text-sm font-medium text-muted">
-                    {MILESTONES.domains[domain]}
-                  </h3>
-                  <ul className="divide-y rounded-2xl border">
-                    {list.map((i) => item(i.code, i.text))}
-                  </ul>
-                </div>
+                <ListGroup key={domain} title={MILESTONES.domains[domain]}>
+                  {list.map((i) => item(i.code, i.text))}
+                </ListGroup>
               );
             },
           )}
-          <div className="rounded-xl bg-warn-soft p-3 text-sm text-warn-ink">
-            <p className="font-medium">Khi nào nên hỏi bác sĩ</p>
-            <ul className="list-disc pl-5">
+          <div className="rounded-[22px] bg-warn-soft p-4 text-[15px] text-warn-ink">
+            <p className="font-semibold">Khi nào nên hỏi bác sĩ</p>
+            <ul className="mt-1 list-disc pl-5">
               {group.askDoctor.map((line) => (
                 <li key={line}>{line}</li>
               ))}
@@ -136,19 +125,15 @@ export function MilestonesScreen({
             href={group.source}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex min-h-11 items-center text-sm text-muted underline"
+            className="inline-flex min-h-11 items-center px-1 text-[13px] text-muted underline"
           >
             Nguồn: CDC
           </a>
         </section>
       ))}
-      <button
-        type="button"
-        onClick={() => setShowAll(!showAll)}
-        className="min-h-11 rounded-xl border px-4"
-      >
+      <Button variant="secondary" block onClick={() => setShowAll(!showAll)}>
         {showAll ? "Chỉ xem tháng hiện tại và kế tiếp" : "Xem tất cả các mốc"}
-      </button>
+      </Button>
       {open && (
         <MilestoneSheet
           code={open.code}
