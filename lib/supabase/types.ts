@@ -119,6 +119,32 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"milestones_achieved": {
+                  Row: {
+                    "achieved_on": string,"baby_id": string,"created_at": string,"created_by": string,"id": string,"milestone_code": string,"note": string | null,"photo_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "achieved_on": string,"baby_id": string,"created_at"?: string,"created_by"?: string,"id"?: string,"milestone_code": string,"note"?: string | null,"photo_id"?: string | null
+                  }
+                  Update: {
+                    "achieved_on"?: string,"baby_id"?: string,"created_at"?: string,"created_by"?: string,"id"?: string,"milestone_code"?: string,"note"?: string | null,"photo_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "milestones_achieved_baby_id_fkey"
+      columns: ["baby_id"]
+isOneToOne: false
+      referencedRelation: "babies"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "milestones_achieved_photo_id_fkey"
+      columns: ["photo_id"]
+isOneToOne: false
+      referencedRelation: "photos"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"music_links": {
                   Row: {
                     "category": string,"created_at": string,"created_by": string,"family_id": string,"hidden": boolean,"id": string,"preset_code": string | null,"title": string | null,"youtube_playlist_id": string | null,"youtube_video_id": string | null
@@ -268,6 +294,9 @@ isOneToOne: false
                            },
 "object_family":
 { Args: { "object_name": string }; Returns: string
+                           },
+"photo_matches_baby":
+{ Args: { "p_baby": string,"p_photo": string }; Returns: boolean
                            },
 "photos_total_bytes":
 { Args: Record<PropertyKey, never>; Returns: number

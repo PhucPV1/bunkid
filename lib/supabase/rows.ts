@@ -11,3 +11,4 @@ export type EmergencyContactRow = Tables["emergency_contacts"]["Row"];
 export type GrowthRow = Tables["growth"]["Row"];
 export type MusicLinkRow = Tables["music_links"]["Row"];
 export type PhotoRow = Tables["photos"]["Row"];
+export type MilestoneRow = Tables["milestones_achieved"]["Row"];
