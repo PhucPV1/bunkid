@@ -167,6 +167,26 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"photos": {
+                  Row: {
+                    "baby_id": string,"caption": string | null,"created_at": string,"created_by": string,"id": string,"size_bytes": number,"storage_path": string,"taken_on": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "baby_id": string,"caption"?: string | null,"created_at"?: string,"created_by"?: string,"id": string,"size_bytes": number,"storage_path": string,"taken_on": string
+                  }
+                  Update: {
+                    "baby_id"?: string,"caption"?: string | null,"created_at"?: string,"created_by"?: string,"id"?: string,"size_bytes"?: number,"storage_path"?: string,"taken_on"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "photos_baby_id_fkey"
+      columns: ["baby_id"]
+isOneToOne: false
+      referencedRelation: "babies"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"push_subscriptions": {
                   Row: {
                     "auth": string,"created_at": string,"endpoint": string,"id": string,"last_success_at": string | null,"p256dh": string,"user_agent": string | null,"user_id": string
@@ -242,6 +262,15 @@ isOneToOne: false
                            },
 "is_owner":
 { Args: { "fam": string }; Returns: boolean
+                           },
+"object_baby":
+{ Args: { "object_name": string }; Returns: string
+                           },
+"object_family":
+{ Args: { "object_name": string }; Returns: string
+                           },
+"photos_total_bytes":
+{ Args: Record<PropertyKey, never>; Returns: number
                            },
 "stop_timer":
 { Args: { "p_ended_at": string,"p_log_id": string }; Returns: {
