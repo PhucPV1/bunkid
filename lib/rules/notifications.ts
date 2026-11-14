@@ -11,11 +11,7 @@ export const PREF_OPTIONS: {
   note: string | null;
 }[] = [
   { key: "feed_reminder", label: "Nhắc cữ bú", note: null },
-  {
-    key: "wake_window",
-    label: "Nhắc khi bé thức quá lâu",
-    note: "Có từ đợt 2",
-  },
+  { key: "wake_window", label: "Nhắc khi bé thức quá lâu", note: null },
   { key: "vaccine", label: "Nhắc lịch tiêm", note: null },
 ];
 

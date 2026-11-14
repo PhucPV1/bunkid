@@ -3,6 +3,7 @@ import type { VaccineDose } from "@/lib/content/vaccineSchema";
 import {
   agoText,
   selectDueNotifications,
+  wakeWindowMin,
   type BabyDispatchState,
 } from "./pushSelection";
 
@@ -16,6 +17,7 @@ function baby(over: Partial<BabyDispatchState> = {}): BabyDispatchState {
     feedIntervalMin: 180,
     lastFeed: { id: "L1", startedAt: minutesAgo(190) },
     breastRunning: false,
+    wake: null,
     vaccine: null,
     recipients: [{ userId: "u1", prefs: null }],
     ...over,
@@ -95,6 +97,7 @@ describe("selectDueNotifications — feed (spec §8.3)", () => {
               userId: "off",
               prefs: {
                 feed_reminder: false,
+                wake_window: true,
                 vaccine: true,
                 snooze_until: null,
               },
@@ -103,6 +106,7 @@ describe("selectDueNotifications — feed (spec §8.3)", () => {
               userId: "snoozed",
               prefs: {
                 feed_reminder: true,
+                wake_window: true,
                 vaccine: true,
                 snooze_until: minutesAgo(-30),
               },
@@ -111,13 +115,19 @@ describe("selectDueNotifications — feed (spec §8.3)", () => {
               userId: "woke",
               prefs: {
                 feed_reminder: true,
+                wake_window: true,
                 vaccine: true,
                 snooze_until: minutesAgo(1),
               },
             },
             {
               userId: "plain",
-              prefs: { feed_reminder: true, vaccine: true, snooze_until: null },
+              prefs: {
+                feed_reminder: true,
+                wake_window: true,
+                vaccine: true,
+                snooze_until: null,
+              },
             },
           ],
         }),
@@ -270,6 +280,7 @@ describe("selectDueNotifications — vaccine (spec §8.3)", () => {
               userId: "off",
               prefs: {
                 feed_reminder: true,
+                wake_window: true,
                 vaccine: false,
                 snooze_until: null,
               },
@@ -278,6 +289,7 @@ describe("selectDueNotifications — vaccine (spec §8.3)", () => {
               userId: "snoozed",
               prefs: {
                 feed_reminder: true,
+                wake_window: true,
                 vaccine: true,
                 snooze_until: "2026-11-16T05:00:00Z",
               },
@@ -289,5 +301,120 @@ describe("selectDueNotifications — vaccine (spec §8.3)", () => {
       doses,
     );
     expect(new Set(due.map((d) => d.userId))).toEqual(new Set(["snoozed"]));
+  });
+});
+
+describe("selectDueNotifications — wake (spec §8.3)", () => {
+  // 10:00 on 15/11 in VN; dob 2026-09-14 → 62 days old → W = 90 minutes.
+  const wakeBaby = (
+    over: Partial<NonNullable<BabyDispatchState["wake"]>> = {},
+  ) =>
+    baby({
+      lastFeed: null,
+      wake: {
+        dob: "2026-09-14",
+        lastSleep: { id: "S1", endedAt: minutesAgo(90) },
+        sleepRunning: false,
+        ...over,
+      },
+    });
+
+  it("W(ageDays) follows the table at every boundary", () => {
+    const cases: [number, number][] = [
+      [0, 60],
+      [27, 60],
+      [28, 90],
+      [90, 90],
+      [91, 120],
+      [150, 120],
+      [151, 180],
+      [240, 180],
+      [241, 210],
+      [365, 210],
+      [366, 240],
+    ];
+    for (const [days, minutes] of cases)
+      expect(wakeWindowMin(days)).toBe(minutes);
+  });
+
+  it("reminds once the baby has been awake W minutes", () => {
+    expect(selectDueNotifications([wakeBaby()], now)).toEqual([
+      {
+        userId: "u1",
+        kind: "wake",
+        refKey: "wake:S1",
+        title: "Bé thức đã 90 phút",
+        body: "Bé có thể đang mệt, thử cho bé ngủ.",
+        url: "/",
+        tag: "wake:b1",
+      },
+    ]);
+    expect(
+      selectDueNotifications(
+        [wakeBaby({ lastSleep: { id: "S1", endedAt: minutesAgo(89) } })],
+        now,
+      ),
+    ).toEqual([]);
+  });
+
+  it("stays quiet while asleep, without a recent sleep, or past 12 hours", () => {
+    for (const over of [
+      { sleepRunning: true },
+      { lastSleep: null },
+      { lastSleep: { id: "S1", endedAt: minutesAgo(12 * 60 + 1) } },
+    ])
+      expect(selectDueNotifications([wakeBaby(over)], now)).toEqual([]);
+    expect(
+      selectDueNotifications(
+        [wakeBaby({ lastSleep: { id: "S1", endedAt: minutesAgo(12 * 60) } })],
+        now,
+      ),
+    ).toHaveLength(1);
+  });
+
+  it("respects the wake switch and snooze", () => {
+    const due = selectDueNotifications(
+      [
+        baby({
+          lastFeed: null,
+          wake: {
+            dob: "2026-09-14",
+            lastSleep: { id: "S1", endedAt: minutesAgo(100) },
+            sleepRunning: false,
+          },
+          recipients: [
+            {
+              userId: "off",
+              prefs: {
+                feed_reminder: true,
+                wake_window: false,
+                vaccine: true,
+                snooze_until: null,
+              },
+            },
+            {
+              userId: "snoozed",
+              prefs: {
+                feed_reminder: true,
+                wake_window: true,
+                vaccine: true,
+                snooze_until: minutesAgo(-30),
+              },
+            },
+            {
+              userId: "on",
+              prefs: {
+                feed_reminder: true,
+                wake_window: true,
+                vaccine: true,
+                snooze_until: minutesAgo(1),
+              },
+            },
+          ],
+        }),
+      ],
+      now,
+    );
+    expect(due.map((d) => d.userId)).toEqual(["on"]);
   });
 });

@@ -15,6 +15,7 @@ const dueBaby: BabyDispatchState = {
   feedIntervalMin: 180,
   lastFeed: { id: "L1", startedAt: "2026-11-14T23:00:00Z" }, // 4 hours ago
   breastRunning: false,
+  wake: null,
   vaccine: null,
   recipients: [{ userId: "u1", prefs: null }],
 };
