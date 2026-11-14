@@ -2,6 +2,10 @@
 
 import { useState } from "react";
 import { OnlineOnly } from "@/components/OnlineOnly";
+import { Button } from "@/components/ui/Button";
+import { ErrorCard } from "@/components/ui/ErrorCard";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { VACCINES } from "@/lib/content/vaccines";
 import { toVietnameseError } from "@/lib/data/errors";
 import { entriesFor, pendingRowIds } from "@/lib/data/outboxCore";
@@ -10,20 +14,18 @@ import { useOutboxEntries } from "@/lib/hooks/useOutboxEntries";
 import { vnDateString } from "@/lib/rules/time";
 import {
   cleanChoices,
-  doseKey,
   parseChoices,
   toDoseRecords,
 } from "@/lib/rules/vaccineForm";
-import {
-  buildSchedule,
-  STATE_SECTIONS,
-  type ScheduleItem,
-} from "@/lib/rules/vaccines";
+import { buildSchedule, type ScheduleItem } from "@/lib/rules/vaccines";
 import type { Baby } from "@/lib/supabase/rows";
 import { ChoiceFields } from "./ChoiceFields";
-import { DoseLine } from "./DoseLine";
+import { DoseSections } from "./DoseSections";
 import { DoseSheet } from "./DoseSheet";
 import { VaccineSetup } from "./VaccineSetup";
+import { VaccineSourceRow } from "./VaccineSourceRow";
+
+const SECTION_TITLE = "px-1 text-xl leading-[26px] font-bold text-ink";
 
 export function VaccineScreen({
   baby,
@@ -43,22 +45,31 @@ export function VaccineScreen({
   const [editing, setEditing] = useState(false);
   const [open, setOpen] = useState<ScheduleItem | null>(null);
 
-  if (doses.data === undefined) {
-    if (doses.isError)
-      return (
-        <main className="p-6 text-center">
-          <p className="mb-4">{toVietnameseError(doses.error)}</p>
-          <button
-            type="button"
-            className="min-h-11 rounded-xl bg-accent px-4 text-on-accent"
-            onClick={() => doses.refetch()}
-          >
-            Thử lại
-          </button>
-        </main>
-      );
-    return <main className="p-6 text-center text-muted">Đang tải…</main>;
-  }
+  const header = (
+    <PageHeader
+      title="Tiêm chủng"
+      back={{ href: "/kham-pha", label: "Khám phá" }}
+    />
+  );
+
+  if (doses.data === undefined)
+    return (
+      <main className="mx-auto flex max-w-md flex-col gap-[18px] px-4 pt-2 pb-4">
+        {header}
+        {doses.isError ? (
+          <ErrorCard
+            message={toVietnameseError(doses.error)}
+            onRetry={() => void doses.refetch()}
+          />
+        ) : (
+          <div className="flex flex-col gap-2.5">
+            {[0, 1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-[60px]" />
+            ))}
+          </div>
+        )}
+      </main>
+    );
 
   const rows = doses.data;
   const records = toDoseRecords(rows);
@@ -81,14 +92,12 @@ export function VaccineScreen({
     ) ?? null;
 
   return (
-    <main className="mx-auto flex max-w-md flex-col gap-4 p-4">
-      <h1 className="text-2xl font-semibold">Tiêm chủng</h1>
-      <p className="rounded-xl bg-warn-soft p-3 text-sm text-warn-ink">
-        {VACCINES.disclaimer}
-      </p>
+    <main className="mx-auto flex max-w-md flex-col gap-[18px] px-4 pt-2 pb-4">
+      {header}
+      <VaccineSourceRow text={VACCINES.disclaimer} />
       {needsSetup ? (
         <section className="flex flex-col gap-3">
-          <h2 className="text-lg font-medium">Thiết lập lịch tiêm</h2>
+          <h2 className={SECTION_TITLE}>Thiết lập lịch tiêm</h2>
           <VaccineSetup
             baby={baby}
             userId={userId}
@@ -108,35 +117,11 @@ export function VaccineScreen({
           setEditing={setEditing}
         />
       )}
-      {STATE_SECTIONS.map((section) => {
-        const list = items.filter((item) => item.state === section.state);
-        if (list.length === 0) return null;
-        return (
-          <section key={section.state} className="flex flex-col gap-2">
-            <h2 className="text-lg font-medium">
-              {section.title} ({list.length})
-            </h2>
-            <ul className="divide-y rounded-2xl border">
-              {list.map((item) => (
-                <li key={doseKey(item.dose.code, item.dose.doseNo)}>
-                  <button
-                    type="button"
-                    onClick={() => setOpen(item)}
-                    className="flex min-h-12 w-full flex-col items-start gap-0.5 px-4 py-2 text-left"
-                  >
-                    <DoseLine
-                      item={item}
-                      pending={pending.has(
-                        doseKey(item.dose.code, item.dose.doseNo),
-                      )}
-                    />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </section>
-        );
-      })}
+      <DoseSections
+        items={items}
+        pending={pending}
+        onOpen={(item) => setOpen(item)}
+      />
       {open && (
         <DoseSheet
           item={open}
@@ -171,27 +156,27 @@ function ChoicesSection({
 
   if (!editing)
     return (
-      <section className="flex flex-col gap-2">
+      <section className="flex flex-col gap-2.5">
         {unchosen > 0 && (
-          <p className="text-muted">
+          <p className="px-1 text-[15px] text-muted">
             Còn {unchosen} nhóm chưa chọn loại vaccine. Mũi của các nhóm này
             hiện nhãn "Chưa chọn loại" và không có nhắc lịch.
           </p>
         )}
         {isOwner ? (
-          <button
-            type="button"
+          <Button
+            variant="secondary"
+            block
             onClick={() => {
               setDraft(choices);
               setEditing(true);
             }}
-            className="min-h-11 rounded-xl border px-4"
           >
             Chọn loại vaccine
-          </button>
+          </Button>
         ) : (
           unchosen > 0 && (
-            <p className="text-muted">
+            <p className="px-1 text-[15px] text-muted">
               Chỉ chủ gia đình đổi được loại vaccine.
             </p>
           )
@@ -201,38 +186,33 @@ function ChoicesSection({
 
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="text-lg font-medium">Loại vaccine</h2>
+      <h2 className={SECTION_TITLE}>Loại vaccine</h2>
       <OnlineOnly>
         <ChoiceFields
           groups={VACCINES.groups}
           value={draft}
           onChange={setDraft}
         />
-        <button
-          type="button"
-          disabled={update.isPending}
+        <Button
+          block
+          busy={update.isPending}
           onClick={() =>
             update.mutate(cleanChoices(VACCINES.groups, draft), {
               onSuccess: () => setEditing(false),
             })
           }
-          className="min-h-12 rounded-2xl bg-accent text-on-accent disabled:opacity-50"
         >
           Lưu
-        </button>
+        </Button>
       </OnlineOnly>
       {update.isError && (
-        <p role="alert" className="text-danger">
+        <p role="alert" className="text-[15px] text-danger">
           {toVietnameseError(update.error)}
         </p>
       )}
-      <button
-        type="button"
-        onClick={() => setEditing(false)}
-        className="min-h-12 rounded-2xl border"
-      >
+      <Button variant="secondary" block onClick={() => setEditing(false)}>
         Đóng
-      </button>
+      </Button>
     </section>
   );
 }

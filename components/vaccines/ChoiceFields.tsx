@@ -1,5 +1,6 @@
 "use client";
 
+import { FIELD_INPUT, FIELD_LABEL } from "@/components/quick/styles";
 import type { VaccineGroup } from "@/lib/content/vaccineSchema";
 import { NOT_TAKING } from "@/lib/rules/vaccines";
 
@@ -15,13 +16,13 @@ export function ChoiceFields({
   return (
     <div className="flex flex-col gap-3">
       {groups.map((group) => (
-        <label key={group.code} className="flex flex-col gap-1">
-          {group.name}
+        <label key={group.code} className="flex flex-col gap-1.5">
+          <span className={FIELD_LABEL}>{group.name}</span>
           <select
-            className="min-h-11 rounded-xl border px-3"
+            className={`${FIELD_INPUT} accent-accent`}
             value={value[group.code] ?? ""}
-            onChange={(e) =>
-              onChange({ ...value, [group.code]: e.target.value })
+            onChange={(event) =>
+              onChange({ ...value, [group.code]: event.target.value })
             }
           >
             <option value="">Chưa chọn</option>

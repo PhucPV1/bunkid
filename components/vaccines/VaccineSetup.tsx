@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { OnlineOnly } from "@/components/OnlineOnly";
+import { Button } from "@/components/ui/Button";
+import { Switch } from "@/components/ui/Switch";
+import { VACCINES } from "@/lib/content/vaccines";
 import { toVietnameseError } from "@/lib/data/errors";
 import { useVaccineSetup } from "@/lib/data/vaccines";
-import { VACCINES } from "@/lib/content/vaccines";
 import { vnDateString } from "@/lib/rules/time";
 import {
   cleanChoices,
@@ -17,7 +19,7 @@ import { buildSchedule, type DoseRecord } from "@/lib/rules/vaccines";
 import type { Baby } from "@/lib/supabase/rows";
 import { ChoiceFields } from "./ChoiceFields";
 
-// Spec §6.1: pick a series per group, then tick the doses already given.
+// Spec gốc §6.1: pick a series per group, then tick the doses already given.
 export function VaccineSetup({
   baby,
   userId,
@@ -72,7 +74,7 @@ export function VaccineSetup({
   return (
     <div className="flex flex-col gap-4">
       <OnlineOnly>
-        <p className="text-muted">
+        <p className="text-[15px] text-muted">
           Chọn loại vaccine gia đình định tiêm cho từng nhóm. Chọn "Không tiêm"
           nếu không tiêm nhóm đó; để "Chưa chọn" nếu chưa quyết định.
         </p>
@@ -83,51 +85,44 @@ export function VaccineSetup({
         />
         {candidates.length > 0 && (
           <fieldset className="flex flex-col gap-2">
-            <legend className="mb-2 font-medium">
+            <legend className="mb-2 px-1 text-[13px] font-semibold text-muted">
               Mũi đã đến hạn trước hôm nay, đánh dấu mũi bé đã tiêm
             </legend>
             {candidates.map((item) => {
               const key = doseKey(item.dose.code, item.dose.doseNo);
               return (
-                <label key={key} className="flex min-h-11 items-center gap-3">
-                  <input
-                    type="checkbox"
-                    className="size-5"
-                    checked={ticked.has(key)}
-                    onChange={(e) => toggle(key, e.target.checked)}
-                  />
-                  <span>
-                    {item.dose.name}
-                    <span className="block text-sm text-muted">
+                <div
+                  key={key}
+                  className="glass flex min-h-[52px] items-center justify-between gap-3 rounded-[22px] px-4 py-2"
+                >
+                  <span className="flex min-w-0 flex-col">
+                    <span className="text-base text-ink">{item.dose.name}</span>
+                    <span className="text-[13px] text-muted tabular-nums">
                       Hẹn {formatDueDate(item.due)}
                     </span>
                   </span>
-                </label>
+                  <Switch
+                    checked={ticked.has(key)}
+                    label={item.dose.name}
+                    onChange={(on) => toggle(key, on)}
+                  />
+                </div>
               );
             })}
           </fieldset>
         )}
-        <button
-          type="button"
-          disabled={setup.isPending}
-          onClick={save}
-          className="min-h-12 rounded-2xl bg-accent text-on-accent disabled:opacity-50"
-        >
+        <Button block busy={setup.isPending} onClick={save}>
           Lưu
-        </button>
+        </Button>
       </OnlineOnly>
       {setup.isError && (
-        <p role="alert" className="text-danger">
+        <p role="alert" className="text-[15px] text-danger">
           {toVietnameseError(setup.error)}
         </p>
       )}
-      <button
-        type="button"
-        onClick={onLater}
-        className="min-h-12 rounded-2xl border"
-      >
+      <Button variant="secondary" block onClick={onLater}>
         Để sau
-      </button>
+      </Button>
     </div>
   );
 }
