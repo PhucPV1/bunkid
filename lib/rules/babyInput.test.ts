@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { parseBabyForm, type BabyFormRaw } from "@/lib/rules/babyInput";
+import {
+  babyToRaw,
+  parseBabyForm,
+  type BabyFormRaw,
+} from "@/lib/rules/babyInput";
 
 const now = new Date("2026-11-13T05:00:00Z");
 const valid: BabyFormRaw = {
@@ -64,5 +68,26 @@ describe("parseBabyForm", () => {
 
   it("accepts a baby born today (VN)", () => {
     expect(parseBabyForm({ ...valid, dob: "2026-11-13" }, now).ok).toBe(true);
+  });
+
+  it("babyToRaw fills the form from a saved baby and parses back unchanged", () => {
+    const saved = {
+      name: "Bông",
+      dob: "2026-09-13",
+      sex: "female",
+      birth_weight_g: 3200,
+      birth_length_cm: 49.5,
+      birth_head_cm: null,
+    };
+    const raw = babyToRaw(saved);
+    expect(raw).toEqual({
+      name: "Bông",
+      dob: "2026-09-13",
+      sex: "female",
+      birthWeightG: "3200",
+      birthLengthCm: "49.5",
+      birthHeadCm: "",
+    });
+    expect(parseBabyForm(raw, now)).toEqual({ ok: true, value: saved });
   });
 });

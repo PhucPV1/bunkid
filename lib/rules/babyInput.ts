@@ -84,3 +84,23 @@ export function parseBabyForm(raw: BabyFormRaw, now: Date): BabyFormResult {
     },
   };
 }
+
+const text = (n: number | null) => (n === null ? "" : String(n));
+
+export function babyToRaw(baby: {
+  name: string;
+  dob: string;
+  sex: string;
+  birth_weight_g: number | null;
+  birth_length_cm: number | null;
+  birth_head_cm: number | null;
+}): BabyFormRaw {
+  return {
+    name: baby.name,
+    dob: baby.dob,
+    sex: baby.sex,
+    birthWeightG: text(baby.birth_weight_g),
+    birthLengthCm: text(baby.birth_length_cm),
+    birthHeadCm: text(baby.birth_head_cm),
+  };
+}

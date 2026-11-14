@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { PermissionDeniedError, toVietnameseError } from "@/lib/data/errors";
+import {
+  memberErrorText,
+  PermissionDeniedError,
+  toVietnameseError,
+} from "@/lib/data/errors";
 
 describe("toVietnameseError", () => {
   it("maps a duplicate running timer", () => {
@@ -26,5 +30,21 @@ describe("toVietnameseError", () => {
   it("falls back to a generic message", () => {
     expect(toVietnameseError(new Error("boom"))).toBe("Có lỗi xảy ra: boom");
     expect(toVietnameseError("weird")).toBe("Có lỗi xảy ra.");
+  });
+});
+
+describe("member errors", () => {
+  it("maps the last-owner guard", () => {
+    expect(toVietnameseError({ code: "P0001", message: "last_owner" })).toBe(
+      "Gia đình phải còn ít nhất một chủ gia đình.",
+    );
+  });
+  it("maps a duplicate Gmail only for member changes", () => {
+    expect(memberErrorText({ code: "23505", message: "duplicate key" })).toBe(
+      "Gmail này đã có trong gia đình.",
+    );
+    expect(memberErrorText({ code: "42501", message: "x" })).toBe(
+      "Bạn không có quyền thực hiện thao tác này",
+    );
   });
 });
