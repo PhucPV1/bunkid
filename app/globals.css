@@ -166,6 +166,13 @@
   backdrop-filter: blur(40px) saturate(180%);
 }
 
+/* iOS Safari paints a backdrop-filter element nested inside another one as opaque white.
+   The outer glass already blurs, so the inner one keeps its tint and border only. */
+:is(.glass, .glass-strong) :is(.glass, .glass-strong) {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
 @supports not (
   (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
 ) {
