@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { useScrolledPast } from "@/lib/hooks/useScrolledPast";
 import { cx } from "@/lib/ui/cx";
+import { SyncBarSlot } from "@/components/sync/SyncSlot";
 import { Icon } from "./Icon";
 
 export const COMPACT_AFTER_PX = 40;
@@ -54,5 +55,10 @@ export function PageHeaderView({
 
 export function PageHeader(props: HeaderProps) {
   const compact = useScrolledPast(COMPACT_AFTER_PX);
-  return <PageHeaderView {...props} compact={compact} />;
+  return (
+    <>
+      <PageHeaderView {...props} compact={compact} />
+      <SyncBarSlot />
+    </>
+  );
 }

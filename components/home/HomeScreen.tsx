@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuickActions } from "@/components/actions/QuickActions";
+import { SyncBarSlot } from "@/components/sync/SyncSlot";
 import { useEmergencyContacts } from "@/lib/data/emergency";
 import { toVietnameseError } from "@/lib/data/errors";
 import { useMembers } from "@/lib/data/family";
@@ -85,6 +86,7 @@ export function HomeScreen({ baby, userId }: { baby: Baby; userId: string }) {
   return (
     <main className="mx-auto flex max-w-md flex-col gap-[18px] p-4">
       <HomeHeader name={baby.name} age={formatAgeVi(baby.dob, now)} />
+      <SyncBarSlot />
 
       <AlertBanners alerts={alerts} />
 

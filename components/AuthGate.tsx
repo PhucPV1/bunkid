@@ -6,7 +6,7 @@ import { useEffect, type ReactNode } from "react";
 import { ActionChrome } from "@/components/actions/ActionChrome";
 import { QuickActionsProvider } from "@/components/actions/QuickActions";
 import { TabBar } from "@/components/nav/TabBar";
-import { SyncBar } from "@/components/sync/SyncBar";
+import { SyncBarProvider } from "@/components/sync/SyncSlot";
 import { ErrorCard } from "@/components/ui/ErrorCard";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useFamilyContext, type FamilyContext } from "@/lib/data/family";
@@ -106,8 +106,9 @@ export function AuthGate({
     );
   return (
     <QuickActionsProvider baby={baby} member={member} userId={session.user.id}>
-      <SyncBar userId={session.user.id} />
-      <div className="pb-[120px]">{content}</div>
+      <SyncBarProvider userId={session.user.id}>
+        <div className="pb-[120px]">{content}</div>
+      </SyncBarProvider>
       <ActionChrome babyName={baby.name} />
     </QuickActionsProvider>
   );
