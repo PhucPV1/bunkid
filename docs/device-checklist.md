@@ -350,3 +350,18 @@ Kết quả: Chờ người dùng.
 | iPhone 11     |     |         |         |
 | iPhone 16     |     |         |         |
 | iPhone 17 Pro |     |         |         |
+
+## Bước 24 — Header Trang chủ và nút trăng (UI đợt 2)
+
+1. Mở Trang chủ. Kỳ vọng: trên cùng là avatar tròn chữ cái đầu tên bé (nền đào–hồng), tên bé và tuổi; bên phải nút trăng và nút điện thoại đỏ. Không còn dòng "Xin chào …".
+2. Bấm avatar hoặc tên bé. Kỳ vọng: mở Cài đặt. Bấm nút điện thoại. Kỳ vọng: mở Khẩn cấp.
+3. Ban ngày, bấm nút trăng. Kỳ vọng: app chuyển ngay sang tông hổ phách, trăng tô đặc. Bấm lại: về giao diện ban ngày.
+4. Sau 21:00 (lịch đang bật), bấm nút trăng. Kỳ vọng: tắt Ban đêm đến 06:00 sáng; đóng mở lại app vẫn giữ.
+
+Kết quả: Chờ người dùng.
+
+| Máy           | iOS | Kết quả | Ghi chú |
+| ------------- | --- | ------- | ------- |
+| iPhone 11     |     |         |         |
+| iPhone 16     |     |         |         |
+| iPhone 17 Pro |     |         |         |

@@ -14,9 +14,10 @@ import type { QuickValues } from "@/lib/rules/quickEntry";
 import { rateLast24h, WINDOW_MS, windowTotals } from "@/lib/rules/ratings";
 import { homeStatusLines } from "@/lib/rules/status";
 import { ageDays, formatAgeVi } from "@/lib/rules/time";
-import type { Baby, FamilyMember } from "@/lib/supabase/rows";
+import type { Baby } from "@/lib/supabase/rows";
 import { ActionGrid } from "./ActionGrid";
 import { AlertBanners } from "./AlertBanners";
+import { HomeHeader } from "./HomeHeader";
 import { RecentList } from "./RecentList";
 import { RunningCard } from "./RunningCard";
 import { StatusLines } from "./StatusLines";
@@ -30,15 +31,7 @@ const VITAMIN_D: QuickValues = {
   antipyretic: false,
 };
 
-export function HomeScreen({
-  baby,
-  member,
-  userId,
-}: {
-  baby: Baby;
-  member: FamilyMember;
-  userId: string;
-}) {
+export function HomeScreen({ baby, userId }: { baby: Baby; userId: string }) {
   const now = useNow(1000);
   useLogsRealtime(baby.id);
   const logs = useRecentLogs(baby.id);
@@ -82,14 +75,9 @@ export function HomeScreen({
 
   return (
     <main className="mx-auto flex max-w-md flex-col gap-4 p-4">
-      <AlertBanners alerts={alerts} />
+      <HomeHeader name={baby.name} age={formatAgeVi(baby.dob, now)} />
 
-      <header>
-        <h1 className="text-2xl font-semibold">{baby.name}</h1>
-        <p className="text-muted">
-          {formatAgeVi(baby.dob, now)} · Xin chào {member.display_name}
-        </p>
-      </header>
+      <AlertBanners alerts={alerts} />
 
       <StatusLines lines={statusLines} />
 

@@ -8,11 +8,7 @@ export default function Page() {
     <AuthGate need="baby">
       {({ ctx, session }) =>
         ctx?.baby && session ? (
-          <HomeScreen
-            baby={ctx.baby}
-            member={ctx.member}
-            userId={session.user.id}
-          />
+          <HomeScreen baby={ctx.baby} userId={session.user.id} />
         ) : null
       }
     </AuthGate>
