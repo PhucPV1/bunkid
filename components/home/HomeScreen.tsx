@@ -2,6 +2,7 @@
 
 import { useQuickActions } from "@/components/actions/QuickActions";
 import { SyncBarSlot } from "@/components/sync/SyncSlot";
+import { ErrorCard } from "@/components/ui/ErrorCard";
 import { useEmergencyContacts } from "@/lib/data/emergency";
 import { toVietnameseError } from "@/lib/data/errors";
 import { useMembers } from "@/lib/data/family";
@@ -21,6 +22,7 @@ import type { Baby } from "@/lib/supabase/rows";
 import { AlertBanners } from "./AlertBanners";
 import { HeroCardView } from "./HeroCard";
 import { HomeHeader } from "./HomeHeader";
+import { HomeSkeleton } from "./HomeSkeleton";
 import { QuickLogGrid } from "./QuickLogGrid";
 import { RecentCard } from "./RecentCard";
 import { StatsSection } from "./StatsSection";
@@ -45,6 +47,9 @@ export function HomeScreen({ baby, userId }: { baby: Baby; userId: string }) {
   useEmergencyContacts(baby.family_id);
   const actions = useQuickActions();
   const pending = pendingRowIds(entriesFor(useOutboxEntries(userId), "logs"));
+  // Offline at start the fetch is "paused", not "fetching": keep the page so logs go to the outbox.
+  const loading = logs.isPending && logs.fetchStatus === "fetching";
+  const failed = logs.isError && !logs.data;
 
   const rows = logs.data ?? [];
   const age = ageDays(baby.dob, now);
@@ -88,69 +93,78 @@ export function HomeScreen({ baby, userId }: { baby: Baby; userId: string }) {
       <HomeHeader name={baby.name} age={formatAgeVi(baby.dob, now)} />
       <SyncBarSlot />
 
-      <AlertBanners alerts={alerts} />
-
-      <HeroCardView
-        state={hero}
-        now={now}
-        who={heroLog ? nameOf(heroLog.created_by) : ""}
-        sub={sub}
-        pending={heroLog ? pending.has(heroLog.id) : false}
-        busy={actions.busy}
-        onTimer={actions.pressTimer}
-        onStop={actions.stopTimer}
-      />
-
-      {otherTimers.map((log) => (
-        <TimerRow
-          key={log.id}
-          log={log}
-          who={nameOf(log.created_by)}
-          now={now}
-          busy={actions.busy}
-          pending={pending.has(log.id)}
-          onStop={() => actions.stopTimer(log)}
-        />
-      ))}
-
-      <TimerButtons
-        running={actions.running}
-        busy={actions.busy}
-        onTimer={actions.pressTimer}
-      />
-
-      <QuickLogGrid onInstant={(type) => actions.openInstant(type)} />
-
-      {actions.error && (
-        <p role="alert" className="px-1 text-danger">
-          {toVietnameseError(actions.error)}
-        </p>
-      )}
-
-      {vitaminD === null && (
-        <VitaminDButton
-          onRecord={() => actions.openInstant("medicine", VITAMIN_D)}
-        />
-      )}
-
-      {logs.data && (
-        <StatsSection
-          tiles={homeStatTiles({ ratings, logs: rows, now })}
-          totals={totalsLine(windowTotals(rows, now))}
-        />
-      )}
-
-      {logs.isError && !logs.data ? (
-        <p role="alert" className="px-1 text-danger">
-          {toVietnameseError(logs.error)}
-        </p>
+      {loading ? (
+        <HomeSkeleton />
       ) : (
-        <RecentCard
-          logs={recentRows}
-          now={now}
-          nameOf={nameOf}
-          pending={pending}
-        />
+        <>
+          <AlertBanners alerts={alerts} />
+
+          {failed ? (
+            <ErrorCard
+              message={toVietnameseError(logs.error)}
+              onRetry={() => void logs.refetch()}
+            />
+          ) : (
+            <HeroCardView
+              state={hero}
+              now={now}
+              who={heroLog ? nameOf(heroLog.created_by) : ""}
+              sub={sub}
+              pending={heroLog ? pending.has(heroLog.id) : false}
+              busy={actions.busy}
+              onTimer={actions.pressTimer}
+              onStop={actions.stopTimer}
+            />
+          )}
+
+          {otherTimers.map((log) => (
+            <TimerRow
+              key={log.id}
+              log={log}
+              who={nameOf(log.created_by)}
+              now={now}
+              busy={actions.busy}
+              pending={pending.has(log.id)}
+              onStop={() => actions.stopTimer(log)}
+            />
+          ))}
+
+          <TimerButtons
+            running={actions.running}
+            busy={actions.busy}
+            onTimer={actions.pressTimer}
+          />
+
+          <QuickLogGrid onInstant={(type) => actions.openInstant(type)} />
+
+          {actions.error && (
+            <p role="alert" className="px-1 text-danger">
+              {toVietnameseError(actions.error)}
+            </p>
+          )}
+
+          {vitaminD === null && (
+            <VitaminDButton
+              onRecord={() => actions.openInstant("medicine", VITAMIN_D)}
+            />
+          )}
+
+          {logs.data && (
+            <StatsSection
+              tiles={homeStatTiles({ ratings, logs: rows, now })}
+              totals={totalsLine(windowTotals(rows, now))}
+            />
+          )}
+
+          {!failed && (
+            <RecentCard
+              logs={recentRows}
+              now={now}
+              nameOf={nameOf}
+              pending={pending}
+            />
+          )}
+        </>
       )}
     </main>
   );

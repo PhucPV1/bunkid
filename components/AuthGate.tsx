@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
 import { ActionChrome } from "@/components/actions/ActionChrome";
 import { QuickActionsProvider } from "@/components/actions/QuickActions";
+import { HomeSkeleton } from "@/components/home/HomeSkeleton";
 import { TabBar } from "@/components/nav/TabBar";
 import { SyncBarProvider } from "@/components/sync/SyncSlot";
 import { ErrorCard } from "@/components/ui/ErrorCard";
@@ -16,7 +17,7 @@ import { gateRedirect, resolveLanding, type GateNeed } from "@/lib/routing";
 
 export type GateState = { session: Session | null; ctx: FamilyContext };
 
-// Spec §10: the gate waits with the home page's shapes (header, hero 300, 3 tiles, 4 rows).
+// Spec §10: the gate waits with the home page's shapes under a header-sized bar.
 export function GateLoading() {
   return (
     <main
@@ -24,15 +25,7 @@ export function GateLoading() {
       className="mx-auto flex max-w-md flex-col gap-[18px] p-4"
     >
       <Skeleton className="h-11 w-48 rounded-full" />
-      <Skeleton className="h-[300px] rounded-[32px]" />
-      <div className="grid grid-cols-3 gap-2.5">
-        {[0, 1, 2].map((i) => (
-          <Skeleton key={i} className="h-[92px] rounded-[24px]" />
-        ))}
-      </div>
-      {[0, 1, 2, 3].map((i) => (
-        <Skeleton key={i} className="h-[60px]" />
-      ))}
+      <HomeSkeleton />
     </main>
   );
 }
