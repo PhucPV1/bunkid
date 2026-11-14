@@ -25,9 +25,11 @@ const EMPTY: BabyFormRaw = {
 export function BabyForm({
   familyId,
   baby,
+  onCreated,
 }: {
   familyId: string;
   baby?: Baby;
+  onCreated?: (created: Baby) => void;
 }) {
   const queryClient = useQueryClient();
   const [raw, setRaw] = useState<BabyFormRaw>(() =>
@@ -38,12 +40,16 @@ export function BabyForm({
   >({});
 
   const save = useMutation({
-    mutationFn: async (value: BabyInput) => {
-      if (baby) await updateBaby(baby.id, value);
-      else await createBaby(familyId, value);
+    mutationFn: async (value: BabyInput): Promise<Baby | null> => {
+      if (!baby) return createBaby(familyId, value);
+      await updateBaby(baby.id, value);
+      return null;
     },
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ["family-context"] }),
+    onSuccess: async (created) => {
+      // Tell the page first, so it can hold the gate before the refetch sees the baby.
+      if (created) onCreated?.(created);
+      await queryClient.invalidateQueries({ queryKey: ["family-context"] });
+    },
   });
 
   function set<K extends keyof BabyFormRaw>(key: K, value: string) {

@@ -14,9 +14,12 @@ export type GateState = { session: Session | null; ctx: FamilyContext };
 
 export function AuthGate({
   need,
+  keep = false,
   children,
 }: {
   need: GateNeed;
+  // Stay on this page even when the landing page changes (onboarding step 2).
+  keep?: boolean;
   children: (state: GateState) => ReactNode;
 }) {
   const router = useRouter();
@@ -30,7 +33,7 @@ export function AuthGate({
         hasBaby: Boolean(family.data?.baby),
       })
     : null;
-  const redirect = landing ? gateRedirect(need, landing) : null;
+  const redirect = landing && !keep ? gateRedirect(need, landing) : null;
 
   useEffect(() => {
     if (redirect) router.replace(redirect);
