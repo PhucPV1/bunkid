@@ -320,3 +320,18 @@ Kết quả: Chờ người dùng.
 | iPhone 11     |     |         |         |
 | iPhone 16     |     |         |         |
 | iPhone 17 Pro |     |         |         |
+
+## Bước 22 — Tab bar mới và Khám phá (UI đợt 2)
+
+1. Mở app trên iPhone. Kỳ vọng: tab bar kính nổi 3 tab Hôm nay · Nhật ký · Khám phá, icon nét, không emoji; không che nội dung cuối trang; không đè lên thanh home của iPhone.
+2. Khám phá: thẻ Khẩn cấp đỏ, Theo dõi, Cẩm nang, Dỗ bé và kỷ niệm, Báo cáo; mỗi mục mở đúng trang; cuộn xuống thì thanh tiêu đề nhỏ hiện trên cùng, không đè lên giờ/pin.
+3. Mở link cũ `…/cam-nang` và `…/tien-ich`. Kỳ vọng: tự sang Khám phá.
+4. Bật Ban đêm: tab bar và icon tông hổ phách, không còn màu xanh/trắng.
+
+Kết quả: Chờ người dùng.
+
+| Máy           | iOS | Kết quả | Ghi chú |
+| ------------- | --- | ------- | ------- |
+| iPhone 11     |     |         |         |
+| iPhone 16     |     |         |         |
+| iPhone 17 Pro |     |         |         |
