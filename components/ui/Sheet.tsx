@@ -1,0 +1,203 @@
+"use client";
+
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import type { CategoryToken } from "@/lib/ui/categories";
+import { cx } from "@/lib/ui/cx";
+import type { IconName } from "@/lib/ui/icons";
+import { dragOffset, shouldDismissDrag } from "@/lib/ui/sheet";
+import { Button } from "./Button";
+import { Icon } from "./Icon";
+import { IconButton } from "./IconButton";
+
+export type SheetVariant = "bottom" | "floating";
+
+const CHIP: Record<CategoryToken, string> = {
+  "cat-feed": "bg-cat-feed/15 text-cat-feed",
+  "cat-bottle": "bg-cat-bottle/15 text-cat-bottle",
+  "cat-sleep": "bg-cat-sleep/15 text-cat-sleep",
+  "cat-diaper": "bg-cat-diaper/15 text-cat-diaper",
+  "cat-pump": "bg-cat-pump/15 text-cat-pump",
+  "cat-tummy": "bg-cat-tummy/15 text-cat-tummy",
+  "cat-med": "bg-cat-med/15 text-cat-med",
+  "cat-temp": "bg-cat-temp/15 text-cat-temp",
+};
+
+const BOTTOM_PAD = "pb-[calc(20px+env(safe-area-inset-bottom))]";
+
+export function Sheet({
+  open,
+  onClose,
+  title,
+  icon,
+  iconColor,
+  dirty = false,
+  footer,
+  variant = "bottom",
+  children,
+}: {
+  open: boolean;
+  onClose: () => void;
+  title: string;
+  icon?: IconName;
+  iconColor?: CategoryToken;
+  dirty?: boolean;
+  footer?: ReactNode;
+  variant?: SheetVariant;
+  children: ReactNode;
+}) {
+  const ref = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
+  const [confirming, setConfirming] = useState(false);
+  const [closing, setClosing] = useState(false);
+  const [drag, setDrag] = useState<{ startY: number; dy: number } | null>(null);
+  // A tap on the scrim closes the sheet; a text selection released over it does not.
+  const downOnScrim = useRef(false);
+
+  useEffect(() => {
+    const dialog = ref.current;
+    if (!dialog) return;
+    if (open && !dialog.open) {
+      setConfirming(false);
+      setClosing(false);
+      dialog.showModal();
+    }
+    if (!open && dialog.open) dialog.close();
+  }, [open]);
+
+  // Every way of closing goes through here; unsaved input asks first.
+  function requestClose() {
+    if (dirty) {
+      setConfirming(true);
+      return;
+    }
+    setClosing(true);
+  }
+
+  return (
+    <dialog
+      ref={ref}
+      aria-labelledby={titleId}
+      onCancel={(event) => {
+        event.preventDefault();
+        requestClose();
+      }}
+      onClose={() => {
+        // The browser can close the dialog itself (e.g. a second Esc on Android Chrome):
+        // tell the parent so `open` does not stay true and block the next open.
+        setConfirming(false);
+        setClosing(false);
+        if (open) onClose();
+      }}
+      onPointerDown={(event) => {
+        downOnScrim.current = event.target === event.currentTarget;
+      }}
+      onClick={(event) => {
+        if (downOnScrim.current && event.target === event.currentTarget)
+          requestClose();
+        downOnScrim.current = false;
+      }}
+      className="m-0 h-dvh max-h-none w-full max-w-none flex-col justify-end bg-transparent p-2 text-ink backdrop:animate-[kb-fade-in_200ms_ease-out] backdrop:bg-scrim open:flex"
+    >
+      <div
+        onAnimationEnd={(event) => {
+          if (closing && event.target === event.currentTarget) {
+            setClosing(false);
+            onClose();
+          }
+        }}
+        style={
+          drag && drag.dy > 0
+            ? { transform: `translateY(${dragOffset(drag.dy)}px)` }
+            : undefined
+        }
+        className={cx(
+          "glass-strong mx-auto flex w-full max-w-md flex-col shadow-[0_-10px_40px_rgb(0_0_0/0.18)]",
+          variant === "bottom"
+            ? "max-h-[88dvh] rounded-[38px]"
+            : "mb-24 max-h-[80dvh] rounded-[34px]",
+          closing
+            ? "animate-[kb-sheet-out_280ms_cubic-bezier(0.32,0.72,0,1)_forwards]"
+            : "animate-[kb-sheet-in_280ms_cubic-bezier(0.32,0.72,0,1)]",
+        )}
+      >
+        {variant === "bottom" && (
+          <div
+            data-sheet-handle
+            className="flex cursor-grab touch-none justify-center pt-2.5 pb-1"
+            onPointerDown={(event) => {
+              event.currentTarget.setPointerCapture(event.pointerId);
+              setDrag({ startY: event.clientY, dy: 0 });
+            }}
+            onPointerMove={(event) => {
+              if (drag)
+                setDrag({
+                  startY: drag.startY,
+                  dy: event.clientY - drag.startY,
+                });
+            }}
+            onPointerUp={() => {
+              if (drag && shouldDismissDrag(drag.dy)) requestClose();
+              setDrag(null);
+            }}
+            onPointerCancel={() => setDrag(null)}
+          >
+            <span className="h-[5px] w-9 rounded-full bg-muted/40" />
+          </div>
+        )}
+        <header className="flex items-center justify-between gap-3 px-5 pt-3 pb-2">
+          <div className="flex min-w-0 items-center gap-2.5">
+            {icon && iconColor && (
+              <span
+                className={cx(
+                  "flex size-9 shrink-0 items-center justify-center rounded-full",
+                  CHIP[iconColor],
+                )}
+              >
+                <Icon name={icon} size={18} strokeWidth={2.2} />
+              </span>
+            )}
+            <h2 id={titleId} className="text-[22px] leading-7 font-bold">
+              {title}
+            </h2>
+          </div>
+          <IconButton
+            label="Đóng"
+            icon="close"
+            small
+            variant="plain"
+            className="bg-muted/15"
+            onClick={requestClose}
+          />
+        </header>
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-3">
+          {children}
+        </div>
+        {confirming ? (
+          <div
+            role="alertdialog"
+            aria-label="Bỏ thay đổi?"
+            className={cx("flex flex-col gap-3 px-5 pt-2", BOTTOM_PAD)}
+          >
+            <p className="text-center font-semibold">Bỏ thay đổi?</p>
+            <div className="grid grid-cols-2 gap-2">
+              <Button variant="secondary" onClick={() => setConfirming(false)}>
+                Tiếp tục nhập
+              </Button>
+              <Button
+                variant="danger"
+                onClick={() => {
+                  setConfirming(false);
+                  setClosing(true);
+                }}
+              >
+                Bỏ
+              </Button>
+            </div>
+          </div>
+        ) : footer ? (
+          <div className={cx("px-5 pt-2", BOTTOM_PAD)}>{footer}</div>
+        ) : null}
+      </div>
+    </dialog>
+  );
+}
