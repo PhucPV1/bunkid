@@ -149,3 +149,17 @@ Nhắc thức cũng bị tạm tắt chặn: kiểm ở bước 11, mục 5.
 | iPhone 11     |     |         |         |
 | iPhone 16     |     |         |         |
 | iPhone 17 Pro |     |         |         |
+
+## Bước 12 — Tăng trưởng (M19)
+
+1. Tiện ích → Tăng trưởng → "+ Thêm lần đo": ngày đo, cân nặng (ví dụ "5,2"), chiều dài, vòng đầu theo sổ khám gần nhất → Lưu. Kỳ vọng: lần đo hiện ngay trong "Các lần đo"; biểu đồ Cân nặng có chấm của bé giữa các đường P3–P97 của đúng giới tính; dòng đo có nhãn "z … · P…".
+2. Bấm "Chiều dài" rồi "Vòng đầu". Kỳ vọng: biểu đồ và nhãn z đổi theo chỉ số.
+3. Bật chế độ máy bay, thêm một lần đo thử. Kỳ vọng: hiện ngay, có ⏳ và chip "⏳ 1 mục chờ đồng bộ". Tắt máy bay. Kỳ vọng: trong ≤ 30 giây ⏳ biến mất; máy thứ hai mở Tăng trưởng thấy lần đo đó.
+4. Tiện ích → Khẩn cấp. Kỳ vọng: "Cân nặng gần nhất" là cân nặng của lần đo mới nhất.
+5. Bấm lần đo thử → "Xóa lần đo" → xác nhận. Kỳ vọng: dòng biến mất.
+
+| Máy           | iOS | Kết quả | Ghi chú |
+| ------------- | --- | ------- | ------- |
+| iPhone 11     |     |         |         |
+| iPhone 16     |     |         |         |
+| iPhone 17 Pro |     |         |         |
