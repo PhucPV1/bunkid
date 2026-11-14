@@ -70,6 +70,12 @@ describe("nav", () => {
     expect(TOOL_ITEMS.find((i) => i.label === "Ảnh")?.href).toBe("/anh");
   });
 
+  it("Cẩm nang opens development milestones", () => {
+    expect(GUIDE_ITEMS.find((i) => i.label === "Phát triển")?.href).toBe(
+      "/phat-trien",
+    );
+  });
+
   it("every menu link opens under its own tab", () => {
     for (const item of GUIDE_ITEMS)
       if (item.href) expect(activeTab(item.href)).toBe("guide");
