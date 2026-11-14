@@ -163,3 +163,19 @@ Nhắc thức cũng bị tạm tắt chặn: kiểm ở bước 11, mục 5.
 | iPhone 11     |     |         |         |
 | iPhone 16     |     |         |         |
 | iPhone 17 Pro |     |         |         |
+
+## Bước 13 — Phân loại triệu chứng (M20)
+
+1. Cẩm nang → Triệu chứng. Kỳ vọng: tuổi của bé; ô nhiệt độ (tự điền kèm "Lấy từ nhật ký trong 6 giờ qua." nếu vừa đo); sáu nhóm Sốt, Hô hấp, Tiêu hóa, Da, Hành vi, ăn bú, Khác; nút "Gọi cấp cứu 115".
+2. Xóa ô nhiệt độ, không đánh dấu gì → "Xem kết quả". Kỳ vọng: 🟢 "Theo dõi tại nhà", mục "Chăm bé tại nhà", dòng "Đi khám ngay nếu xuất hiện: …", nút 115, danh bạ khẩn cấp, dòng "Thông tin tham khảo, không thay thế bác sĩ.".
+3. "Làm lại" → xóa ô nhiệt độ nếu đã tự điền → đánh dấu "Bé sốt kèm phát ban" → Xem kết quả. Kỳ vọng: 🟡 "Cho bé đi khám trong 24 giờ".
+4. "Làm lại" → xóa ô nhiệt độ nếu đã tự điền → đánh dấu "Bé sốt kèm phát ban" và "Bé co giật" → Xem kết quả. Kỳ vọng: 🔴 "Đi cấp cứu ngay", dòng "Bé co giật" đứng trước dòng phát ban.
+5. "Làm lại" → nhập nhiệt độ 38 (bé dưới 3 tháng) hoặc 40 (mọi tuổi) → Xem kết quả. Kỳ vọng: 🔴.
+6. Không có kết quả nào hiện tên bệnh.
+7. Trang chủ: khi có banner đỏ (ví dụ ghi nhiệt độ 40°C rồi xóa sau khi xem), banner có nút "Gọi 115" và nút "Phân loại triệu chứng" mở đúng trang.
+
+| Máy           | iOS | Kết quả | Ghi chú |
+| ------------- | --- | ------- | ------- |
+| iPhone 11     |     |         |         |
+| iPhone 16     |     |         |         |
+| iPhone 17 Pro |     |         |         |
