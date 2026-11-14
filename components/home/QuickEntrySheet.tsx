@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { QuickFields } from "@/components/form/QuickFields";
 import { useAddInstant } from "@/lib/data/logs";
 import { toVietnameseError } from "@/lib/data/errors";
 import {
@@ -71,58 +72,11 @@ export function QuickEntrySheet({
         className="flex w-full flex-col gap-3 rounded-t-3xl bg-white p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))]"
       >
         <h2 className="text-xl font-semibold">{TITLES[type]}</h2>
-        {QUICK_FIELDS[type]
-          .filter((field) => !field.showIf || field.showIf(values))
-          .map((field) => {
-            const value = values[field.key];
-            const set = (next: string | boolean) =>
-              setValues((prev) => ({ ...prev, [field.key]: next }));
-            if (field.kind === "checkbox") {
-              return (
-                <label
-                  key={field.key}
-                  className="flex min-h-11 items-center gap-3"
-                >
-                  <input
-                    type="checkbox"
-                    className="size-5"
-                    checked={value === true}
-                    onChange={(e) => set(e.target.checked)}
-                  />
-                  {field.label}
-                </label>
-              );
-            }
-            if (field.kind === "select") {
-              return (
-                <label key={field.key} className="flex flex-col gap-1">
-                  {field.label}
-                  <select
-                    className={input}
-                    value={String(value)}
-                    onChange={(e) => set(e.target.value)}
-                  >
-                    {field.options?.map((o) => (
-                      <option key={o.value} value={o.value}>
-                        {o.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              );
-            }
-            return (
-              <label key={field.key} className="flex flex-col gap-1">
-                {field.label}
-                <input
-                  className={input}
-                  inputMode={field.kind === "number" ? "decimal" : "text"}
-                  value={String(value)}
-                  onChange={(e) => set(e.target.value)}
-                />
-              </label>
-            );
-          })}
+        <QuickFields
+          fields={QUICK_FIELDS[type]}
+          values={values}
+          onChange={setValues}
+        />
         <label className="flex flex-col gap-1">
           Thời điểm
           <input
