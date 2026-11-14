@@ -1,7 +1,10 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
-import { QuickFields } from "@/components/form/QuickFields";
+import { useId, useState, type FormEvent } from "react";
+import { FieldList } from "@/components/quick/FieldList";
+import { FIELD_INPUT, FIELD_LABEL } from "@/components/quick/styles";
+import { Button } from "@/components/ui/Button";
+import { Sheet } from "@/components/ui/Sheet";
 import { toVietnameseError } from "@/lib/data/errors";
 import { useDeleteLog, useSaveLog } from "@/lib/data/logs";
 import { medicineWarnings } from "@/lib/rules/alerts";
@@ -21,8 +24,7 @@ import {
   toVnLocalInput,
 } from "@/lib/rules/time";
 import type { LogRow } from "@/lib/supabase/rows";
-
-const INPUT = "min-h-11 rounded-xl border px-3";
+import { CATEGORIES } from "@/lib/ui/categories";
 
 export function LogEditSheet({
   babyId,
@@ -43,6 +45,7 @@ export function LogEditSheet({
 }) {
   const save = useSaveLog(babyId, userId);
   const remove = useDeleteLog(babyId, userId);
+  const formId = useId();
   const [type, setType] = useState<LogType>(
     () => (log?.type as LogType | undefined) ?? "breast",
   );
@@ -58,6 +61,12 @@ export function LogEditSheet({
   });
   const [note, setNote] = useState(log?.note ?? "");
   const [message, setMessage] = useState<string | null>(null);
+  // What the form held when it opened, to tell whether the user has changed anything.
+  const [opened] = useState(() =>
+    JSON.stringify({ type, values, start, end, note }),
+  );
+
+  const readOnly = log !== null && !canModify;
   const timer = isTimerType(type);
   const allowOpenEnd = log !== null && log.ended_at === null;
   const startAt = fromVnLocalInput(start);
@@ -69,6 +78,9 @@ export function LogEditSheet({
       ? medicineWarnings({ logs: recentLogs, at: startAt })
       : [];
   const busy = save.isPending || remove.isPending;
+  const dirty =
+    !readOnly && JSON.stringify({ type, values, start, end, note }) !== opened;
+  const category = CATEGORIES[type];
 
   function submit(event: FormEvent) {
     event.preventDefault();
@@ -87,7 +99,10 @@ export function LogEditSheet({
     }
     save.mutate(
       { id: log?.id ?? null, type, patch: built.patch },
-      { onSuccess: onClose, onError: (e) => setMessage(toVietnameseError(e)) },
+      {
+        onSuccess: onClose,
+        onError: (error) => setMessage(toVietnameseError(error)),
+      },
     );
   }
 
@@ -95,149 +110,141 @@ export function LogEditSheet({
     if (!log || !window.confirm("Xóa bản ghi này?")) return;
     remove.mutate(log.id, {
       onSuccess: onClose,
-      onError: (e) => setMessage(toVietnameseError(e)),
+      onError: (error) => setMessage(toVietnameseError(error)),
     });
   }
 
+  const dateField = (
+    label: string,
+    value: string,
+    setValue: (next: string) => void,
+    hint?: string,
+  ) => (
+    <label className="flex flex-col gap-1.5">
+      <span className={FIELD_LABEL}>{label}</span>
+      <input
+        type="datetime-local"
+        className={FIELD_INPUT}
+        value={value}
+        onChange={(event) => setValue(event.target.value)}
+      />
+      {hint && <span className="text-[13px] text-muted">{hint}</span>}
+    </label>
+  );
+
   return (
-    <div
-      className="fixed inset-0 z-20 flex items-end bg-black/40"
-      onClick={onClose}
+    <Sheet
+      open
+      onClose={onClose}
+      title={log ? "Bản ghi" : "Thêm bản ghi"}
+      icon={category.icon}
+      iconColor={category.token}
+      dirty={dirty}
+      footer={
+        readOnly ? undefined : (
+          <div className="flex flex-col gap-2">
+            {message && (
+              <p role="alert" className="text-[15px] text-danger">
+                {message}
+              </p>
+            )}
+            <Button
+              type="submit"
+              form={formId}
+              block
+              busy={save.isPending}
+              disabled={remove.isPending}
+              className="min-h-14!"
+            >
+              Lưu
+            </Button>
+            {log && (
+              <Button
+                variant="ghost"
+                block
+                disabled={busy}
+                onClick={confirmDelete}
+                className="text-danger!"
+              >
+                Xóa bản ghi
+              </Button>
+            )}
+          </div>
+        )
+      }
     >
-      <form
-        onSubmit={submit}
-        onClick={(e) => e.stopPropagation()}
-        className="flex max-h-[90dvh] w-full flex-col gap-3 overflow-y-auto rounded-t-3xl bg-surface p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))]"
-      >
-        <h2 className="text-xl font-semibold">
-          {log ? "Bản ghi" : "Thêm bản ghi"}
-        </h2>
+      <form id={formId} onSubmit={submit} className="flex flex-col gap-4 pt-1">
         {log && (
-          <p className="text-muted">
+          <p className="text-[15px] text-muted tabular-nums">
             {formatVnTime(new Date(log.started_at))} ·{" "}
             {describeLog(log, new Date())} · {who}
           </p>
         )}
-        {log && !canModify && log.note && (
-          <p className="text-muted">Ghi chú: {log.note}</p>
-        )}
-        {log && !canModify ? (
+        {readOnly ? (
           <>
-            <p className="rounded-xl bg-soft p-3">
+            {log?.note && (
+              <p className="text-[15px] text-muted">Ghi chú: {log.note}</p>
+            )}
+            <p className="rounded-[16px] bg-muted/15 p-3 text-[15px] text-ink">
               Chỉ người ghi bản ghi này hoặc chủ gia đình mới sửa hoặc xóa được.
             </p>
-            <button
-              type="button"
-              onClick={onClose}
-              className="min-h-12 rounded-2xl border"
-            >
-              Đóng
-            </button>
           </>
         ) : (
           <>
             {!log && (
-              <label className="flex flex-col gap-1">
-                Loại
+              <label className="flex flex-col gap-1.5">
+                <span className={FIELD_LABEL}>Loại</span>
                 <select
-                  className={INPUT}
+                  className={`${FIELD_INPUT} accent-accent`}
                   value={type}
-                  onChange={(e) => {
-                    const next = e.target.value as LogType;
+                  onChange={(event) => {
+                    const next = event.target.value as LogType;
                     setType(next);
                     setValues(defaultLogValues(next));
                   }}
                 >
-                  {MANUAL_TYPES.map((t) => (
-                    <option key={t.value} value={t.value}>
-                      {t.label}
+                  {MANUAL_TYPES.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
                     </option>
                   ))}
                 </select>
               </label>
             )}
-            <QuickFields
+            <FieldList
               fields={LOG_FIELDS[type]}
               values={values}
               onChange={setValues}
             />
-            <label className="flex flex-col gap-1">
-              {timer ? "Bắt đầu" : "Thời điểm"}
-              <input
-                type="datetime-local"
-                className={INPUT}
-                value={start}
-                onChange={(e) => setStart(e.target.value)}
-              />
-            </label>
-            {timer && (
-              <label className="flex flex-col gap-1">
-                Kết thúc
-                <input
-                  type="datetime-local"
-                  className={INPUT}
-                  value={end}
-                  onChange={(e) => setEnd(e.target.value)}
-                />
-                {allowOpenEnd && (
-                  <span className="text-sm text-muted">
-                    Để trống nếu vẫn đang chạy.
-                  </span>
-                )}
-              </label>
-            )}
-            <label className="flex flex-col gap-1">
-              Ghi chú
+            {dateField(timer ? "Bắt đầu" : "Thời điểm", start, setStart)}
+            {timer &&
+              dateField(
+                "Kết thúc",
+                end,
+                setEnd,
+                allowOpenEnd ? "Để trống nếu vẫn đang chạy." : undefined,
+              )}
+            <label className="flex flex-col gap-1.5">
+              <span className={FIELD_LABEL}>Ghi chú</span>
               <textarea
-                className="min-h-20 rounded-xl border p-3"
+                className={`${FIELD_INPUT} min-h-20 py-2.5`}
                 value={note}
                 maxLength={500}
-                onChange={(e) => setNote(e.target.value)}
+                onChange={(event) => setNote(event.target.value)}
               />
             </label>
             {warnings.map((warning) => (
               <p
                 key={warning}
                 role="status"
-                className="rounded-xl bg-warn-soft p-3 text-warn-ink"
+                className="rounded-[16px] bg-warn-soft p-3 text-[15px] text-warn-ink"
               >
                 {warning}
               </p>
             ))}
-            {message && (
-              <p role="alert" className="text-danger">
-                {message}
-              </p>
-            )}
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={onClose}
-                className="min-h-12 flex-1 rounded-2xl border"
-              >
-                Hủy
-              </button>
-              <button
-                type="submit"
-                disabled={busy}
-                className="min-h-12 flex-1 rounded-2xl bg-accent text-on-accent disabled:opacity-50"
-              >
-                Lưu
-              </button>
-            </div>
-            {log && (
-              <button
-                type="button"
-                disabled={busy}
-                onClick={confirmDelete}
-                className="min-h-12 rounded-2xl text-danger disabled:opacity-50"
-              >
-                Xóa bản ghi
-              </button>
-            )}
           </>
         )}
       </form>
-    </div>
+    </Sheet>
   );
 }
