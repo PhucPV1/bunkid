@@ -4,25 +4,26 @@ import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useState } from "react";
 import { useThemePref } from "@/lib/hooks/useTheme";
+import { roleLabel } from "@/lib/rules/familySettings";
 import { supabase } from "@/lib/supabase/client";
-import type { FamilyMember } from "@/lib/supabase/rows";
+import type { Baby, FamilyMember } from "@/lib/supabase/rows";
 import { THEME_OPTIONS } from "@/lib/theme";
-
-const ROLE_LABEL: Record<string, string> = {
-  owner: "Chủ gia đình",
-  member: "Thành viên",
-};
+import { BabyProfileSection } from "./BabyProfileSection";
+import { FeedIntervalSection } from "./FeedIntervalSection";
 
 export function SettingsScreen({
   member,
+  baby,
   email,
 }: {
   member: FamilyMember;
+  baby: Baby;
   email: string;
 }) {
   const queryClient = useQueryClient();
   const [theme, setTheme] = useThemePref();
   const [signingOut, setSigningOut] = useState(false);
+  const isOwner = member.role === "owner";
 
   async function signOut() {
     setSigningOut(true);
@@ -37,6 +38,9 @@ export function SettingsScreen({
   return (
     <main className="mx-auto flex max-w-md flex-col gap-6 p-4">
       <h1 className="text-2xl font-semibold">Cài đặt</h1>
+
+      <BabyProfileSection baby={baby} isOwner={isOwner} />
+      <FeedIntervalSection baby={baby} isOwner={isOwner} />
 
       <section className="flex flex-col gap-2">
         <h2 className="text-lg font-medium">Giao diện</h2>
@@ -69,7 +73,7 @@ export function SettingsScreen({
       <section className="flex flex-col gap-2">
         <h2 className="text-lg font-medium">Tài khoản</h2>
         <p>
-          {member.display_name} · {ROLE_LABEL[member.role] ?? member.role}
+          {member.display_name} · {roleLabel(member.role)}
         </p>
         <p className="text-muted">{email}</p>
         <button

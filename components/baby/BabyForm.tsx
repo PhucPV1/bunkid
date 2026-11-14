@@ -2,9 +2,16 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
-import { createBaby } from "@/lib/data/baby";
-import { parseBabyForm, type BabyFormRaw } from "@/lib/rules/babyInput";
+import { createBaby, updateBaby } from "@/lib/data/baby";
+import { toVietnameseError } from "@/lib/data/errors";
+import {
+  babyToRaw,
+  parseBabyForm,
+  type BabyFormRaw,
+  type BabyInput,
+} from "@/lib/rules/babyInput";
 import { vnDateString } from "@/lib/rules/time";
+import type { Baby } from "@/lib/supabase/rows";
 
 const EMPTY: BabyFormRaw = {
   name: "",
@@ -15,21 +22,33 @@ const EMPTY: BabyFormRaw = {
   birthHeadCm: "",
 };
 
-export function BabyForm({ familyId }: { familyId: string }) {
+export function BabyForm({
+  familyId,
+  baby,
+}: {
+  familyId: string;
+  baby?: Baby;
+}) {
   const queryClient = useQueryClient();
-  const [raw, setRaw] = useState<BabyFormRaw>(EMPTY);
+  const [raw, setRaw] = useState<BabyFormRaw>(() =>
+    baby ? babyToRaw(baby) : EMPTY,
+  );
   const [errors, setErrors] = useState<
     Partial<Record<keyof BabyFormRaw, string>>
   >({});
 
   const save = useMutation({
-    mutationFn: createBaby.bind(null, familyId),
+    mutationFn: async (value: BabyInput) => {
+      if (baby) await updateBaby(baby.id, value);
+      else await createBaby(familyId, value);
+    },
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: ["family-context"] }),
   });
 
   function set<K extends keyof BabyFormRaw>(key: K, value: string) {
     setRaw((prev) => ({ ...prev, [key]: value }));
+    save.reset();
   }
 
   function submit(event: FormEvent) {
@@ -131,7 +150,14 @@ export function BabyForm({ familyId }: { familyId: string }) {
       </button>
       {save.isError && (
         <p role="alert" className="text-danger">
-          Không lưu được. Thử lại sau.
+          {baby
+            ? toVietnameseError(save.error)
+            : "Không lưu được. Thử lại sau."}
+        </p>
+      )}
+      {baby && save.isSuccess && (
+        <p role="status" className="text-good-ink">
+          Đã lưu.
         </p>
       )}
     </form>
