@@ -214,3 +214,55 @@ export function Sheet({
     </dialog>
   );
 }
+
+// Spec §5.2: centred, solid and above the keyboard-free sheet, so it cannot be missed.
+export function DiscardConfirm({
+  onDiscard,
+  onKeep,
+}: {
+  onDiscard: () => void;
+  onKeep: () => void;
+}) {
+  const titleId = useId();
+  const bodyId = useId();
+  const box = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    box.current
+      ?.querySelector<HTMLButtonElement>("[data-keep]")
+      ?.focus({ preventScroll: true });
+  }, []);
+
+  return (
+    <div
+      className="fixed inset-0 z-10 flex items-center justify-center bg-black/40 p-6 animate-[kb-fade-in_180ms_ease-out]"
+      onClick={(event) => {
+        if (event.target === event.currentTarget) onKeep();
+      }}
+    >
+      <div
+        ref={box}
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={bodyId}
+        className="w-full max-w-[300px] rounded-[28px] bg-glass-solid p-[22px_18px_16px] text-center shadow-[0_20px_60px_rgb(0_0_0/0.3)] animate-[kb-pop-in_180ms_cubic-bezier(0.32,0.72,0,1)]"
+      >
+        <h3 id={titleId} className="text-[19px] leading-6 font-bold text-ink">
+          Bỏ thay đổi?
+        </h3>
+        <p id={bodyId} className="mt-2 text-[15px] leading-5 text-muted">
+          Những gì vừa nhập sẽ không được lưu.
+        </p>
+        <div className="mt-4 flex flex-col gap-2">
+          <Button variant="danger" block onClick={onDiscard}>
+            Bỏ thay đổi
+          </Button>
+          <Button variant="secondary" block data-keep onClick={onKeep}>
+            Tiếp tục nhập
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}

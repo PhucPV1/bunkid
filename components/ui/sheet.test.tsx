@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { ICON_PATHS } from "@/lib/ui/icons";
-import { markAutofocus, Sheet } from "./Sheet";
+import { DiscardConfirm, markAutofocus, Sheet } from "./Sheet";
 
 const noop = () => {};
 
@@ -79,5 +79,46 @@ describe("Sheet initial focus", () => {
     } as unknown as HTMLElement);
     markAutofocus(null);
     expect(set).toEqual(["autofocus"]);
+  });
+});
+
+describe("DiscardConfirm", () => {
+  const html = renderToStaticMarkup(
+    <DiscardConfirm onDiscard={noop} onKeep={noop} />,
+  );
+
+  it("is a modal alert dialog labelled by its title and described by its line", () => {
+    expect(html).toContain('role="alertdialog"');
+    expect(html).toContain('aria-modal="true"');
+    const labelledBy = /aria-labelledby="([^"]+)"/.exec(html)?.[1];
+    const describedBy = /aria-describedby="([^"]+)"/.exec(html)?.[1];
+    expect(labelledBy).toBeTruthy();
+    expect(describedBy).toBeTruthy();
+    expect(html).toContain(`id="${labelledBy}"`);
+    expect(html).toContain(`id="${describedBy}"`);
+    expect(html).toMatch(/<h3[^>]*>Bỏ thay đổi\?<\/h3>/);
+    expect(html).toContain(">Những gì vừa nhập sẽ không được lưu.</p>");
+  });
+
+  it("puts Bỏ thay đổi (danger) above Tiếp tục nhập (secondary)", () => {
+    const discard = html.indexOf(">Bỏ thay đổi</button>");
+    const keep = html.indexOf(">Tiếp tục nhập</button>");
+    expect(discard).toBeGreaterThan(-1);
+    expect(keep).toBeGreaterThan(discard);
+    expect(html).toContain("bg-danger-solid text-on-danger");
+    expect(html).toContain("data-keep");
+  });
+
+  it("sits in the middle of a dimmed full-screen layer, solid so iOS cannot paint it white", () => {
+    expect(html).toContain(
+      "fixed inset-0 z-10 flex items-center justify-center bg-black/40 p-6",
+    );
+    expect(html).toContain("animate-[kb-fade-in_180ms_ease-out]");
+    expect(html).toContain("max-w-[300px]");
+    expect(html).toContain("rounded-[28px] bg-glass-solid");
+    expect(html).toContain(
+      "animate-[kb-pop-in_180ms_cubic-bezier(0.32,0.72,0,1)]",
+    );
+    expect(html).not.toContain("glass-strong");
   });
 });
