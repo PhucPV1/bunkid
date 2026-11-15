@@ -6,6 +6,9 @@ import {
   type ThemePref,
 } from "@/lib/rules/theme";
 import {
+  LIGHT_STYLE_KEY,
+  LIGHT_STYLE_OPTIONS,
+  lightSwatch,
   NIGHT_OVERRIDE_KEY,
   NIGHT_SCHEDULE_KEY,
   parseThemePref,
@@ -81,10 +84,11 @@ describe("theme storage", () => {
       schedule: DEFAULT_NIGHT_SCHEDULE,
       override: { on: true, until: vn("21:00").toISOString() },
       migrated: true,
+      lightStyle: "rose",
     });
   });
 
-  it("readThemeState reads the three keys", () => {
+  it("readThemeState reads the four keys", () => {
     const schedule: NightSchedule = {
       enabled: false,
       start: "22:00",
@@ -95,13 +99,35 @@ describe("theme storage", () => {
       [THEME_STORAGE_KEY]: "dark",
       [NIGHT_SCHEDULE_KEY]: JSON.stringify(schedule),
       [NIGHT_OVERRIDE_KEY]: JSON.stringify(override),
+      [LIGHT_STYLE_KEY]: "peach",
     };
     expect(readThemeState((k) => store[k] ?? null, vn("12:00"))).toEqual({
       pref: "dark",
       schedule,
       override,
       migrated: false,
+      lightStyle: "peach",
     });
+  });
+
+  it("offers five light backgrounds under be-yeu-light-style", () => {
+    expect(LIGHT_STYLE_KEY).toBe("be-yeu-light-style");
+    expect(LIGHT_STYLE_OPTIONS).toEqual([
+      { value: "white", label: "Trắng" },
+      { value: "rose", label: "Hồng dịu" },
+      { value: "peach", label: "Đào mơ" },
+      { value: "lavender", label: "Oải hương" },
+      { value: "sea", label: "Biển sương" },
+    ]);
+  });
+
+  it("each swatch is half page colour, half accent of its theme", () => {
+    expect(lightSwatch("white")).toBe(
+      "linear-gradient(135deg, #FBF3F0 50%, #B8285E 50%)",
+    );
+    expect(lightSwatch("sea")).toBe(
+      "linear-gradient(135deg, #DDE3E8 50%, #2C5A85 50%)",
+    );
   });
 });
 
@@ -191,6 +217,48 @@ describe("THEME_INIT_SCRIPT matches resolveActiveTheme before React loads", () =
       dark: false,
       now: vn("12:00"),
     },
+    {
+      name: "white chosen, noon",
+      store: { [LIGHT_STYLE_KEY]: "white" },
+      dark: false,
+      now: vn("12:00"),
+    },
+    {
+      name: "light chosen, rose stored, noon",
+      store: { [THEME_STORAGE_KEY]: "light", [LIGHT_STYLE_KEY]: "rose" },
+      dark: false,
+      now: vn("12:00"),
+    },
+    {
+      name: "peach, noon",
+      store: { [LIGHT_STYLE_KEY]: "peach" },
+      dark: false,
+      now: vn("12:00"),
+    },
+    {
+      name: "lavender, noon",
+      store: { [LIGHT_STYLE_KEY]: "lavender" },
+      dark: false,
+      now: vn("12:00"),
+    },
+    {
+      name: "sea, night window",
+      store: { [LIGHT_STYLE_KEY]: "sea" },
+      dark: false,
+      now: vn("22:00"),
+    },
+    {
+      name: "junk light style, noon",
+      store: { [LIGHT_STYLE_KEY]: "pink" },
+      dark: false,
+      now: vn("12:00"),
+    },
+    {
+      name: "white chosen, dark device",
+      store: { [LIGHT_STYLE_KEY]: "white" },
+      dark: true,
+      now: vn("12:00"),
+    },
   ];
 
   it.each(cases)("$name", ({ store, dark, now }) => {
@@ -199,13 +267,20 @@ describe("THEME_INIT_SCRIPT matches resolveActiveTheme before React loads", () =
     expect(runInitScript(store, dark, now)).toBe(expected);
   });
 
+  it("paints Hồng dịu on the first frame when nothing is stored", () => {
+    expect(runInitScript({}, false, vn("12:00"))).toBe("rose");
+    expect(
+      runInitScript({ [LIGHT_STYLE_KEY]: "lavender" }, false, vn("12:00")),
+    ).toBe("lavender");
+  });
+
   it("an old stored night choice paints night on the first frame", () => {
     expect(
       runInitScript({ [THEME_STORAGE_KEY]: "night" }, false, vn("12:00")),
     ).toBe("night");
   });
 
-  it("falls back to light when storage throws", () => {
+  it("falls back to Hồng dịu when storage throws", () => {
     const root = { dataset: {} as Record<string, string> };
     new Function(
       "window",
@@ -223,7 +298,7 @@ describe("THEME_INIT_SCRIPT matches resolveActiveTheme before React loads", () =
       },
       { now: () => vn("12:00").getTime(), parse: Date.parse },
     );
-    expect(root.dataset.theme).toBe("light");
+    expect(root.dataset.theme).toBe("rose");
   });
 });
 

@@ -4,6 +4,21 @@ export type ThemePref = "light" | "dark" | "system";
 export type NightSchedule = { enabled: boolean; start: string; end: string };
 export type NightOverride = { on: boolean; until: string } | null;
 
+// Spec §3.1: which theme "light" means. Anything unknown is Hồng dịu.
+export type LightStyle = "white" | "rose" | "peach" | "lavender" | "sea";
+
+const LIGHT_STYLES: readonly LightStyle[] = [
+  "white",
+  "rose",
+  "peach",
+  "lavender",
+  "sea",
+];
+
+export function parseLightStyle(raw: string | null): LightStyle {
+  return LIGHT_STYLES.find((style) => style === raw) ?? "rose";
+}
+
 export const DEFAULT_NIGHT_SCHEDULE: NightSchedule = {
   enabled: true,
   start: "21:00",
@@ -56,14 +71,17 @@ export function resolveActiveTheme(input: {
   prefersDark: boolean;
   schedule: NightSchedule;
   override: NightOverride;
+  lightStyle: LightStyle;
   now: Date;
 }): ThemeName {
-  const day: ThemeName =
+  const base: "light" | "dark" =
     input.pref === "system"
       ? input.prefersDark
         ? "dark"
         : "light"
       : input.pref;
+  const day: ThemeName =
+    base === "light" && input.lightStyle !== "white" ? input.lightStyle : base;
   const { override } = input;
   if (override && input.now.getTime() < Date.parse(override.until))
     return override.on ? "night" : day;

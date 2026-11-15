@@ -8,14 +8,16 @@ import {
   type NightSchedule,
 } from "@/lib/rules/theme";
 import {
+  LIGHT_STYLE_KEY,
   NIGHT_OVERRIDE_KEY,
   NIGHT_SCHEDULE_KEY,
   readThemeState,
   THEME_COLORS,
   THEME_STORAGE_KEY,
+  type LightStyle,
   type ThemePref,
 } from "@/lib/theme";
-import type { ThemeName } from "@/lib/ui/tokens";
+import { THEME_NAMES, type ThemeName } from "@/lib/ui/tokens";
 
 const DARK_QUERY = "(prefers-color-scheme: dark)";
 
@@ -55,6 +57,7 @@ export function applyTheme(): ThemeName {
     prefersDark: window.matchMedia(DARK_QUERY).matches,
     schedule: state.schedule,
     override: state.override,
+    lightStyle: state.lightStyle,
     now,
   });
   document.documentElement.dataset.theme = theme;
@@ -101,6 +104,21 @@ export function useThemePref(): [ThemePref, (next: ThemePref) => void] {
   return [pref, choose];
 }
 
+// Spec §3.2: Cài đặt › Nền sáng. Unlike the theme choice, it leaves Ban đêm alone.
+export function useLightStyle(): [LightStyle, (next: LightStyle) => void] {
+  const [style, setStyle] = useState<LightStyle>(() =>
+    typeof window === "undefined"
+      ? "rose"
+      : readThemeState(storageGet, new Date()).lightStyle,
+  );
+  function choose(next: LightStyle) {
+    storageSet(LIGHT_STYLE_KEY, next);
+    applyTheme();
+    setStyle(next);
+  }
+  return [style, choose];
+}
+
 export function useNightSchedule(): [
   NightSchedule,
   (next: NightSchedule) => void,
@@ -121,7 +139,7 @@ export function useNightSchedule(): [
 
 function currentTheme(): ThemeName {
   const value = document.documentElement.dataset.theme;
-  return value === "dark" || value === "night" ? value : "light";
+  return THEME_NAMES.find((name) => name === value) ?? "light";
 }
 
 // Spec §6.6: the moon button turns Ban đêm on/off until the next schedule boundary.

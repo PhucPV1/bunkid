@@ -4,6 +4,7 @@ import {
   HALF_HOURS,
   inNightWindow,
   nextNightBoundary,
+  parseLightStyle,
   parseNightOverride,
   parseNightSchedule,
   resolveActiveTheme,
@@ -85,6 +86,7 @@ describe("resolveActiveTheme", () => {
     prefersDark: false,
     schedule: DEFAULT_NIGHT_SCHEDULE,
     override: null,
+    lightStyle: "white" as const,
   };
 
   it("uses the schedule when there is no override", () => {
@@ -133,6 +135,32 @@ describe("resolveActiveTheme", () => {
       }),
     ).toBe("light");
   });
+
+  it("a soft light style replaces light only, whether chosen or from the device", () => {
+    for (const style of ["rose", "peach", "lavender", "sea"] as const) {
+      const soft = { ...base, lightStyle: style };
+      expect(resolveActiveTheme({ ...soft, now: vn("12:00") })).toBe(style);
+      expect(
+        resolveActiveTheme({ ...soft, pref: "light", now: vn("12:00") }),
+      ).toBe(style);
+      expect(
+        resolveActiveTheme({ ...soft, pref: "dark", now: vn("12:00") }),
+      ).toBe("dark");
+      expect(
+        resolveActiveTheme({ ...soft, prefersDark: true, now: vn("12:00") }),
+      ).toBe("dark");
+      expect(resolveActiveTheme({ ...soft, now: vn("22:00") })).toBe("night");
+    }
+    const morning = vn("06:00", 15).toISOString();
+    expect(
+      resolveActiveTheme({
+        ...base,
+        lightStyle: "sea",
+        override: { on: false, until: morning },
+        now: vn("22:00"),
+      }),
+    ).toBe("sea");
+  });
 });
 
 describe("stored values", () => {
@@ -173,6 +201,14 @@ describe("stored values", () => {
     expect(
       parseNightOverride(JSON.stringify({ on: true, until: "later" })),
     ).toBeNull();
+  });
+
+  it("parseLightStyle keeps the five known styles, anything else is Hồng dịu", () => {
+    for (const style of ["white", "rose", "peach", "lavender", "sea"] as const)
+      expect(parseLightStyle(style)).toBe(style);
+    expect(parseLightStyle(null)).toBe("rose");
+    expect(parseLightStyle("pink")).toBe("rose");
+    expect(parseLightStyle("light")).toBe("rose");
   });
 });
 
