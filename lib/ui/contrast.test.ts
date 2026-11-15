@@ -55,3 +55,15 @@ describe("Ban đêm", () => {
     }
   });
 });
+
+describe("the four soft light themes", () => {
+  it.each(["rose", "peach", "lavender", "sea"] as const)(
+    "%s has no pure white surface, only white text on solid buttons",
+    (name) => {
+      for (const token of TOKEN_NAMES) {
+        if (token === "on-accent" || token === "on-danger") continue;
+        expect(THEMES[name][token].toUpperCase(), token).not.toBe("#FFFFFF");
+      }
+    },
+  );
+});

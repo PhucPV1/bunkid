@@ -7,6 +7,10 @@ const css = readFileSync("app/globals.css", "utf8");
 
 const OPENERS = {
   light: "@theme {",
+  rose: ':root[data-theme="rose"] {',
+  peach: ':root[data-theme="peach"] {',
+  lavender: ':root[data-theme="lavender"] {',
+  sea: ':root[data-theme="sea"] {',
   dark: ':root[data-theme="dark"] {',
   night: ':root[data-theme="night"] {',
 } as const;

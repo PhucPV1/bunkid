@@ -64,6 +64,10 @@ describe("theme storage", () => {
   it("status bar colours match each theme's page colour", () => {
     expect(THEME_COLORS).toEqual({
       light: "#FBF3F0",
+      rose: "#E9DBDB",
+      peach: "#EFDCCD",
+      lavender: "#E3DDE9",
+      sea: "#DDE3E8",
       dark: "#0F0B12",
       night: "#0A0705",
     });

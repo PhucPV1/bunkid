@@ -7,7 +7,7 @@ import {
   type NightSchedule,
   type ThemePref,
 } from "@/lib/rules/theme";
-import { THEMES, type ThemeName } from "@/lib/ui/tokens";
+import { THEME_NAMES, THEMES, type ThemeName } from "@/lib/ui/tokens";
 
 export type { ThemePref };
 export type Theme = ThemeName;
@@ -17,11 +17,9 @@ export const NIGHT_SCHEDULE_KEY = "be-yeu-night-schedule";
 export const NIGHT_OVERRIDE_KEY = "be-yeu-night-override";
 
 // The status bar takes each theme's page colour; colours live only in lib/ui/tokens.ts.
-export const THEME_COLORS: Record<ThemeName, string> = {
-  light: THEMES.light.bg,
-  dark: THEMES.dark.bg,
-  night: THEMES.night.bg,
-};
+export const THEME_COLORS = Object.fromEntries(
+  THEME_NAMES.map((name) => [name, THEMES[name].bg]),
+) as Record<ThemeName, string>;
 
 export const THEME_OPTIONS: { value: ThemePref; label: string }[] = [
   { value: "light", label: "Sáng" },
