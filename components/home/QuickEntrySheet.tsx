@@ -14,6 +14,8 @@ import { medicineWarnings } from "@/lib/rules/alerts";
 import {
   buildDetails,
   defaultQuickValues,
+  MEDICINE_PRESETS,
+  medicinePrefill,
   recentBottleAmounts,
   recentMedicineNames,
   type InstantType,
@@ -112,7 +114,13 @@ export function QuickEntrySheet({
       <MedicineFields
         values={values}
         onChange={setValues}
-        names={recentMedicineNames(recentLogs)}
+        names={recentMedicineNames(recentLogs, MEDICINE_PRESETS)}
+        onPick={(name) =>
+          setValues((current) => ({
+            ...current,
+            ...medicinePrefill(name, recentLogs),
+          }))
+        }
         warnings={warnings}
       />
     ),

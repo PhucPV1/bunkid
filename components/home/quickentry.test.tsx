@@ -73,4 +73,30 @@ describe("QuickEntrySheet", () => {
     expect(html).toMatch(/aria-pressed="true"[^>]*>giọt<\/button>/);
     expect(html).toContain('aria-checked="false"');
   });
+
+  it("shows the quick chips and leaves the presets out of Gần đây", () => {
+    const dha = {
+      ...bottle,
+      id: "m1",
+      type: "medicine",
+      details: { name: "DHA", amount: 5, unit: "giọt", antipyretic: false },
+    } as LogRow;
+    const para = {
+      ...bottle,
+      id: "m2",
+      type: "medicine",
+      started_at: "2026-11-14T03:00:00.000Z",
+      details: {
+        name: "Paracetamol",
+        amount: 2.5,
+        unit: "ml",
+        antipyretic: true,
+      },
+    } as LogRow;
+    const html = render({ type: "medicine", recentLogs: [dha, para] });
+    expect(html).toContain('aria-label="Chọn nhanh"');
+    const recent = html.slice(html.indexOf('aria-label="Thuốc gần đây"'));
+    expect(recent).toContain(">Paracetamol</button>");
+    expect(recent).not.toContain(">DHA</button>");
+  });
 });

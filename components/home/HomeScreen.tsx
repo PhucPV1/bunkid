@@ -13,7 +13,7 @@ import { useNow } from "@/lib/hooks/useNow";
 import { useOutboxEntries } from "@/lib/hooks/useOutboxEntries";
 import { homeAlerts, vitaminDToday } from "@/lib/rules/alerts";
 import { heroState } from "@/lib/rules/hero";
-import type { QuickValues } from "@/lib/rules/quickEntry";
+import { medicinePrefill } from "@/lib/rules/quickEntry";
 import { rateLast24h, WINDOW_MS, windowTotals } from "@/lib/rules/ratings";
 import { sleepStatusLine } from "@/lib/rules/status";
 import { homeStatTiles, totalsLine } from "@/lib/rules/summaryText";
@@ -29,13 +29,6 @@ import { StatsSection } from "./StatsSection";
 import { TimerButtons } from "./TimerButtons";
 import { TimerRow } from "./TimerRow";
 import { VitaminDButton } from "./VitaminDButton";
-
-const VITAMIN_D: QuickValues = {
-  name: "Vitamin D",
-  amount: "1",
-  unit: "giọt",
-  antipyretic: false,
-};
 
 export function HomeScreen({ baby, userId }: { baby: Baby; userId: string }) {
   const now = useNow(1000);
@@ -145,7 +138,12 @@ export function HomeScreen({ baby, userId }: { baby: Baby; userId: string }) {
 
           {vitaminD === null && (
             <VitaminDButton
-              onRecord={() => actions.openInstant("medicine", VITAMIN_D)}
+              onRecord={() =>
+                actions.openInstant(
+                  "medicine",
+                  medicinePrefill("Vitamin D", rows),
+                )
+              }
             />
           )}
 
