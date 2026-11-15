@@ -4,7 +4,7 @@ import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import type { CategoryToken } from "@/lib/ui/categories";
 import { cx } from "@/lib/ui/cx";
 import type { IconName } from "@/lib/ui/icons";
-import { dragOffset, shouldDismissDrag } from "@/lib/ui/sheet";
+import { closeStep, dragOffset, shouldDismissDrag } from "@/lib/ui/sheet";
 import { Button } from "./Button";
 import { Icon } from "./Icon";
 import { IconButton } from "./IconButton";
@@ -70,9 +70,18 @@ export function Sheet({
     if (!open && dialog.open) dialog.close();
   }, [open]);
 
-  // Every way of closing goes through here; unsaved input asks first.
+  // Every way of closing goes through here; unsaved input asks first (spec §5.1).
   function requestClose() {
-    if (dirty) {
+    const step = closeStep(dirty, confirming);
+    if (step === "keep") {
+      setConfirming(false);
+      return;
+    }
+    if (step === "confirm") {
+      // Drop the iOS keyboard first, or it covers whatever we show next.
+      const active = document.activeElement;
+      if (active instanceof HTMLElement && ref.current?.contains(active))
+        active.blur();
       setConfirming(true);
       return;
     }
@@ -138,6 +147,7 @@ export function Sheet({
             data-sheet-handle
             className="flex cursor-grab touch-none justify-center pt-2.5 pb-1"
             onPointerDown={(event) => {
+              if (confirming) return;
               event.currentTarget.setPointerCapture(event.pointerId);
               setDrag({ startY: event.clientY, dy: 0 });
             }}
@@ -185,32 +195,19 @@ export function Sheet({
         <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-3">
           {children}
         </div>
-        {confirming ? (
-          <div
-            role="alertdialog"
-            aria-label="Bỏ thay đổi?"
-            className={cx("flex flex-col gap-3 px-5 pt-2", BOTTOM_PAD)}
-          >
-            <p className="text-center font-semibold">Bỏ thay đổi?</p>
-            <div className="grid grid-cols-2 gap-2">
-              <Button variant="secondary" onClick={() => setConfirming(false)}>
-                Tiếp tục nhập
-              </Button>
-              <Button
-                variant="danger"
-                onClick={() => {
-                  setConfirming(false);
-                  setClosing(true);
-                }}
-              >
-                Bỏ
-              </Button>
-            </div>
-          </div>
-        ) : footer ? (
+        {footer ? (
           <div className={cx("px-5 pt-2", BOTTOM_PAD)}>{footer}</div>
         ) : null}
       </div>
+      {confirming && (
+        <DiscardConfirm
+          onDiscard={() => {
+            setConfirming(false);
+            setClosing(true);
+          }}
+          onKeep={() => setConfirming(false)}
+        />
+      )}
     </dialog>
   );
 }

@@ -58,6 +58,23 @@ describe("Sheet", () => {
       "animate-[kb-sheet-in_280ms_cubic-bezier(0.32,0.72,0,1)]",
     );
   });
+
+  it("keeps the footer for a dirty sheet and no longer draws the old bottom confirm", () => {
+    const html = renderToStaticMarkup(
+      <Sheet
+        open
+        dirty
+        title="Cho uống thuốc"
+        onClose={noop}
+        footer={<button>Lưu</button>}
+      >
+        <p>Thân</p>
+      </Sheet>,
+    );
+    expect(html).toContain(">Lưu</button>");
+    expect(html).not.toContain('role="alertdialog"');
+    expect(html).not.toContain(">Bỏ</button>");
+  });
 });
 
 describe("Sheet initial focus", () => {
