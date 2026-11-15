@@ -5,6 +5,8 @@ import {
   defaultQuickValues,
   DIAPER_KIND_OPTIONS,
   diaperKind,
+  MEDICINE_PRESETS,
+  medicinePrefill,
   ML_STEP,
   QUICK_FIELDS,
   recentBottleAmounts,
@@ -104,6 +106,18 @@ const medLog = (minutesAgo: number, name: string): LogLike => ({
   ended_at: at(minutesAgo),
   details: { name, amount: 1, unit: "ml", antipyretic: false },
 });
+const medDose = (
+  minutesAgo: number,
+  name: string,
+  amount: number,
+  unit: string,
+  antipyretic = false,
+): LogLike => ({
+  type: "medicine",
+  started_at: at(minutesAgo),
+  ended_at: at(minutesAgo),
+  details: { name, amount, unit, antipyretic },
+});
 
 describe("recent suggestions", () => {
   it("recentBottleAmounts: up to 3 different amounts, newest first", () => {
@@ -133,6 +147,72 @@ describe("recent suggestions", () => {
         bottleLog(1, 90),
       ]),
     ).toEqual(["Paracetamol", "Vitamin D", "Men vi sinh", "Siro ho"]);
+  });
+
+  it("MEDICINE_PRESETS: Vitamin D, DHA, Men tiêu hoá in that order", () => {
+    expect(MEDICINE_PRESETS).toEqual(["Vitamin D", "DHA", "Men tiêu hoá"]);
+  });
+
+  it("recentMedicineNames skips the presets before counting to 4", () => {
+    expect(
+      recentMedicineNames(
+        [
+          medLog(5, "DHA"),
+          medLog(10, "Paracetamol"),
+          medLog(15, "dha "),
+          medLog(20, "Men tiêu hoá"),
+          medLog(25, "Siro ho"),
+          medLog(30, "vitamin d"),
+          medLog(35, "Kẽm"),
+          medLog(40, "Thuốc X"),
+          medLog(45, "Cuối"),
+        ],
+        MEDICINE_PRESETS,
+      ),
+    ).toEqual(["Paracetamol", "Siro ho", "Kẽm", "Thuốc X"]);
+  });
+
+  it("medicinePrefill copies the latest dose of the same medicine, any case", () => {
+    expect(
+      medicinePrefill("DHA", [
+        medDose(10, "dha", 2.5, "ml"),
+        medDose(60, "DHA", 5, "giọt"),
+        medDose(5, "Paracetamol", 2.5, "ml", true),
+      ]),
+    ).toEqual({ name: "DHA", amount: "2,5", unit: "ml", antipyretic: false });
+    expect(
+      medicinePrefill("Paracetamol", [
+        medDose(5, "Paracetamol", 120, "mg", true),
+      ]),
+    ).toEqual({
+      name: "Paracetamol",
+      amount: "120",
+      unit: "mg",
+      antipyretic: true,
+    });
+  });
+
+  it("medicinePrefill: Vitamin D never logged is 1 giọt", () => {
+    expect(medicinePrefill("Vitamin D", [medDose(5, "DHA", 5, "giọt")])).toEqual({
+      name: "Vitamin D",
+      amount: "1",
+      unit: "giọt",
+      antipyretic: false,
+    });
+    expect(medicinePrefill("vitamin d", [])).toEqual({
+      name: "Vitamin D",
+      amount: "1",
+      unit: "giọt",
+      antipyretic: false,
+    });
+  });
+
+  it("medicinePrefill: anything else never logged clears the amount and keeps the unit", () => {
+    expect(medicinePrefill("Men tiêu hoá", [])).toEqual({
+      name: "Men tiêu hoá",
+      amount: "",
+      antipyretic: false,
+    });
   });
 });
 

@@ -48,11 +48,19 @@ const diaper = z
   })
   .strict()
   .refine((d) => d.wet || d.dirty, { message: "Chọn ít nhất ướt hoặc bẩn" });
+export const MEDICINE_UNITS = [
+  "ml",
+  "mg",
+  "giọt",
+  "viên",
+  "gói",
+  "ống",
+] as const;
 const medicine = z
   .object({
     name: z.string().trim().min(1).max(80),
     amount: z.number().positive().max(1000),
-    unit: z.enum(["ml", "mg", "giọt", "viên"]),
+    unit: z.enum(MEDICINE_UNITS),
     antipyretic: z.boolean(),
   })
   .strict();

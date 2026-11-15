@@ -1,5 +1,5 @@
 import type { LogLike } from "./describeLog";
-import { detailsSchemas, type StoolColor } from "./logDetails";
+import { detailsSchemas, MEDICINE_UNITS, type StoolColor } from "./logDetails";
 
 export type InstantType = "bottle" | "diaper" | "medicine" | "temperature";
 export type QuickValues = Record<string, string | boolean>;
@@ -50,7 +50,7 @@ export const QUICK_FIELDS: Record<InstantType, QuickField[]> = {
       key: "unit",
       label: "Đơn vị",
       kind: "select",
-      options: ["ml", "mg", "giọt", "viên"].map((u) => ({
+      options: MEDICINE_UNITS.map((u) => ({
         value: u,
         label: u,
       })),
@@ -153,22 +153,51 @@ export function recentBottleAmounts(logs: LogLike[]): number[] {
   return amounts;
 }
 
-// Spec §2.3: up to 4 different medicine names, case-insensitive, latest spelling kept.
-export function recentMedicineNames(logs: LogLike[]): string[] {
+// Spec §4.1: the quick chips, always shown, in this order.
+export const MEDICINE_PRESETS = ["Vitamin D", "DHA", "Men tiêu hoá"] as const;
+
+const medicineKey = (name: string) => name.trim().toLocaleLowerCase("vi");
+
+// Spec §2.3 (spec gốc) and §4.1: up to 4 different medicine names, case-insensitive,
+// latest spelling kept; names in `exclude` (the quick chips) are skipped before counting.
+export function recentMedicineNames(
+  logs: LogLike[],
+  exclude: readonly string[] = [],
+): string[] {
   const names: string[] = [];
-  const seen = new Set<string>();
+  const seen = new Set(exclude.map(medicineKey));
   for (const log of byNewest(logs)) {
     if (log.type !== "medicine") continue;
     const parsed = detailsSchemas.medicine.safeParse(log.details);
     if (!parsed.success) continue;
     const name = parsed.data.name.trim();
-    const key = name.toLocaleLowerCase("vi");
+    const key = medicineKey(name);
     if (seen.has(key)) continue;
     seen.add(key);
     names.push(name);
     if (names.length === 4) break;
   }
   return names;
+}
+
+// Spec §4.1: a chip fills the name plus the dose from the latest log of that medicine.
+// Never logged: Vitamin D is 1 giọt; anything else clears the amount and keeps the unit.
+export function medicinePrefill(name: string, logs: LogLike[]): QuickValues {
+  const key = medicineKey(name);
+  for (const log of byNewest(logs)) {
+    if (log.type !== "medicine") continue;
+    const parsed = detailsSchemas.medicine.safeParse(log.details);
+    if (!parsed.success || medicineKey(parsed.data.name) !== key) continue;
+    return {
+      name,
+      amount: String(parsed.data.amount).replace(".", ","),
+      unit: parsed.data.unit,
+      antipyretic: parsed.data.antipyretic,
+    };
+  }
+  if (key === medicineKey("Vitamin D"))
+    return { name: "Vitamin D", amount: "1", unit: "giọt", antipyretic: false };
+  return { name, amount: "", antipyretic: false };
 }
 
 export type StepRule = { start: number; min: number; decimals: number };

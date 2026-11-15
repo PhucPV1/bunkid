@@ -64,6 +64,18 @@ describe("FieldList", () => {
     expect(med).toContain(">Tên thuốc</span>");
   });
 
+  it("the 6 medicine units are a segmented control, not a native select", () => {
+    const med = html({
+      fields: LOG_FIELDS.medicine,
+      values: { name: "Men", amount: "1", unit: "gói", antipyretic: false },
+      onChange: () => {},
+    });
+    expect(med).toContain('aria-label="Đơn vị"');
+    expect(med).toMatch(/aria-pressed="true"[^>]*>gói<\/button>/);
+    expect(med).toContain(">ống</button>");
+    expect(med).not.toContain("<select");
+  });
+
   it("reports changes with the field's key", () => {
     const onChange = vi.fn();
     const values = { wet: true, dirty: false, stoolColor: "" };

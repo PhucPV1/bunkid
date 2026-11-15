@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { detailsSchemas, isTimerType } from "@/lib/rules/logDetails";
+import {
+  detailsSchemas,
+  isTimerType,
+  MEDICINE_UNITS,
+} from "@/lib/rules/logDetails";
 
 describe("detailsSchemas", () => {
   it("accepts valid details for every type", () => {
@@ -57,6 +61,19 @@ describe("detailsSchemas", () => {
         antipyretic: false,
       }).success,
     ).toBe(false);
+  });
+  it("medicine takes the six units, gói and ống included, and nothing else", () => {
+    expect(MEDICINE_UNITS).toEqual(["ml", "mg", "giọt", "viên", "gói", "ống"]);
+    const dose = (unit: string) =>
+      detailsSchemas.medicine.safeParse({
+        name: "Men tiêu hoá",
+        amount: 1,
+        unit,
+        antipyretic: false,
+      }).success;
+    expect(dose("gói")).toBe(true);
+    expect(dose("ống")).toBe(true);
+    expect(dose("thìa")).toBe(false);
   });
 });
 
