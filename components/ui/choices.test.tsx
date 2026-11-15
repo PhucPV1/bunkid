@@ -44,7 +44,7 @@ describe("Segmented", () => {
     expect(onChange).toHaveBeenCalledWith("both");
   });
 
-  it("refuses fewer than 2 or more than 4 options", () => {
+  it("refuses fewer than 2 or more than 6 options", () => {
     expect(() =>
       Segmented({
         label: "x",
@@ -53,15 +53,18 @@ describe("Segmented", () => {
         onChange: () => {},
       }),
     ).toThrow();
-    const five = [
+    const seven = [
       ...KINDS,
       { value: "wet", label: "a" },
       { value: "dirty", label: "b" },
+      { value: "wet", label: "c" },
+      { value: "dirty", label: "d" },
     ] as ChoiceOption<Kind>[];
+    expect(seven).toHaveLength(7);
     expect(() =>
       Segmented({
         label: "x",
-        options: five,
+        options: seven,
         value: "wet",
         onChange: () => {},
       }),

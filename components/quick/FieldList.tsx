@@ -4,7 +4,7 @@ import type { QuickField, QuickValues } from "@/lib/rules/quickEntry";
 import { FIELD_INPUT, FIELD_LABEL } from "./styles";
 
 // Spec §8.3: same fields as before, drawn with ui components. A checkbox becomes a
-// Switch, a select with 2–4 options a Segmented, a longer select stays native.
+// Switch, a select with 2–6 options a Segmented, a longer select stays native.
 export function FieldList({
   fields,
   values,
@@ -40,7 +40,7 @@ export function FieldList({
 
           if (field.kind === "select") {
             const options = field.options ?? [];
-            if (options.length >= 2 && options.length <= 4)
+            if (options.length >= 2 && options.length <= 6)
               return (
                 <div key={field.key} className="flex flex-col gap-1.5">
                   <span className={FIELD_LABEL}>{field.label}</span>

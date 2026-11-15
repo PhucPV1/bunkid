@@ -39,4 +39,33 @@ describe("Segmented label size", () => {
     expect(html.match(/text-\[15px\]/g)).toHaveLength(2);
     expect(html).toContain("truncate");
   });
+
+  it("5–6 options: still 13 px, one line each", () => {
+    const html = renderToStaticMarkup(
+      <Segmented
+        label="Đơn vị"
+        options={["ml", "mg", "giọt", "viên", "gói", "ống"].map((u) => ({
+          value: u,
+          label: u,
+        }))}
+        value="ml"
+        onChange={noop}
+      />,
+    );
+    expect(html.match(/text-\[13px\]/g)).toHaveLength(6);
+    expect(html.match(/truncate/g)).toHaveLength(6);
+    expect(html).toContain("repeat(6, minmax(0, 1fr))");
+  });
+
+  it("refuses more than 6 options", () => {
+    const seven = ["a", "b", "c", "d", "e", "f", "g"].map((v) => ({
+      value: v,
+      label: v,
+    }));
+    expect(() =>
+      renderToStaticMarkup(
+        <Segmented label="x" options={seven} value="a" onChange={noop} />,
+      ),
+    ).toThrow("Segmented needs 2–6 options, got 7");
+  });
 });
