@@ -37,8 +37,8 @@ describe("web app manifest", () => {
       );
   });
 
-  it("uses the light background colour", () => {
-    expect(manifest.background_color).toBe("#FBF3F0");
-    expect(manifest.theme_color).toBe("#FBF3F0");
+  it("uses the Hồng dịu background colour", () => {
+    expect(manifest.background_color).toBe("#E9DBDB");
+    expect(manifest.theme_color).toBe("#E9DBDB");
   });
 });

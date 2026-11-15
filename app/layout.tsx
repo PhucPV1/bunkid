@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { Providers } from "@/components/Providers";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
+import { THEMES } from "@/lib/ui/tokens";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -19,7 +20,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#FBF3F0" },
+    { media: "(prefers-color-scheme: light)", color: THEMES.rose.bg },
     { media: "(prefers-color-scheme: dark)", color: "#0F0B12" },
   ],
 };

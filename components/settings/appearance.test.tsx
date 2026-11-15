@@ -2,12 +2,15 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { findElements } from "@/components/ui/testTree";
 import { DEFAULT_NIGHT_SCHEDULE } from "@/lib/rules/theme";
+import { lightSwatch } from "@/lib/theme";
 import { ICON_PATHS } from "@/lib/ui/icons";
 import { AppearanceGroupView, NightHoursSheet } from "./AppearanceGroup";
 
 const base = {
   pref: "system" as const,
   onPref: () => {},
+  lightStyle: "rose" as const,
+  onLightStyle: () => {},
   schedule: DEFAULT_NIGHT_SCHEDULE,
   onSchedule: () => {},
   onOpenHours: () => {},
@@ -62,6 +65,44 @@ describe("AppearanceGroupView", () => {
       (el) => el.props.label === "Giờ ban đêm",
     );
     expect(locked.props.onClick).toBeUndefined();
+  });
+
+  it("has a Nền sáng row of five swatches right under the theme control", () => {
+    const html = renderToStaticMarkup(<AppearanceGroupView {...base} />);
+    expect(html).toContain(">Nền sáng</p>");
+    expect(html).toContain('aria-label="Nền sáng"');
+    for (const label of ["Trắng", "Hồng dịu", "Đào mơ", "Oải hương", "Biển sương"])
+      expect(html).toContain(`>${label}</span>`);
+    // No hex here: lib/themeGuard.test.ts scans every .tsx under components/, tests included.
+    expect(html).toContain(lightSwatch("rose"));
+    expect(html.indexOf('aria-label="Giao diện"')).toBeLessThan(
+      html.indexOf('aria-label="Nền sáng"'),
+    );
+    expect(html.indexOf('aria-label="Nền sáng"')).toBeLessThan(
+      html.indexOf(">Giờ ban đêm</span>"),
+    );
+
+    const onLightStyle = vi.fn();
+    const swatches = findElements(
+      AppearanceGroupView({ ...base, onLightStyle }),
+      (el) => el.props.onSelect !== undefined,
+    );
+    expect(swatches.map((el) => el.props.label)).toEqual([
+      "Trắng",
+      "Hồng dịu",
+      "Đào mơ",
+      "Oải hương",
+      "Biển sương",
+    ]);
+    expect(swatches.map((el) => el.props.selected)).toEqual([
+      false,
+      true,
+      false,
+      false,
+      false,
+    ]);
+    (swatches[4].props.onSelect as () => void)();
+    expect(onLightStyle).toHaveBeenCalledWith("sea");
   });
 });
 

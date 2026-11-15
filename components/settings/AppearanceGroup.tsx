@@ -5,24 +5,38 @@ import { ListGroup, ListRow } from "@/components/ui/ListGroup";
 import { Segmented } from "@/components/ui/Segmented";
 import { Sheet } from "@/components/ui/Sheet";
 import { Switch } from "@/components/ui/Switch";
-import { useNightSchedule, useThemePref } from "@/lib/hooks/useTheme";
+import { Swatch } from "@/components/ui/Swatch";
+import {
+  useLightStyle,
+  useNightSchedule,
+  useThemePref,
+} from "@/lib/hooks/useTheme";
 import { nightHoursText } from "@/lib/rules/settingsText";
 import {
   HALF_HOURS,
   type NightSchedule,
   type ThemePref,
 } from "@/lib/rules/theme";
-import { THEME_OPTIONS } from "@/lib/theme";
+import {
+  LIGHT_STYLE_OPTIONS,
+  lightSwatch,
+  THEME_OPTIONS,
+  type LightStyle,
+} from "@/lib/theme";
 
 export function AppearanceGroupView({
   pref,
   onPref,
+  lightStyle,
+  onLightStyle,
   schedule,
   onSchedule,
   onOpenHours,
 }: {
   pref: ThemePref;
   onPref: (next: ThemePref) => void;
+  lightStyle: LightStyle;
+  onLightStyle: (next: LightStyle) => void;
   schedule: NightSchedule;
   onSchedule: (next: NightSchedule) => void;
   onOpenHours: () => void;
@@ -38,6 +52,24 @@ export function AppearanceGroupView({
         value={pref}
         onChange={onPref}
       />
+      <p className="mx-4 pt-1 text-[13px] leading-[18px] font-semibold text-muted">
+        Nền sáng
+      </p>
+      <div
+        role="group"
+        aria-label="Nền sáng"
+        className="glass flex justify-between rounded-[22px] px-3 py-3"
+      >
+        {LIGHT_STYLE_OPTIONS.map((option) => (
+          <Swatch
+            key={option.value}
+            color={lightSwatch(option.value)}
+            label={option.label}
+            selected={option.value === lightStyle}
+            onSelect={() => onLightStyle(option.value)}
+          />
+        ))}
+      </div>
       <ListGroup>
         <ListRow
           label="Ban đêm theo lịch"
@@ -116,6 +148,7 @@ export function NightHoursSheet({
 
 export function AppearanceGroup() {
   const [pref, setPref] = useThemePref();
+  const [lightStyle, setLightStyle] = useLightStyle();
   const [schedule, setSchedule] = useNightSchedule();
   const [open, setOpen] = useState(false);
   return (
@@ -123,6 +156,8 @@ export function AppearanceGroup() {
       <AppearanceGroupView
         pref={pref}
         onPref={setPref}
+        lightStyle={lightStyle}
+        onLightStyle={setLightStyle}
         schedule={schedule}
         onSchedule={setSchedule}
         onOpenHours={() => setOpen(true)}

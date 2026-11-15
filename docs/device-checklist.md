@@ -483,3 +483,18 @@ Kết quả: Chờ người dùng.
 | iPhone 11     |     |         |         |
 | iPhone 16     |     |         |         |
 | iPhone 17 Pro |     |         |         |
+
+## Bước 30 — Nền sáng dịu mắt, chip thuốc, popup giữa màn hình
+
+1. Cập nhật app (đóng hẳn rồi mở lại). Kỳ vọng: nền Hồng dịu `#E9DBDB`, không có khối trắng tinh, không chớp trắng lúc mở.
+2. Cài đặt › Giao diện › Nền sáng: bấm lần lượt Trắng, Đào mơ, Oải hương, Biển sương, rồi về lại Hồng dịu. Kỳ vọng: nền đổi ngay mỗi lần bấm, chữ đọc rõ; 21:00 Ban đêm vẫn tự bật.
+3. "+" → "Thuốc", bấm DHA. Kỳ vọng: tên điền "DHA". Nếu đã từng ghi DHA thì lượng và đơn vị đúng như lần trước. Các nút đơn vị ml · mg · giọt · viên · gói · ống nằm trên một dòng.
+4. Đang gõ tên thuốc (bàn phím đang mở) thì bấm X. Kỳ vọng: bàn phím tắt, hộp "Bỏ thay đổi?" hiện rõ giữa màn hình. Bấm "Tiếp tục nhập" thì chữ còn nguyên; bấm X lần nữa rồi "Bỏ thay đổi" thì sheet đóng.
+
+Kết quả: Chờ người dùng.
+
+| Máy           | iOS | Kết quả | Ghi chú |
+| ------------- | --- | ------- | ------- |
+| iPhone 11     |     |         |         |
+| iPhone 16     |     |         |         |
+| iPhone 17 Pro |     |         |         |
