@@ -713,7 +713,13 @@ Expected: build xong, không lỗi. Hiện tại lần chạy đầu có thể d
 
 Nếu Docker chạy được, chạy thêm `bun run db:test`. Expected: `001`…`012` `ok`, `All tests successful.` Nếu không, ghi "pgTAP chưa chạy lại ở M1b: Docker không chạy" vào báo cáo cuối. Plan này không đổi gì ở DB, nên đây chỉ là kiểm lại.
 
-- [ ] **Step 6: Kiểm trong Chrome (Claude in Chrome, mở tab mới)** (không bấm Lưu, không bắt đầu timer)
+- [x] **Step 6: Kiểm trong Chrome (Claude in Chrome, mở tab mới)** (không bấm Lưu, không bắt đầu timer)
+
+> **Kết quả 2026-11-17.** Kiểm bằng trình duyệt có sẵn trong app Claude ở 375×812 thay cho Claude in Chrome (lý do như ở plan M1a; người dùng đồng ý và tự đăng nhập). Không bấm Lưu hay Xóa, không bấm ô nào của bảng "+", không vào Cài đặt.
+>
+> - Mục 1, 2, 4, 5 ở theme Tối: đạt. Chip "Ăn dặm" (hiện "Không có bản ghi nào cho mục này.") và "Khác" (ra các bản ghi Nằm sấp và Hút sữa) nằm sau "Nhiệt độ". "Thêm bản ghi cũ" có đủ 4 loại mới; Ghi chú chỉ còn Nội dung và Thời điểm; Ăn dặm có Món, Lượng, Món mới, Phản ứng và ô Ghi chú; Tắm chỉ có Thời điểm và Ghi chú. Thống kê tab "Ăn dặm" hiện "Chưa có bữa ăn dặm nào trong 7 ngày" / "14 ngày" và bảng hai cột "Bữa ăn dặm", "Nước (ml)". Không tràn ngang.
+> - Mục 3: bỏ qua, vì Nhật ký chưa có bản ghi Ghi chú hay Ăn dặm nào.
+> - Mục 6 (hai theme nữa): chỉ xem tab "Ăn dặm" của Thống kê ở Hồng dịu và Ban đêm, chữ đọc rõ. Nhật ký và sheet "Thêm bản ghi cũ" **chưa** được xem ở hai theme đó.
 
 App dev nối vào Supabase thật của gia đình. Trong cả bước này:
 

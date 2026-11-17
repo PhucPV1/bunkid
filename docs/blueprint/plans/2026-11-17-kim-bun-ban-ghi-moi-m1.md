@@ -1696,7 +1696,12 @@ Expected: `Test Files  141 passed (141)`, `Tests  827 passed (827)`. `components
 Run: `bun run build`
 Expected: build xong, không lỗi. Hiện tại lần chạy đầu có thể dừng với một thông báo security advisory của Next.js 16.4.3; chạy lại lệnh lần thứ hai thì qua. Thông báo đó đã biết trước và không phải việc của plan này: không nâng Next, không sửa gì vì nó.
 
-- [ ] **Step 6: Kiểm trong Chrome (Claude in Chrome, mở tab mới)** (không bấm Lưu, không bắt đầu timer)
+- [x] **Step 6: Kiểm trong Chrome (Claude in Chrome, mở tab mới)** (không bấm Lưu, không bắt đầu timer)
+
+> **Kết quả 2026-11-17.** Kiểm bằng trình duyệt có sẵn trong app Claude ở 375×812 thay cho Claude in Chrome: Chrome chưa đăng nhập ở `localhost:3000` và không thu cửa sổ xuống dưới 455 px; người dùng đồng ý đổi trình duyệt và tự đăng nhập. Không bấm Lưu, không bấm ô bấm giờ, không vào Cài đặt.
+>
+> - Mục 1–7 ở theme Tối (theme máy đang dùng): đạt hết. Bảng "+" có 3 nhóm 5/4/4 ô, 4 cột, ô cao 84 px, không còn icon đồng hồ và dòng "= bấm giờ"; bốn icon mới nhìn ra đúng hình; "Uống nước" và "Dừng bú trái" xuống hai dòng, không bị cắt. Sheet Ăn dặm, Uống nước (+10 ra 10), Tắm, Ghi chú đúng các ô; hộp "Bỏ thay đổi?" hiện khi đã gõ. Trang chủ giữ thứ tự hàng Bấm giờ và 4 ô Ghi nhanh. Không tràn ngang ở trang và trong thân sheet.
+> - Mục 8 (hai theme nữa): chỉ lặp lại bảng "+" và sheet Ăn dặm ở Hồng dịu và Ban đêm, chữ và icon đọc rõ. Uống nước, Tắm, Ghi chú **chưa** được xem ở hai theme đó.
 
 App dev nối vào Supabase thật của gia đình. Trong cả bước này:
 
