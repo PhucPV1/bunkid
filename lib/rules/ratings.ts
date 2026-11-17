@@ -1,5 +1,6 @@
 import type { LogLike } from "./describeLog";
 import { detailsSchemas } from "./logDetails";
+import { TIMER_LIMIT_MIN } from "./timer";
 
 export type Rating = "green" | "yellow" | "red";
 export type MetricResult =
@@ -17,7 +18,7 @@ export const WINDOW_MS = 24 * HOUR_MS;
 const SAME_FEED_GAP_MS = 30 * 60_000;
 // A breast timer still running after this long is taken as forgotten: it no
 // longer merges later feeds into itself or holds back the feed reminder.
-export const FORGOTTEN_BREAST_MS = 60 * 60_000;
+export const FORGOTTEN_BREAST_MS = TIMER_LIMIT_MIN.breast * 60_000;
 
 const ms = (iso: string) => Date.parse(iso);
 const endMs = (log: LogLike, now: Date) =>
