@@ -371,7 +371,9 @@ git add supabase/tests/013_reminders.test.sql lib/supabase/types.ts supabase/mig
 git commit -m "feat(db): reminder prefs, medicine and timer kinds, medicine schedules" -m "Co-Authored-By: Claude Fable 5.2 <noreply@anthropic.com>"
 ```
 
-- [ ] **Step 6: Hỏi người dùng, rồi mới áp migration lên project thật**
+- [x] **Step 6: Hỏi người dùng, rồi mới áp migration lên project thật**
+
+> **Kết quả 2026-11-17.** Người dùng đồng ý trong phiên chính ("Áp migration"). `bunx supabase db push --dry-run` liệt kê đúng một migration `20261117000200_reminders.sql`; `bunx supabase db push --yes` báo `Applying migration 20261117000200_reminders.sql...` rồi `Finished supabase db push.`; chạy `--dry-run` lần nữa báo `Remote database is up to date.`
 
 Đây là bước duy nhất của plan chạm vào Supabase thật. Migration chỉ thêm cột có default, nới một check và tạo một bảng mới, nên bản web đang chạy không bị ảnh hưởng. Hỏi người dùng đúng câu sau và chờ trả lời trong phiên:
 
