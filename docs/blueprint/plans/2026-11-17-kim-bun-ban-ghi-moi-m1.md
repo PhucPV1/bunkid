@@ -236,7 +236,9 @@ git add supabase/migrations/20261117000100_log_types.sql supabase/tests/012_log_
 git commit -m "feat(db): logs accept solids, water, bath and note"
 ```
 
-- [ ] **Step 8: Hỏi người dùng, rồi mới áp migration lên project thật**
+- [x] **Step 8: Hỏi người dùng, rồi mới áp migration lên project thật**
+
+> **Kết quả 2026-11-17.** Người dùng đồng ý trong phiên chính ("Áp migration"). `bunx supabase db push --dry-run` liệt kê đúng một migration `20261117000100_log_types.sql`; `bunx supabase db push --yes` báo `Applying migration 20261117000100_log_types.sql...` rồi `Finished supabase db push.`; chạy `--dry-run` lần nữa báo `Remote database is up to date.`
 
 Đây là bước duy nhất của plan chạm vào Supabase thật. Migration chỉ nới check nên bản web cũ vẫn chạy bình thường sau khi áp; ngược lại, bản web mới mà thiếu migration thì bản ghi loại mới bị từ chối với mã `23514` và outbox bỏ nó. Hỏi người dùng đúng câu sau và chờ trả lời trong phiên:
 
@@ -1731,7 +1733,9 @@ git add lib/rules/quickActions.ts lib/rules/quickActions.test.ts components/acti
 git commit -m "feat(actions): + sheet in three groups with four new tiles"
 ```
 
-- [ ] **Step 8: Báo cáo, và cổng trước khi lên `main`**
+- [x] **Step 8: Báo cáo, và cổng trước khi lên `main`**
+
+> **Kết quả 2026-11-17.** Đã báo cáo cho người dùng trong phiên chính. Migration `log_types` đã áp lên project thật (M1a Task 1 Step 8), nên cổng đã mở; việc đưa lên `main` vẫn chờ người dùng đồng ý.
 
 Báo cáo cuối gồm: 5 commit của nhánh; số test (827); kết quả build; kết quả kiểm Chrome từng mục; và mọi ô còn chưa tick kèm lý do (pgTAP nếu thiếu Docker, `db push` nếu người dùng chưa đồng ý).
 

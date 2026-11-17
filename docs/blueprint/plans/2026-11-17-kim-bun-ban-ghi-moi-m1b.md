@@ -747,7 +747,9 @@ git add lib/rules/dailyStats.ts lib/rules/dailyStats.test.ts components/stats/St
 git commit -m "feat(stats): Ăn dặm tab with meals and water"
 ```
 
-- [ ] **Step 8: Báo cáo, và cổng trước khi lên `main`**
+- [x] **Step 8: Báo cáo, và cổng trước khi lên `main`**
+
+> **Kết quả 2026-11-17.** Đã báo cáo cho người dùng trong phiên chính. Migration `log_types` đã áp lên project thật (M1a Task 1 Step 8), nên cổng đã mở; việc đưa lên `main` vẫn chờ người dùng đồng ý.
 
 Báo cáo cuối gồm: 3 commit của nhánh; số test (840); kết quả build; kết quả kiểm Chrome từng mục; và mọi ô còn chưa tick kèm lý do.
 
