@@ -119,6 +119,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"medicine_schedules": {
+                  Row: {
+                    "baby_id": string,"created_at": string,"created_by": string,"enabled": boolean,"id": string,"name": string,"remind_at_min": number,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "baby_id": string,"created_at"?: string,"created_by"?: string,"enabled"?: boolean,"id"?: string,"name": string,"remind_at_min": number,"updated_at"?: string
+                  }
+                  Update: {
+                    "baby_id"?: string,"created_at"?: string,"created_by"?: string,"enabled"?: boolean,"id"?: string,"name"?: string,"remind_at_min"?: number,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "medicine_schedules_baby_id_fkey"
+      columns: ["baby_id"]
+isOneToOne: false
+      referencedRelation: "babies"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"milestones_achieved": {
                   Row: {
                     "achieved_on": string,"baby_id": string,"created_at": string,"created_by": string,"id": string,"milestone_code": string,"note": string | null,"photo_id": string | null
@@ -181,14 +201,14 @@ isOneToOne: false
                   ]
                 },"notification_prefs": {
                   Row: {
-                    "feed_reminder": boolean,"snooze_until": string | null,"updated_at": string,"user_id": string,"vaccine": boolean,"wake_window": boolean
+                    "feed_reminder": boolean,"hold_feed_while_asleep": boolean,"medicine": boolean,"quiet_enabled": boolean,"quiet_end_min": number,"quiet_start_min": number,"snooze_until": string | null,"timer_alert": boolean,"updated_at": string,"user_id": string,"vaccine": boolean,"wake_window": boolean
                   }
                   ComputedFields: never
                   Insert: {
-                    "feed_reminder"?: boolean,"snooze_until"?: string | null,"updated_at"?: string,"user_id": string,"vaccine"?: boolean,"wake_window"?: boolean
+                    "feed_reminder"?: boolean,"hold_feed_while_asleep"?: boolean,"medicine"?: boolean,"quiet_enabled"?: boolean,"quiet_end_min"?: number,"quiet_start_min"?: number,"snooze_until"?: string | null,"timer_alert"?: boolean,"updated_at"?: string,"user_id": string,"vaccine"?: boolean,"wake_window"?: boolean
                   }
                   Update: {
-                    "feed_reminder"?: boolean,"snooze_until"?: string | null,"updated_at"?: string,"user_id"?: string,"vaccine"?: boolean,"wake_window"?: boolean
+                    "feed_reminder"?: boolean,"hold_feed_while_asleep"?: boolean,"medicine"?: boolean,"quiet_enabled"?: boolean,"quiet_end_min"?: number,"quiet_start_min"?: number,"snooze_until"?: string | null,"timer_alert"?: boolean,"updated_at"?: string,"user_id"?: string,"vaccine"?: boolean,"wake_window"?: boolean
                   }
                   Relationships: [
                     
