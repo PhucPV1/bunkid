@@ -51,6 +51,14 @@ function temperatureAlert(
       level: "red",
       message: "Bé dưới 3 tháng sốt ≥ 38°C: cần đi khám ngay.",
     };
+  // Same threshold as temperatureFindings in ./triage, so the home banner never
+  // says less than the triage screen it links to.
+  if (c >= 39.0 && ageDays < 183)
+    return {
+      key: "fever-infant",
+      level: "red",
+      message: "Bé 3–6 tháng sốt ≥ 39°C: cần đi khám ngay.",
+    };
   if (c >= 38.0)
     return {
       key: "fever",

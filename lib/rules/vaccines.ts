@@ -1,5 +1,5 @@
 import type { VaccineDose } from "@/lib/content/vaccineSchema";
-import { addDays } from "./days";
+import { addDays, addMonths } from "./days";
 
 // vaccine_choices[group] = series code, or NOT_TAKING when the family skips that group.
 export const NOT_TAKING = "none";
@@ -56,6 +56,16 @@ export function visibleDoses(
 const key = (code: string, doseNo: number) => `${code}#${doseNo}`;
 const later = (a: string, b: string) => (a > b ? a : b);
 
+// Ages in vaccines.vi.json are written with 30-day months (60 = 2 months, 360 =
+// 12 months). Whole months are applied on the calendar, so a 12-month dose falls
+// on the first birthday rather than 5 days before it; any other value (weeks, or
+// a few days past a birthday) stays a day count.
+export function ageDate(dob: string, days: number): string {
+  return days > 0 && days % 30 === 0
+    ? addMonths(dob, days / 30)
+    : addDays(dob, days);
+}
+
 // Spec §6.8: due = override, else max(dob + recommended age, P + min interval),
 // where P is the previous dose's given_on when it was given on a known day,
 // otherwise the previous dose's own due date.
@@ -77,7 +87,7 @@ export function dueDates(
       due.set(key(dose.code, dose.doseNo), record.due_on_override);
       continue;
     }
-    let date = addDays(dob, dose.recommendedAgeDays);
+    let date = ageDate(dob, dose.recommendedAgeDays);
     const prevKey = key(dose.code, dose.doseNo - 1);
     const prevDue = due.get(prevKey);
     if (dose.minIntervalDaysFromPrev !== undefined && prevDue !== undefined) {
@@ -124,10 +134,12 @@ export function buildSchedule(input: {
                 ? "upcoming"
                 : "later";
       const open = state !== "done" && state !== "skipped";
+      // An overdue dose is given today at the earliest, so today counts too: a dose
+      // that was due inside the limit but is still open after it is flagged as well.
       const pastMaxAge =
         open &&
         dose.maxAgeDays !== undefined &&
-        date > addDays(dob, dose.maxAgeDays);
+        later(date, today) > ageDate(dob, dose.maxAgeDays);
       return { dose, due: date, state, record, unchosen, pastMaxAge };
     })
     .sort(

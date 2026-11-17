@@ -41,6 +41,17 @@ describe("homeAlerts — temperature", () => {
       },
     ]);
   });
+  it("flags 39°C between 3 and 6 months as red, like the triage screen", () => {
+    expect(alerts([temp(2, 39.5)], 120)).toEqual([
+      {
+        key: "fever-infant",
+        level: "red",
+        message: "Bé 3–6 tháng sốt ≥ 39°C: cần đi khám ngay.",
+      },
+    ]);
+    expect(alerts([temp(2, 38.9)], 120)[0].level).toBe("yellow");
+    expect(alerts([temp(2, 39.5)], 183)[0].level).toBe("yellow");
+  });
   it("flags fever from 3 months as yellow, with the release-1 wording until triage exists", () => {
     expect(alerts([temp(2, 38.5)], 100)).toEqual([
       {

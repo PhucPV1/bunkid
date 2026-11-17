@@ -15,6 +15,9 @@ export type DayRatings = {
 const HOUR_MS = 3_600_000;
 export const WINDOW_MS = 24 * HOUR_MS;
 const SAME_FEED_GAP_MS = 30 * 60_000;
+// A breast timer still running after this long is taken as forgotten: it no
+// longer merges later feeds into itself or holds back the feed reminder.
+export const FORGOTTEN_BREAST_MS = 60 * 60_000;
 
 const ms = (iso: string) => Date.parse(iso);
 const endMs = (log: LogLike, now: Date) =>
@@ -43,7 +46,10 @@ export function groupFeedSessions(
   const sessions: { start: number; end: number }[] = [];
   for (const log of feeds) {
     const start = ms(log.started_at);
-    const end = endMs(log, now);
+    // A timer nobody stopped must not stretch to "now" and absorb every later feed.
+    const end = log.ended_at
+      ? ms(log.ended_at)
+      : Math.min(now.getTime(), start + FORGOTTEN_BREAST_MS);
     const last = sessions.at(-1);
     if (last && start <= last.end + SAME_FEED_GAP_MS)
       last.end = Math.max(last.end, end);

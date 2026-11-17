@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TIME_CHIPS, timeChipToDate } from "./timeChips";
+import { TIME_CHIPS, timeChipError, timeChipToDate } from "./timeChips";
 
 const NOW = new Date("2026-11-14T05:00:00.000Z"); // 12:00 giờ VN
 
@@ -24,6 +24,21 @@ describe("timeChipToDate", () => {
       true,
     );
     expect(Number.isNaN(timeChipToDate("custom", NOW).getTime())).toBe(true);
+  });
+
+  it("rejects a missing time and a time in the future", () => {
+    expect(timeChipError(timeChipToDate("custom", NOW, ""), NOW)).toBe(
+      "Chọn giờ hợp lệ",
+    );
+    expect(
+      timeChipError(timeChipToDate("custom", NOW, "2026-11-24T12:00"), NOW),
+    ).toBe("Giờ ghi không được ở tương lai");
+    // One minute of slack for a clock that runs slightly ahead.
+    expect(timeChipError(new Date(NOW.getTime() + 60_000), NOW)).toBeNull();
+    expect(timeChipError(new Date(NOW.getTime() + 61_000), NOW)).toBe(
+      "Giờ ghi không được ở tương lai",
+    );
+    expect(timeChipError(timeChipToDate("15m", NOW), NOW)).toBeNull();
   });
 
   it("lists the four chips in spec order", () => {

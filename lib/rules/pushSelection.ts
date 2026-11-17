@@ -1,6 +1,7 @@
 import { VACCINES } from "@/lib/content/vaccines";
 import type { VaccineDose } from "@/lib/content/vaccineSchema";
 import { addDays, formatDayShort, WEEKDAYS } from "./days";
+import { FORGOTTEN_BREAST_MS } from "./ratings";
 import { ageDays, formatVnTime, vnDateString } from "./time";
 import { buildSchedule, type DoseRecord } from "./vaccines";
 
@@ -22,7 +23,8 @@ export type BabyDispatchState = {
   feedIntervalMin: number;
   // Latest breast/bottle log by started_at, or null when there is none.
   lastFeed: { id: string; startedAt: string } | null;
-  breastRunning: boolean;
+  // started_at of the running breast timer, or null when none is running.
+  breastRunningSince: string | null;
   // null: wake reminders are not evaluated for this baby.
   wake: {
     dob: string;
@@ -119,7 +121,14 @@ function wakeReminders(baby: BabyDispatchState, now: Date): DueNotification[] {
 
 function feedReminders(baby: BabyDispatchState, now: Date): DueNotification[] {
   const last = baby.lastFeed;
-  if (!last || baby.breastRunning) return [];
+  if (!last) return [];
+  // Quiet while the baby is feeding; a timer left running counts as forgotten,
+  // so it cannot silence the reminders for the rest of the day.
+  if (
+    baby.breastRunningSince !== null &&
+    now.getTime() - Date.parse(baby.breastRunningSince) < FORGOTTEN_BREAST_MS
+  )
+    return [];
   const since = now.getTime() - Date.parse(last.startedAt);
   if (since > RECENT_MS) return [];
   if (since < baby.feedIntervalMin * 60_000) return [];
@@ -147,7 +156,8 @@ function weekdayDate(day: string): string {
 }
 
 // Spec §8.3 row "vaccine": 08:00–08:59 VN time, open doses of a chosen series
-// due in 3 days (D3) or tomorrow (D1).
+// due in 3 days (D3) or tomorrow (D1). Doses past the product's age limit are left
+// out: the app tells the family to ask a doctor instead of booking them.
 function vaccineReminders(
   baby: BabyDispatchState,
   now: Date,
@@ -170,13 +180,16 @@ function vaccineReminders(
       !item.unchosen &&
       item.state !== "done" &&
       item.state !== "skipped" &&
+      !item.pastMaxAge &&
       marks[item.due] !== undefined,
   );
   return items.flatMap((item) =>
     baby.recipients.filter(wantsVaccine).map((recipient): DueNotification => ({
       userId: recipient.userId,
       kind: "vaccine",
-      refKey: `vax:${baby.babyId}:${item.dose.code}:${item.dose.doseNo}:${marks[item.due]}`,
+      // The due date is part of the key: a dose moved to another day (rescheduled,
+      // or pushed back by a late previous dose) is reminded again for the new day.
+      refKey: `vax:${baby.babyId}:${item.dose.code}:${item.dose.doseNo}:${marks[item.due]}:${item.due}`,
       title: "Sắp tới lịch tiêm",
       body: `${item.dose.name} vào ${weekdayDate(item.due)}.`,
       url: "/tiem-chung",

@@ -43,6 +43,14 @@ describe("feed sessions", () => {
     expect(groupFeedSessions(logs, NOW)).toHaveLength(3);
     expect(countFeedsInWindow(logs, NOW)).toBe(2);
   });
+  it("does not let a forgotten breast timer absorb the feeds after it", () => {
+    const logs = [log("breast", 10, null), bottle(7), bottle(4), bottle(1)];
+    expect(countFeedsInWindow(logs, NOW)).toBe(4);
+    // A timer started 20 minutes ago is one feed with the top-up right after it.
+    expect(
+      countFeedsInWindow([log("breast", 20 / 60, null), bottle(0.1)], NOW),
+    ).toBe(1);
+  });
 });
 
 describe("window totals", () => {

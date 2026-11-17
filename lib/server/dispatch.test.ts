@@ -14,7 +14,7 @@ const dueBaby: BabyDispatchState = {
   babyId: "b1",
   feedIntervalMin: 180,
   lastFeed: { id: "L1", startedAt: "2026-11-14T23:00:00Z" }, // 4 hours ago
-  breastRunning: false,
+  breastRunningSince: null,
   wake: null,
   vaccine: null,
   recipients: [{ userId: "u1", prefs: null }],
@@ -34,6 +34,11 @@ function fakeDeps(
         if (log.has(key)) return false;
         log.add(key);
         return true;
+      },
+    ),
+    release: vi.fn(
+      async (item: { userId: string; kind: string; refKey: string }) => {
+        log.delete(`${item.userId}|${item.kind}|${item.refKey}`);
       },
     ),
     subscriptionsFor: async () => subscriptions,
@@ -99,6 +104,43 @@ describe("POST /api/push/dispatch", () => {
     });
     expect(deps.deleteSubscription.mock.calls).toEqual([["gone"], ["expired"]]);
     expect(error).toHaveBeenCalledWith("push send failed", "flaky", 500);
+    error.mockRestore();
+  });
+
+  it("gives the claim back when no device got it and the failure is temporary", async () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    let down = true;
+    const deps = fakeDeps([sub("s1")], () =>
+      down ? { ok: false, statusCode: 503 } : { ok: true },
+    );
+    expect(await (await call(deps, SECRET)).json()).toEqual({
+      selected: 1,
+      sent: 0,
+      failed: 1,
+    });
+    expect(deps.release).toHaveBeenCalledTimes(1);
+    down = false;
+    expect(await (await call(deps, SECRET)).json()).toEqual({
+      selected: 1,
+      sent: 1,
+      failed: 0,
+    });
+    error.mockRestore();
+  });
+
+  it("keeps the claim when one device got it or the failure is final", async () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    const partly = fakeDeps([sub("ok"), sub("flaky")], (s) =>
+      s.id === "ok" ? { ok: true } : { ok: false, statusCode: null },
+    );
+    await call(partly, SECRET);
+    expect(partly.release).not.toHaveBeenCalled();
+    const refused = fakeDeps([sub("s1")], () => ({
+      ok: false,
+      statusCode: 403,
+    }));
+    await call(refused, SECRET);
+    expect(refused.release).not.toHaveBeenCalled();
     error.mockRestore();
   });
 

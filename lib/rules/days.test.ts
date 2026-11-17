@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   addDays,
+  addMonths,
   formatDayShort,
   vnDayLabel,
   vnDayRange,
@@ -14,6 +15,12 @@ describe("days", () => {
     );
   });
 
+  it("addMonths keeps the day of month and clamps to the month's last day", () => {
+    expect(addMonths("2026-01-15", 12)).toBe("2027-01-15");
+    expect(addMonths("2026-11-30", 3)).toBe("2027-02-28");
+    expect(addMonths("2027-12-31", 2)).toBe("2028-02-29");
+    expect(addMonths("2026-05-01", 0)).toBe("2026-05-01");
+  });
   it("addDays crosses month and year boundaries", () => {
     expect(addDays("2026-11-30", 1)).toBe("2026-12-01");
     expect(addDays("2026-03-01", -1)).toBe("2026-02-28");

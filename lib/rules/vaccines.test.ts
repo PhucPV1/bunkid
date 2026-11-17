@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { VaccineDose } from "@/lib/content/vaccineSchema";
 import {
+  ageDate,
   buildSchedule,
   dueDates,
   NOT_TAKING,
@@ -75,8 +76,19 @@ describe("dueDates (spec §6.8)", () => {
 
   it("uses dob + recommended age when nothing is recorded", () => {
     const due = dueDates(hexa, dob, []);
-    expect(due.get("hexa#1")).toBe("2026-11-13");
-    expect(due.get("hexa#2")).toBe("2026-12-13");
+    expect(due.get("hexa#1")).toBe("2026-11-14");
+    expect(due.get("hexa#2")).toBe("2026-12-14");
+  });
+
+  it("counts whole months on the calendar and other ages in days", () => {
+    // 360 = 12 months: the first birthday, not 5 days before it.
+    expect(ageDate("2026-01-15", 360)).toBe("2027-01-15");
+    expect(ageDate("2026-01-15", 540)).toBe("2027-07-15");
+    expect(ageDate("2026-01-31", 30)).toBe("2026-02-28");
+    // Weeks and day offsets stay day counts.
+    expect(ageDate("2026-01-15", 42)).toBe("2026-02-26");
+    expect(ageDate("2026-01-15", 367)).toBe("2027-01-17");
+    expect(ageDate("2026-01-15", 0)).toBe("2026-01-15");
   });
 
   it("pushes a dose back to keep the minimum interval after a late previous dose", () => {
@@ -88,7 +100,7 @@ describe("dueDates (spec §6.8)", () => {
 
   it("anchors on the previous due date when it was ticked done without a date", () => {
     const due = dueDates(hexa, dob, [record("hexa", 1, { given_on: null })]);
-    expect(due.get("hexa#2")).toBe("2026-12-13");
+    expect(due.get("hexa#2")).toBe("2026-12-14");
   });
 
   it("anchors on the previous due date when the previous dose is still open", () => {
@@ -152,5 +164,19 @@ describe("buildSchedule", () => {
       ["done", false],
       ["overdue", true],
     ]);
+  });
+
+  it("flags a dose that was due inside the age limit but is still open after it", () => {
+    const schedule = (today: string) =>
+      buildSchedule({
+        doses: [dose("rotateq", 1, 60, { maxAgeDays: 84 })],
+        choices: {},
+        dob: "2026-05-01",
+        records: [],
+        today,
+      }).map((i) => [i.due, i.state, i.pastMaxAge]);
+    // Day 84 is 24/07: still inside the limit that day, past it the day after.
+    expect(schedule("2026-07-24")).toEqual([["2026-07-01", "overdue", false]]);
+    expect(schedule("2026-07-25")).toEqual([["2026-07-01", "overdue", true]]);
   });
 });

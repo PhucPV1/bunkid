@@ -21,6 +21,8 @@ export type DispatchDeps = {
   loadState(now: Date): Promise<BabyDispatchState[]>;
   // Inserts into notification_log; false when (user, kind, ref_key) was already sent.
   claim(item: DueNotification): Promise<boolean>;
+  // Deletes the notification_log row again, so a later cron run retries the item.
+  release(item: DueNotification): Promise<void>;
   subscriptionsFor(userId: string): Promise<StoredSubscription[]>;
   send(
     subscription: StoredSubscription,
@@ -32,6 +34,11 @@ export type DispatchDeps = {
 
 export type DispatchResult = { selected: number; sent: number; failed: number };
 
+// The push service was unreachable or overloaded (or never answered): the same
+// send can succeed a minute later. Any other status is final for this message.
+const isTemporary = (statusCode: number | null) =>
+  statusCode === null || statusCode === 429 || statusCode >= 500;
+
 export async function runDispatch(
   deps: DispatchDeps,
   now: Date,
@@ -41,23 +48,36 @@ export async function runDispatch(
   for (const item of items) {
     // Claim first: a second cron run in the same minute finds the log row and stops.
     if (!(await deps.claim(item))) continue;
-    for (const subscription of await deps.subscriptionsFor(item.userId)) {
-      const outcome = await deps.send(subscription, item);
-      if (outcome.ok) {
-        result.sent += 1;
-        await deps.markSuccess(subscription.id, now);
-      } else {
-        result.failed += 1;
-        if (outcome.statusCode === 404 || outcome.statusCode === 410)
-          await deps.deleteSubscription(subscription.id);
-        else
-          console.error(
-            "push send failed",
-            subscription.id,
-            outcome.statusCode,
-          );
+    let delivered = false;
+    let temporary = false;
+    try {
+      for (const subscription of await deps.subscriptionsFor(item.userId)) {
+        const outcome = await deps.send(subscription, item);
+        if (outcome.ok) {
+          delivered = true;
+          result.sent += 1;
+          await deps.markSuccess(subscription.id, now);
+        } else {
+          result.failed += 1;
+          if (isTemporary(outcome.statusCode)) temporary = true;
+          if (outcome.statusCode === 404 || outcome.statusCode === 410)
+            await deps.deleteSubscription(subscription.id);
+          else
+            console.error(
+              "push send failed",
+              subscription.id,
+              outcome.statusCode,
+            );
+        }
       }
+    } catch (error) {
+      // A database hiccup on one item must not stop the reminders after it.
+      console.error("push dispatch item failed", item.refKey, error);
+      temporary = true;
     }
+    // Nobody got it and the failure may pass: give the claim back so the next
+    // run tries again, instead of losing the reminder for good.
+    if (!delivered && temporary) await deps.release(item);
   }
   return result;
 }

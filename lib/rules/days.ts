@@ -21,6 +21,17 @@ export function addDays(day: string, n: number): string {
     .slice(0, 10);
 }
 
+// Calendar months; a day the target month lacks becomes its last day (31/01 + 1 → 28/02).
+export function addMonths(day: string, n: number): string {
+  const [year, month, date] = day.split("-").map(Number);
+  const first = new Date(Date.UTC(year, month - 1 + n, 1));
+  const lastDate = new Date(
+    Date.UTC(first.getUTCFullYear(), first.getUTCMonth() + 1, 0),
+  ).getUTCDate();
+  first.setUTCDate(Math.min(date, lastDate));
+  return first.toISOString().slice(0, 10);
+}
+
 export function vnDayRange(now: Date, count: number): string[] {
   const today = vnDateString(now);
   return Array.from({ length: count }, (_, i) => addDays(today, i - count + 1));

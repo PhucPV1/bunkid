@@ -16,7 +16,7 @@ function baby(over: Partial<BabyDispatchState> = {}): BabyDispatchState {
     babyId: "b1",
     feedIntervalMin: 180,
     lastFeed: { id: "L1", startedAt: minutesAgo(190) },
-    breastRunning: false,
+    breastRunningSince: null,
     wake: null,
     vaccine: null,
     recipients: [{ userId: "u1", prefs: null }],
@@ -84,8 +84,19 @@ describe("selectDueNotifications — feed (spec §8.3)", () => {
 
   it("stays quiet while a breast timer is running", () => {
     expect(
-      selectDueNotifications([baby({ breastRunning: true })], now),
+      selectDueNotifications(
+        [baby({ feedIntervalMin: 60, breastRunningSince: minutesAgo(59) })],
+        now,
+      ),
     ).toEqual([]);
+  });
+
+  it("reminds again once a breast timer has been left running for an hour", () => {
+    const due = selectDueNotifications(
+      [baby({ breastRunningSince: minutesAgo(190) })],
+      now,
+    );
+    expect(due.map((d) => d.refKey)).toEqual(["feed:L1"]);
   });
 
   it("respects the feed switch and snooze; an expired snooze no longer blocks", () => {
@@ -210,7 +221,7 @@ describe("selectDueNotifications — vaccine (spec §8.3)", () => {
       {
         userId: "u1",
         kind: "vaccine",
-        refKey: "vax:b1:opv:1:D1",
+        refKey: "vax:b1:opv:1:D1:2026-11-17",
         title: "Sắp tới lịch tiêm",
         body: "opv mũi 1 vào Thứ Ba, 17/11.",
         url: "/tiem-chung",
@@ -219,7 +230,7 @@ describe("selectDueNotifications — vaccine (spec §8.3)", () => {
       {
         userId: "u1",
         kind: "vaccine",
-        refKey: "vax:b1:hexa:1:D3",
+        refKey: "vax:b1:hexa:1:D3:2026-11-19",
         title: "Sắp tới lịch tiêm",
         body: "hexa mũi 1 vào Thứ Năm, 19/11.",
         url: "/tiem-chung",
@@ -266,9 +277,90 @@ describe("selectDueNotifications — vaccine (spec §8.3)", () => {
       doses,
     );
     expect(due.map((d) => d.refKey)).toEqual([
-      "vax:b1:bcg:1:D1",
-      "vax:b1:hexa:1:D1",
+      "vax:b1:bcg:1:D1:2026-11-17",
+      "vax:b1:hexa:1:D1:2026-11-17",
     ]);
+  });
+
+  it("reminds again when a dose is moved to another day", () => {
+    const keyFor = (dueOn: string) =>
+      selectDueNotifications(
+        [
+          vaxBaby({
+            vaccine: {
+              dob,
+              choices: { dtp_combo: "6in1" },
+              records: [
+                {
+                  vaccine_code: "hexa",
+                  dose_no: 1,
+                  status: "rescheduled",
+                  given_on: null,
+                  due_on_override: dueOn,
+                },
+              ],
+            },
+          }),
+        ],
+        morning,
+        doses.filter((d) => d.code === "hexa"),
+      ).map((d) => d.refKey);
+    // Same dose, same D3 mark on two different mornings would otherwise share a key.
+    expect(keyFor("2026-11-19")).toEqual(["vax:b1:hexa:1:D3:2026-11-19"]);
+    expect(
+      selectDueNotifications(
+        [
+          vaxBaby({
+            vaccine: {
+              dob,
+              choices: { dtp_combo: "6in1" },
+              records: [
+                {
+                  vaccine_code: "hexa",
+                  dose_no: 1,
+                  status: "rescheduled",
+                  given_on: null,
+                  due_on_override: "2026-12-03",
+                },
+              ],
+            },
+          }),
+        ],
+        at("2026-11-30T01:30:00Z"),
+        doses.filter((d) => d.code === "hexa"),
+      ).map((d) => d.refKey),
+    ).toEqual(["vax:b1:hexa:1:D3:2026-12-03"]);
+  });
+
+  it("does not remind for a dose past the product's age limit", () => {
+    const due = selectDueNotifications(
+      [
+        vaxBaby({
+          vaccine: {
+            dob,
+            choices: { rota: "rotarix" },
+            records: [
+              {
+                vaccine_code: "rotarix",
+                dose_no: 1,
+                status: "rescheduled",
+                given_on: null,
+                due_on_override: "2026-11-17",
+              },
+            ],
+          },
+        }),
+      ],
+      morning,
+      [
+        vaxDose("rotarix", 30, {
+          group: "rota",
+          series: "rotarix",
+          maxAgeDays: 40,
+        }),
+      ],
+    );
+    expect(due).toEqual([]);
   });
 
   it("follows the vaccine switch and ignores snooze", () => {

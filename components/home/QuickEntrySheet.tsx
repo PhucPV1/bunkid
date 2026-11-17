@@ -21,7 +21,11 @@ import {
   type InstantType,
   type QuickValues,
 } from "@/lib/rules/quickEntry";
-import { timeChipToDate, type TimeChip } from "@/lib/rules/timeChips";
+import {
+  timeChipError,
+  timeChipToDate,
+  type TimeChip,
+} from "@/lib/rules/timeChips";
 import { toVnLocalInput } from "@/lib/rules/time";
 import type { LogRow } from "@/lib/supabase/rows";
 import { CATEGORIES } from "@/lib/ui/categories";
@@ -83,9 +87,11 @@ export function QuickEntrySheet({
       setMessage(built.message);
       return;
     }
-    const when = timeChipToDate(chip, new Date(), custom);
-    if (Number.isNaN(when.getTime())) {
-      setMessage("Chọn giờ hợp lệ");
+    const now = new Date();
+    const when = timeChipToDate(chip, now, custom);
+    const timeError = timeChipError(when, now);
+    if (timeError) {
+      setMessage(timeError);
       return;
     }
     setMessage(null);

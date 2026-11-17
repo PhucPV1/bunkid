@@ -25,3 +25,14 @@ export function timeChipToDate(
     return custom ? fromVnLocalInput(custom) : new Date(Number.NaN);
   return new Date(now.getTime() - MINUTES_AGO[chip] * 60_000);
 }
+
+const FUTURE_SLACK_MS = 60_000;
+
+// A quick entry is something that already happened. A future time would also
+// push the next-feed reminder out to that time and hide the row from Nhật ký.
+export function timeChipError(when: Date, now: Date): string | null {
+  if (Number.isNaN(when.getTime())) return "Chọn giờ hợp lệ";
+  if (when.getTime() > now.getTime() + FUTURE_SLACK_MS)
+    return "Giờ ghi không được ở tương lai";
+  return null;
+}

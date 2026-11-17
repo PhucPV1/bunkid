@@ -6,6 +6,7 @@ import { pushEnv } from "./pushEnv";
 import { supabaseServiceRole } from "./supabaseServer";
 
 const TWELVE_HOURS_MS = 12 * 3_600_000;
+const VACCINE_TTL_S = 12 * 3600;
 
 async function loadState(now: Date): Promise<BabyDispatchState[]> {
   const db = supabaseServiceRole();
@@ -37,7 +38,7 @@ async function loadState(now: Date): Promise<BabyDispatchState[]> {
       // Running timers: at most one per type (unique index), so two rows at most.
       db
         .from("logs")
-        .select("type")
+        .select("type, started_at")
         .eq("baby_id", baby.id)
         .in("type", ["breast", "sleep"])
         .is("ended_at", null),
@@ -69,13 +70,15 @@ async function loadState(now: Date): Promise<BabyDispatchState[]> {
     const withSubscription = new Set(subscribed.data.map((s) => s.user_id));
     const last = feeds.data?.[0];
     const lastSleep = sleeps.data?.[0];
-    const runningTypes = new Set((running.data ?? []).map((r) => r.type));
+    const runningRows = running.data ?? [];
+    const runningTypes = new Set(runningRows.map((r) => r.type));
 
     states.push({
       babyId: baby.id,
       feedIntervalMin: baby.feed_interval_min,
       lastFeed: last ? { id: last.id, startedAt: last.started_at } : null,
-      breastRunning: runningTypes.has("breast"),
+      breastRunningSince:
+        runningRows.find((r) => r.type === "breast")?.started_at ?? null,
       wake: {
         dob: baby.dob,
         lastSleep: lastSleep?.ended_at
@@ -127,6 +130,15 @@ export function supabaseDispatchDeps(): DispatchDeps {
       if (error) throw error;
       return data.length > 0;
     },
+    async release(item) {
+      const { error } = await db()
+        .from("notification_log")
+        .delete()
+        .eq("user_id", item.userId)
+        .eq("kind", item.kind)
+        .eq("ref_key", item.refKey);
+      if (error) throw error;
+    },
     async subscriptionsFor(userId) {
       const { data, error } = await db()
         .from("push_subscriptions")
@@ -150,7 +162,9 @@ export function supabaseDispatchDeps(): DispatchDeps {
             url: item.url,
           }),
           {
-            TTL: 3600,
+            // Vaccine reminders are only selected 08:00–08:59, so the push
+            // service keeps them until the evening for a phone that is offline.
+            TTL: item.kind === "vaccine" ? VACCINE_TTL_S : 3600,
             urgency: item.kind === "vaccine" ? "normal" : "high",
             vapidDetails: {
               subject: env.VAPID_SUBJECT,
