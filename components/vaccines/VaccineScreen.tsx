@@ -5,6 +5,7 @@ import { OnlineOnly } from "@/components/OnlineOnly";
 import { Button } from "@/components/ui/Button";
 import { ErrorCard } from "@/components/ui/ErrorCard";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { NeedsNetwork, waitingForNetwork } from "@/components/ui/NeedsNetwork";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { VACCINES } from "@/lib/content/vaccines";
 import { toVietnameseError } from "@/lib/data/errors";
@@ -61,6 +62,8 @@ export function VaccineScreen({
             message={toVietnameseError(doses.error)}
             onRetry={() => void doses.refetch()}
           />
+        ) : waitingForNetwork(doses) ? (
+          <NeedsNetwork what="lịch tiêm" />
         ) : (
           <div className="flex flex-col gap-2.5">
             {[0, 1, 2, 3].map((i) => (

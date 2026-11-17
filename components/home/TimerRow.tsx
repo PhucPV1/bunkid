@@ -3,10 +3,9 @@ import { Button } from "@/components/ui/Button";
 import { Glass } from "@/components/ui/Glass";
 import { Icon } from "@/components/ui/Icon";
 import { timerLabel } from "@/lib/rules/hero";
-import type { LogType } from "@/lib/rules/logDetails";
 import { formatDuration } from "@/lib/rules/time";
 import type { LogRow } from "@/lib/supabase/rows";
-import { CATEGORIES, CATEGORY_CHIP } from "@/lib/ui/categories";
+import { CATEGORY_CHIP, categoryOf } from "@/lib/ui/categories";
 import { cx } from "@/lib/ui/cx";
 
 // Spec §7.1 step 5: a running timer that is not on the hero card.
@@ -25,7 +24,7 @@ export function TimerRow({
   pending: boolean;
   onStop: () => void;
 }) {
-  const category = CATEGORIES[log.type as LogType];
+  const category = categoryOf(log.type);
   return (
     <Glass radius="tile" className="flex items-center gap-3 py-2 pr-2 pl-3">
       <span

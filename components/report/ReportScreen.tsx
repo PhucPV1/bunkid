@@ -6,6 +6,7 @@ import { ErrorCard } from "@/components/ui/ErrorCard";
 import { Icon } from "@/components/ui/Icon";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Segmented } from "@/components/ui/Segmented";
+import { NeedsNetwork, waitingForNetwork } from "@/components/ui/NeedsNetwork";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { VACCINES } from "@/lib/content/vaccines";
 import { whoSex, type LmsRow } from "@/lib/content/who";
@@ -110,13 +111,17 @@ export function ReportScreen({ baby }: { baby: Baby }) {
             onRetry={() => void query.refetch()}
           />
         ))}
-        {!ready && failures.length === 0 && (
-          <div className="flex flex-col gap-2.5">
-            {[0, 1, 2].map((i) => (
-              <Skeleton key={i} className="h-[60px]" />
-            ))}
-          </div>
-        )}
+        {!ready &&
+          failures.length === 0 &&
+          ([logs, growth, doses].some(waitingForNetwork) ? (
+            <NeedsNetwork what="báo cáo" />
+          ) : (
+            <div className="flex flex-col gap-2.5">
+              {[0, 1, 2].map((i) => (
+                <Skeleton key={i} className="h-[60px]" />
+              ))}
+            </div>
+          ))}
       </div>
 
       {ready && (

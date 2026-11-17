@@ -24,7 +24,7 @@ import {
   toVnLocalInput,
 } from "@/lib/rules/time";
 import type { LogRow } from "@/lib/supabase/rows";
-import { CATEGORIES } from "@/lib/ui/categories";
+import { categoryOf } from "@/lib/ui/categories";
 
 export function LogEditSheet({
   babyId,
@@ -80,7 +80,7 @@ export function LogEditSheet({
   const busy = save.isPending || remove.isPending;
   const dirty =
     !readOnly && JSON.stringify({ type, values, start, end, note }) !== opened;
-  const category = CATEGORIES[type];
+  const category = categoryOf(type);
 
   function submit(event: FormEvent) {
     event.preventDefault();

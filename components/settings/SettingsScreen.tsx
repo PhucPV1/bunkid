@@ -9,6 +9,7 @@ import { ListGroup, ListRow } from "@/components/ui/ListGroup";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { LOGO_GRADIENT, LOGO_INK } from "@/lib/brand/logo";
 import { useMembers } from "@/lib/data/family";
+import { forgetPushOnThisDevice } from "@/lib/push/browser";
 import { formatInterval, roleLabel } from "@/lib/rules/familySettings";
 import { babySubtitle, memberCountText } from "@/lib/rules/settingsText";
 import { supabase } from "@/lib/supabase/client";
@@ -36,6 +37,10 @@ export function SettingsScreen({
   async function signOut() {
     setSigningOut(true);
     try {
+      // Before signOut(): removing the server row needs the access token.
+      await forgetPushOnThisDevice().catch((error: unknown) => {
+        console.warn("Không hủy được thông báo trên máy này", error);
+      });
       await supabase().auth.signOut();
       queryClient.clear();
     } finally {

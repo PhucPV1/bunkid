@@ -118,33 +118,49 @@ export function homeAlerts(input: {
   ];
 }
 
-function antipyreticTimes(logs: LogLike[], at: Date): number[] {
+const DAY_MS = 24 * HOUR_MS;
+
+function antipyreticTimes(logs: LogLike[]): number[] {
   return logs
     .filter((log) => log.type === "medicine")
     .filter((log) => {
       const parsed = detailsSchemas.medicine.safeParse(log.details);
       return parsed.success && parsed.data.antipyretic;
     })
-    .map((log) => ms(log.started_at))
-    .filter((t) => t <= at.getTime());
+    .map((log) => ms(log.started_at));
 }
 
+// Doses on both sides of `at` count: a forgotten dose entered afterwards sits
+// before a dose that is already in the log.
 export function medicineWarnings(input: {
   logs: LogLike[];
   at: Date;
 }): string[] {
-  const { logs, at } = input;
-  const times = antipyreticTimes(logs, at);
+  const at = input.at.getTime();
+  const times = antipyreticTimes(input.logs);
   const warnings: string[] = [];
-  const latest = times.length > 0 ? Math.max(...times) : null;
-  if (latest !== null && at.getTime() - latest < 4 * HOUR_MS)
+  const before = times.filter((t) => t <= at && at - t < 4 * HOUR_MS);
+  const after = times.filter((t) => t > at && t - at < 4 * HOUR_MS);
+  if (before.length > 0)
     warnings.push(
-      `Chưa đủ 4 giờ từ liều hạ sốt trước (${formatVnTime(new Date(latest))}).`,
+      `Chưa đủ 4 giờ từ liều hạ sốt trước (${formatVnTime(new Date(Math.max(...before)))}).`,
     );
-  if (times.filter((t) => at.getTime() - t < 24 * HOUR_MS).length >= 4)
-    warnings.push("Đã đủ 4 liều hạ sốt trong 24 giờ.");
+  if (after.length > 0)
+    warnings.push(
+      `Chưa đủ 4 giờ trước liều hạ sốt sau (${formatVnTime(new Date(Math.min(...after)))}).`,
+    );
+  // Would this dose be the fifth inside some 24-hour stretch?
+  const near = times.filter((t) => Math.abs(t - at) < DAY_MS);
+  const crowded = [at, ...near.filter((t) => t <= at)].some(
+    (from) => near.filter((t) => t >= from && t < from + DAY_MS).length >= 4,
+  );
+  if (crowded) warnings.push("Đã đủ 4 liều hạ sốt trong 24 giờ.");
   return warnings;
 }
+
+// "Vitamin D", "vitamin d3", "VitaminD3 K2": the same drops under the names
+// people type; "vitamin dha" is something else.
+const VITAMIN_D = /^vitamin\s*d(?![a-z])/i;
 
 export function vitaminDToday(logs: LogLike[], now: Date): string | null {
   const today = vnDateString(now);
@@ -156,7 +172,7 @@ export function vitaminDToday(logs: LogLike[], now: Date): string | null {
     )
     .filter((log) => {
       const parsed = detailsSchemas.medicine.safeParse(log.details);
-      return parsed.success && parsed.data.name.toLowerCase() === "vitamin d";
+      return parsed.success && VITAMIN_D.test(parsed.data.name.trim());
     })
     .map((log) => ms(log.started_at));
   return times.length > 0 ? formatVnTime(new Date(Math.min(...times))) : null;

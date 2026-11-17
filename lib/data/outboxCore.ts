@@ -43,9 +43,17 @@ const DROP_CODES: Record<string, string> = {
   "22P02": INVALID,
 };
 
+// How many flushes an entry may fail with an unknown 4xx before it is given up.
+// At one flush every 30 s this is about five minutes.
+export const MAX_REFUSALS = 10;
+const REFUSED = "Máy chủ từ chối thao tác này";
+
 // Spec §9: 401 is always temporary; known permanent errors are dropped; anything
-// else is retried on the next flush.
-export function classifyFailure(failure: Failure): FailureClass {
+// else is retried on the next flush. One bound on that: a 4xx the server keeps
+// answering is a request it will never accept, and since the flush stops at the
+// first failure it would hold back every later write for good. Network errors,
+// timeouts, rate limits and 5xx are never given up, however long they last.
+export function classifyFailure(failure: Failure, attempts = 0): FailureClass {
   if ("zeroRows" in failure) return { kind: "drop", reason: PERMISSION };
   const { status, code } = failure;
   if (status === 401 || code === "PGRST301" || code === "PGRST303")
@@ -54,6 +62,10 @@ export function classifyFailure(failure: Failure): FailureClass {
     return { kind: "drop", reason: DROP_CODES[code] };
   if (status === 403) return { kind: "drop", reason: PERMISSION };
   if (status === 400) return { kind: "drop", reason: INVALID };
+  const refused =
+    status >= 400 && status < 500 && status !== 408 && status !== 429;
+  if (refused && attempts >= MAX_REFUSALS)
+    return { kind: "drop", reason: REFUSED };
   return { kind: "retry" };
 }
 

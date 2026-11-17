@@ -1,7 +1,14 @@
 "use client";
 
 import type { Session } from "@supabase/supabase-js";
-import { useEffect, useState } from "react";
+import {
+  createContext,
+  createElement,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
 import { publicEnv } from "@/lib/env";
 import { supabase } from "@/lib/supabase/client";
 import {
@@ -22,11 +29,25 @@ function storedSession(): Session | null {
   }
 }
 
-export function useSession(): { session: Session | null; loading: boolean } {
-  const [state, setState] = useState<{
-    session: Session | null;
-    loading: boolean;
-  }>({
+type SessionState = { session: Session | null; loading: boolean };
+
+const SessionContext = createContext<SessionState | null>(null);
+
+// One sign-in state for the whole app, held above the pages (in Providers). A
+// page that kept its own copy started from "loading" on every navigation, so
+// each tab switch flashed the skeleton before showing data it already had.
+export function SessionProvider({ children }: { children: ReactNode }) {
+  return createElement(SessionContext, { value: useSessionState() }, children);
+}
+
+export function useSession(): SessionState {
+  const state = useContext(SessionContext);
+  if (!state) throw new Error("useSession cần SessionProvider bao ngoài");
+  return state;
+}
+
+function useSessionState(): SessionState {
+  const [state, setState] = useState<SessionState>({
     session: null,
     loading: true,
   });

@@ -80,15 +80,41 @@ describe("daySummary", () => {
       entry("sleep", "02:00", "03:30"),
       entry("sleep", "06:00", "06:45"),
     ];
-    expect(daySummary(logs, new Date(at("08:00")))).toBe(
-      "2 cữ · 2 tã · ngủ 2g 15p",
-    );
+    expect(
+      daySummary({
+        day: "2026-11-14",
+        logs,
+        all: logs,
+        now: new Date(at("08:00")),
+      }),
+    ).toBe("2 cữ · 2 tã · ngủ 2g 15p");
   });
 
   it("counts a running sleep up to now, and says 0 when nothing happened", () => {
+    const running = [entry("sleep", "07:00", null)];
+    const now = new Date(at("07:30"));
     expect(
-      daySummary([entry("sleep", "07:00", null)], new Date(at("07:30"))),
+      daySummary({ day: "2026-11-14", logs: running, all: running, now }),
     ).toBe("0 cữ · 0 tã · ngủ 30p");
-    expect(daySummary([], new Date(at("07:30")))).toBe("0 cữ · 0 tã · ngủ 0p");
+    expect(daySummary({ day: "2026-11-14", logs: [], all: [], now })).toBe(
+      "0 cữ · 0 tã · ngủ 0p",
+    );
+  });
+
+  it("shares a night of sleep between the two days at VN midnight", () => {
+    // 21:00 on 14/11 to 06:00 on 15/11 in VN.
+    const night = {
+      type: "sleep",
+      started_at: "2026-11-14T14:00:00.000Z",
+      ended_at: "2026-11-14T23:00:00.000Z",
+      details: {},
+    };
+    const now = new Date("2026-11-15T03:00:00.000Z");
+    expect(
+      daySummary({ day: "2026-11-14", logs: [night], all: [night], now }),
+    ).toBe("0 cữ · 0 tã · ngủ 3g");
+    expect(daySummary({ day: "2026-11-15", logs: [], all: [night], now })).toBe(
+      "0 cữ · 0 tã · ngủ 6g",
+    );
   });
 });

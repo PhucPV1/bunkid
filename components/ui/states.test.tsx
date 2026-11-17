@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { ICON_PATHS } from "@/lib/ui/icons";
 import { EmptyState } from "./EmptyState";
 import { ErrorCard } from "./ErrorCard";
+import { NeedsNetwork, waitingForNetwork } from "./NeedsNetwork";
 import { findElements } from "./testTree";
 
 describe("EmptyState", () => {
@@ -53,5 +54,28 @@ describe("ErrorCard", () => {
     );
     (retry.props.onClick as () => void)();
     expect(onRetry).toHaveBeenCalledOnce();
+  });
+});
+
+describe("NeedsNetwork", () => {
+  it("only a query that never loaded and is paused offline waits for the network", () => {
+    expect(waitingForNetwork({ isPending: true, fetchStatus: "paused" })).toBe(
+      true,
+    );
+    expect(
+      waitingForNetwork({ isPending: true, fetchStatus: "fetching" }),
+    ).toBe(false);
+    // Cached data shown while a refetch is paused is not a blank page.
+    expect(waitingForNetwork({ isPending: false, fetchStatus: "paused" })).toBe(
+      false,
+    );
+  });
+
+  it("says what could not load and that it resumes by itself", () => {
+    const html = renderToStaticMarkup(<NeedsNetwork what="thống kê" />);
+    expect(html).toContain('role="status"');
+    expect(html).toContain(
+      "Cần mạng để tải thống kê. Trang sẽ tự tải khi có mạng lại.",
+    );
   });
 });

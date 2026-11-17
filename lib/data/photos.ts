@@ -14,22 +14,30 @@ import { PermissionDeniedError } from "./errors";
 
 const BUCKET = "photos";
 const URL_SECONDS = 3600;
+const PAGE_ROWS = 1000;
 const photosKey = (babyId: string) => ["photos", babyId] as const;
 
 export function usePhotos(babyId: string) {
   return useQuery({
     queryKey: photosKey(babyId),
     queryFn: async (): Promise<PhotoRow[]> => {
-      const { data, error } = await supabase()
-        .from("photos")
-        .select("*")
-        .eq("baby_id", babyId)
-        .order("taken_on", { ascending: false })
-        .order("created_at", { ascending: false })
-        // PostgREST returns at most 1000 rows; the quota uses photos_total_bytes().
-        .range(0, 999);
-      if (error) throw error;
-      return data;
+      // PostgREST returns at most 1000 rows per request, and 1 GB of compressed
+      // photos is more than that: read page after page until one comes back short.
+      const rows: PhotoRow[] = [];
+      for (let from = 0; ; from += PAGE_ROWS) {
+        const { data, error } = await supabase()
+          .from("photos")
+          .select("*")
+          .eq("baby_id", babyId)
+          .order("taken_on", { ascending: false })
+          .order("created_at", { ascending: false })
+          // id last, so rows with equal sort values cannot shuffle between pages.
+          .order("id")
+          .range(from, from + PAGE_ROWS - 1);
+        if (error) throw error;
+        rows.push(...data);
+        if (data.length < PAGE_ROWS) return rows;
+      }
     },
     staleTime: 60_000,
   });

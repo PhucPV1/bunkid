@@ -73,6 +73,19 @@ describe("classifyFailure (spec §9)", () => {
       });
   });
 
+  it("gives up an unknown 4xx after ten refusals, never a network or server error", () => {
+    const refused = { status: 409, code: null, message: "" };
+    expect(classifyFailure(refused, 9)).toEqual({ kind: "retry" });
+    expect(classifyFailure(refused, 10)).toEqual({
+      kind: "drop",
+      reason: "Máy chủ từ chối thao tác này",
+    });
+    for (const status of [0, 408, 429, 500, 503])
+      expect(classifyFailure({ status, code: null, message: "" }, 500)).toEqual(
+        { kind: "retry" },
+      );
+  });
+
   it("drops permanent errors with a reason", () => {
     expect(
       classifyFailure({ status: 409, code: "23505", message: "" }),

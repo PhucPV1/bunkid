@@ -10,11 +10,10 @@ import {
   timerLabel,
   type HeroState,
 } from "@/lib/rules/hero";
-import type { LogType } from "@/lib/rules/logDetails";
 import type { TimerButton } from "@/lib/rules/timer";
 import { formatVnTime } from "@/lib/rules/time";
 import type { LogRow } from "@/lib/supabase/rows";
-import { CATEGORIES } from "@/lib/ui/categories";
+import { categoryOf } from "@/lib/ui/categories";
 import { cx } from "@/lib/ui/cx";
 
 const LABEL =
@@ -66,7 +65,7 @@ export function HeroCardView({
     body = (
       <>
         <TimerRing
-          token={CATEGORIES[log.type as LogType].token}
+          token={categoryOf(log.type).token}
           progress={ringProgress(elapsed)}
         >
           <span className={cx(LABEL, "text-muted")}>

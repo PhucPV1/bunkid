@@ -90,7 +90,10 @@ export function MilestoneSheet({
               block
               disabled={saving || unmarking}
               className="text-danger!"
-              onClick={() => actions.unmark.mutate(code, done)}
+              onClick={() => {
+                if (window.confirm("Bỏ đánh dấu mốc này?"))
+                  actions.unmark.mutate(code, done);
+              }}
             >
               Bỏ đánh dấu
             </Button>
@@ -153,6 +156,8 @@ export function MilestoneSheet({
                     <img
                       src={urls.data[photo.storage_path]}
                       alt=""
+                      loading="lazy"
+                      decoding="async"
                       className="h-full w-full object-cover"
                     />
                   )}

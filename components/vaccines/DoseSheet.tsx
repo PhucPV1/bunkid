@@ -99,6 +99,8 @@ export function DoseSheet({
   }
 
   function clear() {
+    // It sits right under Lưu and removes the date, place and note in one tap.
+    if (!window.confirm("Xóa đánh dấu mũi tiêm này?")) return;
     actions.clear.mutate(ref, {
       onSuccess: onClose,
       onError: (error) => setMessage(toVietnameseError(error)),

@@ -83,15 +83,30 @@ export function canModifyLog(
   );
 }
 
-// Spec §9 Nhật ký: "N cữ · N tã · ngủ Xg Yp" for the logs of one VN day.
-export function daySummary(logs: LogLike[], now: Date): string {
+// Spec §9 Nhật ký: "N cữ · N tã · ngủ Xg Yp" for one VN day. `logs` are the logs
+// that started that day. Sleep is cut at midnight like Thống kê does, so a night
+// of sleep is shared between the two days; `all` is every loaded log, which is
+// where a sleep that started the evening before comes from.
+export function daySummary(input: {
+  day: string;
+  logs: LogLike[];
+  all: LogLike[];
+  now: Date;
+}): string {
+  const { day, logs, all, now } = input;
   const feeds = groupFeedSessions(logs, now).length;
   const diapers = logs.filter((log) => log.type === "diaper").length;
+  const from = vnDayStartMs(day);
+  const to = Math.min(vnDayStartMs(addDays(day, 1)), now.getTime());
   let sleepMs = 0;
-  for (const log of logs) {
+  for (const log of all) {
     if (log.type !== "sleep") continue;
-    const end = log.ended_at ? Date.parse(log.ended_at) : now.getTime();
-    sleepMs += Math.max(0, end - Date.parse(log.started_at));
+    const start = Math.max(Date.parse(log.started_at), from);
+    const end = Math.min(
+      log.ended_at ? Date.parse(log.ended_at) : now.getTime(),
+      to,
+    );
+    if (end > start) sleepMs += end - start;
   }
   return `${feeds} cữ · ${diapers} tã · ngủ ${shortDuration(Math.round(sleepMs / 60_000))}`;
 }

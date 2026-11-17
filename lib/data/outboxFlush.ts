@@ -35,7 +35,7 @@ export async function flushOutbox(deps: FlushDeps): Promise<FlushResult> {
       result.sent += 1;
       continue;
     }
-    const verdict = classifyFailure(outcome.failure);
+    const verdict = classifyFailure(outcome.failure, entry.attempts);
     if (verdict.kind === "drop") {
       await deps.remove(entry.id);
       if (entry.op === "insert") refusedRows.add(entry.rowId);

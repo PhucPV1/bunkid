@@ -135,6 +135,25 @@ describe("medicineWarnings", () => {
       "Đã đủ 4 liều hạ sốt trong 24 giờ.",
     ]);
   });
+  it("warns about a later dose when a forgotten one is entered afterwards", () => {
+    // Dose already logged at 10:00; the forgotten 08:30 dose is entered now.
+    const at = new Date(NOW.getTime() - 3.5 * H);
+    expect(medicineWarnings({ logs: [med(2, true)], at })).toEqual([
+      "Chưa đủ 4 giờ trước liều hạ sốt sau (10:00).",
+    ]);
+    // A dose 4.5 hours earlier and nothing after it is fine.
+    expect(medicineWarnings({ logs: [med(8, true)], at })).toEqual([]);
+  });
+  it("counts the 24-hour limit around a back-dated dose", () => {
+    const logs = [med(22, true), med(17, true), med(7, true), med(1, true)];
+    // 12 hours ago sits between them: five doses within 21 hours.
+    const at = new Date(NOW.getTime() - 12 * H);
+    expect(medicineWarnings({ logs, at })).toEqual([
+      "Đã đủ 4 liều hạ sốt trong 24 giờ.",
+    ]);
+    // Three other doses nearby is still fine.
+    expect(medicineWarnings({ logs: logs.slice(1), at })).toEqual([]);
+  });
   it("ignores medicine that is not an antipyretic", () => {
     expect(medicineWarnings({ logs: [med(1, false)], at: NOW })).toEqual([]);
   });
@@ -143,6 +162,17 @@ describe("medicineWarnings", () => {
 describe("vitaminDToday", () => {
   it("returns the time of today's vitamin D (VN day, case-insensitive)", () => {
     expect(vitaminDToday([med(4, false, " vitamin D ")], NOW)).toBe("08:00");
+  });
+  it("recognises the names people type for the same drops", () => {
+    for (const name of [
+      "Vitamin D3",
+      "vitamin d3 k2",
+      "VitaminD",
+      "Vitamin D (Aquadetrim)",
+    ])
+      expect(vitaminDToday([med(4, false, name)], NOW)).toBe("08:00");
+    for (const name of ["Vitamin DHA", "DHA", "Vitamin C"])
+      expect(vitaminDToday([med(4, false, name)], NOW)).toBeNull();
   });
   it("ignores yesterday's dose", () => {
     expect(vitaminDToday([med(18, false, "Vitamin D")], NOW)).toBeNull();

@@ -102,6 +102,25 @@ export async function disablePush(): Promise<DeviceState> {
   return "off";
 }
 
+// Sign-out: this device must stop showing the baby's reminders. The server row
+// is removed when the network allows; the local unsubscribe always runs, so a
+// row that could not be removed is deleted by the dispatcher on its next send
+// (the push service answers 410 for it).
+export async function forgetPushOnThisDevice(): Promise<void> {
+  if (pushSupport(environment()) !== "ok") return;
+  // No service worker in development, and no subscription without permission:
+  // skip the 5 s wait for a registration that will not come.
+  if (process.env.NODE_ENV !== "production") return;
+  if (Notification.permission !== "granted") return;
+  const subscription = await currentSubscription();
+  if (!subscription) return;
+  try {
+    await post("/api/push/unsubscribe", { endpoint: subscription.endpoint });
+  } finally {
+    await subscription.unsubscribe();
+  }
+}
+
 // Spec §8.1: on every launch with permission, re-send the subscription so a
 // rotated endpoint or a different signed-in user is picked up.
 export async function refreshPushSubscription(): Promise<void> {

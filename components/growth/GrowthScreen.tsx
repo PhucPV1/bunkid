@@ -8,6 +8,7 @@ import { Glass } from "@/components/ui/Glass";
 import { IconButton } from "@/components/ui/IconButton";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Segmented } from "@/components/ui/Segmented";
+import { NeedsNetwork, waitingForNetwork } from "@/components/ui/NeedsNetwork";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { whoSex, type LmsRow, type WhoIndicator } from "@/lib/content/who";
 import { toVietnameseError } from "@/lib/data/errors";
@@ -105,7 +106,9 @@ export function GrowthScreen({
         {sex === "girls" ? "bé gái" : "bé trai"}; chấm là các lần đo của bé.
         Nguồn: WHO Child Growth Standards.
       </p>
-      {growth.isPending ? (
+      {waitingForNetwork(growth) ? (
+        <NeedsNetwork what="các lần đo" />
+      ) : growth.isPending ? (
         <div className="flex flex-col gap-2.5">
           {[0, 1, 2, 3].map((i) => (
             <Skeleton key={i} className="h-[60px]" />

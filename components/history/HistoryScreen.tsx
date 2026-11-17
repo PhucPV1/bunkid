@@ -8,6 +8,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorCard } from "@/components/ui/ErrorCard";
 import { IconButton } from "@/components/ui/IconButton";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { NeedsNetwork, waitingForNetwork } from "@/components/ui/NeedsNetwork";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { toVietnameseError } from "@/lib/data/errors";
 import { useMembers } from "@/lib/data/family";
@@ -53,7 +54,12 @@ export function HistoryScreen({
   const groups = groupByVnDay(rows)
     .map((group) => ({
       day: group.day,
-      summary: daySummary(group.logs, now),
+      summary: daySummary({
+        day: group.day,
+        logs: group.logs,
+        all: rows,
+        now,
+      }),
       logs: group.logs.filter((row) => matchesFilter(row, filter)),
     }))
     .filter((group) => group.logs.length > 0);
@@ -80,7 +86,9 @@ export function HistoryScreen({
         onChange={setFilter}
       />
 
-      {history.isPending ? (
+      {waitingForNetwork(history) ? (
+        <NeedsNetwork what="nhật ký" />
+      ) : history.isPending ? (
         <div className="flex flex-col gap-2.5">
           {[0, 1, 2, 3].map((i) => (
             <Skeleton key={i} className="h-[60px]" />

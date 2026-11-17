@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { LOG_TYPES } from "@/lib/rules/logDetails";
-import { CATEGORIES } from "./categories";
+import { CATEGORIES, categoryOf } from "./categories";
 import { ICON_PATHS } from "./icons";
 import { TOKEN_NAMES } from "./tokens";
 
@@ -20,6 +20,16 @@ describe("log categories", () => {
       medicine: { token: "cat-med", icon: "pill", label: "Thuốc" },
       temperature: { token: "cat-temp", icon: "thermo", label: "Nhiệt độ" },
     });
+  });
+
+  it("categoryOf falls back to a neutral category for an unknown type", () => {
+    expect(categoryOf("sleep")).toBe(CATEGORIES.sleep);
+    expect(categoryOf("solids")).toEqual({
+      token: "cat-med",
+      icon: "doc",
+      label: "Bản ghi",
+    });
+    expect(categoryOf("toString").label).toBe("Bản ghi");
   });
 
   it("every token and icon exists", () => {

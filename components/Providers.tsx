@@ -8,6 +8,7 @@ import { Backdrop } from "@/components/ui/Backdrop";
 import { ToastProvider } from "@/components/ui/Toast";
 import { trackBrowserOnline } from "@/lib/data/onlineStatus";
 import { createDexiePersister, PERSIST_MAX_AGE_MS } from "@/lib/data/persister";
+import { SessionProvider } from "@/lib/data/session";
 import { usePushRefresh } from "@/lib/hooks/usePushRefresh";
 import { useServiceWorker } from "@/lib/hooks/useServiceWorker";
 import { useSystemThemeSync } from "@/lib/hooks/useTheme";
@@ -49,7 +50,9 @@ export function Providers({ children }: { children: ReactNode }) {
     >
       <Backdrop />
       <OutboxSync />
-      <ToastProvider>{children}</ToastProvider>
+      <SessionProvider>
+        <ToastProvider>{children}</ToastProvider>
+      </SessionProvider>
     </PersistQueryClientProvider>
   );
 }

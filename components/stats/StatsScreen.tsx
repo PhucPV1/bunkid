@@ -7,6 +7,7 @@ import { ErrorCard } from "@/components/ui/ErrorCard";
 import { Glass } from "@/components/ui/Glass";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Segmented } from "@/components/ui/Segmented";
+import { NeedsNetwork, waitingForNetwork } from "@/components/ui/NeedsNetwork";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { toVietnameseError } from "@/lib/data/errors";
 import { useStatsLogs } from "@/lib/data/logs";
@@ -117,7 +118,9 @@ export function StatsScreen({ baby }: { baby: Baby }) {
         onChange={setTab}
       />
 
-      {logs.isPending ? (
+      {waitingForNetwork(logs) ? (
+        <NeedsNetwork what="thống kê" />
+      ) : logs.isPending ? (
         <Skeleton className="h-60" />
       ) : logs.isError && !logs.data ? (
         <ErrorCard

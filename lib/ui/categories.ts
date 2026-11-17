@@ -18,6 +18,20 @@ export const CATEGORIES: Record<
   temperature: { token: "cat-temp", icon: "thermo", label: "Nhiệt độ" },
 };
 
+// A log type this build does not know (written by a newer release while this
+// phone still runs the old bundle) gets a neutral look instead of a crash.
+const UNKNOWN_CATEGORY: (typeof CATEGORIES)[LogType] = {
+  token: "cat-med",
+  icon: "doc",
+  label: "Bản ghi",
+};
+
+export function categoryOf(type: string): (typeof CATEGORIES)[LogType] {
+  return Object.hasOwn(CATEGORIES, type)
+    ? CATEGORIES[type as LogType]
+    : UNKNOWN_CATEGORY;
+}
+
 // Chip behind a category icon: the category colour at 15% under the icon in full colour.
 export const CATEGORY_CHIP: Record<CategoryToken, string> = {
   "cat-feed": "bg-cat-feed/15 text-cat-feed",
