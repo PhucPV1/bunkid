@@ -2052,7 +2052,15 @@ Expected: lần đầu dừng với `SecurityFatalError` của Next.js 16.4.3 (b
 
 > **Kết quả 2026-11-17 (Task 1–3, Task 4 Step 1–3).** Trên nhánh `feat/kim-bun-nhac-thuoc-m4` (cắt từ `feat/kim-bun-yen-lang-m3`): cả 7 patch áp sạch; số test đỏ đúng như ghi (2 file không chạy được, 11/40, 3/17); cuối cùng `tsc --noEmit` sạch, `146 passed (146)` file, `909 passed (909)` test. `bun run build` dừng lần đầu với `SecurityFatalError`, lần hai `✓ Generating static pages (38/38)` có `/cai-dat/nhac-thuoc`, thoát mã 0.
 
-- [ ] **Step 4: Kiểm trên trình duyệt (phiên chính làm, chỉ nhìn)**
+- [x] **Step 4: Kiểm trên trình duyệt (phiên chính làm, chỉ nhìn)**
+
+> **Kết quả 2026-11-17.** Phiên chính kiểm bằng trình duyệt có sẵn trong app Claude ở 375×812, người dùng đồng ý ("Kiểm trên trình duyệt"). Không gạt công tắc, không đổi giờ, không bấm Thêm hay Xóa, không gõ gì vào ô tên thuốc.
+>
+> - Mục 1: nhóm Thông báo có hàng "Lịch nhắc thuốc" giữa "Giờ yên lặng" và "Tạm tắt nhắc", giá trị `Tắt`, dẫn tới `/cai-dat/nhac-thuoc`; không có lỗi tải.
+> - Mục 2: trang "Nhắc thuốc" có nút quay lại "Cài đặt", dòng giới thiệu, ba dòng Vitamin D, DHA, Men tiêu hoá đều đang tắt (không có ô giờ), dòng chú thích về lịch vừa bật, ô "Tên thuốc khác" với chữ mờ "Ví dụ: Canxi" (tối đa 80 ký tự) và nút "Thêm". Viên timer (đang có timer Ngủ thật chạy) hiện phía trên thanh tab, không che nội dung.
+> - Mục 3: không tràn ngang ở Cài đặt và ở trang Nhắc thuốc.
+> - Mục 4: trang Nhắc thuốc đọc rõ ở Hồng dịu và Ban đêm.
+> - Mục 5: chưa thử bật lịch, đổi giờ, Thêm, Xóa và nhận push (ô giờ và nút "Xóa" chỉ có unit test). Đó là bước 32–34 của `docs/device-checklist.md`, chờ người dùng.
 
 Bước này do **phiên chính** làm, bằng trình duyệt có sẵn trong app Claude, và cần người dùng đồng ý trước mỗi lần. Người thực thi là subagent thì để ô này chưa tick.
 
@@ -2071,7 +2079,7 @@ Chạy `bun run dev` (nếu nó dừng với thông báo bảo mật thì chạy
 
 Dừng `bun run dev` khi xong. Ghi kết quả từng mục ngay dưới bước này.
 
-- [ ] **Step 5: Commit phần ghi kết quả, rồi báo cáo**
+- [x] **Step 5: Commit phần ghi kết quả, rồi báo cáo**
 
 ```bash
 git add docs/blueprint/plans/2026-11-17-kim-bun-nhac-thuoc-m4.md
