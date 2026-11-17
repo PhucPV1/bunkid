@@ -563,3 +563,23 @@ Kết quả: Chờ người dùng.
 | iPhone 11     |     |         |         |
 | iPhone 16     |     |         |         |
 | iPhone 17 Pro |     |         |         |
+
+## Bước 35 — Popup đóng mượt và phân loại triệu chứng (spec 2026-11-17 trieu-chung §3, §8)
+
+1. Trang chủ, bấm "+" để mở "Ghi lại cho {tên bé}", rồi đóng bằng nút ✕. Mở lại, đóng bằng chạm vào nền tối. Kỳ vọng: bảng trượt hết xuống dưới đáy màn hình, nền tối mờ dần cùng lúc, không có cú nhảy hay chớp ở cuối. Không bấm ô nào trong lưới.
+2. Khám phá → Triệu chứng ở bề ngang điện thoại. Kỳ vọng: các chip triệu chứng xuống dòng, không có thanh cuộn ngang ở màn nhập.
+3. Nhập 38,2; chọn "Sổ mũi, nghẹt mũi, hắt hơi" và "Dụi, kéo tai, quấy hơn khi nằm"; không bật công tắc nào; bấm "Xem kết quả". Kỳ vọng theo tuổi bé:
+   - dưới 90 ngày: thẻ đỏ "Bé dưới 3 tháng sốt từ 38°C trở lên", khối "Nếu bé đang sốt", "Trên đường đi"; tab: Cảm lạnh, Viêm tai giữa, Sổ mũi, Sốt, Tay chân miệng, Croup;
+   - đúng 90 ngày: như trên, có thêm Mọc răng ngay sau Sổ mũi;
+   - 91–182 ngày: thẻ vàng, thẻ "Trong lúc chờ đi khám" có khối sốt; tab: Cảm lạnh, Viêm tai giữa, Sổ mũi, Mọc răng, Sốt, (từ 150 ngày: Sốt phát ban), Tay chân miệng, Croup;
+   - từ 183 ngày: thẻ xanh "Theo dõi tại nhà", thẻ "Làm ngay tại nhà" có khối sốt; tab như dòng trên.
+4. Chạm từng tab. Kỳ vọng: nội dung bên dưới đổi theo; thanh tab cuộn ngang được.
+5. Bấm "Làm lại". Kỳ vọng: chip, công tắc và nhiệt độ về như lúc mới vào.
+
+Kết quả: Chờ người dùng.
+
+| Máy           | iOS | Kết quả | Ghi chú |
+| ------------- | --- | ------- | ------- |
+| iPhone 11     |     |         |         |
+| iPhone 16     |     |         |         |
+| iPhone 17 Pro |     |         |         |

@@ -83,7 +83,7 @@ M1 tạo ra, M2 dùng (tên và kiểu cố định, M2 không tạo lại):
   - `components/triage/ConditionTabs.tsx`: `export function ConditionTabs({ suggestions }: { suggestions: Suggestion[] })` (trả `null` khi rỗng); `export function nextTabIndex(current: number, key: string, count: number): number | null`.
   - `TriageResult` thêm prop `suggestions?: Suggestion[]` (mặc định `[]`) và `firstAid?: FirstAid[]` (mặc định `[]`).
 
-- [ ] **Step 1: Viết test thất bại cho `ConditionTabs`**
+- [x] **Step 1: Viết test thất bại cho `ConditionTabs`**
 
 Tạo `components/triage/conditiontabs.test.tsx`:
 
@@ -166,7 +166,7 @@ describe("nextTabIndex", () => {
 });
 ```
 
-- [ ] **Step 2: Viết test thất bại cho `TriageResult`**
+- [x] **Step 2: Viết test thất bại cho `TriageResult`**
 
 Thêm vào cuối `describe("TriageResult", …)` trong `components/triage/triage.test.tsx`, và thêm import `import { CONDITIONS } from "@/lib/content/conditions";`:
 
@@ -252,12 +252,12 @@ it("green: Làm ngay tại nhà with the fever block; Chăm bé tại nhà only 
 });
 ```
 
-- [ ] **Step 3: Chạy test, thấy thất bại**
+- [x] **Step 3: Chạy test, thấy thất bại**
 
 Run: `bunx vitest run components/triage`
 Expected: FAIL: không resolve được `./ConditionTabs`; các test `TriageResult` mới không tìm thấy "Trên đường đi", "Trong lúc chờ đi khám", "Làm ngay tại nhà".
 
-- [ ] **Step 4: Viết `components/triage/ConditionTabs.tsx`**
+- [x] **Step 4: Viết `components/triage/ConditionTabs.tsx`**
 
 ```tsx
 "use client";
@@ -412,7 +412,7 @@ function ArticleBody({
 }
 ```
 
-- [ ] **Step 5: Sửa `components/triage/TriageResult.tsx`**
+- [x] **Step 5: Sửa `components/triage/TriageResult.tsx`**
 
 Thay toàn bộ file bằng:
 
@@ -568,12 +568,12 @@ function AidCard({
 }
 ```
 
-- [ ] **Step 6: Chạy test, thấy xanh**
+- [x] **Step 6: Chạy test, thấy xanh**
 
 Run: `bunx vitest run components/triage lib/themeGuard.test.ts && bun run typecheck`
 Expected: PASS toàn bộ, gồm test `TriageResult` cũ ("a solid danger card without emoji…"); themeGuard không thấy hex; typecheck không lỗi.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add components/triage
@@ -597,7 +597,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Consumes: `visibleSymptoms`, `effectiveSymptoms`, `suggestConditions`, `firstAidFor`, `FEVER_SYMPTOM`, `Suggestion` (Task 4); `hasFever` (Task 3); `TRIAGE.symptoms`, `TRIAGE.firstAid`, `TriageSymptom`, `FirstAid` (Task 2); `CONDITIONS.articles`; `TriageResult` với `suggestions` và `firstAid` (Task 5).
 - Produces: `components/triage/SymptomChips.tsx`: `export function SymptomChips(props: { groups: { code: string; name: string }[]; symptoms: TriageSymptom[]; selected: ReadonlySet<string>; feverLocked: boolean; onToggle: (code: string) => void })`.
 
-- [ ] **Step 1: Viết test thất bại**
+- [x] **Step 1: Viết test thất bại**
 
 Trong `components/triage/triage.test.tsx`:
 
@@ -666,12 +666,12 @@ describe("SymptomChips (spec 2026-11-17 §6.1)", () => {
 });
 ```
 
-- [ ] **Step 2: Chạy test, thấy thất bại**
+- [x] **Step 2: Chạy test, thấy thất bại**
 
 Run: `bunx vitest run components/triage/triage.test.tsx`
 Expected: FAIL: không resolve được `./SymptomChips`; `TriageScreen` không có `aria-pressed` và vẫn có "Đánh dấu những gì bé đang có:".
 
-- [ ] **Step 3: Viết `components/triage/SymptomChips.tsx`**
+- [x] **Step 3: Viết `components/triage/SymptomChips.tsx`**
 
 ```tsx
 import type { TriageSymptom } from "@/lib/content/triage";
@@ -748,7 +748,7 @@ export function SymptomChips({
 
 Ghi chú: React render `aria-pressed` trước `aria-disabled` theo thứ tự prop, khớp regex của test.
 
-- [ ] **Step 4: Sửa `components/triage/TriageScreen.tsx`**
+- [x] **Step 4: Sửa `components/triage/TriageScreen.tsx`**
 
 Thay toàn bộ file bằng:
 
@@ -980,14 +980,14 @@ export function TriageScreen({ baby }: { baby: Baby }) {
 }
 ```
 
-- [ ] **Step 5: Chạy test, thấy xanh**
+- [x] **Step 5: Chạy test, thấy xanh**
 
 Run: `bunx vitest run components/triage lib/themeGuard.test.ts && bun run typecheck`
 Expected: PASS toàn bộ; số `role="switch"` vẫn bằng số câu hỏi nhìn thấy; typecheck không lỗi.
 
 Nếu `Switch` của dự án có render `aria-pressed` (làm số khớp sai), dừng lại: mở `components/ui/Switch.tsx` và báo trong mục "Kết quả Task 6". Theo code hiện tại, `Switch` dùng `role="switch"` và `aria-checked`, không có `aria-pressed`.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add components/triage
@@ -1010,7 +1010,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Consumes: mọi task trước.
 - Produces: không có.
 
-- [ ] **Step 1: Thêm bước 35 vào checklist**
+- [x] **Step 1: Thêm bước 35 vào checklist**
 
 Thêm vào cuối `docs/device-checklist.md`:
 
@@ -1036,17 +1036,17 @@ Kết quả: Chờ người dùng.
 | iPhone 17 Pro |     |         |         |
 ```
 
-- [ ] **Step 2: Chạy toàn bộ test và typecheck**
+- [x] **Step 2: Chạy toàn bộ test và typecheck**
 
 Run: `bun run test && bun run typecheck`
 Expected: PASS. Số test ≥ 935 (909 baseline + 16 của M1 + 10 của M2: 5 `ConditionTabs`, 3 `TriageResult`, 2 `SymptomChips`), 0 fail; typecheck không lỗi.
 
-- [ ] **Step 3: Build**
+- [x] **Step 3: Build**
 
 Run: `bun run build` (nếu lần đầu thoát vì thông báo bảo mật của Next, chạy lại lần hai)
 Expected: build xong, `public/content: …conditions.vi.json, …triage.vi.json…` có trong log prebuild, route `/trieu-chung` có trong bảng route.
 
-- [ ] **Step 4: Kiểm tay trên trình duyệt (cần người dùng đồng ý)**
+- [x] **Step 4: Kiểm tay trên trình duyệt (cần người dùng đồng ý)**
 
 Hỏi người dùng có cho mở trình duyệt có sẵn trong app Claude ở 375×812 không. Nếu đồng ý:
 
@@ -1057,7 +1057,7 @@ Hỏi người dùng có cho mở trình duyệt có sẵn trong app Claude ở 
 
 Nếu người dùng không đồng ý: ghi "Kiểm tay: chưa làm, chờ người dùng" vào mục kết quả.
 
-- [ ] **Step 5: Ghi kết quả và commit**
+- [x] **Step 5: Ghi kết quả và commit**
 
 Thêm vào cuối plan này mục `## Kết quả` gồm: số test cuối, kết quả build, kết quả kiểm tay.
 
@@ -1069,3 +1069,49 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
 Không push. Báo người dùng tên nhánh và hỏi có push hoặc merge vào `main` không.
+
+## Kết quả
+
+Chạy 2026-11-17 trên nhánh `feat/kim-bun-trieu-chung`.
+
+- `bun run test`: **935 test xanh, 148 file**, 0 fail (M1: 925 test, 147 file; thêm 10 test: 5 `ConditionTabs`, 3 `TriageResult`, 2 `SymptomChips`; file mới `components/triage/conditiontabs.test.tsx`).
+- `bun run typecheck`: không lỗi.
+- `bun run build`: lần đầu thoát vì thông báo bảo mật của Next, như đã biết; lần hai xanh. Log prebuild có `public/content: … conditions.vi.json, triage.vi.json …`; `/trieu-chung` là trang tĩnh (○) trong bảng route. Không làm theo lời trong thông báo.
+- Mỗi bước "thấy thất bại" đều đỏ đúng Expected:
+  - Task 5 Step 3: `conditiontabs.test.tsx` không resolve được `./ConditionTabs`; 3 test `TriageResult` mới đỏ.
+  - Task 6 Step 2: lúc đầu cả file đỏ vì `Cannot find module './SymptomChips'`. Khi đã có `SymptomChips.tsx` (Step 3), test `TriageScreen` vẫn đỏ đúng lý do (chưa có chip, vẫn còn "Đánh dấu những gì bé đang có:"); Step 4 làm nó xanh.
+- Code trong Task 5–6 chép đúng nguyên văn plan, không phải sửa gì. `Switch` không render `aria-pressed`, nên số chip đếm đúng.
+- Bước 35 đã đối chiếu với luật thật (`evaluateTriage` và `suggestConditions`), với 38,2°C, `runny_nose` và `ear_rub`. Kết quả khớp từng dòng:
+  - 60 ngày: đỏ; tab Cảm lạnh, Viêm tai giữa, Sổ mũi, Sốt, Tay chân miệng, Croup.
+  - 90 ngày: như trên, thêm Mọc răng sau Sổ mũi.
+  - 91 và 149 ngày: vàng; chưa có Sốt phát ban.
+  - 150 ngày: vàng; có Sốt phát ban.
+  - 183 ngày: xanh.
+- Commit: `2dde328` (Task 5), `3aa566a` (Task 6), và commit ghi kết quả này. Chưa push, chưa merge.
+
+### Kiểm tay (Task 7 Step 4)
+
+Người dùng đồng ý và tự đăng nhập Google trong trình duyệt có sẵn của app Claude. Viewport 375×812. Bé thật 68 ngày tuổi (2 tháng 7 ngày), nên so với dòng "dưới 90 ngày".
+
+- `/trieu-chung`, màn nhập:
+  - `document.documentElement.scrollWidth = 375`, không có thanh cuộn ngang;
+  - 22 chip trong 6 nhóm, đều xuống dòng (không nhóm nào tràn ngang).
+- Nhập 38,2, chọn "Sổ mũi, nghẹt mũi, hắt hơi" và "Dụi, kéo tai, quấy hơn khi nằm", không bật công tắc nào:
+  - chip "Sốt hoặc sờ thấy nóng" tự bật và khoá (`aria-disabled`);
+  - có dòng "Bật theo nhiệt độ đã nhập.".
+- Bấm "Xem kết quả" (không ghi gì vào DB). Thứ tự h2: thẻ đỏ "Đi cấp cứu ngay" với "Bé dưới 3 tháng sốt từ 38°C trở lên", rồi "Nếu bé đang sốt", "Trên đường đi", "Có thể bé đang bị". Tab đúng thứ tự: Cảm lạnh, Viêm tai giữa, Sổ mũi, Sốt, Tay chân miệng, Croup. **Đạt.**
+- Chạm lần lượt 6 tab:
+  - panel đổi theo tab (dòng "Khớp: …" và tóm tắt đúng bài);
+  - `aria-labelledby` khớp tab đang chọn;
+  - thanh tab (rộng 610 px trong khung 343 px) tự cuộn từ 0 đến 267 px.
+
+  **Đạt.**
+- "Làm lại": nhiệt độ trống, không chip nào bật, không công tắc nào bật, cuộn về đầu trang. **Đạt.**
+- Trang chủ, bấm "+" mở "Ghi lại cho Bun", đóng bằng ✕, hai lần, không bấm ô nào trong lưới:
+  - lúc đóng có `data-closing`;
+  - tiêu đề bảng đi 201 → 247 → 295 → 350 px qua các khung liền nhau, rồi tới 829 px, quá đáy màn 812 px, tức là trượt hết xuống dưới;
+  - sau đó `dialog` đóng và `data-closing` được xoá;
+  - CSS `dialog[data-closing]::backdrop` chạy `kb-fade-out` 0,28 s.
+
+  Trình duyệt trong app giảm nhịp `requestAnimationFrame` (nhất là khi đang chụp màn hình), nên không đo được độ mượt từng khung và không chụp được ảnh giữa lúc đóng. Cảm giác "không nhảy, không chớp" vẫn chờ kiểm trên iPhone (bước 35 mục 1).
+- Các bước trên iPhone thật trong `docs/device-checklist.md` bước 35: chờ người dùng.
