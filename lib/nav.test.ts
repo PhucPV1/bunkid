@@ -6,6 +6,7 @@ import {
   EXPLORE_REPORT,
   EXPLORE_SOOTHE,
   EXPLORE_TRACK,
+  showsTimerPill,
   TABS,
 } from "./nav";
 
@@ -90,5 +91,14 @@ describe("nav", () => {
     expect(activeTab("/nhat-ky-cu")).toBeNull();
     expect(activeTab("/dang-nhap")).toBeNull();
     expect(activeTab("/cai-app")).toBeNull();
+  });
+});
+
+describe("showsTimerPill (spec 2026-11-17 §5.2)", () => {
+  it("is off on Hôm nay, which already has the hero card, and on elsewhere", () => {
+    expect(showsTimerPill("/")).toBe(false);
+    expect(showsTimerPill("/nhat-ky")).toBe(true);
+    expect(showsTimerPill("/kham-pha")).toBe(true);
+    expect(showsTimerPill("/cai-dat/cu-bu")).toBe(true);
   });
 });

@@ -31,7 +31,7 @@ export function ToastView({
     <div
       role="status"
       aria-live="polite"
-      className="pointer-events-none fixed inset-x-4 bottom-[calc(max(env(safe-area-inset-bottom)+10px,26px)+74px)] z-40 flex justify-center print:hidden"
+      className="pointer-events-none fixed inset-x-4 bottom-[calc(max(env(safe-area-inset-bottom)+10px,26px)+74px+var(--pill-offset))] z-40 flex justify-center print:hidden"
     >
       {item && (
         <div className="glass-strong pointer-events-auto flex max-w-md items-center gap-3 rounded-full py-1.5 pr-1.5 pl-5 shadow-[0_10px_30px_rgb(0_0_0/0.15)]">

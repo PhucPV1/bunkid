@@ -118,3 +118,9 @@ export function activeTab(pathname: string): TabKey | null {
     return "explore";
   return null;
 }
+
+// Spec 2026-11-17 §5.2: the timer pill shows on every page except Hôm nay,
+// where the hero card already shows the running timer.
+export function showsTimerPill(pathname: string): boolean {
+  return pathname !== "/";
+}

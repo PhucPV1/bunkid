@@ -46,6 +46,8 @@ import { tapFeedback } from "@/lib/ui/haptics";
 
 export type QuickActionsValue = {
   running: RunningLog[];
+  // The running timers as full rows, for the timer pill (spec 2026-11-17 §5.2).
+  runningRows: LogRow[];
   // Spec 2026-11-17 §5.3: the breast side to label "Nên bú", or null.
   suggestSide: BreastSide | null;
   busy: boolean;
@@ -131,6 +133,7 @@ export function QuickActionsProvider({
 
   const value: QuickActionsValue = {
     running,
+    runningRows: rows.filter((row) => row.ended_at === null),
     suggestSide: nextBreastSide(rows, new Date())?.suggest ?? null,
     busy: press.isPending || stop.isPending,
     error: press.error ?? stop.error,
