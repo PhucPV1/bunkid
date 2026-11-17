@@ -370,9 +370,10 @@
   }
 }
 
+/* --kb-sheet-gap is the space under the panel, so a floating sheet leaves the screen fully. */
 @keyframes kb-sheet-in {
   from {
-    transform: translateY(100%);
+    transform: translateY(calc(100% + var(--kb-sheet-gap, 0px)));
   }
   to {
     transform: translateY(0);
@@ -384,8 +385,28 @@
     transform: translateY(0);
   }
   to {
-    transform: translateY(100%);
+    transform: translateY(calc(100% + var(--kb-sheet-gap, 0px)));
   }
+}
+
+@keyframes kb-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Closing a sheet: the scrim fades with the panel instead of vanishing at the end, and the
+   panel drops its 40 px blur so the browser does not re-blur the page on every frame. */
+dialog[data-closing]::backdrop {
+  animation: kb-fade-out 280ms ease-in forwards;
+}
+dialog[data-closing] > .glass-strong {
+  background: var(--color-glass-solid);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 @keyframes kb-fade-in {
@@ -411,7 +432,8 @@
 @media (prefers-reduced-motion: reduce) {
   *,
   ::before,
-  ::after {
+  ::after,
+  ::backdrop {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

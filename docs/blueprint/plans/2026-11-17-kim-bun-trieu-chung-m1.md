@@ -82,7 +82,7 @@ M1 tạo ra, M2 dùng (tên và kiểu cố định, M2 không tạo lại):
 - Consumes: không có.
 - Produces: không có API mới. `Sheet` giữ nguyên props.
 
-- [ ] **Step 1: Tạo nhánh và commit tài liệu**
+- [x] **Step 1: Tạo nhánh và commit tài liệu**
 
 ```bash
 git switch -c feat/kim-bun-trieu-chung
@@ -94,7 +94,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 Expected: một commit mới trên `feat/kim-bun-trieu-chung`; `git status --short` trống.
 
-- [ ] **Step 2: Viết test thất bại**
+- [x] **Step 2: Viết test thất bại**
 
 Thêm vào cuối `components/ui/sheet.test.tsx`:
 
@@ -149,17 +149,17 @@ describe("Sheet closing (spec 2026-11-17 §3)", () => {
 
 Đặt dòng `import { readFileSync } from "node:fs";` lên đầu file, cạnh các import khác.
 
-- [ ] **Step 3: Chạy test, thấy thất bại**
+- [x] **Step 3: Chạy test, thấy thất bại**
 
 Run: `bunx vitest run components/ui/sheet.test.tsx`
 Expected: FAIL ở 2 test "travels past the gap…" và "fades the scrim…" (không tìm thấy `--kb-sheet-gap`, `kb-fade-out`). Test "is not marked closing while open" PASS.
 
-- [ ] **Step 4: Áp phần popup của patch nháp**
+- [x] **Step 4: Áp phần popup của patch nháp**
 
 Run: `git apply --include='app/globals.css' --include='components/ui/Sheet.tsx' docs/blueprint/specs/2026-11-17-kim-bun-trieu-chung-draft.patch`
 Expected: không in gì; `git diff --stat` có `app/globals.css`, `components/ui/Sheet.tsx` và `components/ui/sheet.test.tsx` (đã sửa ở Step 2).
 
-- [ ] **Step 5: Thêm `::backdrop` vào luật reduced motion**
+- [x] **Step 5: Thêm `::backdrop` vào luật reduced motion**
 
 Trong `app/globals.css`, sửa:
 
@@ -180,7 +180,7 @@ thành:
   ::backdrop {
 ```
 
-- [ ] **Step 6: Đổi thứ tự xoá `closing`**
+- [x] **Step 6: Đổi thứ tự xoá `closing`**
 
 Trong `components/ui/Sheet.tsx`, sửa `onAnimationEnd` của panel từ:
 
@@ -205,17 +205,17 @@ thành:
 
 Handler `onClose` của `<dialog>` (đã có `setClosing(false)`) giữ nguyên.
 
-- [ ] **Step 7: Kiểm mọi nơi dùng Sheet đều đặt `open` thành false trong `onClose`**
+- [x] **Step 7: Kiểm mọi nơi dùng Sheet đều đặt `open` thành false trong `onClose`**
 
 Run: `grep -rn "<Sheet" components app --include='*.tsx' | grep -v test`
 Expected: một danh sách file. Mở từng file và xác nhận prop `onClose` của `<Sheet>` dẫn tới một hàm đặt state `open` của nó thành false (trực tiếp, hoặc qua `onClose` của cha). Ghi danh sách file và kết quả vào mục "Kết quả Task 1" ở cuối plan này. Nếu có nơi nào không đặt thành false, dừng lại và báo người dùng.
 
-- [ ] **Step 8: Chạy test, thấy xanh**
+- [x] **Step 8: Chạy test, thấy xanh**
 
 Run: `bunx vitest run components/ui`
 Expected: PASS toàn bộ, gồm 3 test mới và các test Sheet cũ (vẫn có `animate-[kb-sheet-in_280ms_cubic-bezier(0.32,0.72,0,1)]`).
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add app/globals.css components/ui/Sheet.tsx components/ui/sheet.test.tsx docs/blueprint/plans/2026-11-17-kim-bun-trieu-chung-m1.md
@@ -957,3 +957,26 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
 Không push. M2 (`docs/blueprint/plans/2026-11-17-kim-bun-trieu-chung-m2.md`) chạy tiếp trên cùng nhánh, trong phiên mới.
+
+## Kết quả
+
+### Kết quả Task 1
+
+Step 3: 2 test đỏ ("travels past the gap…", "fades the scrim…"), "is not marked closing while open" xanh, đúng Expected. Step 8: `bunx vitest run components/ui` xanh, 12 file, 63 test.
+
+Step 7, `grep -rn "<Sheet" components app --include='*.tsx' | grep -v test` ra 13 dòng; `components/history/HistoryScreen.tsx:50` là `useState<SheetState>`, không phải thẻ `<Sheet>`. 12 nơi dùng thật, nơi nào `onClose` cũng đưa `open` về false:
+
+| Nơi dùng | `open` của Sheet | `onClose` dẫn tới | Kết quả |
+| --- | --- | --- | --- |
+| `components/settings/AppearanceGroup.tsx:114` (`NightHoursSheet`) | `open={open}` | `AppearanceGroup`: `onClose={() => setOpen(false)}` | Đạt |
+| `components/settings/NotificationsGroup.tsx:164` (`QuietHoursSheet`) | `open`, gắn khi `quietOpen` | `onClose={() => setQuietOpen(false)}` | Đạt |
+| `components/settings/NotificationsGroup.tsx:252` (`SnoozeSheet`) | `open={open}` | `onClose={() => setOpen(false)}` | Đạt |
+| `components/home/QuickEntrySheet.tsx:156` | `open`, gắn khi `sheet` | `QuickActions`: `onClose={() => setSheet(null)}` | Đạt |
+| `components/home/PumpSheet.tsx:61` | `open`, gắn khi `pumpStopped` | `QuickActions`: `setPumpStopped(null)` | Đạt |
+| `components/growth/GrowthSheet.tsx:79` | `open`, gắn khi `sheet` | `GrowthScreen`: `onClose={() => setSheet(null)}` | Đạt |
+| `components/actions/ActionSheet.tsx:107` (`ActionSheetView`) | `open={open}` | `ActionChrome` → `closeActionSheet` = `setActionSheetOpen(false)` | Đạt |
+| `components/history/LogEditSheet.tsx:137` | `open`, gắn khi `sheet` | `HistoryScreen`: `onClose={() => setSheet(null)}` | Đạt |
+| `components/milestones/MilestoneSheet.tsx:65` | `open`, gắn khi `open` | `MilestonesScreen`: `onClose={() => setOpen(null)}` | Đạt |
+| `components/vaccines/DoseSheet.tsx:111` | `open`, gắn khi `open` | `VaccineScreen`: `onClose={() => setOpen(null)}` | Đạt |
+| `components/photos/PhotosScreen.tsx:249` (`PhotoViewer`) | `open`, gắn khi `open` | `PhotosScreen`: `onClose={() => setOpen(null)}` | Đạt |
+| `components/vaccines/VaccineSourceRow.tsx:20` | `open={open}` | `onClose={() => setOpen(false)}` | Đạt |

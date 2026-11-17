@@ -92,6 +92,7 @@ export function Sheet({
     <dialog
       ref={ref}
       aria-labelledby={titleId}
+      data-closing={closing ? "" : undefined}
       onCancel={(event) => {
         event.preventDefault();
         requestClose();
@@ -122,18 +123,19 @@ export function Sheet({
       />
       <div
         onAnimationEnd={(event) => {
-          if (closing && event.target === event.currentTarget) {
-            setClosing(false);
-            onClose();
-          }
+          // `closing` stays set until the dialog's close event, so the scrim keeps
+          // fading instead of restarting kb-fade-in for one frame (spec 2026-11-17 §3).
+          if (closing && event.target === event.currentTarget) onClose();
         }}
-        style={
-          drag && drag.dy > 0
+        style={{
+          // The gap under the panel: p-2 for both, plus mb-24 for the floating one.
+          ["--kb-sheet-gap" as string]: variant === "bottom" ? "8px" : "104px",
+          ...(drag && drag.dy > 0
             ? { transform: `translateY(${dragOffset(drag.dy)}px)` }
-            : undefined
-        }
+            : {}),
+        }}
         className={cx(
-          "glass-strong mx-auto flex w-full max-w-md flex-col shadow-[0_-10px_40px_rgb(0_0_0/0.18)]",
+          "glass-strong mx-auto flex w-full max-w-md flex-col shadow-[0_-10px_40px_rgb(0_0_0/0.18)] will-change-transform",
           variant === "bottom"
             ? "max-h-[88dvh] rounded-[38px]"
             : "mb-24 max-h-[80dvh] rounded-[34px]",

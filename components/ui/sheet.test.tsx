@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { ICON_PATHS } from "@/lib/ui/icons";
@@ -137,5 +138,50 @@ describe("DiscardConfirm", () => {
       "animate-[kb-pop-in_180ms_cubic-bezier(0.32,0.72,0,1)]",
     );
     expect(html).not.toContain("glass-strong");
+  });
+});
+
+describe("Sheet closing (spec 2026-11-17 §3)", () => {
+  const css = readFileSync("app/globals.css", "utf8");
+
+  it("travels past the gap under the panel, so a floating sheet leaves the screen", () => {
+    const floating = renderToStaticMarkup(
+      <Sheet open title="Ghi lại cho Bun" variant="floating" onClose={noop}>
+        x
+      </Sheet>,
+    );
+    const bottom = renderToStaticMarkup(
+      <Sheet open title="a" onClose={noop}>
+        x
+      </Sheet>,
+    );
+    expect(floating).toContain("--kb-sheet-gap:104px");
+    expect(bottom).toContain("--kb-sheet-gap:8px");
+    expect(floating).toContain("will-change-transform");
+    expect(
+      css.match(/translateY\(calc\(100% \+ var\(--kb-sheet-gap, 0px\)\)\)/g),
+    ).toHaveLength(2);
+  });
+
+  it("is not marked closing while open", () => {
+    const html = renderToStaticMarkup(
+      <Sheet open title="a" onClose={noop}>
+        x
+      </Sheet>,
+    );
+    expect(html).not.toContain("data-closing");
+  });
+
+  it("fades the scrim and drops the blur while closing, also under reduced motion", () => {
+    expect(css).toContain("@keyframes kb-fade-out");
+    expect(css).toMatch(
+      /dialog\[data-closing\]::backdrop \{\s*animation: kb-fade-out 280ms ease-in forwards;/,
+    );
+    expect(css).toMatch(
+      /dialog\[data-closing\] > \.glass-strong \{[^}]*backdrop-filter: none;/,
+    );
+    expect(css).toMatch(
+      /prefers-reduced-motion: reduce\) \{\s*\*,\s*::before,\s*::after,\s*::backdrop \{/,
+    );
   });
 });
