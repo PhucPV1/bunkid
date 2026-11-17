@@ -498,3 +498,68 @@ Kết quả: Chờ người dùng.
 | iPhone 11     |     |         |         |
 | iPhone 16     |     |         |         |
 | iPhone 17 Pro |     |         |         |
+
+## Bước 31 — Bốn loại bản ghi mới (spec 2026-11-17 §3)
+
+1. "+" → nhóm "Khác" → ghi lần lượt Ăn dặm (gõ tên món, chọn Lượng, bật "Món mới"), Uống nước (bấm +10 vài lần), Tắm, Ghi chú (gõ một câu dài hơn 60 ký tự). Kỳ vọng: mỗi lần Lưu có toast Hoàn tác; toast của ghi chú dài bị cắt và kết thúc bằng "…".
+2. Mở Nhật ký. Kỳ vọng: bốn bản ghi hiện đủ với icon riêng; chip "Ăn dặm" lọc ra Ăn dặm và Uống nước; chip "Khác" lọc ra Tắm, Ghi chú, Hút sữa, Nằm sấp. Máy thứ hai cũng thấy.
+3. Bấm bản ghi Ghi chú. Kỳ vọng: sheet chỉ có "Nội dung" và "Thời điểm". Sửa chữ, Lưu. Bấm bản ghi Ăn dặm: có Món, Lượng, Món mới, Phản ứng.
+4. Thống kê → tab "Ăn dặm". Kỳ vọng: cột số bữa cho hôm nay, bảng có "Bữa ăn dặm" và "Nước (ml)".
+5. Dọn dẹp: xóa bốn bản ghi thử.
+
+Kết quả: Chờ người dùng.
+
+| Máy           | iOS | Kết quả | Ghi chú |
+| ------------- | --- | ------- | ------- |
+| iPhone 11     |     |         |         |
+| iPhone 16     |     |         |         |
+| iPhone 17 Pro |     |         |         |
+
+## Bước 32 — Nhắc thuốc (spec 2026-11-17 §4.2, §4.3)
+
+1. Cài đặt → Thông báo → "Lịch nhắc thuốc". Kỳ vọng: có sẵn Vitamin D, DHA, Men tiêu hoá, đang tắt.
+2. Bật Vitamin D rồi đổi giờ nhắc thành giờ hiện tại cộng 2 phút. Không ghi Vitamin D. Khóa màn hình. Kỳ vọng: trong ≤ 3 phút nhận "Đến giờ uống Vitamin D" / "Hôm nay chưa ghi Vitamin D."
+3. Ghi một liều Vitamin D ("+" → Thuốc → chip Vitamin D → Lưu). Đổi giờ nhắc thành giờ hiện tại cộng 2 phút lần nữa. Kỳ vọng: không có thông báo, vì hôm nay đã ghi.
+4. "Tên thuốc khác": gõ "Canxi" → Thêm. Kỳ vọng: dòng Canxi hiện ra, đang bật, giờ 09:00, có nút "Xóa". Gõ "men tiêu hóa" → Thêm. Kỳ vọng: "Thuốc này đã có trong danh sách".
+5. Ghi một liều thuốc có bật "Hạ sốt", Thời điểm = bây giờ trừ 3 giờ 58 phút. Kỳ vọng: trong ≤ 4 phút nhận "Đã đủ 4 giờ từ liều hạ sốt" / "Liều trước lúc HH:mm. Đo lại nhiệt độ cho bé."
+6. Dọn dẹp: xóa dòng Canxi, tắt Vitamin D nếu không dùng, xóa hai bản ghi thuốc thử.
+
+Kết quả: Chờ người dùng.
+
+| Máy           | iOS | Kết quả | Ghi chú |
+| ------------- | --- | ------- | ------- |
+| iPhone 11     |     |         |         |
+| iPhone 16     |     |         |         |
+| iPhone 17 Pro |     |         |         |
+
+## Bước 33 — Giờ yên lặng và "bé đang ngủ" (spec 2026-11-17 §4.3, §4.4)
+
+1. Cài đặt → Thông báo → "Giờ yên lặng": bật, đặt Từ = giờ hiện tại trừ 5 phút, Đến = giờ hiện tại cộng 10 phút → Lưu. Kỳ vọng: hàng hiện hai giờ vừa đặt. Đặt Từ bằng Đến rồi Lưu: "Giờ bắt đầu và kết thúc phải khác nhau".
+2. Tạo điều kiện nhắc bú như bước 2 (Khoảng cách cữ bú 1 giờ; ghi Bú bình lúc bây giờ trừ 59 phút). Kỳ vọng: 3 phút không có thông báo trên máy này; máy của người không bật giờ yên lặng vẫn nhận.
+3. Chờ qua giờ "Đến". Kỳ vọng: trong ≤ 2 phút nhận "Đến giờ bú rồi".
+4. Tắt giờ yên lặng. Bật "Không nhắc bú khi bé đang ngủ" (đọc dòng ghi chú bên dưới). Bấm "Ngủ" ở trang chủ, rồi ghi Bú bình lúc bây giờ trừ 61 phút. Kỳ vọng: không có nhắc bú khi timer Ngủ đang chạy. Bấm "Dừng" timer Ngủ. Kỳ vọng: trong ≤ 2 phút nhận "Đến giờ bú rồi".
+5. Dọn dẹp: tắt công tắc "bé đang ngủ" nếu không dùng, xóa các bản ghi thử, đặt lại Khoảng cách cữ bú.
+
+Kết quả: Chờ người dùng.
+
+| Máy           | iOS | Kết quả | Ghi chú |
+| ------------- | --- | ------- | ------- |
+| iPhone 11     |     |         |         |
+| iPhone 16     |     |         |         |
+| iPhone 17 Pro |     |         |         |
+
+## Bước 34 — Canh timer (spec 2026-11-17 §5, §4.3)
+
+1. Bấm "Nằm sấp" ở trang chủ, sang tab Nhật ký. Kỳ vọng: một viên kính ngay trên thanh tab ghi "Nằm sấp · m:ss" đang nhảy và chữ "Dừng"; về tab Hôm nay thì viên biến mất.
+2. Ở Nhật ký bấm "Dừng" trên viên. Kỳ vọng: viên biến mất, toast Hoàn tác hiện phía trên chỗ viên vừa nằm.
+3. Sau một cữ bú mẹ đã xong: thẻ đầu trang chủ (khi đang "Trễ cữ bú") và hàng "Bấm giờ" có nhãn "Nên bú" trên nút của bên ngược lại, kèm dòng "Lần trước: … lúc …"; bảng "+" cũng có nhãn đó.
+4. Bấm "Nằm sấp" và để yên 31 phút. Kỳ vọng: nhận "Timer Nằm sấp đã chạy quá 30 phút"; trang chủ có dải vàng "Nằm sấp đã chạy … Còn đang nằm sấp không?" với nút "Dừng".
+5. Dọn dẹp: dừng timer, xóa các bản ghi Nằm sấp thử.
+
+Kết quả: Chờ người dùng.
+
+| Máy           | iOS | Kết quả | Ghi chú |
+| ------------- | --- | ------- | ------- |
+| iPhone 11     |     |         |         |
+| iPhone 16     |     |         |         |
+| iPhone 17 Pro |     |         |         |
