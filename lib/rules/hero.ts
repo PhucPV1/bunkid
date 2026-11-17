@@ -1,5 +1,6 @@
 import type { LogLike } from "./describeLog";
 import { feedDue } from "./status";
+import { formatDuration } from "./time";
 
 export type HeroState<T extends LogLike> =
   | { kind: "running"; log: T }
@@ -45,6 +46,22 @@ export function timerLabel(log: { type: string; details: unknown }): string {
     return side === "left" ? "Bú trái" : "Bú phải";
   }
   return TIMER_LABEL[log.type] ?? "Đang chạy";
+}
+
+const STILL: Record<string, string> = {
+  breast: "bú",
+  sleep: "ngủ",
+  pump: "hút sữa",
+  tummy: "nằm sấp",
+};
+
+// Spec 2026-11-17 §5.1: the sentence on the banner of a timer left running.
+export function longTimerText(
+  log: { type: string; started_at: string; details: unknown },
+  now: Date,
+): string {
+  const ran = formatDuration(now.getTime() - Date.parse(log.started_at));
+  return `${timerLabel(log)} đã chạy ${ran}. Còn đang ${STILL[log.type] ?? "chạy"} không?`;
 }
 
 export function formatClock(ms: number): string {

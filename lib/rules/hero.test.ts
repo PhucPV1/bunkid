@@ -4,6 +4,7 @@ import {
   formatClock,
   formatMinutes,
   heroState,
+  longTimerText,
   ringProgress,
   timerLabel,
 } from "./hero";
@@ -113,5 +114,20 @@ describe("hero text helpers", () => {
     expect(ringProgress(15 * 60_000)).toBe(0.25);
     expect(ringProgress(75 * 60_000)).toBe(0.25);
     expect(ringProgress(-1_000)).toBe(0);
+  });
+
+  it("longTimerText says how long a timer has run and asks if it still is", () => {
+    expect(longTimerText(log("tummy", 32 / 60, null), NOW)).toBe(
+      "Nằm sấp đã chạy 32 phút. Còn đang nằm sấp không?",
+    );
+    expect(
+      longTimerText(log("breast", 1.25, null, { side: "left" }), NOW),
+    ).toBe("Bú trái đã chạy 1 giờ 15 phút. Còn đang bú không?");
+    expect(longTimerText(log("sleep", 14.5, null), NOW)).toBe(
+      "Ngủ đã chạy 14 giờ 30 phút. Còn đang ngủ không?",
+    );
+    expect(longTimerText(log("pump", 1, null), NOW)).toBe(
+      "Hút sữa đã chạy 1 giờ 00 phút. Còn đang hút sữa không?",
+    );
   });
 });

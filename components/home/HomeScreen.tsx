@@ -18,11 +18,13 @@ import { rateLast24h, WINDOW_MS, windowTotals } from "@/lib/rules/ratings";
 import { sleepStatusLine } from "@/lib/rules/status";
 import { homeStatTiles, totalsLine } from "@/lib/rules/summaryText";
 import { ageDays, formatAgeVi } from "@/lib/rules/time";
+import { overdueTimers } from "@/lib/rules/timer";
 import type { Baby } from "@/lib/supabase/rows";
 import { AlertBanners } from "./AlertBanners";
 import { HeroCardView } from "./HeroCard";
 import { HomeHeader } from "./HomeHeader";
 import { HomeSkeleton } from "./HomeSkeleton";
+import { LongTimerBanner } from "./LongTimerBanner";
 import { QuickLogGrid } from "./QuickLogGrid";
 import { RecentCard } from "./RecentCard";
 import { StatsSection } from "./StatsSection";
@@ -91,6 +93,16 @@ export function HomeScreen({ baby, userId }: { baby: Baby; userId: string }) {
       ) : (
         <>
           <AlertBanners alerts={alerts} />
+
+          {overdueTimers(rows, now).map((log) => (
+            <LongTimerBanner
+              key={log.id}
+              log={log}
+              now={now}
+              busy={actions.busy}
+              onStop={() => actions.stopTimer(log)}
+            />
+          ))}
 
           {failed ? (
             <ErrorCard
