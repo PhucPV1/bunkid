@@ -4,6 +4,7 @@ import {
   evaluateTriage,
   fastBreathingRate,
   goNowIf,
+  hasFever,
   parseCelsius,
   questionText,
   recentCelsius,
@@ -63,11 +64,25 @@ describe("temperatureFindings (spec §6.6)", () => {
     expect(level(37.9, 90)).toEqual([]);
     expect(level(38, 91)).toEqual(["yellow"]);
     expect(level(39, 182)).toEqual(["red"]);
-    expect(level(39, 183)).toEqual(["yellow"]);
+    expect(level(38, 182)).toEqual(["yellow"]);
+    expect(level(38, 183)).toEqual([]);
+    expect(level(39, 183)).toEqual([]);
+    expect(level(39.9, 700)).toEqual([]);
+    expect(temperatureFindings(38.5, 120)[0].text).toBe(
+      "Bé 3–6 tháng đang sốt từ 38°C trở lên",
+    );
     expect(level(40, 700)).toEqual(["red"]);
     expect(temperatureFindings(38.2, 30)[0].text).toBe(
       "Bé dưới 3 tháng sốt từ 38°C trở lên",
     );
+  });
+});
+
+describe("hasFever (spec 2026-11-17 §5.1)", () => {
+  it("is true from 38°C only", () => {
+    expect(hasFever(null)).toBe(false);
+    expect(hasFever(37.9)).toBe(false);
+    expect(hasFever(38)).toBe(true);
   });
 });
 
@@ -96,7 +111,7 @@ describe("evaluateTriage (red beats yellow)", () => {
       level: "red",
       findings: [
         { level: "red", text: "Thở từ 50 lần/phút" },
-        { level: "yellow", text: "Bé đang sốt từ 38°C trở lên" },
+        { level: "yellow", text: "Bé 3–6 tháng đang sốt từ 38°C trở lên" },
         { level: "yellow", text: "rash text" },
       ],
     });

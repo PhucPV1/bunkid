@@ -38,8 +38,8 @@ export function visibleQuestions(
 
 export type Finding = { level: "red" | "yellow"; text: string };
 
-// Spec §6.6 temperature rules. 3–6 months ≥ 39°C is also red here: NHS lists it with
-// under-3-months ≥ 38°C, and over-triage is the safe side.
+// Spec 2026-11-17 §5.1, first match wins. From 6 months, 38–39.9°C alone is not a
+// finding (NHS fever in children); it only turns on the "Sốt" symptom.
 export function temperatureFindings(
   celsius: number | null,
   ageDays: number,
@@ -51,9 +51,13 @@ export function temperatureFindings(
     return [{ level: "red", text: "Bé dưới 3 tháng sốt từ 38°C trở lên" }];
   if (celsius >= 39 && ageDays < 183)
     return [{ level: "red", text: "Bé 3–6 tháng sốt từ 39°C trở lên" }];
-  if (celsius >= 38)
-    return [{ level: "yellow", text: "Bé đang sốt từ 38°C trở lên" }];
+  if (celsius >= 38 && ageDays < 183)
+    return [{ level: "yellow", text: "Bé 3–6 tháng đang sốt từ 38°C trở lên" }];
   return [];
+}
+
+export function hasFever(celsius: number | null): boolean {
+  return celsius !== null && celsius >= 38;
 }
 
 export type TriageResult = {

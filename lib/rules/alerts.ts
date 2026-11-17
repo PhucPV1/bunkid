@@ -52,8 +52,8 @@ function temperatureAlert(
       level: "red",
       message: "Bé dưới 3 tháng sốt ≥ 38°C: cần đi khám ngay.",
     };
-  // Same threshold as temperatureFindings in ./triage, so the home banner never
-  // says less than the triage screen it links to.
+  // Banner thresholds stay as before; from 6 months, 38–39.9°C is green on the
+  // triage screen (spec 2026-11-17 §5.1).
   if (c >= 39.0 && ageDays < 183)
     return {
       key: "fever-infant",
