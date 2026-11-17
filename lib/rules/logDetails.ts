@@ -9,6 +9,10 @@ export const LOG_TYPES = [
   "temperature",
   "pump",
   "tummy",
+  "solids",
+  "water",
+  "bath",
+  "note",
 ] as const;
 export type LogType = (typeof LOG_TYPES)[number];
 
@@ -76,6 +80,17 @@ const pump = z
     mlRight: z.number().int().min(0).max(500).optional(),
   })
   .strict();
+// Spec 2026-11-17 §3.1: four instant types. An empty reaction is left out, not stored as "".
+const solids = z
+  .object({
+    food: z.string().trim().min(1).max(80),
+    amount: z.enum(["little", "some", "lots"]),
+    isNew: z.boolean(),
+    reaction: z.string().trim().min(1).max(200).optional(),
+  })
+  .strict();
+const water = z.object({ ml: z.number().int().min(1).max(500) }).strict();
+const note = z.object({ text: z.string().trim().min(1).max(500) }).strict();
 
 export const detailsSchemas = {
   breast,
@@ -86,6 +101,10 @@ export const detailsSchemas = {
   temperature,
   pump,
   tummy: empty,
+  solids,
+  water,
+  bath: empty,
+  note,
 } satisfies Record<LogType, z.ZodType>;
 
 export type LogDetails = {

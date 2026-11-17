@@ -59,6 +59,43 @@ describe("QuickEntrySheet", () => {
     expect(medicine).toContain(">Thuốc hạ sốt</span>");
   });
 
+  it("solids: bowl chip, its fields with a recent-food chip, then the time chips", () => {
+    const chao = {
+      ...bottle,
+      id: "s1",
+      type: "solids",
+      details: { food: "Cháo bí đỏ", amount: "some", isNew: false },
+    } as LogRow;
+    const html = render({ type: "solids", recentLogs: [chao] });
+    expect(html).toContain(">Ăn dặm</h2>");
+    expect(html).toContain("bg-cat-bottle/15 text-cat-bottle");
+    expect(html).toContain(`d="${ICON_PATHS.bowl}"`);
+    expect(html).toContain(">Cháo bí đỏ</button>");
+    expect(html.indexOf(">Phản ứng (nếu có)</span>")).toBeLessThan(
+      html.indexOf(">Lúc nào?</span>"),
+    );
+  });
+
+  it("water, bath and note: own title and icon; bath has no field at all", () => {
+    const water = render({ type: "water" });
+    expect(water).toContain(">Uống nước</h2>");
+    expect(water).toContain("bg-cat-pump/15 text-cat-pump");
+    expect(water).toContain(`d="${ICON_PATHS.glass}"`);
+    expect(water).toContain('aria-label="Thêm 10 ml"');
+    const bath = render({ type: "bath" });
+    expect(bath).toContain(">Tắm</h2>");
+    expect(bath).toContain("bg-cat-diaper/15 text-cat-diaper");
+    expect(bath).toContain(`d="${ICON_PATHS.bath}"`);
+    expect(bath).not.toContain("<input");
+    expect(bath).not.toContain("<textarea");
+    expect(bath).toContain(">Lúc nào?</span>");
+    const note = render({ type: "note" });
+    expect(note).toContain(">Ghi chú</h2>");
+    expect(note).toContain("bg-cat-tummy/15 text-cat-tummy");
+    expect(note).toContain(`d="${ICON_PATHS.doc}"`);
+    expect(note).toMatch(/<textarea[^>]*maxLength="500"/);
+  });
+
   it("keeps the Vitamin D prefill", () => {
     const html = render({
       type: "medicine",

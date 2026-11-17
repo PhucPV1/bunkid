@@ -4,8 +4,11 @@ import { useId, useState, type FormEvent } from "react";
 import { BottleFields } from "@/components/quick/BottleFields";
 import { DiaperFields } from "@/components/quick/DiaperFields";
 import { MedicineFields } from "@/components/quick/MedicineFields";
+import { NoteFields } from "@/components/quick/NoteFields";
+import { SolidsFields } from "@/components/quick/SolidsFields";
 import { TemperatureFields } from "@/components/quick/TemperatureFields";
 import { TimeChips } from "@/components/quick/TimeChips";
+import { WaterFields } from "@/components/quick/WaterFields";
 import { Button } from "@/components/ui/Button";
 import { Sheet } from "@/components/ui/Sheet";
 import { toVietnameseError } from "@/lib/data/errors";
@@ -17,6 +20,7 @@ import {
   MEDICINE_PRESETS,
   medicinePrefill,
   recentBottleAmounts,
+  recentFoodNames,
   recentMedicineNames,
   type InstantType,
   type QuickValues,
@@ -35,6 +39,10 @@ const TITLES: Record<InstantType, string> = {
   diaper: "Thay tã",
   medicine: "Cho uống thuốc",
   temperature: "Đo nhiệt độ",
+  solids: "Ăn dặm",
+  water: "Uống nước",
+  bath: "Tắm",
+  note: "Ghi chú",
 };
 
 export function QuickEntrySheet({
@@ -131,6 +139,17 @@ export function QuickEntrySheet({
       />
     ),
     temperature: <TemperatureFields values={values} onChange={setValues} />,
+    solids: (
+      <SolidsFields
+        values={values}
+        onChange={setValues}
+        recent={recentFoodNames(recentLogs)}
+      />
+    ),
+    water: <WaterFields values={values} onChange={setValues} />,
+    // Tắm has no fields: the sheet is just the time chips and Lưu.
+    bath: null,
+    note: <NoteFields values={values} onChange={setValues} />,
   }[type];
 
   return (

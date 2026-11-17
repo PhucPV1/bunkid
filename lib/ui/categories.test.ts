@@ -19,12 +19,16 @@ describe("log categories", () => {
       tummy: { token: "cat-tummy", icon: "smile", label: "Nằm sấp" },
       medicine: { token: "cat-med", icon: "pill", label: "Thuốc" },
       temperature: { token: "cat-temp", icon: "thermo", label: "Nhiệt độ" },
+      solids: { token: "cat-bottle", icon: "bowl", label: "Ăn dặm" },
+      water: { token: "cat-pump", icon: "glass", label: "Uống nước" },
+      bath: { token: "cat-diaper", icon: "bath", label: "Tắm" },
+      note: { token: "cat-tummy", icon: "doc", label: "Ghi chú" },
     });
   });
 
   it("categoryOf falls back to a neutral category for an unknown type", () => {
     expect(categoryOf("sleep")).toBe(CATEGORIES.sleep);
-    expect(categoryOf("solids")).toEqual({
+    expect(categoryOf("vaccine")).toEqual({
       token: "cat-med",
       icon: "doc",
       label: "Bản ghi",

@@ -28,6 +28,7 @@ const METHOD = {
   tai: "tai",
   hau_mon: "hậu môn",
 } as const;
+const AMOUNT = { little: "ít", some: "vừa", lots: "nhiều" } as const;
 const TIMER_LABEL = {
   sleep: "Ngủ",
   pump: "Hút sữa",
@@ -80,6 +81,20 @@ export function describeLog(log: LogLike, now: Date): string {
     case "temperature": {
       const d = parsed.data as LogDetails["temperature"];
       return `Nhiệt độ ${d.celsius.toFixed(1)}°C (${METHOD[d.method]})`;
+    }
+    case "solids": {
+      const d = parsed.data as LogDetails["solids"];
+      return `Ăn dặm · ${d.food} · ${AMOUNT[d.amount]}${d.isNew ? " · món mới" : ""}${d.reaction ? ` · ${d.reaction}` : ""}`;
+    }
+    case "water": {
+      const d = parsed.data as LogDetails["water"];
+      return `Uống nước · ${d.ml} ml`;
+    }
+    case "bath":
+      return "Tắm";
+    case "note": {
+      const d = parsed.data as LogDetails["note"];
+      return `Ghi chú · ${d.text}`;
     }
   }
 }

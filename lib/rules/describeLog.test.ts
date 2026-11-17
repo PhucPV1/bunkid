@@ -83,6 +83,38 @@ describe("describeLog", () => {
       ),
     ).toBe("Nhiệt độ 37.8°C (nách)");
   });
+  const instant = (type: string, details: unknown) =>
+    describeLog(
+      {
+        type,
+        started_at: "2026-11-13T02:00:00Z",
+        ended_at: "2026-11-13T02:00:00Z",
+        details,
+      },
+      now,
+    );
+  it("describes solids with its amount, new-food mark and reaction", () => {
+    const solids = { food: "Cháo bí đỏ", amount: "some", isNew: false };
+    expect(instant("solids", solids)).toBe("Ăn dặm · Cháo bí đỏ · vừa");
+    expect(
+      instant("solids", { ...solids, amount: "little", isNew: true }),
+    ).toBe("Ăn dặm · Cháo bí đỏ · ít · món mới");
+    expect(
+      instant("solids", { ...solids, amount: "lots", reaction: "nổi mẩn" }),
+    ).toBe("Ăn dặm · Cháo bí đỏ · nhiều · nổi mẩn");
+    expect(
+      instant("solids", { ...solids, isNew: true, reaction: "nổi mẩn" }),
+    ).toBe("Ăn dặm · Cháo bí đỏ · vừa · món mới · nổi mẩn");
+  });
+  it("describes water, bath and note", () => {
+    expect(instant("water", { ml: 30 })).toBe("Uống nước · 30 ml");
+    expect(instant("bath", {})).toBe("Tắm");
+    expect(instant("note", { text: "Bé cười nhiều" })).toBe(
+      "Ghi chú · Bé cười nhiều",
+    );
+    expect(instant("water", { ml: 0 })).toBe("Bản ghi không hợp lệ");
+    expect(instant("vaccine", {})).toBe("Bản ghi không hợp lệ");
+  });
   it("falls back for invalid details", () => {
     expect(
       describeLog(

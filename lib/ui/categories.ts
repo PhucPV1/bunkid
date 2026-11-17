@@ -16,6 +16,10 @@ export const CATEGORIES: Record<
   tummy: { token: "cat-tummy", icon: "smile", label: "Nằm sấp" },
   medicine: { token: "cat-med", icon: "pill", label: "Thuốc" },
   temperature: { token: "cat-temp", icon: "thermo", label: "Nhiệt độ" },
+  solids: { token: "cat-bottle", icon: "bowl", label: "Ăn dặm" },
+  water: { token: "cat-pump", icon: "glass", label: "Uống nước" },
+  bath: { token: "cat-diaper", icon: "bath", label: "Tắm" },
+  note: { token: "cat-tummy", icon: "doc", label: "Ghi chú" },
 };
 
 // A log type this build does not know (written by a newer release while this

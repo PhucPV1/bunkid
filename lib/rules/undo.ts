@@ -18,8 +18,19 @@ export type UndoToast = {
   undo: { kind: "delete"; id: string } | { kind: "resume"; log: StoppedLog };
 };
 
+// A toast is one or two lines. A long note, or a long reaction on a solids log,
+// is cut here; Nhật ký and the home list keep the full text.
+export const TOAST_TEXT_MAX = 60;
+
+export function toastText(text: string): string {
+  const chars = Array.from(text);
+  return chars.length > TOAST_TEXT_MAX
+    ? `${chars.slice(0, TOAST_TEXT_MAX).join("")}…`
+    : text;
+}
+
 export function savedMessage(log: LogLike, at: Date): string {
-  return `Đã ghi ${describeLog(log, at)} lúc ${formatVnTime(at)}`;
+  return `Đã ghi ${toastText(describeLog(log, at))} lúc ${formatVnTime(at)}`;
 }
 
 export function undoFailedMessage(reason: string): string {

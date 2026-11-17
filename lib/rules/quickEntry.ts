@@ -1,14 +1,24 @@
 import type { LogLike } from "./describeLog";
 import { detailsSchemas, MEDICINE_UNITS, type StoolColor } from "./logDetails";
 
-export type InstantType = "bottle" | "diaper" | "medicine" | "temperature";
+export type InstantType =
+  | "bottle"
+  | "diaper"
+  | "medicine"
+  | "temperature"
+  | "solids"
+  | "water"
+  | "bath"
+  | "note";
 export type QuickValues = Record<string, string | boolean>;
 export type QuickField = {
   key: string;
   label: string;
-  kind: "number" | "text" | "select" | "checkbox";
+  kind: "number" | "text" | "textarea" | "select" | "checkbox";
   options?: { value: string; label: string }[];
   showIf?: (values: QuickValues) => boolean;
+  // Same limit as the schema, so a text field cannot be typed past it.
+  maxLength?: number;
 };
 
 // Spec 2026-11-17 §3.3: how much the baby ate. Declared above QUICK_FIELDS, which uses it.
@@ -78,6 +88,25 @@ export const QUICK_FIELDS: Record<InstantType, QuickField[]> = {
       ],
     },
   ],
+  solids: [
+    { key: "food", label: "Món", kind: "text", maxLength: 80 },
+    {
+      key: "amount",
+      label: "Lượng",
+      kind: "select",
+      options: SOLIDS_AMOUNT_OPTIONS,
+    },
+    { key: "isNew", label: "Món mới", kind: "checkbox" },
+    {
+      key: "reaction",
+      label: "Phản ứng (nếu có)",
+      kind: "text",
+      maxLength: 200,
+    },
+  ],
+  water: [{ key: "ml", label: "Số ml", kind: "number" }],
+  bath: [],
+  note: [{ key: "text", label: "Nội dung", kind: "textarea", maxLength: 500 }],
 };
 
 const DEFAULTS: Record<InstantType, QuickValues> = {
@@ -85,13 +114,23 @@ const DEFAULTS: Record<InstantType, QuickValues> = {
   diaper: { wet: true, dirty: false, stoolColor: "" },
   medicine: { name: "", amount: "", unit: "ml", antipyretic: false },
   temperature: { celsius: "", method: "nach" },
+  solids: { food: "", amount: "some", isNew: false, reaction: "" },
+  water: { ml: "" },
+  bath: {},
+  note: { text: "" },
 };
 
-const MESSAGES: Record<InstantType, string> = {
+// Tắm has no fields, so it has nothing to get wrong and no message.
+type CheckedType = Exclude<InstantType, "bath">;
+
+const MESSAGES: Record<CheckedType, string> = {
   bottle: "Nhập số ml từ 1 đến 400",
   diaper: "Chọn ít nhất ướt hoặc bẩn",
   medicine: "Nhập tên thuốc và lượng dùng",
   temperature: "Nhập nhiệt độ từ 34 đến 43°C",
+  solids: "Nhập tên món",
+  water: "Nhập số ml từ 1 đến 500",
+  note: "Nhập ghi chú",
 };
 
 export function defaultQuickValues(type: InstantType): QuickValues {
@@ -104,7 +143,7 @@ function toNumber(value: string | boolean | undefined): number {
 }
 
 function rawDetails(
-  type: InstantType,
+  type: CheckedType,
   v: QuickValues,
 ): Record<string, unknown> {
   switch (type) {
@@ -129,6 +168,19 @@ function rawDetails(
       };
     case "temperature":
       return { celsius: toNumber(v.celsius), method: v.method };
+    case "solids": {
+      const reaction = typeof v.reaction === "string" ? v.reaction.trim() : "";
+      return {
+        food: typeof v.food === "string" ? v.food.trim() : "",
+        amount: v.amount,
+        isNew: v.isNew === true,
+        ...(reaction === "" ? {} : { reaction }),
+      };
+    }
+    case "water":
+      return { ml: toNumber(v.ml) };
+    case "note":
+      return { text: typeof v.text === "string" ? v.text.trim() : "" };
   }
 }
 
@@ -138,6 +190,7 @@ export function buildDetails(
 ):
   | { ok: true; details: Record<string, unknown> }
   | { ok: false; message: string } {
+  if (type === "bath") return { ok: true, details: {} };
   const result = detailsSchemas[type].safeParse(rawDetails(type, values));
   return result.success
     ? { ok: true, details: result.data as Record<string, unknown> }
@@ -178,6 +231,25 @@ export function recentMedicineNames(
     const parsed = detailsSchemas.medicine.safeParse(log.details);
     if (!parsed.success) continue;
     const name = parsed.data.name.trim();
+    const key = medicineKey(name);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    names.push(name);
+    if (names.length === 4) break;
+  }
+  return names;
+}
+
+// Spec 2026-11-17 §3.3: up to 4 different food names from solids logs, same rule as
+// recentMedicineNames: case-insensitive, latest spelling kept.
+export function recentFoodNames(logs: LogLike[]): string[] {
+  const names: string[] = [];
+  const seen = new Set<string>();
+  for (const log of byNewest(logs)) {
+    if (log.type !== "solids") continue;
+    const parsed = detailsSchemas.solids.safeParse(log.details);
+    if (!parsed.success) continue;
+    const name = parsed.data.food.trim();
     const key = medicineKey(name);
     if (seen.has(key)) continue;
     seen.add(key);

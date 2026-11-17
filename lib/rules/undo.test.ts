@@ -9,6 +9,7 @@ import {
   savedMessage,
   stopToast,
   stoppedOnly,
+  toastText,
   UNDO_LABEL,
   undoFailedMessage,
 } from "./undo";
@@ -54,6 +55,40 @@ describe("undo toasts", () => {
       message: "Đã ghi Bình 90 ml sữa công thức lúc 12:00",
       undo: { kind: "delete", id: "n1" },
     });
+  });
+
+  it("toastText keeps up to 60 characters and marks a cut with …", () => {
+    expect(toastText("Tắm")).toBe("Tắm");
+    expect(toastText("ă".repeat(60))).toBe("ă".repeat(60));
+    expect(toastText("ă".repeat(61))).toBe(`${"ă".repeat(60)}…`);
+  });
+
+  it("a long note or a long reaction is cut in the toast only", () => {
+    const note = instantToast({
+      id: "n2",
+      type: "note",
+      details: { text: "a".repeat(500) },
+      at: AT,
+    });
+    expect(note.message).toBe(`Đã ghi Ghi chú · ${"a".repeat(50)}… lúc 12:00`);
+    expect(note.undo).toEqual({ kind: "delete", id: "n2" });
+    const solids = instantToast({
+      id: "n3",
+      type: "solids",
+      details: {
+        food: "Cháo bí đỏ",
+        amount: "some",
+        isNew: true,
+        reaction: "r".repeat(200),
+      },
+      at: AT,
+    });
+    expect(solids.message).toBe(
+      `Đã ghi Ăn dặm · Cháo bí đỏ · vừa · món mới · ${"r".repeat(22)}… lúc 12:00`,
+    );
+    expect(
+      instantToast({ id: "n4", type: "bath", details: {}, at: AT }).message,
+    ).toBe("Đã ghi Tắm lúc 12:00");
   });
 
   it("a stopped timer: describes the duration at the stop time, undo resumes it", () => {

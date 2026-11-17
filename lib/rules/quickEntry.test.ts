@@ -10,6 +10,7 @@ import {
   ML_STEP,
   QUICK_FIELDS,
   recentBottleAmounts,
+  recentFoodNames,
   recentMedicineNames,
   stepAmount,
   STOOL_OPTIONS,
@@ -84,11 +85,101 @@ describe("buildDetails", () => {
       "diaper",
       "medicine",
       "temperature",
+      "solids",
+      "water",
+      "bath",
+      "note",
     ] as const) {
       const defaults = defaultQuickValues(type);
       for (const field of QUICK_FIELDS[type])
         expect(defaults).toHaveProperty(field.key);
     }
+  });
+});
+
+describe("solids, water, bath and note (spec 2026-11-17 §3.3)", () => {
+  it("fields: labels, kinds and the schema's length limits", () => {
+    expect(
+      QUICK_FIELDS.solids.map((f) => [f.key, f.label, f.kind, f.maxLength]),
+    ).toEqual([
+      ["food", "Món", "text", 80],
+      ["amount", "Lượng", "select", undefined],
+      ["isNew", "Món mới", "checkbox", undefined],
+      ["reaction", "Phản ứng (nếu có)", "text", 200],
+    ]);
+    expect(QUICK_FIELDS.solids[1].options).toEqual([
+      { value: "little", label: "Ít" },
+      { value: "some", label: "Vừa" },
+      { value: "lots", label: "Nhiều" },
+    ]);
+    expect(QUICK_FIELDS.water).toEqual([
+      { key: "ml", label: "Số ml", kind: "number" },
+    ]);
+    expect(QUICK_FIELDS.bath).toEqual([]);
+    expect(QUICK_FIELDS.note).toEqual([
+      { key: "text", label: "Nội dung", kind: "textarea", maxLength: 500 },
+    ]);
+  });
+
+  it("defaults: a medium portion of nothing yet, empty ml, empty note", () => {
+    expect(defaultQuickValues("solids")).toEqual({
+      food: "",
+      amount: "some",
+      isNew: false,
+      reaction: "",
+    });
+    expect(defaultQuickValues("water")).toEqual({ ml: "" });
+    expect(defaultQuickValues("bath")).toEqual({});
+    expect(defaultQuickValues("note")).toEqual({ text: "" });
+  });
+
+  it("solids: trims, leaves out an empty reaction, needs a food name", () => {
+    const values = {
+      food: " Cháo bí đỏ ",
+      amount: "little",
+      isNew: true,
+      reaction: "  ",
+    };
+    expect(buildDetails("solids", values)).toEqual({
+      ok: true,
+      details: { food: "Cháo bí đỏ", amount: "little", isNew: true },
+    });
+    expect(
+      buildDetails("solids", { ...values, reaction: " nổi mẩn " }),
+    ).toEqual({
+      ok: true,
+      details: {
+        food: "Cháo bí đỏ",
+        amount: "little",
+        isNew: true,
+        reaction: "nổi mẩn",
+      },
+    });
+    expect(buildDetails("solids", { ...values, food: "  " })).toEqual({
+      ok: false,
+      message: "Nhập tên món",
+    });
+  });
+
+  it("water, bath and note: details and messages", () => {
+    expect(buildDetails("water", { ml: "30" })).toEqual({
+      ok: true,
+      details: { ml: 30 },
+    });
+    for (const ml of ["", "0", "501", "12,5"])
+      expect(buildDetails("water", { ml })).toEqual({
+        ok: false,
+        message: "Nhập số ml từ 1 đến 500",
+      });
+    expect(buildDetails("bath", {})).toEqual({ ok: true, details: {} });
+    expect(buildDetails("note", { text: " Bé cười nhiều " })).toEqual({
+      ok: true,
+      details: { text: "Bé cười nhiều" },
+    });
+    expect(buildDetails("note", { text: "   " })).toEqual({
+      ok: false,
+      message: "Nhập ghi chú",
+    });
   });
 });
 
@@ -147,6 +238,28 @@ describe("recent suggestions", () => {
         bottleLog(1, 90),
       ]),
     ).toEqual(["Paracetamol", "Vitamin D", "Men vi sinh", "Siro ho"]);
+  });
+
+  it("recentFoodNames: up to 4 names, case-insensitive, latest spelling", () => {
+    const food = (minutesAgo: number, name: string): LogLike => ({
+      type: "solids",
+      started_at: at(minutesAgo),
+      ended_at: at(minutesAgo),
+      details: { food: name, amount: "some", isNew: false },
+    });
+    expect(
+      recentFoodNames([
+        food(100, "cháo bí đỏ"),
+        food(10, "Cháo bí đỏ "),
+        food(20, "Chuối"),
+        food(30, "Bơ"),
+        food(40, "Khoai lang"),
+        food(50, "Táo"),
+        medLog(1, "Vitamin D"),
+        { ...food(5, "Hỏng"), details: { food: "Hỏng" } },
+      ]),
+    ).toEqual(["Cháo bí đỏ", "Chuối", "Bơ", "Khoai lang"]);
+    expect(recentFoodNames([])).toEqual([]);
   });
 
   it("MEDICINE_PRESETS: Vitamin D, DHA, Men tiêu hoá in that order", () => {
