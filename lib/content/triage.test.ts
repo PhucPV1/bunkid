@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { CONDITIONS } from "./conditions";
 import { TRIAGE } from "./triage";
 
 describe("content/triage.vi.json (spec §6.6, §10.2)", () => {
@@ -68,5 +69,37 @@ describe("content/triage.vi.json (spec §6.6, §10.2)", () => {
       "chẩn đoán",
     ])
       expect(text).not.toContain(word);
+  });
+
+  it("every symptom has a unique code, a known group and suggests existing articles", () => {
+    const groups = new Set(TRIAGE.groups.map((g) => g.code));
+    const articles = new Set(CONDITIONS.articles.map((a) => a.code));
+    const codes = TRIAGE.symptoms.map((s) => s.code);
+    expect(codes).toHaveLength(23);
+    expect(new Set(codes).size).toBe(codes.length);
+    for (const s of TRIAGE.symptoms) {
+      expect(groups.has(s.group), s.code).toBe(true);
+      expect(s.suggests.length, s.code).toBeGreaterThan(0);
+      for (const code of s.suggests)
+        expect(articles.has(code), `${s.code} → ${code}`).toBe(true);
+    }
+    expect(TRIAGE.symptomsSource).toBe("https://www.nhs.uk/conditions/");
+  });
+
+  it("first aid fires only on real question codes or @fever", () => {
+    const questions = new Set(TRIAGE.questions.map((q) => q.code));
+    expect(TRIAGE.firstAid.map((b) => b.code)).toEqual([
+      "seizure",
+      "breathing",
+      "fluids",
+      "fever",
+    ]);
+    for (const block of TRIAGE.firstAid)
+      for (const when of block.when)
+        expect(
+          when === "@fever" || questions.has(when),
+          `${block.code}: ${when}`,
+        ).toBe(true);
+    expect(TRIAGE.whileGoing).toHaveLength(3);
   });
 });

@@ -1,7 +1,7 @@
 {
   "title": "Phân loại triệu chứng",
   "disclaimer": "Thông tin tham khảo, không thay thế bác sĩ.",
-  "reviewedAt": "2026-11-14",
+  "reviewedAt": "2026-11-17",
   "groups": [
     {"code": "fever", "name": "Sốt"},
     {"code": "breathing", "name": "Hô hấp"},
@@ -18,6 +18,43 @@
     "Làm lại phân loại này khi bé có thêm dấu hiệu mới."
   ],
   "homeCareSource": "https://www.nhs.uk/conditions/fever-in-children/",
+  "symptoms": [
+    {"code": "fever", "group": "fever", "text": "Sốt hoặc sờ thấy nóng", "suggests": ["sot", "cam_lanh", "viem_tai_giua", "sot_phat_ban", "tay_chan_mieng", "croup"]},
+    {"code": "runny_nose", "group": "breathing", "text": "Sổ mũi, nghẹt mũi, hắt hơi", "suggests": ["so_mui", "cam_lanh"]},
+    {"code": "cough", "group": "breathing", "text": "Ho", "suggests": ["cam_lanh", "viem_tieu_phe_quan", "croup"]},
+    {"code": "barking_cough", "group": "breathing", "text": "Ho ông ổng như tiếng chó sủa, khàn tiếng", "suggests": ["croup"]},
+    {"code": "wheeze", "group": "breathing", "text": "Thở khò khè", "suggests": ["viem_tieu_phe_quan"]},
+    {"code": "spit_up", "group": "digestion", "text": "Trớ sữa sau khi bú", "suggests": ["non_tro"]},
+    {"code": "vomit", "group": "digestion", "text": "Nôn", "suggests": ["tieu_chay", "non_tro"]},
+    {"code": "diarrhoea", "group": "digestion", "text": "Phân lỏng, đi nhiều lần hơn mọi ngày", "suggests": ["tieu_chay"]},
+    {"code": "hard_stool", "group": "digestion", "text": "Phân cứng, rặn khó, lâu không đi", "suggests": ["tao_bon"]},
+    {"code": "gassy", "group": "digestion", "text": "Đầy hơi, xì hơi nhiều, co chân khi khóc", "suggests": ["khoc_da_de", "tao_bon"]},
+    {"code": "diaper_rash", "group": "skin", "text": "Da vùng mặc tã đỏ, rát", "suggests": ["ham_ta"]},
+    {"code": "dry_red_skin", "group": "skin", "text": "Mảng da khô, đỏ, ngứa ở má hoặc nếp gấp", "suggests": ["cham_sua"]},
+    {"code": "heat_rash", "group": "skin", "text": "Nốt đỏ li ti ở cổ, lưng, nách khi trời nóng", "suggests": ["rom_say"]},
+    {"code": "rash_after_fever", "group": "skin", "text": "Nổi ban hồng ngay sau khi vừa hết sốt", "suggests": ["sot_phat_ban"]},
+    {"code": "hand_foot_spots", "group": "skin", "text": "Nốt phỏng hoặc ban đỏ ở lòng bàn tay, bàn chân, mông", "suggests": ["tay_chan_mieng"]},
+    {"code": "yellow_skin", "group": "skin", "text": "Da hoặc lòng trắng mắt hơi vàng", "suggests": ["vang_da_sinh_ly"]},
+    {"code": "white_mouth", "group": "other", "text": "Mảng trắng trong miệng, trên lưỡi, lau không sạch", "suggests": ["nam_mieng"]},
+    {"code": "mouth_sores", "group": "other", "text": "Loét trong miệng, bỏ bú vì đau miệng", "suggests": ["tay_chan_mieng", "nam_mieng"]},
+    {"code": "ear_rub", "group": "other", "text": "Dụi, kéo tai, quấy hơn khi nằm", "suggests": ["viem_tai_giua", "moc_rang"]},
+    {"code": "sticky_eye", "group": "other", "text": "Mắt đỏ, nhiều ghèn hoặc chảy nước mắt", "suggests": ["dau_mat"]},
+    {"code": "drooling", "group": "behaviour", "text": "Chảy nhiều dãi, gặm cắn đồ, lợi sưng đỏ", "suggests": ["moc_rang"], "minAgeDays": 90},
+    {"code": "long_crying", "group": "behaviour", "text": "Khóc nhiều, khó dỗ vào chiều tối nhưng vẫn bú và lớn tốt", "suggests": ["khoc_da_de"], "maxAgeDays": 180},
+    {"code": "fussy", "group": "behaviour", "text": "Quấy, ngủ không yên", "suggests": ["cam_lanh", "so_mui", "viem_tai_giua", "moc_rang", "khoc_da_de"]}
+  ],
+  "symptomsSource": "https://www.nhs.uk/conditions/",
+  "firstAid": [
+    {"code": "seizure", "title": "Nếu bé đang co giật", "when": ["convulsion"], "steps": ["Đặt bé nằm nghiêng trên mặt phẳng an toàn (sàn, giường), dẹp đồ cứng xung quanh.", "Không cho gì vào miệng bé, không cạy miệng, không giữ chặt tay chân, không bấm huyệt hay cạo gió.", "Nhìn đồng hồ ghi giờ bắt đầu; quay video nếu có người giúp.", "Gọi 115 nếu co giật quá 5 phút, bé khó thở, hoặc không tỉnh lại sau cơn.", "Sau cơn, giữ bé nằm nghiêng cho tới khi bé tỉnh hẳn."]},
+    {"code": "breathing", "title": "Nếu bé khó thở", "when": ["fast_breathing", "chest_indrawing", "grunting_pauses", "stridor", "blue_skin"], "steps": ["Bế bé ngồi thẳng hoặc nửa nằm nửa ngồi, nới lỏng quần áo, tã.", "Giữ bé và bản thân bình tĩnh; khóc làm bé thở khó hơn.", "Hút hoặc lau sạch mũi nếu nghẹt; không ép bé bú khi đang thở rất khó.", "Nếu bé ngừng thở hoặc tím tái: gọi 115 ngay và làm theo hướng dẫn của tổng đài."]},
+    {"code": "fluids", "title": "Nếu bé nôn nhiều hoặc ít tã ướt", "when": ["vomits_everything", "green_vomit", "repeated_vomit", "no_wet_12h", "few_wet_diapers", "dehydration_signs", "poor_feeding", "infant_dv", "long_diarrhoea"], "steps": ["Tiếp tục cho bú mẹ hoặc bú bình, từng ít một nhưng nhiều lần (vài phút một lần).", "Bé nôn thì nghỉ khoảng 10 phút rồi cho bú lại từng ít.", "Hỏi dược sĩ, bác sĩ về dung dịch bù nước (ORS) pha đúng hướng dẫn; không pha loãng hay đặc hơn.", "Không cho uống nước ép, nước ngọt, nước đường hay thuốc cầm nôn, cầm tiêu chảy.", "Đếm tã ướt và để ý mắt trũng, khóc không có nước mắt."]},
+    {"code": "fever", "title": "Nếu bé đang sốt", "when": ["@fever", "feels_hot_infant", "fever_cold_hands", "fever_rash", "fever_5_days"], "steps": ["Cởi bớt áo, để bé mặc một lớp mỏng; không ủ ấm, không quấn chặt.", "Không lau người bằng nước lạnh, nước đá hay cồn.", "Cho bú thường xuyên hơn.", "Bé dưới 2 tháng: không tự cho thuốc hạ sốt. Bé lớn hơn, nếu khó chịu: paracetamol (từ 2 tháng) hoặc ibuprofen (từ 3 tháng và nặng từ 5 kg), đúng liều theo cân nặng ghi trên hộp hoặc hỏi dược sĩ; không dùng aspirin, không dùng hai thuốc cùng lúc khi chưa hỏi bác sĩ."]}
+  ],
+  "whileGoing": [
+    "Gọi 115 nếu bé khó thở, tím tái, co giật, li bì hoặc mềm nhũn; nếu tự đưa đi, một người lái xe, một người ngồi trông bé.",
+    "Mang theo sổ tiêm chủng, thuốc bé đã dùng và nhật ký nhiệt độ, cữ bú, tã (mở app cho bác sĩ xem).",
+    "Không cho bé uống thuốc mới, thuốc nam hay mẹo dân gian trong lúc chờ."
+  ],
   "questions": [
     {"code": "feels_hot_infant", "group": "fever", "level": "red", "text": "Bé dưới 3 tháng sờ thấy nóng hoặc có vẻ sốt mà chưa đo được nhiệt độ", "short": "bé dưới 3 tháng có vẻ sốt", "maxAgeDays": 90, "source": "https://www.nhs.uk/conditions/fever-in-children/", "reviewedAt": "2026-11-14"},
     {"code": "fever_rash", "group": "fever", "level": "yellow", "text": "Bé sốt kèm phát ban", "short": "sốt kèm phát ban", "source": "https://www.nhs.uk/conditions/fever-in-children/", "reviewedAt": "2026-11-14"},

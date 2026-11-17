@@ -19,6 +19,30 @@ export const TriageQuestionSchema = z
   })
   .strict();
 
+const code = z.string().regex(/^[a-z0-9_]+$/);
+
+// Spec 2026-11-17 §4.1: a common symptom and the articles it suggests.
+export const TriageSymptomSchema = z
+  .object({
+    code,
+    group: z.string().min(1),
+    text: z.string().min(1),
+    suggests: z.array(code).min(1),
+    minAgeDays: z.number().int().min(0).optional(),
+    maxAgeDays: z.number().int().min(0).optional(),
+  })
+  .strict();
+
+// `when` holds question codes, or "@fever" for a measured temperature from 38°C.
+export const FirstAidSchema = z
+  .object({
+    code,
+    title: z.string().min(1),
+    when: z.array(z.string().regex(/^(@fever|[a-z0-9_]+)$/)).min(1),
+    steps: z.array(z.string().min(1)).min(1),
+  })
+  .strict();
+
 export const TriageContentSchema = z
   .object({
     title: z.string().min(1),
@@ -27,11 +51,17 @@ export const TriageContentSchema = z
     groups: z.array(z.object({ code: z.string(), name: z.string() }).strict()),
     homeCare: z.array(z.string().min(1)).min(1),
     homeCareSource: z.url(),
+    symptoms: z.array(TriageSymptomSchema).min(1),
+    symptomsSource: z.url(),
+    firstAid: z.array(FirstAidSchema).min(1),
+    whileGoing: z.array(z.string().min(1)).min(1),
     questions: z.array(TriageQuestionSchema),
   })
   .strict();
 
 export type TriageQuestion = z.infer<typeof TriageQuestionSchema>;
 export type TriageContent = z.infer<typeof TriageContentSchema>;
+export type TriageSymptom = z.infer<typeof TriageSymptomSchema>;
+export type FirstAid = z.infer<typeof FirstAidSchema>;
 
 export const TRIAGE: TriageContent = TriageContentSchema.parse(data);

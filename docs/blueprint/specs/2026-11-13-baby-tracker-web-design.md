@@ -22,7 +22,7 @@ Ngoài phạm vi: app iOS native (unit 2), nhiều bé trên giao diện (DB đ�
 - Mọi khóa chính là UUID v4. Bản ghi `logs` sinh UUID ở client để gửi lại offline không bị trùng.
 - Chỉ dùng gói miễn phí: Vercel Hobby, Supabase Free. Không thêm dịch vụ trả phí.
 - Bí mật không bao giờ xuống client: `SUPABASE_SERVICE_ROLE_KEY`, `VAPID_PRIVATE_KEY`, `CRON_SECRET`.
-- An toàn y tế: app **không** đặt tên bệnh, **không** tính liều thuốc. Mọi màn kết quả triệu chứng có nút gọi `115` và dòng "Thông tin tham khảo, không thay thế bác sĩ."
+- An toàn y tế: app **không** kết luận bệnh (chỉ gợi ý bệnh có thể gặp, ghi rõ không phải chẩn đoán), **không** tính liều thuốc. Mọi màn kết quả triệu chứng có nút gọi `115` và dòng "Thông tin tham khảo, không thay thế bác sĩ."
 - Nội dung y tế (lịch tiêm, triệu chứng, mốc phát triển, chuẩn đánh giá) mỗi mục phải ghi `source` (URL) và `reviewedAt` (ngày).
 - Đăng nhập chỉ bằng Google (Supabase Auth). Quyền truy cập dữ liệu do danh sách Gmail trong `family_members` quyết định.
 
@@ -270,7 +270,7 @@ Nhập lần đo. Ba biểu đồ (cân nặng, chiều dài, vòng đầu theo 
 - Kết quả: rule đỏ đầu tiên khớp → 🔴 **Đi cấp cứu ngay**. Không có đỏ nhưng có vàng → 🟡 **Cho bé đi khám trong 24 giờ**. Còn lại → 🟢 **Theo dõi tại nhà**, kèm hướng dẫn chăm và "Đi khám ngay nếu xuất hiện: …".
 - Màn kết quả luôn có nút `tel:115`, nút gọi bác sĩ (danh bạ khẩn cấp) và dòng miễn trừ trong Global Constraints.
 - Rule đỏ bắt buộc (nguồn: WHO IMCI danger signs, Bộ Y tế): bú kém/bỏ bú; co giật; li bì, khó đánh thức; thở nhanh (≥ 60 lần/phút khi `ageDays < 60`, ≥ 50 khi 60 ≤ `ageDays` < 365, ≥ 40 khi `ageDays` ≥ 365); rút lõm lồng ngực; tím môi/da; nôn ra tất cả mọi thứ; thóp phồng; nhiệt độ ≥ 38.0°C khi `ageDays < 91`; nhiệt độ < 35.5°C; nhiệt độ ≥ 40.0°C ở mọi tuổi; vàng da lan tới lòng bàn tay/chân; phân bạc màu; tiêu chảy có máu; dưới 4 tã ướt trong 24 giờ.
-- Không có kết quả nào hiện tên bệnh như một kết luận. Phần cẩm nang "Bệnh thường gặp" (cảm lạnh, sổ mũi, nôn trớ, táo bón, hăm tã, chàm sữa, nấm miệng, vàng da sinh lý, viêm tiểu phế quản, tiêu chảy) là bài đọc riêng, mỗi bài có mục "Khi nào đi khám ngay".
+- Không có kết quả nào hiện tên bệnh như một kết luận; khối "Có thể bé đang bị" (spec 2026-11-17) chỉ là gợi ý. Phần cẩm nang "Bệnh thường gặp" (cảm lạnh, sổ mũi, nôn trớ, táo bón, hăm tã, chàm sữa, nấm miệng, vàng da sinh lý, viêm tiểu phế quản, tiêu chảy) là bài đọc riêng, mỗi bài có mục "Khi nào đi khám ngay".
 
 ### 6.7 Thông tin khẩn cấp `/khan-cap` (đợt 2)
 

@@ -8,6 +8,8 @@ export const ConditionArticleSchema = z
   .object({
     code: z.string().regex(/^[a-z0-9_]+$/),
     title: z.string().min(1),
+    // Spec 2026-11-17 §4.4: the tab label on the triage result; falls back to title.
+    short: z.string().min(1).optional(),
     summary: z.string().min(1),
     signs: lines,
     homeCare: lines,
@@ -15,6 +17,9 @@ export const ConditionArticleSchema = z
     // Spec §6.6: every article has "Khi nào đi khám ngay".
     goNow: lines,
     usualCourse: z.string().min(1),
+    // Spec 2026-11-17 §4.2: only filters triage suggestions, never the article list.
+    minAgeDays: z.number().int().min(0).optional(),
+    maxAgeDays: z.number().int().min(0).optional(),
     source: z.url(),
     reviewedAt: isoDate,
   })
