@@ -1691,7 +1691,17 @@ Expected: lần đầu dừng với `SecurityFatalError` của Next.js 16.4.3 (b
 
 > **Kết quả 2026-11-17 (Step 1–2).** Trên nhánh `feat/kim-bun-canh-timer-m2`: `tsc --noEmit` sạch; vitest `143 passed (143)` file, `866 passed (866)` test; `bun run build` dừng lần đầu với `SecurityFatalError`, lần hai `✓ Generating static pages (37/37)` và thoát mã 0. Cả 8 patch áp sạch; số test đỏ ở Task 1–4 đúng như ghi (9/13, 1/11, 4/33, 2/10).
 
-- [ ] **Step 3: Kiểm trên trình duyệt (phiên chính làm, không bấm Lưu, không bấm Dừng)**
+- [x] **Step 3: Kiểm trên trình duyệt (phiên chính làm, không bấm Lưu, không bấm Dừng)**
+
+> **Kết quả 2026-11-17.** Phiên chính kiểm bằng trình duyệt có sẵn trong app Claude ở 375×812, người dùng đồng ý ("mở trong app"). Không bấm Lưu, không bấm nút bấm giờ hay Dừng nào, không vào Cài đặt. Lúc kiểm nhà đang có một timer Ngủ thật chạy (khoảng 47 phút).
+>
+> - Mục 1: hàng "Bấm giờ" có đúng một nhãn "Nên bú" trên nút Bú phải (`aria-label="Bú phải, nên bú"`). Thẻ hero đang ở trạng thái timer chạy nên không có nhãn và dòng "Lần trước" (đúng); nhãn trong thẻ hero **chưa** được thấy tận mắt.
+> - Mục 2: bảng "+" có nhãn "Nên bú" trên ô Bú phải, nằm gọn trong sheet, không che ô bên cạnh.
+> - Mục 3: không áp dụng (timer đang chạy là Ngủ, không phải bú).
+> - Mục 4: ở `/nhat-ky` có viên `Ngủ · 47:15 | Dừng`, canh giữa, cao 44 px, cách thanh tab 8 px, đồng hồ nhảy (47:15 → 47:28); `data-timer-pill="on"`, `--pill-offset` là 52px, vùng đệm đáy 172px. Về `/`: viên biến mất, thuộc tính được gỡ, `--pill-offset` về 0px.
+> - Mục 5: banner timer quên **không** thấy được (chưa timer nào quá ngưỡng); bộ đếm `+n` và việc toast nhích lên cũng chưa thấy. Đứng thay là unit test.
+> - Mục 6: không tràn ngang ở `/`, `/nhat-ky` và trong bảng "+".
+> - Mục 7: ở Hồng dịu và Ban đêm, viên timer (Nhật ký) và nhãn "Nên bú" (hàng Bấm giờ) đọc rõ. Bảng "+" chỉ xem ở theme Tối.
 
 Bước này do **phiên chính** làm, bằng trình duyệt có sẵn trong app Claude, và cần người dùng đồng ý trước mỗi lần. Người thực thi là subagent thì **để ô này chưa tick** và ghi vào báo cáo là chưa làm.
 
@@ -1713,7 +1723,7 @@ Chạy `bun run dev` (nếu nó dừng với thông báo bảo mật thì chạy
 
 Dừng `bun run dev` khi xong. Ghi kết quả từng mục ngay dưới bước này.
 
-- [ ] **Step 4: Commit phần ghi kết quả, rồi báo cáo**
+- [x] **Step 4: Commit phần ghi kết quả, rồi báo cáo**
 
 ```bash
 git add docs/blueprint/plans/2026-11-17-kim-bun-canh-timer-m2.md
