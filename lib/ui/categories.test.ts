@@ -41,8 +41,16 @@ describe("log categories", () => {
 });
 
 describe("icon paths", () => {
-  it("has the 39 icons the app uses, each a non-empty path", () => {
-    expect(Object.keys(ICON_PATHS)).toHaveLength(39);
+  it("has the 42 icons the app uses, each a non-empty path", () => {
+    expect(Object.keys(ICON_PATHS)).toHaveLength(42);
     for (const d of Object.values(ICON_PATHS)) expect(d).toMatch(/^[Mm]/);
+  });
+
+  it("has bowl, glass and bath, each a closed shape plus detail strokes", () => {
+    const paths: Record<string, string> = ICON_PATHS;
+    for (const name of ["bowl", "glass", "bath"]) {
+      expect(paths[name], name).toMatch(/^M[^z]+z(M[^z]+)+$/);
+      expect(paths[name]).not.toMatch(/[^MmLlHhVvAaZz0-9 .-]/);
+    }
   });
 });
