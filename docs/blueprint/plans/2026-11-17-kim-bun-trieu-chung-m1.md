@@ -242,7 +242,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `lib/content/triage.ts`: `export type TriageSymptom = { code: string; group: string; text: string; suggests: string[]; minAgeDays?: number; maxAgeDays?: number }`; `export type FirstAid = { code: string; title: string; when: string[]; steps: string[] }`; `TriageContent` có thêm `symptoms: TriageSymptom[]`, `symptomsSource: string`, `firstAid: FirstAid[]`, `whileGoing: string[]`.
   - `lib/content/conditions.ts`: `ConditionArticle` có thêm `short?: string`, `minAgeDays?: number`, `maxAgeDays?: number`.
 
-- [ ] **Step 1: Viết test thất bại cho nội dung triệu chứng**
+- [x] **Step 1: Viết test thất bại cho nội dung triệu chứng**
 
 Thêm vào cuối `describe` trong `lib/content/triage.test.ts`, và thêm `import { CONDITIONS } from "./conditions";` ở đầu file:
 
@@ -280,7 +280,7 @@ it("first aid fires only on real question codes or @fever", () => {
 });
 ```
 
-- [ ] **Step 2: Viết test thất bại cho bài bệnh**
+- [x] **Step 2: Viết test thất bại cho bài bệnh**
 
 Trong `lib/content/conditions.test.ts`, thay test `"has the ten articles of spec §6.6 in order"` bằng:
 
@@ -350,17 +350,17 @@ it("states medicine only with age limits and the pharmacist line", () => {
 });
 ```
 
-- [ ] **Step 3: Chạy test, thấy thất bại**
+- [x] **Step 3: Chạy test, thấy thất bại**
 
 Run: `bunx vitest run lib/content`
 Expected: FAIL. Lỗi TypeScript/runtime ở `TRIAGE.symptoms` (undefined) và danh sách 10 tiêu đề khác 19.
 
-- [ ] **Step 4: Áp phần nội dung của patch nháp**
+- [x] **Step 4: Áp phần nội dung của patch nháp**
 
 Run: `git apply --include='content/*' docs/blueprint/specs/2026-11-17-kim-bun-trieu-chung-draft.patch`
 Expected: không in gì; `git diff --stat` có thêm `content/conditions.vi.json` và `content/triage.vi.json`.
 
-- [ ] **Step 5: Sửa `symptomsSource`**
+- [x] **Step 5: Sửa `symptomsSource`**
 
 Trong `content/triage.vi.json`, sửa dòng:
 
@@ -374,7 +374,7 @@ thành:
   "symptomsSource": "https://www.nhs.uk/conditions/",
 ```
 
-- [ ] **Step 6: Thêm `short` cho 8 bài**
+- [x] **Step 6: Thêm `short` cho 8 bài**
 
 Trong `content/conditions.vi.json`, mỗi bài nằm trên một dòng. Thay đúng 8 đoạn sau (thêm `"short"` ngay sau `"title"`):
 
@@ -389,7 +389,7 @@ Trong `content/conditions.vi.json`, mỗi bài nằm trên một dòng. Thay đ�
 | `{"code": "croup", "title": "Viêm thanh quản (croup)", `       | `{"code": "croup", "title": "Viêm thanh quản (croup)", "short": "Croup", `              |
 | `{"code": "dau_mat", "title": "Đau mắt đỏ, ghèn mắt", `        | `{"code": "dau_mat", "title": "Đau mắt đỏ, ghèn mắt", "short": "Đau mắt", `             |
 
-- [ ] **Step 7: Mở rộng schema bài bệnh**
+- [x] **Step 7: Mở rộng schema bài bệnh**
 
 Trong `lib/content/conditions.ts`, sửa `ConditionArticleSchema` thành:
 
@@ -416,7 +416,7 @@ export const ConditionArticleSchema = z
   .strict();
 ```
 
-- [ ] **Step 8: Mở rộng schema phân loại**
+- [x] **Step 8: Mở rộng schema phân loại**
 
 Trong `lib/content/triage.ts`, thêm trước `TriageContentSchema`:
 
@@ -462,7 +462,7 @@ export type TriageSymptom = z.infer<typeof TriageSymptomSchema>;
 export type FirstAid = z.infer<typeof FirstAidSchema>;
 ```
 
-- [ ] **Step 9: Sửa câu chữ luật tên bệnh trong spec cũ**
+- [x] **Step 9: Sửa câu chữ luật tên bệnh trong spec cũ**
 
 Trong `docs/blueprint/specs/2026-11-13-baby-tracker-overview.md` (dòng 35) và `docs/blueprint/specs/2026-11-13-baby-tracker-web-design.md` (dòng 25), thay:
 
@@ -490,12 +490,12 @@ bằng:
 
 Phần còn lại của dòng 273 giữ nguyên.
 
-- [ ] **Step 10: Chạy test, thấy xanh**
+- [x] **Step 10: Chạy test, thấy xanh**
 
 Run: `bunx vitest run lib/content && bun run typecheck`
 Expected: PASS toàn bộ, gồm test cũ "never names a disease as a finding" và "gives no medicine doses"; typecheck không lỗi.
 
-- [ ] **Step 11: Commit**
+- [x] **Step 11: Commit**
 
 ```bash
 git add content lib/content docs/blueprint/specs/2026-11-13-baby-tracker-overview.md docs/blueprint/specs/2026-11-13-baby-tracker-web-design.md
@@ -519,7 +519,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Consumes: không có.
 - Produces: `export function hasFever(celsius: number | null): boolean` trong `lib/rules/triage.ts`.
 
-- [ ] **Step 1: Sửa test cho luật mới (thất bại)**
+- [x] **Step 1: Sửa test cho luật mới (thất bại)**
 
 Trong `lib/rules/triage.test.ts`:
 
@@ -549,12 +549,12 @@ describe("hasFever (spec 2026-11-17 §5.1)", () => {
 });
 ```
 
-- [ ] **Step 2: Chạy test, thấy thất bại**
+- [x] **Step 2: Chạy test, thấy thất bại**
 
 Run: `bunx vitest run lib/rules/triage.test.ts`
 Expected: FAIL: `hasFever is not a function`; `level(38, 183)` ra `["yellow"]`; chữ finding vàng khác.
 
-- [ ] **Step 3: Viết luật mới**
+- [x] **Step 3: Viết luật mới**
 
 Trong `lib/rules/triage.ts`, thay toàn bộ `temperatureFindings` (gồm chú thích ngay trên nó) bằng:
 
@@ -582,7 +582,7 @@ export function hasFever(celsius: number | null): boolean {
 }
 ```
 
-- [ ] **Step 4: Sửa chú thích trong `alerts.ts`**
+- [x] **Step 4: Sửa chú thích trong `alerts.ts`**
 
 Trong `lib/rules/alerts.ts`, thay hai dòng (thụt 2 dấu cách, nằm trong hàm):
 
@@ -600,12 +600,12 @@ bằng:
 
 Không đổi dòng code nào khác trong `alerts.ts`.
 
-- [ ] **Step 5: Chạy test, thấy xanh**
+- [x] **Step 5: Chạy test, thấy xanh**
 
 Run: `bunx vitest run lib/rules/triage.test.ts lib/rules/alerts.test.ts`
 Expected: PASS toàn bộ.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add lib/rules/triage.ts lib/rules/triage.test.ts lib/rules/alerts.ts
@@ -635,7 +635,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `export function suggestConditions(input: { symptoms: TriageSymptom[]; articles: ConditionArticle[]; selected: ReadonlySet<string>; ageDays: number }): Suggestion[]`
   - `export function firstAidFor(input: { blocks: FirstAid[]; checked: ReadonlySet<string>; celsius: number | null; ageDays: number; questions: TriageQuestion[] }): FirstAid[]`
 
-- [ ] **Step 1: Viết test thất bại**
+- [x] **Step 1: Viết test thất bại**
 
 Tạo `lib/rules/symptoms.test.ts`:
 
@@ -810,12 +810,12 @@ describe("firstAidFor (spec 2026-11-17 §5.3)", () => {
 });
 ```
 
-- [ ] **Step 2: Chạy test, thấy thất bại**
+- [x] **Step 2: Chạy test, thấy thất bại**
 
 Run: `bunx vitest run lib/rules/symptoms.test.ts`
 Expected: FAIL: `Failed to resolve import "./symptoms"`.
 
-- [ ] **Step 3: Viết `lib/rules/symptoms.ts`**
+- [x] **Step 3: Viết `lib/rules/symptoms.ts`**
 
 ```ts
 import type { ConditionArticle } from "@/lib/content/conditions";
@@ -924,12 +924,12 @@ export function firstAidFor(input: {
 }
 ```
 
-- [ ] **Step 4: Chạy test, thấy xanh**
+- [x] **Step 4: Chạy test, thấy xanh**
 
 Run: `bunx vitest run lib/rules/symptoms.test.ts && bun run typecheck`
 Expected: PASS 8 test; typecheck không lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/rules/symptoms.ts lib/rules/symptoms.test.ts
@@ -942,7 +942,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 ### Kết thúc M1: kiểm toàn bộ
 
-- [ ] **Step 1: Chạy toàn bộ test và typecheck**
+- [x] **Step 1: Chạy toàn bộ test và typecheck**
 
 Run: `bun run test && bun run typecheck`
 Expected: PASS, số test ≥ 925 (909 baseline + 16 mới: 3 Sheet, 4 nội dung (5 viết, 1 thay test 10 bài), 1 `hasFever`, 8 `symptoms`); 0 fail; typecheck không lỗi.
@@ -959,6 +959,15 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 Không push. M2 (`docs/blueprint/plans/2026-11-17-kim-bun-trieu-chung-m2.md`) chạy tiếp trên cùng nhánh, trong phiên mới.
 
 ## Kết quả
+
+Chạy 2026-11-17 trên nhánh `feat/kim-bun-trieu-chung`.
+
+- `bun run test`: **925 test xanh, 147 file**, 0 fail (baseline 909 test, 146 file; thêm 16 test và file `lib/rules/symptoms.test.ts`).
+- `bun run typecheck`: không lỗi.
+- `bun run build` (Global Constraints): lần đầu thoát vì thông báo bảo mật của Next, như đã biết; lần hai xanh, `/trieu-chung` vẫn là trang tĩnh. Không làm theo lời trong thông báo.
+- Mỗi bước "thấy thất bại" đều đỏ đúng Expected. Riêng Task 4 Step 2, vitest bản đang cài in `Cannot find module './symptoms'` thay cho `Failed to resolve import "./symptoms"`: cùng nguyên nhân (chưa có file).
+- Task 2 Step 3: test "states medicine only with age limits and the pharmacist line" xanh ngay từ đầu vì lúc đó chưa có dòng `homeCare` nào nhắc paracetamol hay ibuprofen; plan chỉ đòi FAIL ở `TRIAGE.symptoms` và danh sách 19 tiêu đề, và hai chỗ đó đỏ đúng.
+- Commit: `4151f87` (docs), `eef56d8` (Task 1), `38e65e2` (Task 2), `b7210dc` (Task 3), `0262ae2` (Task 4), và commit ghi kết quả này. Chưa push.
 
 ### Kết quả Task 1
 
