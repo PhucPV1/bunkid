@@ -3,7 +3,8 @@ import { formatVnTime, vnDateString } from "./time";
 
 export const SNOOZE_HOURS = [2, 4, 8] as const;
 
-export type PrefKey = "feed_reminder" | "wake_window" | "vaccine";
+export type PrefKey =
+  "feed_reminder" | "wake_window" | "vaccine" | "medicine" | "timer_alert";
 
 export const PREF_OPTIONS: {
   key: PrefKey;
@@ -13,6 +14,9 @@ export const PREF_OPTIONS: {
   { key: "feed_reminder", label: "Nhắc cữ bú", note: null },
   { key: "wake_window", label: "Nhắc khi bé thức quá lâu", note: null },
   { key: "vaccine", label: "Nhắc lịch tiêm", note: null },
+  // Spec 2026-11-17 §4.4.
+  { key: "medicine", label: "Nhắc thuốc", note: null },
+  { key: "timer_alert", label: "Nhắc timer chạy quá lâu", note: null },
 ];
 
 export function snoozeUntil(now: Date, hours: number): string {

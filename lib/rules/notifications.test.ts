@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   inQuietHours,
   minutesToTime,
+  PREF_OPTIONS,
   quietHoursPatch,
   quietHoursValue,
   snoozeText,
@@ -115,5 +116,17 @@ describe("quiet hours (spec 2026-11-17 §4.3)", () => {
       ok: false,
       message: "Chọn giờ bắt đầu và giờ kết thúc",
     });
+  });
+});
+
+describe("PREF_OPTIONS (spec 2026-11-17 §4.4)", () => {
+  it("lists five switches, the two new ones last", () => {
+    expect(PREF_OPTIONS.map((o) => [o.key, o.label])).toEqual([
+      ["feed_reminder", "Nhắc cữ bú"],
+      ["wake_window", "Nhắc khi bé thức quá lâu"],
+      ["vaccine", "Nhắc lịch tiêm"],
+      ["medicine", "Nhắc thuốc"],
+      ["timer_alert", "Nhắc timer chạy quá lâu"],
+    ]);
   });
 });
