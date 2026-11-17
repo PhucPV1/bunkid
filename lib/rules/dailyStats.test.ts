@@ -6,6 +6,7 @@ import {
   emptyStatsText,
   hasStatsData,
   sleepHours,
+  STATS_TABS,
   statsFetchSince,
 } from "./dailyStats";
 
@@ -89,6 +90,8 @@ describe("dailyStats", () => {
         dirtyDiapers: 0,
         pumpMl: 0,
         tummyMinutes: 0,
+        solidsMeals: 0,
+        waterMl: 0,
       },
       {
         day: "2026-11-14",
@@ -99,6 +102,8 @@ describe("dailyStats", () => {
         dirtyDiapers: 1,
         pumpMl: 0,
         tummyMinutes: 0,
+        solidsMeals: 0,
+        waterMl: 0,
       },
     ]);
   });
@@ -121,6 +126,8 @@ describe("dailyStats", () => {
       dirtyDiapers: 2,
       pumpMl: 150,
       tummyMinutes: 25,
+      solidsMeals: 3,
+      waterMl: 90,
     };
     expect(chartRows([stat], "sleep")).toEqual([
       { label: "9", primary: 14, secondary: null },
@@ -131,6 +138,39 @@ describe("dailyStats", () => {
     ]);
     expect(chartRows([stat], "pump")[0].primary).toBe(150);
     expect(chartRows([stat], "tummy")[0].primary).toBe(25);
+    expect(chartRows([stat], "solids")).toEqual([
+      { label: "9", primary: 3, secondary: null },
+    ]);
+  });
+
+  it("counts solids meals and adds water ml on the VN day they start (spec 2026-11-17 §3.4)", () => {
+    const at = (type: string, iso: string, details: unknown = {}) =>
+      log(type, iso, iso, details);
+    const meal = { food: "Cháo bí đỏ", amount: "some", isNew: false };
+    const stats = dailyStats(
+      [
+        at("solids", "2026-11-13T04:00:00Z", meal),
+        at("solids", "2026-11-13T16:59:00Z", meal), // 23:59 on 13/11
+        at("solids", "2026-11-13T17:00:00Z", meal), // 00:00 on 14/11
+        at("water", "2026-11-13T05:00:00Z", { ml: 30 }),
+        at("water", "2026-11-14T01:00:00Z", { ml: 40 }),
+        at("water", "2026-11-14T02:00:00Z", { ml: 20 }),
+        at("water", "2026-11-14T02:30:00Z", { ml: 0 }), // broken: not added
+        at("bath", "2026-11-14T02:40:00Z"),
+      ],
+      days,
+      now,
+    );
+    expect(stats.map((s) => s.solidsMeals)).toEqual([2, 1]);
+    expect(stats.map((s) => s.waterMl)).toEqual([30, 60]);
+    // Neither is a feed: the feed count and the bottle ml stay untouched (spec §3.5).
+    expect(stats.map((s) => s.feeds)).toEqual([0, 0]);
+    expect(stats.map((s) => s.bottleMl)).toEqual([0, 0]);
+  });
+
+  it("STATS_TABS ends with Ăn dặm", () => {
+    expect(STATS_TABS).toHaveLength(6);
+    expect(STATS_TABS.at(-1)).toEqual({ value: "solids", label: "Ăn dặm" });
   });
 
   it("adds pumped ml of both sides and tummy minutes per VN day (spec §6.13)", () => {
@@ -165,6 +205,8 @@ describe("empty stats", () => {
     dirtyDiapers: 0,
     pumpMl: 0,
     tummyMinutes: 0,
+    solidsMeals: 0,
+    waterMl: 0,
     ...over,
   });
 
@@ -177,6 +219,15 @@ describe("empty stats", () => {
     );
   });
 
+  it("the Ăn dặm chart only counts meals: water alone leaves it empty", () => {
+    expect(hasStatsData([stat("2026-11-14", { waterMl: 60 })], "solids")).toBe(
+      false,
+    );
+    expect(
+      hasStatsData([stat("2026-11-14", { solidsMeals: 1 })], "solids"),
+    ).toBe(true);
+  });
+
   it("emptyStatsText names what is missing and the range", () => {
     expect(emptyStatsText("sleep", 7)).toBe(
       "Chưa có giấc ngủ nào trong 7 ngày",
@@ -186,6 +237,9 @@ describe("empty stats", () => {
     );
     expect(emptyStatsText("tummy", 7)).toBe(
       "Chưa có lần nằm sấp nào trong 7 ngày",
+    );
+    expect(emptyStatsText("solids", 14)).toBe(
+      "Chưa có bữa ăn dặm nào trong 14 ngày",
     );
   });
 });

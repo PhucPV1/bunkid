@@ -13,6 +13,8 @@ const stat = (day: string, over: Partial<DayStat> = {}): DayStat => ({
   dirtyDiapers: 0,
   pumpMl: 0,
   tummyMinutes: 0,
+  solidsMeals: 0,
+  waterMl: 0,
   ...over,
 });
 const stats = [
@@ -43,5 +45,26 @@ describe("StatsTable", () => {
     expect(html).toContain(">Giờ ngủ</th>");
     expect(html).toContain(">1 giờ 30 phút</td>");
     expect(html).toContain(">—</td>");
+  });
+
+  it("the Ăn dặm tab has a meals column and a water column", () => {
+    const html = renderToStaticMarkup(
+      <StatsTable
+        stats={[
+          stat("2026-11-13", { solidsMeals: 2, waterMl: 30 }),
+          stat("2026-11-14", { waterMl: 60 }),
+        ]}
+        tab="solids"
+        now={NOW}
+      />,
+    );
+    expect(html.indexOf(">Bữa ăn dặm</th>")).toBeLessThan(
+      html.indexOf(">Nước (ml)</th>"),
+    );
+    expect(html.match(/<th /g)).toHaveLength(3);
+    const cells = [...html.matchAll(/tabular-nums">([^<]*)<\/td>/g)].map(
+      (m) => m[1],
+    );
+    expect(cells).toEqual(["0", "60", "2", "30"]);
   });
 });

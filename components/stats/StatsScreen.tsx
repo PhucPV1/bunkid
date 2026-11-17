@@ -78,6 +78,12 @@ const SERIES: Record<
     color: "var(--color-cat-tummy)",
     secondaryColor: null,
   },
+  solids: {
+    primary: "Bữa ăn dặm",
+    secondary: null,
+    color: "var(--color-cat-bottle)",
+    secondaryColor: null,
+  },
 };
 
 const RANGES = [

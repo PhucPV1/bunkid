@@ -13,9 +13,12 @@ export type DayStat = {
   dirtyDiapers: number;
   pumpMl: number;
   tummyMinutes: number;
+  solidsMeals: number;
+  waterMl: number;
 };
 
-export type StatsTab = "sleep" | "feed" | "diaper" | "pump" | "tummy";
+export type StatsTab =
+  "sleep" | "feed" | "diaper" | "pump" | "tummy" | "solids";
 
 export const STATS_TABS: { value: StatsTab; label: string }[] = [
   { value: "sleep", label: "Ngủ" },
@@ -23,6 +26,7 @@ export const STATS_TABS: { value: StatsTab; label: string }[] = [
   { value: "diaper", label: "Tã" },
   { value: "pump", label: "Hút sữa" },
   { value: "tummy", label: "Tummy" },
+  { value: "solids", label: "Ăn dặm" },
 ];
 
 function minutesBetween(
@@ -63,6 +67,8 @@ export function dailyStats(
       pumpMl: 0,
       // Spec §6.13: tummy minutes per day, split at midnight like sleep.
       tummyMinutes: minutesBetween("tummy", logs, from, to, now),
+      solidsMeals: 0,
+      waterMl: 0,
     };
   });
   const byDay = new Map(result.map((stat) => [stat.day, stat]));
@@ -86,6 +92,12 @@ export function dailyStats(
       const p = detailsSchemas.pump.safeParse(log.details);
       if (p.success)
         stat.pumpMl += (p.data.mlLeft ?? 0) + (p.data.mlRight ?? 0);
+    }
+    // Spec 2026-11-17 §3.4: every solids log that started that day is one meal.
+    if (log.type === "solids") stat.solidsMeals += 1;
+    if (log.type === "water") {
+      const p = detailsSchemas.water.safeParse(log.details);
+      if (p.success) stat.waterMl += p.data.ml;
     }
   }
   return result;
@@ -114,7 +126,9 @@ export function chartRows(
             ? stat.pumpMl
             : tab === "tummy"
               ? stat.tummyMinutes
-              : stat.wetDiapers,
+              : tab === "solids"
+                ? stat.solidsMeals
+                : stat.wetDiapers,
     secondary: tab === "diaper" ? stat.dirtyDiapers : null,
   }));
 }
@@ -131,6 +145,7 @@ const EMPTY_NOUN: Record<StatsTab, string> = {
   diaper: "tã",
   pump: "lần hút sữa",
   tummy: "lần nằm sấp",
+  solids: "bữa ăn dặm",
 };
 
 // Spec §9 Thống kê: shown instead of the chart when the range has nothing.

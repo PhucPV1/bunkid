@@ -127,12 +127,12 @@ Plan này đứng sau M1a (`docs/blueprint/plans/2026-11-17-kim-bun-ban-ghi-moi-
 
 `LOG_FIELDS`, `defaultLogValues`, `valuesFromDetails`, `buildLogDetails` không cần sửa. `LOG_FIELDS` trải `...QUICK_FIELDS`, ba hàm kia rơi về `defaultQuickValues` / `buildDetails`, nên đã nhận 4 loại mới từ M1a. Test "the new types take their fields and defaults from quick entry" trong Patch 1 vì thế xanh ngay; nó ở đó để khoá hành vi này lại.
 
-- [ ] **Step 1: Tạo nhánh từ nhánh của M1a và kiểm baseline**
+- [x] **Step 1: Tạo nhánh từ nhánh của M1a và kiểm baseline**
 
 Run: `git switch feat/kim-bun-ban-ghi-moi-m1a && git switch -c feat/kim-bun-ban-ghi-moi-m1b && bun run typecheck && bunx vitest run`
 Expected: `Switched to a new branch 'feat/kim-bun-ban-ghi-moi-m1b'`; typecheck không lỗi; `Test Files  141 passed (141)`, `Tests  827 passed (827)`. Nếu số test khác 827, M1a chưa xong hoặc đã đổi: dừng và báo lại, không làm tiếp.
 
-- [ ] **Step 2: Viết test hỏng (Patch 1)**
+- [x] **Step 2: Viết test hỏng (Patch 1)**
 
 ```diff
 --- a/components/history/logedit.test.tsx
@@ -286,12 +286,12 @@ Expected: `Switched to a new branch 'feat/kim-bun-ban-ghi-moi-m1b'`; typecheck k
  });
 ```
 
-- [ ] **Step 3: Chạy test để thấy hỏng**
+- [x] **Step 3: Chạy test để thấy hỏng**
 
 Run: `bunx vitest run lib/rules/logForm.test.ts components/quick/fieldlist.test.tsx components/history/logedit.test.tsx`
 Expected: FAIL, `Tests  6 failed | 17 passed (23)`. Ví dụ: `to have a length of 10 but got 6`, `hasNoteField is not a function`, `to match /<textarea[^>]*rows="3"/`.
 
-- [ ] **Step 4: Viết code (Patch 2)**
+- [x] **Step 4: Viết code (Patch 2)**
 
 ```diff
 --- a/components/history/LogEditSheet.tsx
@@ -376,12 +376,12 @@ Expected: FAIL, `Tests  6 failed | 17 passed (23)`. Ví dụ: `to have a length 
 
 Trong `LogEditSheet`, ô "Ghi chú" chỉ bị ẩn ở chế độ sửa được. Đoạn chỉ đọc (`Ghi chú: {log.note}`) giữ nguyên. Quyền sửa và xoá không đổi.
 
-- [ ] **Step 5: Chạy typecheck và toàn bộ test**
+- [x] **Step 5: Chạy typecheck và toàn bộ test**
 
 Run: `bun run typecheck && bunx vitest run`
 Expected: typecheck không lỗi; `Tests  834 passed (834)` (827 + 7: `logForm` 3, `fieldlist` 1, `logedit` 3).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add lib/rules/logForm.ts lib/rules/logForm.test.ts components/quick/FieldList.tsx components/quick/fieldlist.test.tsx components/history/LogEditSheet.tsx components/history/logedit.test.tsx
@@ -404,7 +404,7 @@ git commit -m "feat(history): add and edit the four new log types"
 
 `HistoryScreen` không cần sửa: nó vẽ `HISTORY_FILTERS` bằng `ChipGroup`, vốn cuộn ngang. `daySummary` không đổi (§3.4).
 
-- [ ] **Step 1: Viết test hỏng (Patch 3)**
+- [x] **Step 1: Viết test hỏng (Patch 3)**
 
 ```diff
 --- a/lib/rules/history.test.ts
@@ -440,12 +440,12 @@ git commit -m "feat(history): add and edit the four new log types"
    it("groupByVnDay splits at VN midnight, newest day and log first", () => {
 ```
 
-- [ ] **Step 2: Chạy test để thấy hỏng**
+- [x] **Step 2: Chạy test để thấy hỏng**
 
 Run: `bunx vitest run lib/rules/history.test.ts`
 Expected: FAIL, `Tests  2 failed | 8 passed (10)`.
 
-- [ ] **Step 3: Thêm hai bộ lọc (Patch 4)**
+- [x] **Step 3: Thêm hai bộ lọc (Patch 4)**
 
 ```diff
 --- a/lib/rules/history.ts
@@ -475,12 +475,12 @@ Expected: FAIL, `Tests  2 failed | 8 passed (10)`.
  };
 ```
 
-- [ ] **Step 4: Chạy typecheck và toàn bộ test**
+- [x] **Step 4: Chạy typecheck và toàn bộ test**
 
 Run: `bun run typecheck && bunx vitest run`
 Expected: typecheck không lỗi; `Tests  836 passed (836)` (834 + 2).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/rules/history.ts lib/rules/history.test.ts
@@ -511,7 +511,7 @@ git commit -m "feat(history): Ăn dặm and Khác filters"
 
 `SERIES` là hằng nội bộ của `StatsScreen.tsx` và không có test riêng. Kiểu `Record<StatsTab, …>` của nó là thứ canh: thiếu `solids` thì `bun run typecheck` báo lỗi ở file đó. `var(--color-cat-bottle)` là biến CSS có sẵn, không phải màu mới.
 
-- [ ] **Step 1: Viết test hỏng (Patch 5)**
+- [x] **Step 1: Viết test hỏng (Patch 5)**
 
 ```diff
 --- a/components/stats/statstable.test.tsx
@@ -627,12 +627,12 @@ git commit -m "feat(history): Ăn dặm and Khác filters"
    });
 ```
 
-- [ ] **Step 2: Chạy test để thấy hỏng**
+- [x] **Step 2: Chạy test để thấy hỏng**
 
 Run: `bunx vitest run lib/rules/dailyStats.test.ts components/stats/statstable.test.tsx`
 Expected: FAIL, `Tests  7 failed | 8 passed (15)`. Hai test cũ ("counts wet and dirty diapers…", "sleepHours rounds…") cũng đỏ, vì kỳ vọng của chúng giờ có `solidsMeals` và `waterMl`.
 
-- [ ] **Step 3: Viết code (Patch 6)**
+- [x] **Step 3: Viết code (Patch 6)**
 
 ```diff
 --- a/components/stats/StatsScreen.tsx
@@ -698,7 +698,7 @@ Expected: FAIL, `Tests  7 failed | 8 passed (15)`. Hai test cũ ("counts wet and
  };
 ```
 
-- [ ] **Step 4: Chạy typecheck và toàn bộ test**
+- [x] **Step 4: Chạy typecheck và toàn bộ test**
 
 Run: `bun run typecheck`
 Expected: không lỗi.
@@ -706,7 +706,7 @@ Expected: không lỗi.
 Run: `bunx vitest run`
 Expected: `Test Files  141 passed (141)`, `Tests  840 passed (840)`. Cách đếm: 827 (sau M1a) + 7 (Task 1) + 2 (Task 2) + 4 (Task 3). Nếu số lệch, đếm lại các `it(` đã thêm; không sửa test cho khớp số.
 
-- [ ] **Step 5: Build**
+- [x] **Step 5: Build**
 
 Run: `bun run build`
 Expected: build xong, không lỗi. Hiện tại lần chạy đầu có thể dừng với một thông báo security advisory của Next.js 16.4.3; chạy lại lệnh lần thứ hai thì qua. Thông báo đó đã biết trước và không phải việc của plan này: không nâng Next, không sửa gì vì nó.
@@ -734,7 +734,7 @@ Bảng "+" và bốn sheet nhập nhanh đã được kiểm ở M1a.
 
 Dừng `bun run dev` khi xong. Ghi kết quả từng mục vào báo cáo cuối. Nếu Claude in Chrome không nối được, để ô này chưa tick và ghi rõ trong báo cáo; không thay bằng trình duyệt khác khi người dùng chưa cho phép. Nếu tab bị chuyển sang `/dang-nhap`, cũng để ô này chưa tick và ghi rõ trong báo cáo; không tự đăng nhập.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add lib/rules/dailyStats.ts lib/rules/dailyStats.test.ts components/stats/StatsTable.tsx components/stats/StatsScreen.tsx components/stats/statstable.test.tsx docs/blueprint/plans/2026-11-17-kim-bun-ban-ghi-moi-m1b.md

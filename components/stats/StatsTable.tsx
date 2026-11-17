@@ -30,6 +30,10 @@ export const STATS_COLUMNS: Record<
         s.tummyMinutes === 0 ? "—" : formatDuration(s.tummyMinutes * 60_000),
     },
   ],
+  solids: [
+    { label: "Bữa ăn dặm", value: (s) => String(s.solidsMeals) },
+    { label: "Nước (ml)", value: (s) => String(s.waterMl) },
+  ],
 };
 
 export function StatsTable({
