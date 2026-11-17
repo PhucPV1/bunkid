@@ -7,8 +7,10 @@ import {
   visibleQuestions,
   type TriageResult as Result,
 } from "@/lib/rules/triage";
+import { visibleSymptoms } from "@/lib/rules/symptoms";
 import { ageDays } from "@/lib/rules/time";
 import type { Baby } from "@/lib/supabase/rows";
+import { SymptomChips } from "./SymptomChips";
 import { TriageResult } from "./TriageResult";
 import { TriageScreen } from "./TriageScreen";
 
@@ -37,6 +39,15 @@ describe("TriageScreen", () => {
     expect(html).toMatch(/min-h-\[50px\][^>]*>Xem kết quả<\/button>/);
     expect(html).toContain("bg-danger-solid");
     expect(html).not.toContain("bg-alarm");
+    const age = ageDays(baby.dob, new Date());
+    const chips = visibleSymptoms(TRIAGE.symptoms, age);
+    expect(html.match(/aria-pressed=/g)).toHaveLength(chips.length);
+    expect(html).toContain(">Bé đang có gì?</h2>");
+    expect(html).toContain(">Có dấu hiệu nào dưới đây?</h2>");
+    expect(html.indexOf("Bé đang có gì?")).toBeLessThan(
+      html.indexOf("Có dấu hiệu nào dưới đây?"),
+    );
+    expect(html).not.toContain("Đánh dấu những gì bé đang có:");
   });
 });
 
@@ -140,5 +151,51 @@ describe("TriageResult", () => {
     expect(bare).toContain(">Chăm bé tại nhà</h2>");
     expect(bare).not.toContain("Làm ngay tại nhà");
     expect(bare).not.toContain('role="tablist"');
+  });
+});
+
+describe("SymptomChips (spec 2026-11-17 §6.1)", () => {
+  const symptoms = TRIAGE.symptoms.filter((s) =>
+    ["fever", "cough", "diaper_rash"].includes(s.code),
+  );
+
+  it("groups wrapped multi-select chips, pressed ones inked with a tick", () => {
+    const html = renderToStaticMarkup(
+      <SymptomChips
+        groups={TRIAGE.groups}
+        symptoms={symptoms}
+        selected={new Set(["cough"])}
+        feverLocked={false}
+        onToggle={() => {}}
+      />,
+    );
+    expect(html.match(/role="group"/g)).toHaveLength(3);
+    expect(html).toContain('aria-label="Hô hấp"');
+    expect(html).toContain("flex flex-wrap gap-2");
+    expect(html).toMatch(
+      /aria-pressed="true"[^>]*>✓ Ho<\/button>/,
+    );
+    expect(html).toMatch(/class="[^"]*\bbg-ink\b[^"]*\btext-bg\b[^"]*">✓ Ho</);
+    expect(html).toMatch(
+      /aria-pressed="false"[^>]*glass[^>]*>Sốt hoặc sờ thấy nóng<\/button>/,
+    );
+    expect(html).toContain("min-h-11");
+    expect(html).not.toContain("Bật theo nhiệt độ đã nhập.");
+  });
+
+  it("locks the fever chip on when the temperature is from 38°C", () => {
+    const html = renderToStaticMarkup(
+      <SymptomChips
+        groups={TRIAGE.groups}
+        symptoms={symptoms}
+        selected={new Set()}
+        feverLocked
+        onToggle={() => {}}
+      />,
+    );
+    expect(html).toMatch(
+      /aria-pressed="true" aria-disabled="true"[^>]*>✓ Sốt hoặc sờ thấy nóng<\/button>/,
+    );
+    expect(html).toContain(">Bật theo nhiệt độ đã nhập.</p>");
   });
 });

@@ -8,13 +8,22 @@ import { Glass } from "@/components/ui/Glass";
 import { ListGroup } from "@/components/ui/ListGroup";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Switch } from "@/components/ui/Switch";
-import { TRIAGE } from "@/lib/content/triage";
+import { CONDITIONS } from "@/lib/content/conditions";
+import { type FirstAid, TRIAGE } from "@/lib/content/triage";
 import { useEmergencyContacts } from "@/lib/data/emergency";
 import { useRecentLogs } from "@/lib/data/logs";
 import { wetDiapersInWindow } from "@/lib/rules/ratings";
+import {
+  effectiveSymptoms,
+  firstAidFor,
+  type Suggestion,
+  suggestConditions,
+  visibleSymptoms,
+} from "@/lib/rules/symptoms";
 import { ageDays, formatAgeVi } from "@/lib/rules/time";
 import {
   evaluateTriage,
+  hasFever,
   parseCelsius,
   questionText,
   recentCelsius,
@@ -22,7 +31,14 @@ import {
   type TriageResult as Result,
 } from "@/lib/rules/triage";
 import type { Baby } from "@/lib/supabase/rows";
+import { SymptomChips } from "./SymptomChips";
 import { TriageResult } from "./TriageResult";
+
+type Outcome = {
+  result: Result;
+  suggestions: Suggestion[];
+  firstAid: FirstAid[];
+};
 
 export function TriageScreen({ baby }: { baby: Baby }) {
   const now = new Date();
@@ -32,12 +48,16 @@ export function TriageScreen({ baby }: { baby: Baby }) {
   const logged = recentCelsius(logs.data ?? [], now);
   const [celsius, setCelsius] = useState<string | null>(null);
   const [checked, setChecked] = useState<Set<string>>(new Set());
+  const [symptoms, setSymptoms] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<Result | null>(null);
+  const [outcome, setOutcome] = useState<Outcome | null>(null);
   // Step 1 (spec gốc §6.6): prefilled from a temperature logged in the last 6 hours, editable.
   const temperature =
     celsius ?? (logged === null ? "" : String(logged).replace(".", ","));
+  const parsedNow = parseCelsius(temperature);
+  const feverLocked = parsedNow !== "bad" && hasFever(parsedNow);
   const questions = visibleQuestions(TRIAGE.questions, age);
+  const chips = visibleSymptoms(TRIAGE.symptoms, age);
   const wet = wetDiapersInWindow(logs.data ?? [], now);
   const diapersLogged = (logs.data ?? []).some(
     (log) =>
@@ -54,6 +74,15 @@ export function TriageScreen({ baby }: { baby: Baby }) {
     });
   }
 
+  function toggleSymptom(code: string) {
+    setSymptoms((prev) => {
+      const next = new Set(prev);
+      if (next.has(code)) next.delete(code);
+      else next.add(code);
+      return next;
+    });
+  }
+
   function submit() {
     const parsed = parseCelsius(temperature);
     if (parsed === "bad") {
@@ -61,14 +90,27 @@ export function TriageScreen({ baby }: { baby: Baby }) {
       return;
     }
     setError(null);
-    setResult(
-      evaluateTriage({
+    setOutcome({
+      result: evaluateTriage({
         questions: TRIAGE.questions,
         checked,
         celsius: parsed,
         ageDays: age,
       }),
-    );
+      suggestions: suggestConditions({
+        symptoms: TRIAGE.symptoms,
+        articles: CONDITIONS.articles,
+        selected: effectiveSymptoms(symptoms, parsed),
+        ageDays: age,
+      }),
+      firstAid: firstAidFor({
+        blocks: TRIAGE.firstAid,
+        checked,
+        celsius: parsed,
+        ageDays: age,
+        questions: TRIAGE.questions,
+      }),
+    });
     window.scrollTo({ top: 0 });
   }
 
@@ -79,15 +121,18 @@ export function TriageScreen({ baby }: { baby: Baby }) {
         back={{ href: "/kham-pha", label: "Khám phá" }}
       />
       <p className="px-1 text-[13px] text-muted">{TRIAGE.disclaimer}</p>
-      {!result && <Call115Button label="Gọi cấp cứu 115" />}
-      {result ? (
+      {!outcome && <Call115Button label="Gọi cấp cứu 115" />}
+      {outcome ? (
         <TriageResult
-          result={result}
+          result={outcome.result}
+          suggestions={outcome.suggestions}
+          firstAid={outcome.firstAid}
           ageDays={age}
           contacts={contacts.data ?? []}
           onRestart={() => {
-            setResult(null);
+            setOutcome(null);
             setChecked(new Set());
+            setSymptoms(new Set());
             setCelsius(null);
             setError(null);
             window.scrollTo({ top: 0 });
@@ -121,9 +166,22 @@ export function TriageScreen({ baby }: { baby: Baby }) {
               </p>
             )}
           </Glass>
-          <p className="px-1 text-base text-ink">
-            Đánh dấu những gì bé đang có:
-          </p>
+          <div className="flex flex-col gap-1 px-1">
+            <h2 className="text-xl leading-[26px] font-bold text-ink">
+              Bé đang có gì?
+            </h2>
+            <p className="text-sm text-muted">Chạm để chọn, chọn được nhiều.</p>
+          </div>
+          <SymptomChips
+            groups={TRIAGE.groups}
+            symptoms={chips}
+            selected={symptoms}
+            feverLocked={feverLocked}
+            onToggle={toggleSymptom}
+          />
+          <h2 className="px-1 text-xl leading-[26px] font-bold text-ink">
+            Có dấu hiệu nào dưới đây?
+          </h2>
           {TRIAGE.groups.map((group) => {
             const list = questions.filter((q) => q.group === group.code);
             if (list.length === 0) return null;
