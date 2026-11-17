@@ -268,7 +268,7 @@ Expected: `Applying migration 20261117000100_log_types.sql...`, rồi `Finished 
 
 Icon ở repo này là một chuỗi `d` cho một `<path>` trong viewBox 24×24, nét 2 px, đầu bo tròn, không tô (`components/ui/Icon.tsx`). Ba path mới lấy từ bản vẽ: `bowl` là bát có đế và ba vạch hơi; `glass` là cốc thuôn có vạch mực nước; `bath` là bồn có hai chân choãi và một vòi cong bên trái.
 
-- [ ] **Step 1: Viết test hỏng (Patch 1)**
+- [x] **Step 1: Viết test hỏng (Patch 1)**
 
 ```diff
 --- a/lib/ui/categories.test.ts
@@ -292,12 +292,12 @@ Icon ở repo này là một chuỗi `d` cho một `<path>` trong viewBox 24×24
  });
 ```
 
-- [ ] **Step 2: Chạy test để thấy hỏng**
+- [x] **Step 2: Chạy test để thấy hỏng**
 
 Run: `bunx vitest run lib/ui/categories.test.ts`
 Expected: FAIL, `Tests  2 failed | 4 passed (6)`. "has the 42 icons…" báo `to have a length of 42 but got 39`; "has bowl, glass and bath…" báo `.toMatch() expects to receive a string, but got undefined`.
 
-- [ ] **Step 3: Thêm ba path (Patch 2)**
+- [x] **Step 3: Thêm ba path (Patch 2)**
 
 ```diff
 --- a/lib/ui/icons.ts
@@ -310,12 +310,12 @@ Expected: FAIL, `Tests  2 failed | 4 passed (6)`. "has the 42 icons…" báo `to
    phone:
 ```
 
-- [ ] **Step 4: Chạy typecheck và toàn bộ test**
+- [x] **Step 4: Chạy typecheck và toàn bộ test**
 
 Run: `bun run typecheck && bunx vitest run`
 Expected: typecheck không lỗi; `Tests  804 passed (804)` (803 + 1).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/ui/icons.ts lib/ui/categories.test.ts
@@ -347,7 +347,7 @@ Hình dạng ba icon được nhìn bằng mắt ở Task 5 Step 6.
 
 Ba component này hook-free như `BottleFields`, để test gọi thẳng như hàm. Chưa nơi nào dùng chúng: Task 4 nối vào `QuickEntrySheet`. `SOLIDS_AMOUNT_OPTIONS` phải đứng **trên** `QUICK_FIELDS` trong file, vì Task 4 dùng nó ngay trong `QUICK_FIELDS`.
 
-- [ ] **Step 1: Viết test hỏng (Patch 3: file mới)**
+- [x] **Step 1: Viết test hỏng (Patch 3: file mới)**
 
 ```diff
 --- /dev/null
@@ -465,12 +465,12 @@ Ba component này hook-free như `BottleFields`, để test gọi thẳng như h
 +});
 ```
 
-- [ ] **Step 2: Chạy test để thấy hỏng**
+- [x] **Step 2: Chạy test để thấy hỏng**
 
 Run: `bunx vitest run components/quick/newfields.test.tsx`
 Expected: FAIL, `Test Files  1 failed (1)`, lỗi `Cannot find module './NoteFields'`.
 
-- [ ] **Step 3: Viết hằng và ba component (Patch 4: ba file mới và một hằng trong `quickEntry.ts`)**
+- [x] **Step 3: Viết hằng và ba component (Patch 4: ba file mới và một hằng trong `quickEntry.ts`)**
 
 ```diff
 --- /dev/null
@@ -636,12 +636,12 @@ Expected: FAIL, `Test Files  1 failed (1)`, lỗi `Cannot find module './NoteFie
  export const QUICK_FIELDS: Record<InstantType, QuickField[]> = {
 ```
 
-- [ ] **Step 4: Chạy typecheck và toàn bộ test**
+- [x] **Step 4: Chạy typecheck và toàn bộ test**
 
 Run: `bun run typecheck && bunx vitest run`
 Expected: typecheck không lỗi; `Test Files  141 passed (141)`, `Tests  809 passed (809)` (804 + 5).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/rules/quickEntry.ts components/quick/SolidsFields.tsx components/quick/WaterFields.tsx components/quick/NoteFields.tsx components/quick/newfields.test.tsx
@@ -681,7 +681,7 @@ Task này lớn hơn các task khác vì một lý do: 5 file nguồn đầu ti�
 
 Không sửa `isFeed` (`lib/rules/ratings.ts`) và `QuickLogGrid`: `solids` và `water` không phải cữ bú, và lưới trang chủ giữ 4 ô (§3.3, §3.5).
 
-- [ ] **Step 1: Viết test hỏng (Patch 5: 6 file test)**
+- [x] **Step 1: Viết test hỏng (Patch 5: 6 file test)**
 
 ```diff
 --- a/components/home/quickentry.test.tsx
@@ -1013,12 +1013,12 @@ Không sửa `isFeed` (`lib/rules/ratings.ts`) và `QuickLogGrid`: `solids` và 
        token: "cat-med",
 ```
 
-- [ ] **Step 2: Chạy test để thấy hỏng**
+- [x] **Step 2: Chạy test để thấy hỏng**
 
 Run: `bunx vitest run lib/rules/logDetails.test.ts lib/rules/describeLog.test.ts lib/ui/categories.test.ts lib/rules/quickEntry.test.ts components/home/quickentry.test.tsx lib/rules/undo.test.ts`
 Expected: FAIL, `Test Files  6 failed (6)`, `Tests  18 failed | 38 passed (56)`. Vài lỗi tiêu biểu: `to have a length of 12 but got 8`, `expected 'Bản ghi không hợp lệ' to be 'Ăn dặm · Cháo bí đỏ · vừa'`, `recentFoodNames is not a function`, `toastText is not a function`.
 
-- [ ] **Step 3: Viết code (Patch 6: 6 file nguồn)**
+- [x] **Step 3: Viết code (Patch 6: 6 file nguồn)**
 
 ```diff
 --- a/components/home/QuickEntrySheet.tsx
@@ -1259,12 +1259,12 @@ Bốn điều dễ làm sai khi sửa tay:
 - Trong `QuickEntrySheet`, `bath: null` là cố ý: sheet Tắm chỉ có chip giờ và nút Lưu.
 - `toastText` đếm ký tự bằng `Array.from`, để không cắt đôi một ký tự ghép. Nó chỉ cắt phần mô tả; "Đã ghi" và "lúc HH:mm" luôn còn đủ.
 
-- [ ] **Step 4: Chạy typecheck và toàn bộ test**
+- [x] **Step 4: Chạy typecheck và toàn bộ test**
 
 Run: `bun run typecheck && bunx vitest run`
 Expected: typecheck không lỗi; `Tests  825 passed (825)` (809 + 16: `logDetails` 5, `describeLog` 2, `quickEntry` 5, `quickentry` 2, `undo` 2; `categories` chỉ sửa test có sẵn).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/rules/logDetails.ts lib/rules/logDetails.test.ts lib/rules/describeLog.ts lib/rules/describeLog.test.ts lib/ui/categories.ts lib/ui/categories.test.ts lib/rules/quickEntry.ts lib/rules/quickEntry.test.ts components/home/QuickEntrySheet.tsx components/home/quickentry.test.tsx lib/rules/undo.ts lib/rules/undo.test.ts
@@ -1301,7 +1301,7 @@ Kích thước theo §3.3: tiêu đề nhóm 13 px, đậm, màu `muted`; lướ
 
 `ActionSheet`, `QuickActionsProvider` và `QuickLogGrid` không cần sửa. `ActionSheet` gọi `actions.openInstant(action.instant)`, provider mở `QuickEntrySheet` với `type` đó, và sau khi lưu thì `instantToast` dựng toast (đã cắt 60 ký tự). Cả chuỗi đã chạy với loại mới từ Task 4.
 
-- [ ] **Step 1: Viết test hỏng (Patch 7)**
+- [x] **Step 1: Viết test hỏng (Patch 7)**
 
 ```diff
 --- a/components/actions/actionsheet.test.tsx
@@ -1435,12 +1435,12 @@ Kích thước theo §3.3: tiêu đề nhóm 13 px, đậm, màu `muted`; lướ
    });
 ```
 
-- [ ] **Step 2: Chạy test để thấy hỏng**
+- [x] **Step 2: Chạy test để thấy hỏng**
 
 Run: `bunx vitest run lib/rules/quickActions.test.ts components/actions/actionsheet.test.tsx`
 Expected: FAIL, `Tests  7 failed | 6 passed (13)`. Ví dụ: `expected [] to deeply equal [ 'Bấm giờ', 'Ghi nhanh', 'Khác' ]`, `expected 'Thuốc' to be 'Thay tã'`.
 
-- [ ] **Step 3: Viết code (Patch 8)**
+- [x] **Step 3: Viết code (Patch 8)**
 
 ```diff
 --- a/components/actions/ActionChrome.tsx
@@ -1683,7 +1683,7 @@ Expected: FAIL, `Tests  7 failed | 6 passed (13)`. Ví dụ: `expected [] to dee
 
 Sau patch, `ActionSheetView` chỉ còn `<QuickActionGrid … />` bên trong `Sheet`. `Icon` vẫn được import vì ô vẫn vẽ icon của loại.
 
-- [ ] **Step 4: Chạy typecheck và toàn bộ test**
+- [x] **Step 4: Chạy typecheck và toàn bộ test**
 
 Run: `bun run typecheck`
 Expected: không lỗi.
@@ -1691,7 +1691,7 @@ Expected: không lỗi.
 Run: `bunx vitest run`
 Expected: `Test Files  141 passed (141)`, `Tests  827 passed (827)`. `components/home/buttons.test.tsx` xanh, không sửa. Cách đếm: 803 + 1 (Task 2) + 5 (Task 3) + 16 (Task 4) + 2 (Task 5). Nếu số lệch, đếm lại các `it(` đã thêm; không sửa test cho khớp số.
 
-- [ ] **Step 5: Build**
+- [x] **Step 5: Build**
 
 Run: `bun run build`
 Expected: build xong, không lỗi. Hiện tại lần chạy đầu có thể dừng với một thông báo security advisory của Next.js 16.4.3; chạy lại lệnh lần thứ hai thì qua. Thông báo đó đã biết trước và không phải việc của plan này: không nâng Next, không sửa gì vì nó.
@@ -1719,7 +1719,7 @@ Toast Hoàn tác không kiểm được ở đây vì nó chỉ hiện sau khi b
 
 Dừng `bun run dev` khi xong. Ghi kết quả từng mục vào báo cáo cuối. Nếu Claude in Chrome không nối được, để ô này chưa tick và ghi rõ trong báo cáo; không thay bằng trình duyệt khác khi người dùng chưa cho phép. Nếu tab bị chuyển sang `/dang-nhap`, cũng để ô này chưa tick và ghi rõ trong báo cáo; không tự đăng nhập.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add lib/rules/quickActions.ts lib/rules/quickActions.test.ts components/actions/ActionSheet.tsx components/actions/ActionChrome.tsx components/actions/actionsheet.test.tsx docs/blueprint/plans/2026-11-17-kim-bun-ban-ghi-moi-m1.md

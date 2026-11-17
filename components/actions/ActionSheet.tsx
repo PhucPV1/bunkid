@@ -5,6 +5,7 @@ import { Sheet } from "@/components/ui/Sheet";
 import {
   actionLabel,
   isActionRunning,
+  QUICK_ACTION_GROUPS,
   QUICK_ACTIONS,
   type QuickAction,
 } from "@/lib/rules/quickActions";
@@ -24,6 +25,7 @@ const TINT: Record<CategoryToken, string> = {
   "cat-temp": "bg-cat-temp/15 text-cat-temp",
 };
 
+// Spec 2026-11-17 §3.3: one titled block per group, four 84 px tiles to a row.
 export function QuickActionGrid({
   running,
   onPick,
@@ -32,40 +34,45 @@ export function QuickActionGrid({
   onPick: (action: QuickAction) => void;
 }) {
   return (
-    <div className="grid grid-cols-3 gap-2.5">
-      {QUICK_ACTIONS.map((action) => {
-        const on = isActionRunning(action, running);
-        const category = CATEGORIES[action.category];
-        return (
-          <button
-            key={action.key}
-            type="button"
-            onClick={() => onPick(action)}
-            className={cx(
-              "relative flex h-[100px] flex-col items-center justify-center gap-2 rounded-[24px] bg-glass-solid/75 text-ink transition-transform duration-[120ms] active:scale-[0.97]",
-              on ? "border-2 border-accent-text" : "border border-edge",
+    <div className="flex flex-col gap-4">
+      {QUICK_ACTION_GROUPS.map(({ group, title }) => (
+        <section key={group} className="flex flex-col gap-2">
+          <h3 className="text-[13px] leading-[18px] font-semibold text-muted">
+            {title}
+          </h3>
+          <div className="grid grid-cols-4 gap-2">
+            {QUICK_ACTIONS.filter((action) => action.group === group).map(
+              (action) => {
+                const on = isActionRunning(action, running);
+                const category = CATEGORIES[action.category];
+                return (
+                  <button
+                    key={action.key}
+                    type="button"
+                    onClick={() => onPick(action)}
+                    className={cx(
+                      "flex h-[84px] flex-col items-center justify-center gap-1.5 rounded-[20px] bg-glass-solid/75 px-1 text-ink transition-transform duration-[120ms] active:scale-[0.97]",
+                      on ? "border-2 border-accent-text" : "border border-edge",
+                    )}
+                  >
+                    <span
+                      className={cx(
+                        "flex size-[38px] shrink-0 items-center justify-center rounded-full",
+                        TINT[category.token],
+                      )}
+                    >
+                      <Icon name={category.icon} size={20} />
+                    </span>
+                    <span className="text-center text-xs leading-4 font-semibold">
+                      {actionLabel(action, running)}
+                    </span>
+                  </button>
+                );
+              },
             )}
-          >
-            {action.kind === "timer" && (
-              <span className="absolute top-2 right-2 text-muted">
-                <Icon name="clock" size={14} strokeWidth={2.2} />
-                <span className="sr-only">, bấm giờ</span>
-              </span>
-            )}
-            <span
-              className={cx(
-                "flex size-11 items-center justify-center rounded-full",
-                TINT[category.token],
-              )}
-            >
-              <Icon name={category.icon} size={22} />
-            </span>
-            <span className="text-sm font-semibold">
-              {actionLabel(action, running)}
-            </span>
-          </button>
-        );
-      })}
+          </div>
+        </section>
+      ))}
     </div>
   );
 }
@@ -90,9 +97,6 @@ export function ActionSheetView({
       title={`Ghi lại cho ${babyName}`}
       variant="floating"
     >
-      <p className="mb-3 flex items-center gap-1.5 text-xs text-muted">
-        <Icon name="clock" size={14} strokeWidth={2.2} />= bấm giờ
-      </p>
       <QuickActionGrid running={running} onPick={onPick} />
     </Sheet>
   );

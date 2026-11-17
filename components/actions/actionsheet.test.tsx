@@ -13,25 +13,37 @@ const leftFeed: RunningLog = {
 };
 
 describe("QuickActionGrid", () => {
-  it("is a 3×3 grid of 100 pt tiles with category icons", () => {
+  it("draws three titled groups, each a 4-column grid of 84 px tiles", () => {
     const html = renderToStaticMarkup(
       <QuickActionGrid running={[]} onPick={() => {}} />,
     );
-    expect(html).toContain("grid grid-cols-3");
-    expect(html.match(/<button/g)).toHaveLength(9);
-    expect(html).toContain("h-[100px]");
+    const titles = [...html.matchAll(/<h3 class="([^"]*)">([^<]+)<\/h3>/g)];
+    expect(titles.map((m) => m[2])).toEqual(["Bấm giờ", "Ghi nhanh", "Khác"]);
+    expect(titles[0][1]).toBe(
+      "text-[13px] leading-[18px] font-semibold text-muted",
+    );
+    expect(html.match(/grid grid-cols-4 gap-2/g)).toHaveLength(3);
+    const tiles = html.split("<section").slice(1);
+    expect(tiles.map((part) => part.match(/<button/g)?.length)).toEqual([
+      5, 4, 4,
+    ]);
+    expect(html.match(/h-\[84px\][^"]*rounded-\[20px\]/g)).toHaveLength(13);
+    expect(html.match(/size-\[38px\]/g)).toHaveLength(13);
+    expect(html.match(/width="20" height="20"/g)).toHaveLength(13);
+    expect(html.match(/text-xs leading-4 font-semibold/g)).toHaveLength(13);
     expect(html).toContain("bg-cat-diaper/15 text-cat-diaper");
-    expect(html).toContain(`d="${ICON_PATHS.drop}"`);
+    for (const icon of ["drop", "bowl", "glass", "bath", "doc"] as const)
+      expect(html).toContain(`d="${ICON_PATHS[icon]}"`);
     for (const action of QUICK_ACTIONS)
       expect(html).toContain(`>${action.label}</span>`);
   });
 
-  it("badges the five timers with a clock", () => {
+  it("timer tiles carry no clock badge: the group title says it", () => {
     const html = renderToStaticMarkup(
       <QuickActionGrid running={[]} onPick={() => {}} />,
     );
-    expect(html.split(`d="${ICON_PATHS.clock}"`).length - 1).toBe(5);
-    expect(html.split("bấm giờ").length - 1).toBe(5);
+    expect(html).not.toContain(`d="${ICON_PATHS.clock}"`);
+    expect(html).not.toContain("bấm giờ");
   });
 
   it("a running timer is outlined and reads Dừng …", () => {
@@ -48,14 +60,17 @@ describe("QuickActionGrid", () => {
       QuickActionGrid({ running: [], onPick }),
       "button",
     );
-    (buttons[4].props.onClick as () => void)();
-    expect(onPick).toHaveBeenCalledWith(QUICK_ACTIONS[4]);
-    expect(QUICK_ACTIONS[4].label).toBe("Thay tã");
+    (buttons[6].props.onClick as () => void)();
+    expect(onPick).toHaveBeenCalledWith(QUICK_ACTIONS[6]);
+    expect(QUICK_ACTIONS[6].label).toBe("Thay tã");
+    (buttons[12].props.onClick as () => void)();
+    expect(onPick).toHaveBeenLastCalledWith(QUICK_ACTIONS[12]);
+    expect(QUICK_ACTIONS[12]).toMatchObject({ instant: "note" });
   });
 });
 
 describe("ActionSheetView", () => {
-  it("is a floating sheet titled for the baby with the clock legend", () => {
+  it("is a floating sheet titled for the baby, without the old clock legend", () => {
     const html = renderToStaticMarkup(
       <ActionSheetView
         open
@@ -68,6 +83,7 @@ describe("ActionSheetView", () => {
     expect(html).toContain(">Ghi lại cho Bun</h2>");
     expect(html).toContain("rounded-[34px]");
     expect(html).not.toContain("data-sheet-handle");
-    expect(html).toContain("= bấm giờ");
+    expect(html).not.toContain("= bấm giờ");
+    expect(html).toContain(">Bấm giờ</h3>");
   });
 });

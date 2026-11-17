@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   actionLabel,
   isActionRunning,
+  QUICK_ACTION_GROUPS,
   QUICK_ACTIONS,
   shouldAskPumpAmounts,
 } from "./quickActions";
@@ -15,18 +16,55 @@ const leftFeed: RunningLog = {
 };
 
 describe("QUICK_ACTIONS", () => {
-  it("lists the nine actions of spec §6.3 in grid order", () => {
-    expect(QUICK_ACTIONS.map((a) => a.label)).toEqual([
+  const labelsOf = (group: string) =>
+    QUICK_ACTIONS.filter((a) => a.group === group).map((a) => a.label);
+
+  it("lists thirteen actions group by group: timers, quick entries, the rest", () => {
+    expect(QUICK_ACTIONS.map((a) => a.group)).toEqual([
+      ...Array(5).fill("timer"),
+      ...Array(4).fill("quick"),
+      ...Array(4).fill("other"),
+    ]);
+    expect(labelsOf("timer")).toEqual([
       "Bú trái",
       "Bú phải",
-      "Bú bình",
       "Ngủ",
-      "Thay tã",
       "Hút sữa",
-      "Thuốc",
-      "Nhiệt độ",
       "Nằm sấp",
     ]);
+    expect(labelsOf("quick")).toEqual([
+      "Bú bình",
+      "Thay tã",
+      "Thuốc",
+      "Nhiệt độ",
+    ]);
+    expect(labelsOf("other")).toEqual([
+      "Ăn dặm",
+      "Uống nước",
+      "Tắm",
+      "Ghi chú",
+    ]);
+    expect(new Set(QUICK_ACTIONS.map((a) => a.key)).size).toBe(13);
+  });
+
+  it("QUICK_ACTION_GROUPS titles the three groups; the timer group is exactly the timers", () => {
+    expect(QUICK_ACTION_GROUPS).toEqual([
+      { group: "timer", title: "Bấm giờ" },
+      { group: "quick", title: "Ghi nhanh" },
+      { group: "other", title: "Khác" },
+    ]);
+    for (const action of QUICK_ACTIONS)
+      expect(action.group === "timer").toBe(action.kind === "timer");
+  });
+
+  it("the four new actions are instant entries of their own category", () => {
+    for (const type of ["solids", "water", "bath", "note"] as const)
+      expect(byKey(type)).toMatchObject({
+        kind: "instant",
+        group: "other",
+        category: type,
+        instant: type,
+      });
   });
 
   it("marks timers and instant entries", () => {

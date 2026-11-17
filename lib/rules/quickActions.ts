@@ -2,11 +2,14 @@ import type { LogType } from "./logDetails";
 import type { InstantType } from "./quickEntry";
 import type { RunningLog, TimerButton } from "./timer";
 
+export type QuickActionGroup = "timer" | "quick" | "other";
+
 export type QuickAction =
   | {
       key: string;
       label: string;
       kind: "timer";
+      group: QuickActionGroup;
       category: LogType;
       button: TimerButton;
     }
@@ -14,16 +17,27 @@ export type QuickAction =
       key: string;
       label: string;
       kind: "instant";
+      group: QuickActionGroup;
       category: LogType;
       instant: InstantType;
     };
 
-// Spec §6.3: 3×3 grid, row by row.
+// Spec 2026-11-17 §3.3: the "+" sheet draws one titled block per group, in this order.
+export const QUICK_ACTION_GROUPS: { group: QuickActionGroup; title: string }[] =
+  [
+    { group: "timer", title: "Bấm giờ" },
+    { group: "quick", title: "Ghi nhanh" },
+    { group: "other", title: "Khác" },
+  ];
+
+// Group by group, in the order the "+" sheet shows them. The home page's timer row
+// (TimerButtons) takes the kind "timer" entries in this same order.
 export const QUICK_ACTIONS: QuickAction[] = [
   {
     key: "breast-left",
     label: "Bú trái",
     kind: "timer",
+    group: "timer",
     category: "breast",
     button: { type: "breast", side: "left" },
   },
@@ -31,41 +45,55 @@ export const QUICK_ACTIONS: QuickAction[] = [
     key: "breast-right",
     label: "Bú phải",
     kind: "timer",
+    group: "timer",
     category: "breast",
     button: { type: "breast", side: "right" },
-  },
-  {
-    key: "bottle",
-    label: "Bú bình",
-    kind: "instant",
-    category: "bottle",
-    instant: "bottle",
   },
   {
     key: "sleep",
     label: "Ngủ",
     kind: "timer",
+    group: "timer",
     category: "sleep",
     button: { type: "sleep" },
-  },
-  {
-    key: "diaper",
-    label: "Thay tã",
-    kind: "instant",
-    category: "diaper",
-    instant: "diaper",
   },
   {
     key: "pump",
     label: "Hút sữa",
     kind: "timer",
+    group: "timer",
     category: "pump",
     button: { type: "pump" },
+  },
+  {
+    key: "tummy",
+    label: "Nằm sấp",
+    kind: "timer",
+    group: "timer",
+    category: "tummy",
+    button: { type: "tummy" },
+  },
+  {
+    key: "bottle",
+    label: "Bú bình",
+    kind: "instant",
+    group: "quick",
+    category: "bottle",
+    instant: "bottle",
+  },
+  {
+    key: "diaper",
+    label: "Thay tã",
+    kind: "instant",
+    group: "quick",
+    category: "diaper",
+    instant: "diaper",
   },
   {
     key: "medicine",
     label: "Thuốc",
     kind: "instant",
+    group: "quick",
     category: "medicine",
     instant: "medicine",
   },
@@ -73,15 +101,41 @@ export const QUICK_ACTIONS: QuickAction[] = [
     key: "temperature",
     label: "Nhiệt độ",
     kind: "instant",
+    group: "quick",
     category: "temperature",
     instant: "temperature",
   },
   {
-    key: "tummy",
-    label: "Nằm sấp",
-    kind: "timer",
-    category: "tummy",
-    button: { type: "tummy" },
+    key: "solids",
+    label: "Ăn dặm",
+    kind: "instant",
+    group: "other",
+    category: "solids",
+    instant: "solids",
+  },
+  {
+    key: "water",
+    label: "Uống nước",
+    kind: "instant",
+    group: "other",
+    category: "water",
+    instant: "water",
+  },
+  {
+    key: "bath",
+    label: "Tắm",
+    kind: "instant",
+    group: "other",
+    category: "bath",
+    instant: "bath",
+  },
+  {
+    key: "note",
+    label: "Ghi chú",
+    kind: "instant",
+    group: "other",
+    category: "note",
+    instant: "note",
   },
 ];
 
