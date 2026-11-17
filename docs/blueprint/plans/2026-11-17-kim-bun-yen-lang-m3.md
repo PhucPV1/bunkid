@@ -1571,7 +1571,15 @@ Expected: lần đầu dừng với `SecurityFatalError` của Next.js 16.4.3 (b
 
 > **Kết quả 2026-11-17 (Task 1–3, Task 4 Step 1–2).** Trên nhánh `feat/kim-bun-yen-lang-m3`: cả 6 patch áp sạch. pgTAP trên Supabase local: 013 đỏ với `Bad plan.  You planned 16 tests but ran 0.`, sau `db:reset` thì `Files=13, Tests=135`, `Result: PASS`; `db:types` cho ra đúng nội dung của patch. Vitest đỏ ở Task 2 và 3 đúng như ghi (8/38 và 8/20); cuối cùng `tsc --noEmit` sạch, `143 passed (143)` file, `883 passed (883)` test. `bun run build` dừng lần đầu với `SecurityFatalError`, lần hai `✓ Generating static pages (37/37)`, thoát mã 0.
 
-- [ ] **Step 3: Kiểm trên trình duyệt (phiên chính làm, không gạt công tắc, không bấm Lưu)**
+- [x] **Step 3: Kiểm trên trình duyệt (phiên chính làm, không gạt công tắc, không bấm Lưu)**
+
+> **Kết quả 2026-11-17.** Phiên chính kiểm bằng trình duyệt có sẵn trong app Claude ở 375×812, người dùng đồng ý ("Kiểm trên trình duyệt"), sau khi migration `reminders` đã áp lên project thật. Không gạt công tắc nào của nhóm Thông báo, không bấm Lưu, không đụng nhóm khác.
+>
+> - Mục 1: nhóm Thông báo tải được, không có lỗi; thứ tự hàng đúng: trạng thái máy ("Thông báo chưa được thiết lập trên máy chủ." vì đang chạy dev), Nhắc cữ bú, Nhắc khi bé thức quá lâu, Nhắc lịch tiêm, Nhắc thuốc, Nhắc timer chạy quá lâu (cả năm đang bật), Không nhắc bú khi bé đang ngủ kèm dòng ghi chú (đang tắt), Giờ yên lặng `Tắt`, Tạm tắt nhắc `Không`.
+> - Mục 2: sheet "Giờ yên lặng" có công tắc "Bật giờ yên lặng" (tắt), hai ô giờ Từ 22:00 và Đến 06:00 nằm cạnh nhau, ba dòng chú thích, nút Lưu. Đóng bằng X, không lưu.
+> - Mục 3: không tràn ngang ở trang và trong thân sheet.
+> - Mục 4: sheet và các hàng phía sau đọc rõ ở Hồng dịu và Ban đêm. Nhóm Thông báo khi không mở sheet chỉ xem ở theme Tối.
+> - Chưa thử: lưu giờ yên lặng thật, gạt công tắc thật, và việc push bị giữ lại trong giờ yên lặng (chỉ có unit test).
 
 Bước này do **phiên chính** làm, bằng trình duyệt có sẵn trong app Claude, và cần người dùng đồng ý trước mỗi lần. Người thực thi là subagent thì để ô này chưa tick.
 
@@ -1590,7 +1598,7 @@ Chạy `bun run dev` (nếu nó dừng với thông báo bảo mật thì chạy
 
 Dừng `bun run dev` khi xong. Ghi kết quả từng mục ngay dưới bước này.
 
-- [ ] **Step 4: Commit phần ghi kết quả, rồi báo cáo**
+- [x] **Step 4: Commit phần ghi kết quả, rồi báo cáo**
 
 ```bash
 git add docs/blueprint/plans/2026-11-17-kim-bun-yen-lang-m3.md
