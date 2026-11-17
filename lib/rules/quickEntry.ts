@@ -11,6 +11,13 @@ export type QuickField = {
   showIf?: (values: QuickValues) => boolean;
 };
 
+// Spec 2026-11-17 §3.3: how much the baby ate. Declared above QUICK_FIELDS, which uses it.
+export const SOLIDS_AMOUNT_OPTIONS: { value: string; label: string }[] = [
+  { value: "little", label: "Ít" },
+  { value: "some", label: "Vừa" },
+  { value: "lots", label: "Nhiều" },
+];
+
 export const QUICK_FIELDS: Record<InstantType, QuickField[]> = {
   bottle: [
     { key: "ml", label: "Số ml", kind: "number" },
