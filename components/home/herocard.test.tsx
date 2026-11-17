@@ -149,3 +149,56 @@ describe("PendingMark", () => {
     expect(renderToStaticMarkup(<PendingMark pending={false} />)).toBe("");
   });
 });
+
+describe("HeroCardView next-side hint (spec 2026-11-17 §5.3)", () => {
+  const nextSide = {
+    suggest: "right" as const,
+    last: "left" as const,
+    lastAt: "2026-11-14T03:05:00.000Z", // 10:05 giờ VN
+  };
+  const overdue: HeroState<LogRow> = {
+    kind: "overdue",
+    due: new Date("2026-11-14T04:48:00Z"),
+    lateMinutes: 12,
+  };
+
+  it("labels the suggested button and says which side was last", () => {
+    const out = html(props(overdue, { nextSide }));
+    expect(out.match(/Nên bú/g)).toHaveLength(1);
+    expect(out).toMatch(/Bú phải<span[^>]*bg-accent[^>]*>Nên bú<\/span>/);
+    expect(out).toContain("Lần trước: trái lúc 10:05");
+    const empty = html(props({ kind: "empty" }, { nextSide }));
+    expect(empty).toMatch(/Bú phải<span[^>]*>Nên bú<\/span>/);
+  });
+
+  it("keeps both buttons pressable", () => {
+    const onTimer = vi.fn();
+    const buttons = findElements(
+      HeroCardView(props(overdue, { nextSide, onTimer })),
+      (el) => typeof el.props.onClick === "function",
+    );
+    expect(buttons).toHaveLength(2);
+    buttons.forEach((b) => (b.props.onClick as () => void)());
+    expect(onTimer.mock.calls).toEqual([
+      [{ type: "breast", side: "left" }],
+      [{ type: "breast", side: "right" }],
+    ]);
+  });
+
+  it("shows nothing without a hint, and nothing in the next state", () => {
+    expect(html(props(overdue))).not.toContain("Nên bú");
+    expect(html(props(overdue))).not.toContain("Lần trước");
+    const next = html(
+      props(
+        {
+          kind: "next",
+          due: new Date("2026-11-14T06:00:00Z"),
+          minutesLeft: 60,
+        },
+        { nextSide },
+      ),
+    );
+    expect(next).not.toContain("Nên bú");
+    expect(next).not.toContain("Lần trước");
+  });
+});

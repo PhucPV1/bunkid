@@ -87,3 +87,22 @@ describe("ActionSheetView", () => {
     expect(html).toContain(">Bấm giờ</h3>");
   });
 });
+
+describe("QuickActionGrid next-side hint (spec 2026-11-17 §5.3)", () => {
+  it("puts Nên bú on the suggested breast tile", () => {
+    const html = renderToStaticMarkup(
+      <QuickActionGrid running={[]} onPick={() => {}} suggestSide="left" />,
+    );
+    expect(html.match(/Nên bú/g)).toHaveLength(1);
+    const first = html.split("<section")[1];
+    expect(first).toMatch(/Nên bú<\/span>.*Bú trái/s);
+    expect(html.match(/<button/g)).toHaveLength(13);
+  });
+
+  it("shows no label without a hint", () => {
+    const html = renderToStaticMarkup(
+      <QuickActionGrid running={[]} onPick={() => {}} />,
+    );
+    expect(html).not.toContain("Nên bú");
+  });
+});

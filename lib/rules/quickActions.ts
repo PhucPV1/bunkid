@@ -1,6 +1,6 @@
 import type { LogType } from "./logDetails";
 import type { InstantType } from "./quickEntry";
-import type { RunningLog, TimerButton } from "./timer";
+import type { BreastSide, RunningLog, TimerButton } from "./timer";
 
 export type QuickActionGroup = "timer" | "quick" | "other";
 
@@ -149,6 +149,21 @@ export function isActionRunning(
     (log) =>
       log.type === button.type &&
       (button.type !== "breast" || log.details.side === button.side),
+  );
+}
+
+// Spec 2026-11-17 §5.3: the label on the breast action of the suggested side.
+export const NEXT_SIDE_LABEL = "Nên bú";
+
+export function isSuggestedSide(
+  action: QuickAction,
+  side: BreastSide | null,
+): boolean {
+  return (
+    side !== null &&
+    action.kind === "timer" &&
+    action.button.type === "breast" &&
+    action.button.side === side
   );
 }
 

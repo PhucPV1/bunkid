@@ -1,15 +1,18 @@
 "use client";
 
+import { HintBadge } from "@/components/ui/HintBadge";
 import { Icon } from "@/components/ui/Icon";
 import { Sheet } from "@/components/ui/Sheet";
 import {
   actionLabel,
   isActionRunning,
+  isSuggestedSide,
+  NEXT_SIDE_LABEL,
   QUICK_ACTION_GROUPS,
   QUICK_ACTIONS,
   type QuickAction,
 } from "@/lib/rules/quickActions";
-import type { RunningLog } from "@/lib/rules/timer";
+import type { BreastSide, RunningLog } from "@/lib/rules/timer";
 import { CATEGORIES, type CategoryToken } from "@/lib/ui/categories";
 import { cx } from "@/lib/ui/cx";
 import { useQuickActions } from "./QuickActions";
@@ -29,9 +32,12 @@ const TINT: Record<CategoryToken, string> = {
 export function QuickActionGrid({
   running,
   onPick,
+  suggestSide = null,
 }: {
   running: RunningLog[];
   onPick: (action: QuickAction) => void;
+  // Spec 2026-11-17 §5.3: the breast side to label "Nên bú"; null shows no label.
+  suggestSide?: BreastSide | null;
 }) {
   return (
     <div className="flex flex-col gap-4">
@@ -51,10 +57,15 @@ export function QuickActionGrid({
                     type="button"
                     onClick={() => onPick(action)}
                     className={cx(
-                      "flex h-[84px] flex-col items-center justify-center gap-1.5 rounded-[20px] bg-glass-solid/75 px-1 text-ink transition-transform duration-[120ms] active:scale-[0.97]",
+                      "relative flex h-[84px] flex-col items-center justify-center gap-1.5 rounded-[20px] bg-glass-solid/75 px-1 text-ink transition-transform duration-[120ms] active:scale-[0.97]",
                       on ? "border-2 border-accent-text" : "border border-edge",
                     )}
                   >
+                    {isSuggestedSide(action, suggestSide) && (
+                      <HintBadge className="-top-1.5 -right-1">
+                        {NEXT_SIDE_LABEL}
+                      </HintBadge>
+                    )}
                     <span
                       className={cx(
                         "flex size-[38px] shrink-0 items-center justify-center rounded-full",
@@ -83,12 +94,14 @@ export function ActionSheetView({
   babyName,
   running,
   onPick,
+  suggestSide = null,
 }: {
   open: boolean;
   onClose: () => void;
   babyName: string;
   running: RunningLog[];
   onPick: (action: QuickAction) => void;
+  suggestSide?: BreastSide | null;
 }) {
   return (
     <Sheet
@@ -97,7 +110,11 @@ export function ActionSheetView({
       title={`Ghi lại cho ${babyName}`}
       variant="floating"
     >
-      <QuickActionGrid running={running} onPick={onPick} />
+      <QuickActionGrid
+        running={running}
+        onPick={onPick}
+        suggestSide={suggestSide}
+      />
     </Sheet>
   );
 }
@@ -118,6 +135,7 @@ export function ActionSheet({
       onClose={onClose}
       babyName={babyName}
       running={actions.running}
+      suggestSide={actions.suggestSide}
       onPick={(action) => {
         onClose();
         if (action.kind === "timer") actions.pressTimer(action.button);

@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { PendingMark } from "@/components/sync/PendingMark";
 import { Button } from "@/components/ui/Button";
 import { Glass } from "@/components/ui/Glass";
+import { HintBadge } from "@/components/ui/HintBadge";
 import { TimerRing } from "@/components/ui/TimerRing";
 import {
   formatClock,
@@ -10,7 +11,8 @@ import {
   timerLabel,
   type HeroState,
 } from "@/lib/rules/hero";
-import type { TimerButton } from "@/lib/rules/timer";
+import { NEXT_SIDE_LABEL } from "@/lib/rules/quickActions";
+import type { BreastSide, NextSide, TimerButton } from "@/lib/rules/timer";
 import { formatVnTime } from "@/lib/rules/time";
 import type { LogRow } from "@/lib/supabase/rows";
 import { categoryOf } from "@/lib/ui/categories";
@@ -35,6 +37,7 @@ export function HeroCardView({
   busy,
   onTimer,
   onStop,
+  nextSide = null,
 }: {
   state: HeroState<LogRow>;
   now: Date;
@@ -44,16 +47,39 @@ export function HeroCardView({
   busy: boolean;
   onTimer: (button: TimerButton) => void;
   onStop: (log: LogRow) => void;
+  // Spec 2026-11-17 §5.3: which side to offer first; null shows no hint.
+  nextSide?: NextSide | null;
 }) {
+  // Without a hint the button's only child stays the plain label.
+  const feedButton = (button: TimerButton, side: BreastSide, text: string) => (
+    <Button
+      disabled={busy}
+      className="relative"
+      onClick={() => onTimer(button)}
+    >
+      {nextSide?.suggest === side ? (
+        <>
+          {text}
+          <HintBadge className="-top-2 right-2">{NEXT_SIDE_LABEL}</HintBadge>
+        </>
+      ) : (
+        text
+      )}
+    </Button>
+  );
   const feedButtons = (
-    <div className="grid w-full grid-cols-2 gap-2.5">
-      <Button disabled={busy} onClick={() => onTimer(LEFT)}>
-        Bú trái
-      </Button>
-      <Button disabled={busy} onClick={() => onTimer(RIGHT)}>
-        Bú phải
-      </Button>
-    </div>
+    <>
+      <div className="grid w-full grid-cols-2 gap-2.5">
+        {feedButton(LEFT, "left", "Bú trái")}
+        {feedButton(RIGHT, "right", "Bú phải")}
+      </div>
+      {nextSide && (
+        <span className="text-[13px] leading-[18px] text-muted tabular-nums">
+          Lần trước: {nextSide.last === "left" ? "trái" : "phải"} lúc{" "}
+          {formatVnTime(new Date(nextSide.lastAt))}
+        </span>
+      )}
+    </>
   );
 
   let body: ReactNode;

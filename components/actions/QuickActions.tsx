@@ -23,7 +23,12 @@ import {
 import type { LogType } from "@/lib/rules/logDetails";
 import { shouldAskPumpAmounts } from "@/lib/rules/quickActions";
 import type { InstantType, QuickValues } from "@/lib/rules/quickEntry";
-import type { RunningLog, TimerButton } from "@/lib/rules/timer";
+import {
+  nextBreastSide,
+  type BreastSide,
+  type RunningLog,
+  type TimerButton,
+} from "@/lib/rules/timer";
 import {
   canResume,
   instantToast,
@@ -41,6 +46,8 @@ import { tapFeedback } from "@/lib/ui/haptics";
 
 export type QuickActionsValue = {
   running: RunningLog[];
+  // Spec 2026-11-17 §5.3: the breast side to label "Nên bú", or null.
+  suggestSide: BreastSide | null;
   busy: boolean;
   error: Error | null;
   pressTimer: (button: TimerButton) => void;
@@ -124,6 +131,7 @@ export function QuickActionsProvider({
 
   const value: QuickActionsValue = {
     running,
+    suggestSide: nextBreastSide(rows, new Date())?.suggest ?? null,
     busy: press.isPending || stop.isPending,
     error: press.error ?? stop.error,
     pressTimer: (button) => {

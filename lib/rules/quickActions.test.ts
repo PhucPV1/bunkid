@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   actionLabel,
   isActionRunning,
+  isSuggestedSide,
+  NEXT_SIDE_LABEL,
   QUICK_ACTION_GROUPS,
   QUICK_ACTIONS,
   shouldAskPumpAmounts,
@@ -125,5 +127,20 @@ describe("shouldAskPumpAmounts", () => {
         "u1",
       ),
     ).toBe(false);
+  });
+});
+
+describe("next-side hint (spec 2026-11-17 §5.3)", () => {
+  it("marks only the breast action of the suggested side", () => {
+    expect(NEXT_SIDE_LABEL).toBe("Nên bú");
+    expect(
+      QUICK_ACTIONS.filter((a) => isSuggestedSide(a, "right")).map(
+        (a) => a.key,
+      ),
+    ).toEqual(["breast-right"]);
+    expect(
+      QUICK_ACTIONS.filter((a) => isSuggestedSide(a, "left")).map((a) => a.key),
+    ).toEqual(["breast-left"]);
+    expect(QUICK_ACTIONS.some((a) => isSuggestedSide(a, null))).toBe(false);
   });
 });

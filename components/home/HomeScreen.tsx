@@ -18,7 +18,7 @@ import { rateLast24h, WINDOW_MS, windowTotals } from "@/lib/rules/ratings";
 import { sleepStatusLine } from "@/lib/rules/status";
 import { homeStatTiles, totalsLine } from "@/lib/rules/summaryText";
 import { ageDays, formatAgeVi } from "@/lib/rules/time";
-import { overdueTimers } from "@/lib/rules/timer";
+import { nextBreastSide, overdueTimers } from "@/lib/rules/timer";
 import type { Baby } from "@/lib/supabase/rows";
 import { AlertBanners } from "./AlertBanners";
 import { HeroCardView } from "./HeroCard";
@@ -67,6 +67,7 @@ export function HomeScreen({ baby, userId }: { baby: Baby; userId: string }) {
     now,
   });
   const heroLog = hero.kind === "running" ? hero.log : null;
+  const nextSide = nextBreastSide(rows, now);
   const vitaminD = vitaminDToday(rows, now);
   const sub =
     [sleepStatusLine(rows, now), vitaminD && `Vitamin D đã uống ${vitaminD}`]
@@ -119,6 +120,7 @@ export function HomeScreen({ baby, userId }: { baby: Baby; userId: string }) {
               busy={actions.busy}
               onTimer={actions.pressTimer}
               onStop={actions.stopTimer}
+              nextSide={nextSide}
             />
           )}
 
@@ -138,6 +140,7 @@ export function HomeScreen({ baby, userId }: { baby: Baby; userId: string }) {
             running={actions.running}
             busy={actions.busy}
             onTimer={actions.pressTimer}
+            suggestSide={nextSide?.suggest ?? null}
           />
 
           <QuickLogGrid onInstant={(type) => actions.openInstant(type)} />

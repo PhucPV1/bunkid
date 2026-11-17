@@ -51,6 +51,30 @@ describe("TimerButtons", () => {
   });
 });
 
+describe("TimerButtons next-side hint (spec 2026-11-17 §5.3)", () => {
+  it("puts Nên bú on the suggested side only", () => {
+    const html = renderToStaticMarkup(
+      <TimerButtons
+        running={[]}
+        busy={false}
+        onTimer={() => {}}
+        suggestSide="right"
+      />,
+    );
+    expect(html.match(/Nên bú/g)).toHaveLength(1);
+    expect(html).toContain('aria-label="Bú phải, nên bú"');
+    expect(html).toContain('aria-label="Bú trái"');
+    expect(html.match(/<button/g)).toHaveLength(5);
+  });
+
+  it("shows no label without a hint", () => {
+    const html = renderToStaticMarkup(
+      <TimerButtons running={[]} busy={false} onTimer={() => {}} />,
+    );
+    expect(html).not.toContain("Nên bú");
+  });
+});
+
 describe("QuickLogGrid", () => {
   it("is a 2×2 grid of glass pills with a coloured chip, in spec order", () => {
     const onInstant = vi.fn();
