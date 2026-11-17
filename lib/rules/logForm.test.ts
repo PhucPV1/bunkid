@@ -2,7 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   buildLogDetails,
   buildLogPatch,
+  defaultLogValues,
+  hasNoteField,
   LOG_FIELDS,
+  MANUAL_TYPES,
   valuesFromDetails,
 } from "./logForm";
 import { QUICK_FIELDS } from "./quickEntry";
@@ -136,5 +139,52 @@ describe("logForm", () => {
         end: "",
       }),
     ).toEqual({ ok: false, message: "Nhập số ml từ 1 đến 400" });
+  });
+
+  it("MANUAL_TYPES: the six old types, then Ăn dặm, Uống nước, Tắm and Ghi chú", () => {
+    expect(MANUAL_TYPES).toHaveLength(10);
+    expect(MANUAL_TYPES[5].label).toBe("Nhiệt độ");
+    expect(MANUAL_TYPES.slice(6)).toEqual([
+      { value: "solids", label: "Ăn dặm" },
+      { value: "water", label: "Uống nước" },
+      { value: "bath", label: "Tắm" },
+      { value: "note", label: "Ghi chú" },
+    ]);
+  });
+
+  it("the new types take their fields and defaults from quick entry", () => {
+    for (const type of ["solids", "water", "bath", "note"] as const)
+      expect(LOG_FIELDS[type]).toBe(QUICK_FIELDS[type]);
+    expect(defaultLogValues("bath")).toEqual({});
+    const details = { food: "Cháo bí đỏ", amount: "lots", isNew: true };
+    const values = valuesFromDetails("solids", details);
+    expect(values).toEqual({ ...details, reaction: "" });
+    expect(buildLogDetails("solids", values)).toEqual({ ok: true, details });
+    expect(valuesFromDetails("water", { ml: 30 })).toEqual({ ml: "30" });
+    expect(buildLogDetails("bath", {})).toEqual({ ok: true, details: {} });
+  });
+
+  it("a note log has no separate Ghi chú: buildLogPatch never fills logs.note for it", () => {
+    expect(hasNoteField("note")).toBe(false);
+    expect(hasNoteField("solids")).toBe(true);
+    expect(hasNoteField("breast")).toBe(true);
+    expect(
+      buildLogPatch({
+        ...base,
+        type: "note",
+        values: { text: " Bé cười nhiều " },
+        start: "2026-11-14T08:30",
+        end: "",
+        note: "gõ lúc còn chọn loại khác",
+      }),
+    ).toEqual({
+      ok: true,
+      patch: {
+        started_at: "2026-11-14T01:30:00.000Z",
+        ended_at: "2026-11-14T01:30:00.000Z",
+        details: { text: "Bé cười nhiều" },
+        note: null,
+      },
+    });
   });
 });

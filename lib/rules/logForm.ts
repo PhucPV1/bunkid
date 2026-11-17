@@ -15,7 +15,17 @@ export const MANUAL_TYPES: { value: LogType; label: string }[] = [
   { value: "diaper", label: "Tã" },
   { value: "medicine", label: "Thuốc" },
   { value: "temperature", label: "Nhiệt độ" },
+  { value: "solids", label: "Ăn dặm" },
+  { value: "water", label: "Uống nước" },
+  { value: "bath", label: "Tắm" },
+  { value: "note", label: "Ghi chú" },
 ];
+
+// Spec 2026-11-17 §3.3: a note log's text is its "Nội dung" (details.text), so the
+// sheet's own "Ghi chú" field (the logs.note column) is not offered for it.
+export function hasNoteField(type: LogType): boolean {
+  return type !== "note";
+}
 
 export const LOG_FIELDS: Record<LogType, QuickField[]> = {
   ...QUICK_FIELDS,
@@ -132,7 +142,7 @@ export function buildLogPatch(input: {
         return { ok: false, message: "Giờ kết thúc không được ở tương lai" };
     }
   }
-  const note = input.note.trim();
+  const note = hasNoteField(input.type) ? input.note.trim() : "";
   if (note.length > 500)
     return { ok: false, message: "Ghi chú tối đa 500 ký tự" };
   return {

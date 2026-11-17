@@ -5,6 +5,7 @@ import { FIELD_INPUT, FIELD_LABEL } from "./styles";
 
 // Spec §8.3: same fields as before, drawn with ui components. A checkbox becomes a
 // Switch, a select with 2–6 options a Segmented, a longer select stays native.
+// A textarea is three lines tall; text fields carry the field's maxLength.
 export function FieldList({
   fields,
   values,
@@ -70,6 +71,20 @@ export function FieldList({
             );
           }
 
+          if (field.kind === "textarea")
+            return (
+              <label key={field.key} className="flex flex-col gap-1.5">
+                <span className={FIELD_LABEL}>{field.label}</span>
+                <textarea
+                  rows={3}
+                  maxLength={field.maxLength}
+                  className={`${FIELD_INPUT} py-2.5`}
+                  value={String(value ?? "")}
+                  onChange={(event) => set(event.target.value)}
+                />
+              </label>
+            );
+
           return (
             <label key={field.key} className="flex flex-col gap-1.5">
               <span className={FIELD_LABEL}>{field.label}</span>
@@ -80,6 +95,7 @@ export function FieldList({
                     : FIELD_INPUT
                 }
                 inputMode={field.kind === "number" ? "decimal" : "text"}
+                maxLength={field.maxLength}
                 value={String(value ?? "")}
                 onChange={(event) => set(event.target.value)}
               />

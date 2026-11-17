@@ -79,4 +79,49 @@ describe("LogEditSheet", () => {
     expect(html).not.toContain("<input");
     expect(html).not.toContain("Xóa bản ghi");
   });
+
+  it("new log: the type picker also offers the four new types", () => {
+    const html = render({});
+    expect(html).toContain('<option value="solids">Ăn dặm</option>');
+    expect(html).toContain('<option value="water">Uống nước</option>');
+    expect(html).toContain('<option value="bath">Tắm</option>');
+    expect(html).toContain('<option value="note">Ghi chú</option>');
+    expect(html.match(/<option /g)).toHaveLength(10);
+  });
+
+  it("a note log: Nội dung only, the sheet's own Ghi chú field is hidden", () => {
+    const html = render({
+      log: {
+        ...diaper,
+        id: "n1",
+        type: "note",
+        details: { text: "Bé cười nhiều" },
+        note: null,
+      } as LogRow,
+    });
+    expect(html).toContain("11:00 · Ghi chú · Bé cười nhiều · Mẹ");
+    expect(html).toContain(`d="${ICON_PATHS.doc}"`);
+    expect(html).toContain(">Nội dung</span>");
+    expect(html).toContain(">Bé cười nhiều</textarea>");
+    expect(html.match(/<textarea/g)).toHaveLength(1);
+    expect(html).not.toContain(">Ghi chú</span>");
+    expect(html).toContain(">Thời điểm</span>");
+  });
+
+  it("a solids log: quick-entry fields plus the usual Ghi chú", () => {
+    const html = render({
+      log: {
+        ...diaper,
+        id: "s1",
+        type: "solids",
+        details: { food: "Cháo bí đỏ", amount: "lots", isNew: true },
+      } as LogRow,
+    });
+    expect(html).toContain(
+      "11:00 · Ăn dặm · Cháo bí đỏ · nhiều · món mới · Mẹ",
+    );
+    expect(html).toMatch(/<input[^>]*maxLength="80"[^>]*value="Cháo bí đỏ"/);
+    expect(html).toMatch(/aria-pressed="true"[^>]*>Nhiều<\/button>/);
+    expect(html).toContain(">Ghi chú</span>");
+  });
 });

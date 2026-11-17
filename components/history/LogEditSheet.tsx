@@ -13,6 +13,7 @@ import { isTimerType, type LogType } from "@/lib/rules/logDetails";
 import {
   buildLogPatch,
   defaultLogValues,
+  hasNoteField,
   LOG_FIELDS,
   MANUAL_TYPES,
   valuesFromDetails,
@@ -224,15 +225,17 @@ export function LogEditSheet({
                 setEnd,
                 allowOpenEnd ? "Để trống nếu vẫn đang chạy." : undefined,
               )}
-            <label className="flex flex-col gap-1.5">
-              <span className={FIELD_LABEL}>Ghi chú</span>
-              <textarea
-                className={`${FIELD_INPUT} min-h-20 py-2.5`}
-                value={note}
-                maxLength={500}
-                onChange={(event) => setNote(event.target.value)}
-              />
-            </label>
+            {hasNoteField(type) && (
+              <label className="flex flex-col gap-1.5">
+                <span className={FIELD_LABEL}>Ghi chú</span>
+                <textarea
+                  className={`${FIELD_INPUT} min-h-20 py-2.5`}
+                  value={note}
+                  maxLength={500}
+                  onChange={(event) => setNote(event.target.value)}
+                />
+              </label>
+            )}
             {warnings.map((warning) => (
               <p
                 key={warning}

@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-import { findElements } from "@/components/ui/testTree";
+import { findElements, hostElements } from "@/components/ui/testTree";
 import { LOG_FIELDS } from "@/lib/rules/logForm";
 import { FieldList } from "./FieldList";
 
@@ -74,6 +74,36 @@ describe("FieldList", () => {
     expect(med).toMatch(/aria-pressed="true"[^>]*>gói<\/button>/);
     expect(med).toContain(">ống</button>");
     expect(med).not.toContain("<select");
+  });
+
+  it("a textarea field is three lines tall and capped; text fields carry maxLength", () => {
+    const note = html({
+      fields: LOG_FIELDS.note,
+      values: { text: "Bé cười nhiều" },
+      onChange: () => {},
+    });
+    expect(note).toContain(">Nội dung</span>");
+    expect(note).toMatch(/<textarea[^>]*rows="3"/);
+    expect(note).toMatch(/<textarea[^>]*maxLength="500"/);
+    expect(note).toContain(">Bé cười nhiều</textarea>");
+    expect(note).not.toContain("<input");
+    const solids = html({
+      fields: LOG_FIELDS.solids,
+      values: { food: "Cháo", amount: "some", isNew: false, reaction: "" },
+      onChange: () => {},
+    });
+    expect(solids).toMatch(/<input[^>]*maxLength="80"[^>]*value="Cháo"/);
+    expect(solids).toMatch(/<input[^>]*maxLength="200"/);
+    expect(solids).toMatch(/aria-pressed="true"[^>]*>Vừa<\/button>/);
+    const onChange = vi.fn();
+    const [area] = hostElements(
+      FieldList({ fields: LOG_FIELDS.note, values: { text: "" }, onChange }),
+      "textarea",
+    );
+    (area.props.onChange as (e: unknown) => void)({
+      target: { value: "Mọc răng" },
+    });
+    expect(onChange).toHaveBeenLastCalledWith({ text: "Mọc răng" });
   });
 
   it("reports changes with the field's key", () => {
