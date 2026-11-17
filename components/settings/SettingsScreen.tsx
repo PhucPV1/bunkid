@@ -99,7 +99,7 @@ export function SettingsScreen({
             href={isOwner ? "/cai-dat/cu-bu" : undefined}
           />
         </ListGroup>
-        <NotificationsGroup userId={userId} />
+        <NotificationsGroup userId={userId} babyId={baby.id} />
       </OnlineOnly>
 
       <AppearanceGroup />

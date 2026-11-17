@@ -12,3 +12,4 @@ export type GrowthRow = Tables["growth"]["Row"];
 export type MusicLinkRow = Tables["music_links"]["Row"];
 export type PhotoRow = Tables["photos"]["Row"];
 export type MilestoneRow = Tables["milestones_achieved"]["Row"];
+export type MedicineScheduleRow = Tables["medicine_schedules"]["Row"];

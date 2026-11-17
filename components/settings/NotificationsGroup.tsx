@@ -13,7 +13,9 @@ import {
   useNotificationPrefs,
   useSavePrefs,
 } from "@/lib/data/notificationPrefs";
+import { useMedicineSchedules } from "@/lib/data/medicineSchedules";
 import { useNow } from "@/lib/hooks/useNow";
+import { enabledCountText } from "@/lib/rules/medicineSchedule";
 import {
   minutesToTime,
   PREF_OPTIONS,
@@ -48,6 +50,7 @@ export function NotificationsGroupView({
   prefs,
   holdFeed,
   quiet,
+  medicine,
   disabled,
   snooze,
   device,
@@ -60,6 +63,8 @@ export function NotificationsGroupView({
   holdFeed: boolean;
   // "Tắt" or "HH:mm–HH:mm".
   quiet: string;
+  // "Tắt", "<n> thuốc", or "" while the schedules are still loading.
+  medicine: string;
   disabled: boolean;
   snooze: string;
   device: ReactNode;
@@ -108,6 +113,13 @@ export function NotificationsGroupView({
         value={quiet}
         onClick={disabled ? undefined : onOpenQuiet}
         chevron={!disabled}
+      />
+      <ListRow
+        label="Lịch nhắc thuốc"
+        icon="calendar"
+        iconColor="cat-diaper"
+        value={medicine}
+        href="/cai-dat/nhac-thuoc"
       />
       <ListRow
         label="Tạm tắt nhắc"
@@ -266,9 +278,16 @@ export function SnoozeSheet({
   );
 }
 
-export function NotificationsGroup({ userId }: { userId: string }) {
+export function NotificationsGroup({
+  userId,
+  babyId,
+}: {
+  userId: string;
+  babyId: string;
+}) {
   const now = useNow(60_000);
   const prefs = useNotificationPrefs(userId);
+  const schedules = useMedicineSchedules(babyId);
   const save = useSavePrefs(userId);
   const [open, setOpen] = useState(false);
   const [quietOpen, setQuietOpen] = useState(false);
@@ -280,6 +299,7 @@ export function NotificationsGroup({ userId }: { userId: string }) {
         prefs={values}
         holdFeed={values.hold_feed_while_asleep}
         quiet={quietHoursValue(values)}
+        medicine={schedules.data ? enabledCountText(schedules.data) : ""}
         disabled={!prefs.isSuccess || save.isPending}
         snooze={snoozeValue(values.snooze_until, now)}
         device={<DevicePushControl />}

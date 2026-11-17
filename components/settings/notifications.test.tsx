@@ -22,6 +22,7 @@ const view = (
   prefs,
   holdFeed: false,
   quiet: "Tắt",
+  medicine: "2 thuốc",
   disabled: false,
   snooze: "Không",
   device: <p>Thiết bị</p>,
@@ -101,6 +102,7 @@ describe("NotificationsGroupView — spec 2026-11-17 §4.4", () => {
       "Nhắc timer chạy quá lâu",
       "Không nhắc bú khi bé đang ngủ",
       "Giờ yên lặng",
+      "Lịch nhắc thuốc",
       "Tạm tắt nhắc",
     ].map((label) => html.indexOf(`>${label}</span>`));
     expect(order.every((at) => at >= 0)).toBe(true);
@@ -147,6 +149,19 @@ describe("NotificationsGroupView — spec 2026-11-17 §4.4", () => {
       (el) => el.props.label === "Giờ yên lặng",
     );
     expect(locked.props.onClick).toBeUndefined();
+  });
+
+  it("Lịch nhắc thuốc links to its page and shows how many are on", () => {
+    const html = renderToStaticMarkup(<NotificationsGroupView {...view()} />);
+    expect(html).toContain('href="/cai-dat/nhac-thuoc"');
+    expect(html).toContain(">2 thuốc</span>");
+    expect(html).toContain(`d="${ICON_PATHS.calendar}"`);
+    // While the list is still loading the row has no value.
+    const loading = renderToStaticMarkup(
+      <NotificationsGroupView {...view({ medicine: "" })} />,
+    );
+    expect(loading).toContain(">Lịch nhắc thuốc</span>");
+    expect(loading).not.toContain("thuốc</span><svg");
   });
 
   it("the snooze hint names the four reminders it pauses", () => {
