@@ -1,11 +1,19 @@
 import webpush from "web-push";
-import type { BabyDispatchState } from "@/lib/rules/pushSelection";
+import type {
+  BabyDispatchState,
+  RunningTimer,
+} from "@/lib/rules/pushSelection";
 import { parseChoices, toDoseRecords } from "@/lib/rules/vaccineForm";
 import type { DispatchDeps } from "./dispatch";
 import { pushEnv } from "./pushEnv";
 import { supabaseServiceRole } from "./supabaseServer";
 
 const TWELVE_HOURS_MS = 12 * 3_600_000;
+
+function sideOf(details: unknown): RunningTimer["side"] {
+  const side = (details as { side?: unknown } | null)?.side;
+  return side === "left" || side === "right" ? side : null;
+}
 const VACCINE_TTL_S = 12 * 3600;
 
 async function loadState(now: Date): Promise<BabyDispatchState[]> {
@@ -35,12 +43,12 @@ async function loadState(now: Date): Promise<BabyDispatchState[]> {
         .gte("ended_at", since)
         .order("ended_at", { ascending: false })
         .limit(1),
-      // Running timers: at most one per type (unique index), so two rows at most.
+      // Running timers: at most one per type (unique index), so four rows at most.
       db
         .from("logs")
-        .select("type, started_at")
+        .select("id, type, started_at, details")
         .eq("baby_id", baby.id)
-        .in("type", ["breast", "sleep"])
+        .in("type", ["breast", "sleep", "pump", "tummy"])
         .is("ended_at", null),
       db
         .from("family_members")
@@ -62,7 +70,9 @@ async function loadState(now: Date): Promise<BabyDispatchState[]> {
       db.from("push_subscriptions").select("user_id").in("user_id", userIds),
       db
         .from("notification_prefs")
-        .select("user_id, feed_reminder, wake_window, vaccine, snooze_until")
+        .select(
+          "user_id, feed_reminder, wake_window, vaccine, snooze_until, medicine, timer_alert, quiet_enabled, quiet_start_min, quiet_end_min, hold_feed_while_asleep",
+        )
         .in("user_id", userIds),
     ]);
     if (subscribed.error) throw subscribed.error;
@@ -79,6 +89,12 @@ async function loadState(now: Date): Promise<BabyDispatchState[]> {
       lastFeed: last ? { id: last.id, startedAt: last.started_at } : null,
       breastRunningSince:
         runningRows.find((r) => r.type === "breast")?.started_at ?? null,
+      runningTimers: runningRows.map((r): RunningTimer => ({
+        id: r.id,
+        type: r.type as RunningTimer["type"],
+        startedAt: r.started_at,
+        side: sideOf(r.details),
+      })),
       wake: {
         dob: baby.dob,
         lastSleep: lastSleep?.ended_at
@@ -103,6 +119,12 @@ async function loadState(now: Date): Promise<BabyDispatchState[]> {
                   wake_window: row.wake_window,
                   vaccine: row.vaccine,
                   snooze_until: row.snooze_until,
+                  medicine: row.medicine,
+                  timer_alert: row.timer_alert,
+                  quiet_enabled: row.quiet_enabled,
+                  quiet_start_min: row.quiet_start_min,
+                  quiet_end_min: row.quiet_end_min,
+                  hold_feed_while_asleep: row.hold_feed_while_asleep,
                 }
               : null,
           };

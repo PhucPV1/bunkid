@@ -1,8 +1,10 @@
 import { VACCINES } from "@/lib/content/vaccines";
 import type { VaccineDose } from "@/lib/content/vaccineSchema";
 import { addDays, formatDayShort, WEEKDAYS } from "./days";
+import { DEFAULT_QUIET, inQuietHours } from "./notifications";
 import { FORGOTTEN_BREAST_MS } from "./ratings";
 import { ageDays, formatVnTime, vnDateString } from "./time";
+import { TIMER_LIMIT_MIN } from "./timer";
 import { buildSchedule, type DoseRecord } from "./vaccines";
 
 export type NotificationKind = "feed" | "wake" | "vaccine";
@@ -15,7 +17,23 @@ export type Recipient = {
     wake_window: boolean;
     vaccine: boolean;
     snooze_until: string | null;
+    // Spec 2026-11-17 §4.1. A missing field means its default there, the same
+    // rule as `prefs: null`.
+    medicine?: boolean;
+    timer_alert?: boolean;
+    quiet_enabled?: boolean;
+    quiet_start_min?: number;
+    quiet_end_min?: number;
+    hold_feed_while_asleep?: boolean;
   } | null;
+};
+
+// Spec 2026-11-17 §4.3: a timer that is running now.
+export type RunningTimer = {
+  id: string;
+  type: "breast" | "sleep" | "pump" | "tummy";
+  startedAt: string;
+  side: "left" | "right" | null;
 };
 
 export type BabyDispatchState = {
@@ -25,6 +43,8 @@ export type BabyDispatchState = {
   lastFeed: { id: string; startedAt: string } | null;
   // started_at of the running breast timer, or null when none is running.
   breastRunningSince: string | null;
+  // Every running timer; empty when none runs.
+  runningTimers: RunningTimer[];
   // null: wake reminders are not evaluated for this baby.
   wake: {
     dob: string;
@@ -75,16 +95,44 @@ function notSnoozed(
   );
 }
 
-function wantsFeed(recipient: Recipient, now: Date): boolean {
+// Spec 2026-11-17 §4.3: inside this recipient's quiet hours. A reminder held
+// here is not claimed, so the next cron run after the range sends it.
+function isQuiet(prefs: NonNullable<Recipient["prefs"]>, now: Date): boolean {
+  return inQuietHours(
+    {
+      quiet_enabled: prefs.quiet_enabled ?? DEFAULT_QUIET.quiet_enabled,
+      quiet_start_min: prefs.quiet_start_min ?? DEFAULT_QUIET.quiet_start_min,
+      quiet_end_min: prefs.quiet_end_min ?? DEFAULT_QUIET.quiet_end_min,
+    },
+    now,
+  );
+}
+
+// A sleep timer under its limit; past it the timer counts as forgotten.
+function babyAsleep(baby: BabyDispatchState, now: Date): boolean {
+  const limit = TIMER_LIMIT_MIN.sleep * 60_000;
+  return baby.runningTimers.some(
+    (timer) =>
+      timer.type === "sleep" &&
+      now.getTime() - Date.parse(timer.startedAt) < limit,
+  );
+}
+
+function wantsFeed(recipient: Recipient, now: Date, asleep: boolean): boolean {
   const prefs = recipient.prefs;
   if (!prefs) return true;
-  return prefs.feed_reminder && notSnoozed(prefs, now);
+  return (
+    prefs.feed_reminder &&
+    notSnoozed(prefs, now) &&
+    !isQuiet(prefs, now) &&
+    !(asleep && (prefs.hold_feed_while_asleep ?? false))
+  );
 }
 
 function wantsWake(recipient: Recipient, now: Date): boolean {
   const prefs = recipient.prefs;
   if (!prefs) return true;
-  return prefs.wake_window && notSnoozed(prefs, now);
+  return prefs.wake_window && notSnoozed(prefs, now) && !isQuiet(prefs, now);
 }
 
 // Spec §8.3: W(ageDays), the awake time in minutes after which a reminder is due.
@@ -133,8 +181,9 @@ function feedReminders(baby: BabyDispatchState, now: Date): DueNotification[] {
   if (since > RECENT_MS) return [];
   if (since < baby.feedIntervalMin * 60_000) return [];
   const body = `Cữ trước lúc ${formatVnTime(new Date(last.startedAt))} (${agoText(since)}).`;
+  const asleep = babyAsleep(baby, now);
   return baby.recipients
-    .filter((recipient) => wantsFeed(recipient, now))
+    .filter((recipient) => wantsFeed(recipient, now, asleep))
     .map((recipient) => ({
       userId: recipient.userId,
       kind: "feed",

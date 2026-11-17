@@ -17,6 +17,7 @@ function baby(over: Partial<BabyDispatchState> = {}): BabyDispatchState {
     feedIntervalMin: 180,
     lastFeed: { id: "L1", startedAt: minutesAgo(190) },
     breastRunningSince: null,
+    runningTimers: [],
     wake: null,
     vaccine: null,
     recipients: [{ userId: "u1", prefs: null }],
@@ -508,5 +509,144 @@ describe("selectDueNotifications — wake (spec §8.3)", () => {
       now,
     );
     expect(due.map((d) => d.userId)).toEqual(["on"]);
+  });
+});
+
+describe("selectDueNotifications — quiet hours and a sleeping baby (spec 2026-11-17 §4.3)", () => {
+  // `now` is 10:00 in VN; a quiet range of 09:00–11:00 covers it.
+  const quiet = {
+    feed_reminder: true,
+    wake_window: true,
+    vaccine: true,
+    snooze_until: null,
+    quiet_enabled: true,
+    quiet_start_min: 540,
+    quiet_end_min: 660,
+  };
+  const wakeDue = {
+    dob: "2026-09-14",
+    lastSleep: { id: "S1", endedAt: minutesAgo(200) },
+    sleepRunning: false,
+  };
+
+  it("holds feed and wake reminders during a recipient's quiet hours", () => {
+    const due = selectDueNotifications(
+      [
+        baby({
+          wake: wakeDue,
+          recipients: [
+            { userId: "quiet", prefs: quiet },
+            { userId: "off", prefs: { ...quiet, quiet_enabled: false } },
+            { userId: "none", prefs: null },
+          ],
+        }),
+      ],
+      now,
+    );
+    expect(due.map((d) => `${d.userId}:${d.kind}`)).toEqual([
+      "off:feed",
+      "none:feed",
+      "off:wake",
+      "none:wake",
+    ]);
+  });
+
+  it("sends the held reminder once quiet hours are over, with the same key", () => {
+    const after = new Date(now.getTime() + 61 * 60_000); // 11:01
+    const due = selectDueNotifications(
+      [baby({ recipients: [{ userId: "quiet", prefs: quiet }] })],
+      after,
+    );
+    expect(due.map((d) => d.refKey)).toEqual(["feed:L1"]);
+  });
+
+  it("does not hold vaccine reminders", () => {
+    const morning = new Date("2026-11-16T01:30:00Z"); // 08:30 in VN
+    const due = selectDueNotifications(
+      [
+        baby({
+          lastFeed: null,
+          vaccine: { dob: "2026-09-14", choices: {}, records: [] },
+          recipients: [
+            {
+              userId: "quiet",
+              prefs: { ...quiet, quiet_start_min: 480, quiet_end_min: 540 },
+            },
+          ],
+        }),
+      ],
+      morning,
+      [
+        {
+          code: "opv",
+          doseNo: 1,
+          name: "opv mũi 1",
+          protects: ["X"],
+          program: "dich_vu",
+          recommendedAgeDays: 64,
+          minAgeDays: 64,
+          source: "https://example.org",
+          reviewedAt: "2026-11-14",
+        },
+      ],
+    );
+    expect(due.map((d) => d.kind)).toEqual(["vaccine"]);
+  });
+
+  it("holds the feed reminder while the baby sleeps, only for who asked", () => {
+    const hold = {
+      ...quiet,
+      quiet_enabled: false,
+      hold_feed_while_asleep: true,
+    };
+    const sleeping = [
+      {
+        id: "S9",
+        type: "sleep" as const,
+        startedAt: minutesAgo(40),
+        side: null,
+      },
+    ];
+    const recipients = [
+      { userId: "hold", prefs: hold },
+      { userId: "plain", prefs: null },
+    ];
+    expect(
+      selectDueNotifications(
+        [baby({ runningTimers: sleeping, recipients })],
+        now,
+      ).map((d) => d.userId),
+    ).toEqual(["plain"]);
+    // The baby woke up: the reminder goes out on the next run.
+    expect(
+      selectDueNotifications([baby({ recipients })], now).map((d) => d.userId),
+    ).toEqual(["hold", "plain"]);
+  });
+
+  it("a sleep timer left running for 14 hours no longer holds the reminder", () => {
+    const hold = {
+      ...quiet,
+      quiet_enabled: false,
+      hold_feed_while_asleep: true,
+    };
+    const forgotten = [
+      {
+        id: "S9",
+        type: "sleep" as const,
+        startedAt: minutesAgo(840),
+        side: null,
+      },
+    ];
+    expect(
+      selectDueNotifications(
+        [
+          baby({
+            runningTimers: forgotten,
+            recipients: [{ userId: "hold", prefs: hold }],
+          }),
+        ],
+        now,
+      ).map((d) => d.userId),
+    ).toEqual(["hold"]);
   });
 });
