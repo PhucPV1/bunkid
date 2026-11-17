@@ -5,7 +5,14 @@ import { groupFeedSessions } from "./ratings";
 import { shortDuration } from "./summaryText";
 
 export type HistoryFilter =
-  "all" | "feed" | "sleep" | "diaper" | "medicine" | "temperature";
+  | "all"
+  | "feed"
+  | "sleep"
+  | "diaper"
+  | "medicine"
+  | "temperature"
+  | "solids"
+  | "other";
 
 export const HISTORY_FILTERS: { value: HistoryFilter; label: string }[] = [
   { value: "all", label: "Tất cả" },
@@ -14,6 +21,8 @@ export const HISTORY_FILTERS: { value: HistoryFilter; label: string }[] = [
   { value: "diaper", label: "Tã" },
   { value: "medicine", label: "Thuốc" },
   { value: "temperature", label: "Nhiệt độ" },
+  { value: "solids", label: "Ăn dặm" },
+  { value: "other", label: "Khác" },
 ];
 
 const FILTER_TYPES: Record<Exclude<HistoryFilter, "all">, readonly string[]> = {
@@ -22,6 +31,9 @@ const FILTER_TYPES: Record<Exclude<HistoryFilter, "all">, readonly string[]> = {
   diaper: ["diaper"],
   medicine: ["medicine"],
   temperature: ["temperature"],
+  // Spec 2026-11-17 §3.4: water sits with solids; "Khác" is every type without its own chip.
+  solids: ["solids", "water"],
+  other: ["bath", "note", "pump", "tummy"],
 };
 
 export function matchesFilter(

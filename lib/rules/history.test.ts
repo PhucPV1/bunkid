@@ -3,10 +3,12 @@ import {
   canModifyLog,
   daySummary,
   groupByVnDay,
+  HISTORY_FILTERS,
   historyPageRange,
   matchesFilter,
   nextHistoryPage,
 } from "./history";
+import { LOG_TYPES } from "./logDetails";
 
 const now = new Date("2026-11-14T03:00:00Z"); // 10:00 on 14/11 in VN
 
@@ -16,6 +18,24 @@ describe("history", () => {
     expect(matchesFilter({ type: "bottle" }, "feed")).toBe(true);
     expect(matchesFilter({ type: "sleep" }, "feed")).toBe(false);
     expect(matchesFilter({ type: "pump" }, "all")).toBe(true);
+  });
+
+  it("HISTORY_FILTERS: Ăn dặm and Khác come after Nhiệt độ", () => {
+    expect(HISTORY_FILTERS).toHaveLength(8);
+    expect(HISTORY_FILTERS.slice(5)).toEqual([
+      { value: "temperature", label: "Nhiệt độ" },
+      { value: "solids", label: "Ăn dặm" },
+      { value: "other", label: "Khác" },
+    ]);
+  });
+
+  it("matchesFilter: Ăn dặm is solids and water; Khác is bath, note, pump and tummy", () => {
+    const shown = (filter: "solids" | "other") =>
+      LOG_TYPES.filter((type) => matchesFilter({ type }, filter));
+    expect(shown("solids")).toEqual(["solids", "water"]);
+    expect(shown("other")).toEqual(["pump", "tummy", "bath", "note"]);
+    expect(matchesFilter({ type: "water" }, "feed")).toBe(false);
+    expect(matchesFilter({ type: "note" }, "all")).toBe(true);
   });
 
   it("groupByVnDay splits at VN midnight, newest day and log first", () => {
