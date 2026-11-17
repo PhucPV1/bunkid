@@ -1,5 +1,6 @@
 import type { LogLike } from "./describeLog";
 import { detailsSchemas } from "./logDetails";
+import { VITAMIN_D } from "./medicineNames";
 import type { MetricResult } from "./ratings";
 import { formatVnTime, vnDateString } from "./time";
 
@@ -157,10 +158,6 @@ export function medicineWarnings(input: {
   if (crowded) warnings.push("Đã đủ 4 liều hạ sốt trong 24 giờ.");
   return warnings;
 }
-
-// "Vitamin D", "vitamin d3", "VitaminD3 K2": the same drops under the names
-// people type; "vitamin dha" is something else.
-const VITAMIN_D = /^vitamin\s*d(?![a-z])/i;
 
 export function vitaminDToday(logs: LogLike[], now: Date): string | null {
   const today = vnDateString(now);
