@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { VaccineDose } from "@/lib/content/vaccineSchema";
 import {
   agoText,
+  buildMedicineState,
   selectDueNotifications,
   wakeWindowMin,
   type BabyDispatchState,
@@ -18,6 +19,7 @@ function baby(over: Partial<BabyDispatchState> = {}): BabyDispatchState {
     lastFeed: { id: "L1", startedAt: minutesAgo(190) },
     breastRunningSince: null,
     runningTimers: [],
+    medicine: { schedules: [], loggedToday: [], lastAntipyretic: null },
     wake: null,
     vaccine: null,
     recipients: [{ userId: "u1", prefs: null }],
@@ -646,7 +648,371 @@ describe("selectDueNotifications — quiet hours and a sleeping baby (spec 2026-
           }),
         ],
         now,
-      ).map((d) => d.userId),
-    ).toEqual(["hold"]);
+      ).map((d) => `${d.userId}:${d.kind}`),
+      // The feed reminder is no longer held, and the forgotten timer has its own.
+    ).toEqual(["hold:feed", "hold:timer"]);
+  });
+});
+
+describe("selectDueNotifications — medicine (spec 2026-11-17 §4.3)", () => {
+  // `now` is 10:00 on 15/11 in VN (03:00Z); the VN day started at 17:00Z on 14/11.
+  const schedule = (over: Record<string, unknown> = {}) => ({
+    id: "m1",
+    name: "Vitamin D",
+    remindAtMin: 540, // 09:00
+    updatedAt: "2026-11-10T00:00:00Z",
+    ...over,
+  });
+  const medBaby = (
+    medicine: Partial<BabyDispatchState["medicine"]>,
+    over: Partial<BabyDispatchState> = {},
+  ) =>
+    baby({
+      lastFeed: null,
+      medicine: {
+        schedules: [],
+        loggedToday: [],
+        lastAntipyretic: null,
+        ...medicine,
+      },
+      ...over,
+    });
+
+  it("reminds once the time has come and the medicine is not logged today", () => {
+    expect(
+      selectDueNotifications([medBaby({ schedules: [schedule()] })], now),
+    ).toEqual([
+      {
+        userId: "u1",
+        kind: "medicine",
+        refKey: "med:m1:2026-11-15:540",
+        title: "Đến giờ uống Vitamin D",
+        body: "Hôm nay chưa ghi Vitamin D.",
+        url: "/",
+        tag: "medicine:m1",
+      },
+    ]);
+  });
+
+  it("waits for the time, and stays quiet once the medicine is logged", () => {
+    expect(
+      selectDueNotifications(
+        [medBaby({ schedules: [schedule({ remindAtMin: 601 })] })],
+        now,
+      ),
+    ).toEqual([]);
+    expect(
+      selectDueNotifications(
+        [medBaby({ schedules: [schedule()], loggedToday: ["vitamin d3"] })],
+        now,
+      ),
+    ).toEqual([]);
+    expect(
+      selectDueNotifications(
+        [medBaby({ schedules: [schedule()], loggedToday: ["DHA"] })],
+        now,
+      ).map((d) => d.refKey),
+    ).toEqual(["med:m1:2026-11-15:540"]);
+  });
+
+  it("uses a new key on a new day and after the time is moved", () => {
+    const next = new Date(now.getTime() + 24 * 3_600_000);
+    expect(
+      selectDueNotifications([medBaby({ schedules: [schedule()] })], next).map(
+        (d) => d.refKey,
+      ),
+    ).toEqual(["med:m1:2026-11-16:540"]);
+    expect(
+      selectDueNotifications(
+        [
+          medBaby({
+            schedules: [
+              // Moved at 09:30 to 09:45: still ahead then, so it reminds again today.
+              schedule({ remindAtMin: 585, updatedAt: "2026-11-15T02:30:00Z" }),
+            ],
+          }),
+        ],
+        now,
+      ).map((d) => d.refKey),
+    ).toEqual(["med:m1:2026-11-15:585"]);
+  });
+
+  it("starts tomorrow when the schedule was created or changed after today's time", () => {
+    expect(
+      selectDueNotifications(
+        [
+          medBaby({
+            // Switched on at 09:50 with the 09:00 default.
+            schedules: [schedule({ updatedAt: "2026-11-15T02:50:00Z" })],
+          }),
+        ],
+        now,
+      ),
+    ).toEqual([]);
+  });
+
+  it("follows the Nhắc thuốc switch, snooze and quiet hours", () => {
+    const on = {
+      feed_reminder: true,
+      wake_window: true,
+      vaccine: true,
+      snooze_until: null,
+    };
+    const due = selectDueNotifications(
+      [
+        medBaby(
+          { schedules: [schedule()] },
+          {
+            recipients: [
+              { userId: "off", prefs: { ...on, medicine: false } },
+              {
+                userId: "snoozed",
+                prefs: { ...on, snooze_until: minutesAgo(-30) },
+              },
+              {
+                userId: "quiet",
+                prefs: {
+                  ...on,
+                  quiet_enabled: true,
+                  quiet_start_min: 540,
+                  quiet_end_min: 660,
+                },
+              },
+              { userId: "on", prefs: on },
+              { userId: "none", prefs: null },
+            ],
+          },
+        ),
+      ],
+      now,
+    );
+    expect(due.map((d) => d.userId)).toEqual(["on", "none"]);
+  });
+});
+
+describe("selectDueNotifications — after an antipyretic dose (spec 2026-11-17 §4.3)", () => {
+  const dose = (minutes: number) => ({
+    id: "F1",
+    startedAt: minutesAgo(minutes),
+  });
+  const feverBaby = (minutes: number, over: Partial<BabyDispatchState> = {}) =>
+    baby({
+      lastFeed: null,
+      medicine: {
+        schedules: [],
+        loggedToday: ["Paracetamol"],
+        lastAntipyretic: dose(minutes),
+      },
+      ...over,
+    });
+
+  it("reminds from 4 hours up to, not including, 6 hours after the dose", () => {
+    expect(selectDueNotifications([feverBaby(239)], now)).toEqual([]);
+    expect(selectDueNotifications([feverBaby(240)], now)).toEqual([
+      {
+        userId: "u1",
+        kind: "medicine",
+        refKey: "fever:F1",
+        title: "Đã đủ 4 giờ từ liều hạ sốt",
+        body: "Liều trước lúc 06:00. Đo lại nhiệt độ cho bé.",
+        url: "/",
+        tag: "fever:b1",
+      },
+    ]);
+    expect(selectDueNotifications([feverBaby(359)], now)).toHaveLength(1);
+    expect(selectDueNotifications([feverBaby(360)], now)).toEqual([]);
+  });
+
+  it("is held by the switch and snooze, but not by quiet hours", () => {
+    const on = {
+      feed_reminder: true,
+      wake_window: true,
+      vaccine: true,
+      snooze_until: null,
+    };
+    const due = selectDueNotifications(
+      [
+        feverBaby(250, {
+          recipients: [
+            { userId: "off", prefs: { ...on, medicine: false } },
+            {
+              userId: "snoozed",
+              prefs: { ...on, snooze_until: minutesAgo(-30) },
+            },
+            {
+              userId: "quiet",
+              prefs: {
+                ...on,
+                quiet_enabled: true,
+                quiet_start_min: 540,
+                quiet_end_min: 660,
+              },
+            },
+          ],
+        }),
+      ],
+      now,
+    );
+    expect(due.map((d) => d.userId)).toEqual(["quiet"]);
+  });
+});
+
+describe("selectDueNotifications — a timer left running (spec 2026-11-17 §4.3)", () => {
+  const timer = (
+    type: "breast" | "sleep" | "pump" | "tummy",
+    minutes: number,
+    side: "left" | "right" | null = null,
+  ) => ({ id: `T-${type}`, type, startedAt: minutesAgo(minutes), side });
+  const timerBaby = (
+    runningTimers: BabyDispatchState["runningTimers"],
+    over: Partial<BabyDispatchState> = {},
+  ) => baby({ lastFeed: null, runningTimers, ...over });
+
+  it("reminds at each type's limit, not before", () => {
+    expect(
+      selectDueNotifications(
+        [
+          timerBaby([
+            timer("breast", 59, "left"),
+            timer("pump", 59),
+            timer("tummy", 29),
+            timer("sleep", 839),
+          ]),
+        ],
+        now,
+      ),
+    ).toEqual([]);
+    const due = selectDueNotifications(
+      [
+        timerBaby([
+          timer("breast", 60, "right"),
+          timer("pump", 60),
+          timer("tummy", 30),
+          timer("sleep", 840),
+        ]),
+      ],
+      now,
+    );
+    expect(due.map((d) => [d.kind, d.refKey, d.title])).toEqual([
+      ["timer", "timer:T-breast", "Timer Bú phải đã chạy quá 60 phút"],
+      ["timer", "timer:T-pump", "Timer Hút sữa đã chạy quá 60 phút"],
+      ["timer", "timer:T-tummy", "Timer Nằm sấp đã chạy quá 30 phút"],
+      ["timer", "timer:T-sleep", "Timer Ngủ đã chạy quá 14 giờ"],
+    ]);
+    expect(due[0]).toMatchObject({
+      body: "Nếu đã xong, mở Kim Bun để dừng.",
+      url: "/",
+      tag: "timer:T-breast",
+    });
+  });
+
+  it("follows the timer switch, snooze and quiet hours", () => {
+    const on = {
+      feed_reminder: true,
+      wake_window: true,
+      vaccine: true,
+      snooze_until: null,
+    };
+    const due = selectDueNotifications(
+      [
+        timerBaby([timer("tummy", 45)], {
+          recipients: [
+            { userId: "off", prefs: { ...on, timer_alert: false } },
+            {
+              userId: "snoozed",
+              prefs: { ...on, snooze_until: minutesAgo(-30) },
+            },
+            {
+              userId: "quiet",
+              prefs: {
+                ...on,
+                quiet_enabled: true,
+                quiet_start_min: 540,
+                quiet_end_min: 660,
+              },
+            },
+            { userId: "on", prefs: on },
+            { userId: "none", prefs: null },
+          ],
+        }),
+      ],
+      now,
+    );
+    expect(due.map((d) => d.userId)).toEqual(["on", "none"]);
+  });
+});
+
+describe("buildMedicineState (spec 2026-11-17 §4.3)", () => {
+  const log = (id: string, startedAt: string, details: unknown) => ({
+    id,
+    started_at: startedAt,
+    details,
+  });
+  const med = (name: string, antipyretic = false) => ({
+    name,
+    amount: 1,
+    unit: "ml",
+    antipyretic,
+  });
+
+  it("keeps enabled schedules, today's names and the latest antipyretic of the last 6 hours", () => {
+    const state = buildMedicineState({
+      schedules: [
+        {
+          id: "m1",
+          name: "Vitamin D",
+          remind_at_min: 540,
+          enabled: true,
+          updated_at: "2026-11-10T00:00:00Z",
+        },
+        {
+          id: "m2",
+          name: "DHA",
+          remind_at_min: 600,
+          enabled: false,
+          updated_at: "2026-11-10T00:00:00Z",
+        },
+      ],
+      medicineLogs: [
+        log("a", "2026-11-14T16:59:00Z", med("Hôm qua")), // 23:59 on 14/11 in VN
+        log("b", "2026-11-14T17:00:00Z", med("Vitamin D")), // 00:00 on 15/11
+        log("c", "2026-11-14T20:59:00Z", med("Paracetamol", true)), // 6 h 01 before now
+        log("d", "2026-11-14T22:00:00Z", med("Paracetamol", true)), // 5 h before now
+        log("e", "2026-11-15T01:00:00Z", med("Ibuprofen", true)), // 2 h before now
+        log("f", "2026-11-15T02:00:00Z", med("DHA")),
+        log("g", "2026-11-15T02:30:00Z", { broken: true }),
+      ],
+      now,
+    });
+    expect(state).toEqual({
+      schedules: [
+        {
+          id: "m1",
+          name: "Vitamin D",
+          remindAtMin: 540,
+          updatedAt: "2026-11-10T00:00:00Z",
+        },
+      ],
+      loggedToday: [
+        "Vitamin D",
+        "Paracetamol",
+        "Paracetamol",
+        "Ibuprofen",
+        "DHA",
+      ],
+      lastAntipyretic: { id: "e", startedAt: "2026-11-15T01:00:00Z" },
+    });
+  });
+
+  it("has no antipyretic when the last one is older than 6 hours", () => {
+    const state = buildMedicineState({
+      schedules: [],
+      medicineLogs: [
+        log("c", "2026-11-14T20:59:00Z", med("Paracetamol", true)),
+      ],
+      now,
+    });
+    expect(state.lastAntipyretic).toBeNull();
+    expect(state.loggedToday).toEqual(["Paracetamol"]);
   });
 });

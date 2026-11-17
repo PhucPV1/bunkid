@@ -1,13 +1,16 @@
 import { VACCINES } from "@/lib/content/vaccines";
 import type { VaccineDose } from "@/lib/content/vaccineSchema";
-import { addDays, formatDayShort, WEEKDAYS } from "./days";
-import { DEFAULT_QUIET, inQuietHours } from "./notifications";
+import { addDays, formatDayShort, vnDayStartMs, WEEKDAYS } from "./days";
+import { detailsSchemas } from "./logDetails";
+import { sameMedicine } from "./medicineNames";
+import { DEFAULT_QUIET, inQuietHours, vnMinuteOfDay } from "./notifications";
 import { FORGOTTEN_BREAST_MS } from "./ratings";
 import { ageDays, formatVnTime, vnDateString } from "./time";
 import { TIMER_LIMIT_MIN } from "./timer";
 import { buildSchedule, type DoseRecord } from "./vaccines";
 
-export type NotificationKind = "feed" | "wake" | "vaccine";
+export type NotificationKind =
+  "feed" | "wake" | "vaccine" | "medicine" | "timer";
 
 export type Recipient = {
   userId: string;
@@ -58,8 +61,23 @@ export type BabyDispatchState = {
     choices: Record<string, string>;
     records: DoseRecord[];
   } | null;
+  // Spec 2026-11-17 §4.3. `schedules` holds the enabled ones only; `loggedToday`
+  // the names of the medicine logs since 00:00 VN; `lastAntipyretic` the latest
+  // antipyretic dose of the last 6 hours.
+  medicine: MedicineState;
   // Members with a user_id and at least one push subscription.
   recipients: Recipient[];
+};
+
+export type MedicineState = {
+  schedules: {
+    id: string;
+    name: string;
+    remindAtMin: number;
+    updatedAt: string;
+  }[];
+  loggedToday: string[];
+  lastAntipyretic: { id: string; startedAt: string } | null;
 };
 
 export type DueNotification = {
@@ -248,7 +266,176 @@ function vaccineReminders(
   );
 }
 
-// Spec §8.3: "feed", "wake" and "vaccine".
+const SIX_HOURS_MS = 6 * HOUR_MS;
+
+// What the dispatcher knows about a baby's medicine, from the rows it loaded:
+// `medicineLogs` are the baby's medicine logs since the earlier of 00:00 VN
+// today and six hours ago.
+export function buildMedicineState(input: {
+  schedules: {
+    id: string;
+    name: string;
+    remind_at_min: number;
+    enabled: boolean;
+    updated_at: string;
+  }[];
+  medicineLogs: { id: string; started_at: string; details: unknown }[];
+  now: Date;
+}): MedicineState {
+  const { schedules, medicineLogs, now } = input;
+  const dayStart = vnDayStartMs(vnDateString(now));
+  const loggedToday: string[] = [];
+  let lastAntipyretic: { id: string; startedAt: string; at: number } | null =
+    null;
+  const sorted = [...medicineLogs].sort(
+    (a, b) => Date.parse(a.started_at) - Date.parse(b.started_at),
+  );
+  for (const log of sorted) {
+    const parsed = detailsSchemas.medicine.safeParse(log.details);
+    const at = Date.parse(log.started_at);
+    if (!parsed.success || at > now.getTime()) continue;
+    if (at >= dayStart) loggedToday.push(parsed.data.name);
+    if (parsed.data.antipyretic && now.getTime() - at < SIX_HOURS_MS)
+      lastAntipyretic = { id: log.id, startedAt: log.started_at, at };
+  }
+  return {
+    schedules: schedules
+      .filter((s) => s.enabled)
+      .map((s) => ({
+        id: s.id,
+        name: s.name,
+        remindAtMin: s.remind_at_min,
+        updatedAt: s.updated_at,
+      })),
+    loggedToday,
+    lastAntipyretic: lastAntipyretic && {
+      id: lastAntipyretic.id,
+      startedAt: lastAntipyretic.startedAt,
+    },
+  };
+}
+
+// The "Nhắc thuốc" switch and snooze hold both medicine reminders; quiet hours
+// hold only the daily one (spec 2026-11-17 §4.3).
+function wantsMedicine(
+  recipient: Recipient,
+  now: Date,
+  quietApplies: boolean,
+): boolean {
+  const prefs = recipient.prefs;
+  if (!prefs) return true;
+  return (
+    (prefs.medicine ?? true) &&
+    notSnoozed(prefs, now) &&
+    !(quietApplies && isQuiet(prefs, now))
+  );
+}
+
+// From the reminder time to the end of the VN day, while today has no log of
+// that medicine. A schedule created or changed after today's time starts tomorrow.
+function medicineReminders(
+  baby: BabyDispatchState,
+  now: Date,
+): DueNotification[] {
+  const today = vnDateString(now);
+  const minute = vnMinuteOfDay(now);
+  const dayStart = vnDayStartMs(today);
+  return baby.medicine.schedules
+    .filter((schedule) => {
+      const remindAt = dayStart + schedule.remindAtMin * 60_000;
+      return (
+        minute >= schedule.remindAtMin &&
+        Date.parse(schedule.updatedAt) <= remindAt &&
+        !baby.medicine.loggedToday.some((name) =>
+          sameMedicine(schedule.name, name),
+        )
+      );
+    })
+    .flatMap((schedule) =>
+      baby.recipients
+        .filter((recipient) => wantsMedicine(recipient, now, true))
+        .map((recipient): DueNotification => ({
+          userId: recipient.userId,
+          kind: "medicine",
+          // The time is part of the key: a schedule moved to later today reminds again.
+          refKey: `med:${schedule.id}:${today}:${schedule.remindAtMin}`,
+          title: `Đến giờ uống ${schedule.name}`,
+          body: `Hôm nay chưa ghi ${schedule.name}.`,
+          url: "/",
+          tag: `medicine:${schedule.id}`,
+        })),
+    );
+}
+
+// Four hours after the latest antipyretic dose: time to measure again. It never
+// says whether to give another dose.
+function feverReminders(baby: BabyDispatchState, now: Date): DueNotification[] {
+  const dose = baby.medicine.lastAntipyretic;
+  if (!dose) return [];
+  const since = now.getTime() - Date.parse(dose.startedAt);
+  if (since < 4 * HOUR_MS || since >= SIX_HOURS_MS) return [];
+  const body = `Liều trước lúc ${formatVnTime(new Date(dose.startedAt))}. Đo lại nhiệt độ cho bé.`;
+  return baby.recipients
+    .filter((recipient) => wantsMedicine(recipient, now, false))
+    .map((recipient) => ({
+      userId: recipient.userId,
+      kind: "medicine",
+      refKey: `fever:${dose.id}`,
+      title: "Đã đủ 4 giờ từ liều hạ sốt",
+      body,
+      url: "/",
+      tag: `fever:${baby.babyId}`,
+    }));
+}
+
+const TIMER_NAME = { sleep: "Ngủ", pump: "Hút sữa", tummy: "Nằm sấp" } as const;
+
+function timerName(timer: RunningTimer): string {
+  if (timer.type === "breast")
+    return timer.side === "right" ? "Bú phải" : "Bú trái";
+  return TIMER_NAME[timer.type];
+}
+
+const limitText = (minutes: number) =>
+  minutes % 60 === 0 && minutes > 60
+    ? `${minutes / 60} giờ`
+    : `${minutes} phút`;
+
+function wantsTimer(recipient: Recipient, now: Date): boolean {
+  const prefs = recipient.prefs;
+  if (!prefs) return true;
+  return (
+    (prefs.timer_alert ?? true) &&
+    notSnoozed(prefs, now) &&
+    !isQuiet(prefs, now)
+  );
+}
+
+// Once per timer that ran past its limit (spec 2026-11-17 §4.3).
+function timerReminders(baby: BabyDispatchState, now: Date): DueNotification[] {
+  return baby.runningTimers
+    .filter(
+      (timer) =>
+        now.getTime() - Date.parse(timer.startedAt) >=
+        TIMER_LIMIT_MIN[timer.type] * 60_000,
+    )
+    .flatMap((timer) =>
+      baby.recipients
+        .filter((recipient) => wantsTimer(recipient, now))
+        .map((recipient): DueNotification => ({
+          userId: recipient.userId,
+          kind: "timer",
+          refKey: `timer:${timer.id}`,
+          // "quá": still true when quiet hours or snooze delayed it.
+          title: `Timer ${timerName(timer)} đã chạy quá ${limitText(TIMER_LIMIT_MIN[timer.type])}`,
+          body: "Nếu đã xong, mở Kim Bun để dừng.",
+          url: "/",
+          tag: `timer:${timer.id}`,
+        })),
+    );
+}
+
+// Spec §8.3: "feed", "wake" and "vaccine"; spec 2026-11-17 §4.3: "medicine" and "timer".
 export function selectDueNotifications(
   babies: BabyDispatchState[],
   now: Date,
@@ -258,5 +445,8 @@ export function selectDueNotifications(
     ...feedReminders(baby, now),
     ...wakeReminders(baby, now),
     ...vaccineReminders(baby, now, vaccineDoses),
+    ...medicineReminders(baby, now),
+    ...feverReminders(baby, now),
+    ...timerReminders(baby, now),
   ]);
 }

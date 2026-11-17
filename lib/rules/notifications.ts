@@ -50,7 +50,8 @@ export const DEFAULT_QUIET: QuietPrefs = {
   quiet_end_min: 360,
 };
 
-function vnMinuteOfDay(now: Date): number {
+// Minutes after 00:00 Vietnam time.
+export function vnMinuteOfDay(now: Date): number {
   const [hours, minutes] = formatVnTime(now).split(":").map(Number);
   return hours * 60 + minutes;
 }

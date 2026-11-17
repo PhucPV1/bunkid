@@ -1,8 +1,11 @@
 import webpush from "web-push";
-import type {
-  BabyDispatchState,
-  RunningTimer,
+import { vnDayStartMs } from "@/lib/rules/days";
+import {
+  buildMedicineState,
+  type BabyDispatchState,
+  type RunningTimer,
 } from "@/lib/rules/pushSelection";
+import { vnDateString } from "@/lib/rules/time";
 import { parseChoices, toDoseRecords } from "@/lib/rules/vaccineForm";
 import type { DispatchDeps } from "./dispatch";
 import { pushEnv } from "./pushEnv";
@@ -26,41 +29,65 @@ async function loadState(now: Date): Promise<BabyDispatchState[]> {
   const states: BabyDispatchState[] = [];
   for (const baby of babies) {
     const since = new Date(now.getTime() - TWELVE_HOURS_MS).toISOString();
-    const [feeds, sleeps, running, members, doses] = await Promise.all([
-      db
-        .from("logs")
-        .select("id, started_at")
-        .eq("baby_id", baby.id)
-        .in("type", ["breast", "bottle"])
-        .gte("started_at", since)
-        .order("started_at", { ascending: false })
-        .limit(1),
-      db
-        .from("logs")
-        .select("id, ended_at")
-        .eq("baby_id", baby.id)
-        .eq("type", "sleep")
-        .gte("ended_at", since)
-        .order("ended_at", { ascending: false })
-        .limit(1),
-      // Running timers: at most one per type (unique index), so four rows at most.
-      db
-        .from("logs")
-        .select("id, type, started_at, details")
-        .eq("baby_id", baby.id)
-        .in("type", ["breast", "sleep", "pump", "tummy"])
-        .is("ended_at", null),
-      db
-        .from("family_members")
-        .select("user_id")
-        .eq("family_id", baby.family_id)
-        .not("user_id", "is", null),
-      db
-        .from("vaccine_doses")
-        .select("vaccine_code, dose_no, status, given_on, due_on_override")
-        .eq("baby_id", baby.id),
-    ]);
-    for (const result of [feeds, sleeps, running, members, doses])
+    // Medicine logs since the earlier of 00:00 VN today and six hours ago.
+    const medicineSince = new Date(
+      Math.min(vnDayStartMs(vnDateString(now)), now.getTime() - 6 * 3_600_000),
+    ).toISOString();
+    const [feeds, sleeps, running, members, doses, schedules, medicineLogs] =
+      await Promise.all([
+        db
+          .from("logs")
+          .select("id, started_at")
+          .eq("baby_id", baby.id)
+          .in("type", ["breast", "bottle"])
+          .gte("started_at", since)
+          .order("started_at", { ascending: false })
+          .limit(1),
+        db
+          .from("logs")
+          .select("id, ended_at")
+          .eq("baby_id", baby.id)
+          .eq("type", "sleep")
+          .gte("ended_at", since)
+          .order("ended_at", { ascending: false })
+          .limit(1),
+        // Running timers: at most one per type (unique index), so four rows at most.
+        db
+          .from("logs")
+          .select("id, type, started_at, details")
+          .eq("baby_id", baby.id)
+          .in("type", ["breast", "sleep", "pump", "tummy"])
+          .is("ended_at", null),
+        db
+          .from("family_members")
+          .select("user_id")
+          .eq("family_id", baby.family_id)
+          .not("user_id", "is", null),
+        db
+          .from("vaccine_doses")
+          .select("vaccine_code, dose_no, status, given_on, due_on_override")
+          .eq("baby_id", baby.id),
+        db
+          .from("medicine_schedules")
+          .select("id, name, remind_at_min, enabled, updated_at")
+          .eq("baby_id", baby.id)
+          .eq("enabled", true),
+        db
+          .from("logs")
+          .select("id, started_at, details")
+          .eq("baby_id", baby.id)
+          .eq("type", "medicine")
+          .gte("started_at", medicineSince),
+      ]);
+    for (const result of [
+      feeds,
+      sleeps,
+      running,
+      members,
+      doses,
+      schedules,
+      medicineLogs,
+    ])
       if (result.error) throw result.error;
 
     const userIds = (members.data ?? []).flatMap((m) =>
@@ -102,6 +129,11 @@ async function loadState(now: Date): Promise<BabyDispatchState[]> {
           : null,
         sleepRunning: runningTypes.has("sleep"),
       },
+      medicine: buildMedicineState({
+        schedules: schedules.data ?? [],
+        medicineLogs: medicineLogs.data ?? [],
+        now,
+      }),
       vaccine: {
         dob: baby.dob,
         choices: parseChoices(baby.vaccine_choices),
