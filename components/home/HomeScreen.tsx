@@ -15,6 +15,7 @@ import { homeAlerts, vitaminDToday } from "@/lib/rules/alerts";
 import { heroState } from "@/lib/rules/hero";
 import { medicinePrefill } from "@/lib/rules/quickEntry";
 import { rateLast24h, WINDOW_MS, windowTotals } from "@/lib/rules/ratings";
+import { statusTiles } from "@/lib/rules/status";
 import { homeStatTiles, totalsLine } from "@/lib/rules/summaryText";
 import { ageDays, formatAgeVi } from "@/lib/rules/time";
 import { nextBreastSide, overdueTimers } from "@/lib/rules/timer";
@@ -27,6 +28,7 @@ import { LongTimerBanner } from "./LongTimerBanner";
 import { QuickLogGrid } from "./QuickLogGrid";
 import { RecentCard } from "./RecentCard";
 import { StatsSection } from "./StatsSection";
+import { StatusTiles } from "./StatusTiles";
 import { TimerButtons } from "./TimerButtons";
 import { TimerRow } from "./TimerRow";
 import { VitaminDButton } from "./VitaminDButton";
@@ -80,7 +82,7 @@ export function HomeScreen({ baby, userId }: { baby: Baby; userId: string }) {
     members.data?.find((m) => m.user_id === userId)?.display_name ?? "Ai đó";
 
   return (
-    <main className="mx-auto flex max-w-md flex-col gap-[18px] p-4">
+    <main className="mx-auto flex max-w-md flex-col gap-3.5 p-4">
       <HomeHeader name={baby.name} age={formatAgeVi(baby.dob, now)} />
       <SyncBarSlot />
 
@@ -130,6 +132,17 @@ export function HomeScreen({ baby, userId }: { baby: Baby; userId: string }) {
             />
           ))}
 
+          {logs.data && (
+            <StatusTiles
+              tiles={statusTiles({
+                logs: rows,
+                feedIntervalMin: baby.feed_interval_min,
+                now,
+              })}
+              vitaminD={vitaminD}
+            />
+          )}
+
           <TimerButtons
             running={actions.running}
             busy={actions.busy}
@@ -139,7 +152,7 @@ export function HomeScreen({ baby, userId }: { baby: Baby; userId: string }) {
 
           <QuickLogGrid
             onInstant={(type) => actions.openInstant(type)}
-            onMore={() => {}}
+            onMore={() => actions.openActionSheet()}
           />
 
           {actions.error && (
