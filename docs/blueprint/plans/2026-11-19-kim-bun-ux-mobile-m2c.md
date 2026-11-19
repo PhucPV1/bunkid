@@ -112,13 +112,13 @@ Plan này đứng ngay sau M2b và trước M3 (chưa viết).
 - Consumes: icon `more` (M2a); `CATEGORIES`, `CATEGORY_CHIP`; `GROUP_LABEL`.
 - Produces: `QuickLogGrid({ onInstant, onMore }: { onInstant: (type: InstantType) => void; onMore: () => void })`. `onMore` là prop bắt buộc; ở task này `HomeScreen` tạm truyền `() => {}`, Task 3 nối thật.
 
-- [ ] **Step 0: Tạo nhánh**
+- [x] **Step 0: Tạo nhánh**
 
 ```bash
 git checkout -b feat/kim-bun-ux-mobile-m2c feat/kim-bun-ux-mobile-m2b
 ```
 
-- [ ] **Step 1: Viết test đỏ (Patch 1)**
+- [x] **Step 1: Viết test đỏ (Patch 1)**
 
 ```diff
 diff --git a/components/home/buttons.test.tsx b/components/home/buttons.test.tsx
@@ -202,12 +202,12 @@ index 1eac509..f412eda 100644
  });
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run components/home/buttons.test.tsx components/home/homescreen.test.tsx`
 Expected: FAIL, `Tests  4 failed | 8 passed (12)`.
 
-- [ ] **Step 3: Sửa code (Patch 2)**
+- [x] **Step 3: Sửa code (Patch 2)**
 
 ```diff
 diff --git a/components/home/HomeScreen.tsx b/components/home/HomeScreen.tsx
@@ -287,12 +287,12 @@ index 059b37c..3f11b94 100644
    );
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run components/home/buttons.test.tsx components/home/homescreen.test.tsx && bun run typecheck`
 Expected: `Tests  12 passed (12)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -- components/home/HomeScreen.tsx components/home/QuickLogGrid.tsx components/home/buttons.test.tsx
@@ -316,7 +316,7 @@ git commit -m "feat(home): quick log row of five round buttons with Khác" -m "C
 - Consumes: `totalsLine(...): string | null` (M2a); `MetricResult.explain` (`lib/rules/ratings.ts`); `StatTile`; `GROUP_LABEL`.
 - Produces: `HomeStatTile` có thêm `explain: string | null` (khác `null` chỉ khi đánh giá vàng hoặc đỏ); `StatsSection({ tiles, totals }: { tiles: HomeStatTile[]; totals: string | null })` có link "Thống kê" tới `/thong-ke`; `StatTile` vẽ giá trị 20/26 và `whitespace-nowrap`.
 
-- [ ] **Step 1: Viết test đỏ (Patch 3)**
+- [x] **Step 1: Viết test đỏ (Patch 3)**
 
 ```diff
 diff --git a/components/home/stats.test.tsx b/components/home/stats.test.tsx
@@ -524,12 +524,12 @@ index 54001ab..b273014 100644
  describe("short texts", () => {
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run lib/rules/summaryText.test.ts components/home/stats.test.tsx components/ui/lists.test.tsx components/home/homescreen.test.tsx`
 Expected: FAIL, `Tests  8 failed | 15 passed (23)`.
 
-- [ ] **Step 3: Sửa code (Patch 4)**
+- [x] **Step 3: Sửa code (Patch 4)**
 
 ```diff
 diff --git a/components/home/HomeScreen.tsx b/components/home/HomeScreen.tsx
@@ -664,12 +664,12 @@ index 8fd7b9a..4da14b6 100644
  export function shortDuration(minutes: number): string {
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run lib/rules/summaryText.test.ts components/home/stats.test.tsx components/ui/lists.test.tsx components/home/homescreen.test.tsx && bun run typecheck`
 Expected: `Tests  23 passed (23)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -- components/home/HomeScreen.tsx components/home/StatsSection.tsx components/ui/StatTile.tsx lib/rules/summaryText.ts components/home/stats.test.tsx components/ui/lists.test.tsx lib/rules/summaryText.test.ts
@@ -688,7 +688,7 @@ git commit -m "feat(home): 24 giờ qua with a Thống kê link and rating expla
 - Consumes: `statusTiles` (M2a), `StatusTiles` (M2b), `QuickLogGrid.onMore` (Task 1), `StatsSection` (Task 2), `actions.openActionSheet` (`components/actions/QuickActions.tsx`).
 - Produces: Trang Hôm nay theo đúng thứ tự §3.6, `gap-3.5`; `StatusTiles` chỉ vẽ khi `logs.data` có; "Khác" gọi `actions.openActionSheet()` không tham số (M3 đổi thành `["other"]`).
 
-- [ ] **Step 1: Viết test đỏ (Patch 5)**
+- [x] **Step 1: Viết test đỏ (Patch 5)**
 
 ```diff
 diff --git a/components/home/homescreen.test.tsx b/components/home/homescreen.test.tsx
@@ -891,12 +891,12 @@ index 85cc9e2..f583741 100644
  });
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run components/home/homescreen.test.tsx`
 Expected: FAIL, `Tests  4 failed | 5 passed (9)`. Bốn test đỏ: khoảng cách và thứ tự khối, ô trạng thái kèm dòng Vitamin D, trường hợp `none`, nút "Khác".
 
-- [ ] **Step 3: Sửa code (Patch 6)**
+- [x] **Step 3: Sửa code (Patch 6)**
 
 ```diff
 diff --git a/components/home/HomeScreen.tsx b/components/home/HomeScreen.tsx
@@ -957,12 +957,12 @@ index d4616f4..6c03963 100644
            {actions.error && (
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run components/home/homescreen.test.tsx && bun run typecheck`
 Expected: `Tests  9 passed (9)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -- components/home/HomeScreen.tsx components/home/homescreen.test.tsx
@@ -980,17 +980,17 @@ git commit -m "feat(home): new block order with status tiles on the home page" -
 - Consumes: mọi thứ của M2a, M2b và Task 1–3.
 - Produces: `main` có cả M2a, M2b và M2c; nhánh `feat/kim-bun-ux-mobile-m2c` làm nền cho M3.
 
-- [ ] **Step 1: Typecheck và toàn bộ test**
+- [x] **Step 1: Typecheck và toàn bộ test**
 
 Run: `bun run typecheck && bunx vitest run`
 Expected: `tsc --noEmit` không báo lỗi; `Test Files  151 passed (151)`, `Tests  998 passed (998)`.
 
-- [ ] **Step 2: Build production**
+- [x] **Step 2: Build production**
 
 Run: `bun run build`
 Expected: lần đầu có thể dừng với thông báo bảo mật của Next.js 16.4.3 (bình thường). Chạy lại đúng lệnh đó: `✓ Generating static pages` và thoát mã 0.
 
-- [ ] **Step 3: Kiểm trên trình duyệt (phiên chính làm, không bấm Lưu, không đụng timer)**
+- [x] **Step 3: Kiểm trên trình duyệt (phiên chính làm, không bấm Lưu, không đụng timer)**
 
 Chạy `bun run dev` (nếu nó dừng với thông báo bảo mật thì chạy lại). Mở `http://localhost:3000/` trong khung Browser của app ở cỡ 375×812. Không bấm nút nào của hàng Bấm giờ, không bấm "Dừng", "Đổi bên", "Bú trái", "Bú phải".
 
@@ -1006,7 +1006,25 @@ Chạy `bun run dev` (nếu nó dừng với thông báo bảo mật thì chạy
 
 Dừng `bun run dev` khi xong. Ghi kết quả từng mục ngay dưới bước này. Mục nào dữ liệu thật không cho thấy được thì ghi "chưa kiểm".
 
-- [ ] **Step 4: Commit phần ghi kết quả, đưa lên `main`, rồi báo cáo**
+> **Kết quả 2026-11-20.** Cả 14 patch của M2a, M2b, M2c áp sạch trên ba nhánh nối nhau. Cả bộ test ở cuối mỗi plan: 972, 984, rồi 998 test trong 151 file; `tsc --noEmit` sạch sau mỗi task. `bun run build`: lần đầu dừng với thông báo bảo mật của Next.js, lần hai thoát mã 0 với `✓ Generating static pages using 9 workers (38/38)`.
+>
+> Về bước "chạy để thấy đỏ/xanh" của từng task: ở M2b Task 2 và M2c Task 1–3 số đỏ và xanh đúng như plan ghi. Ở M2a Task 1–2 và M2b Task 1, lệnh chạy riêng nhóm test trong lần thực thi này không khớp file nào (lỗi tách đối số trong script chạy của phiên chính), nên lần này **không quan sát** được số đỏ/xanh riêng của ba task đó; các số ấy đã được đo ở bản chạy thử và ở lượt soát độc lập, và cả bộ test cuối M2a, M2b khớp.
+>
+> Step 3, phiên chính kiểm bằng khung Browser trong app ở 375×812, không bấm Lưu, không đụng timer (lúc kiểm có một timer Ngủ đang chạy thật, hôm nay chưa ghi Vitamin D):
+>
+> - Mục 1: header có 3 nút: trăng, Cài đặt, Khẩn cấp.
+> - Mục 2: thẻ lớn ở trạng thái `running` (Ngủ): "ĐANG NGỦ", "2:32:46", "Mẹ · từ 22:09", nút "Dừng"; cao 104 px.
+> - Mục 3: ba ô "Cữ bú tiếp 01:09 · còn 28p", "Bú gần nhất 22:09 · trái · 13p", "Tã gần nhất 21:55 · ướt", mỗi ô 109×80 px. Đoạn javascript chỉ trả về "Nên bú": đó là nhãn có sẵn trên nút Bú phải, nhìn vẫn đủ chữ, không thuộc khối mới.
+> - Mục 4: hai hàng nút thẳng cột, mép trái của 5 nút ở cả hai hàng là 16, 85, 155, 224, 294 px.
+> - Mục 5: **chưa kiểm** tiêu chí §3.6, vì hôm nay chưa uống Vitamin D nên trang có thêm nút "Ghi Vitamin D hôm nay" (50 px cộng khoảng cách 14 px) và chưa có dòng Vitamin D. Con số đo được ở trạng thái này: 745 px. Tính ra cho trạng thái đủ điều kiện: 745 − 64 + 26 = 707 px.
+> - Mục 6: chạm "Khác" mở sheet "Ghi lại cho Bun" với ba nhóm Bấm giờ, Ghi nhanh, Khác; Esc đóng.
+> - Mục 7: nút Cài đặt đưa tới `/cai-dat`. Link "Thống kê" cao 44 px, `href="/thong-ke"`; chưa bấm thử.
+> - Mục 8: trang không tràn ngang.
+> - Mục 9: đã xem toàn trang ở Ban đêm và Hồng dịu, chữ và icon đọc rõ.
+> - Khối "24 giờ qua": có dòng "Hơi ít tã ướt (chuẩn từ 6 tã)" và dòng tổng chỉ còn "Tã bẩn 3".
+> - Chưa thấy trên dữ liệu thật: các trạng thái `overdue`, `awake`, `empty`, không có thẻ; timer bú đang chạy (hàng nút "Đổi bên", "Dừng" và ô "Đang bú"); dòng "Vitamin D đã uống"; iPhone thật.
+
+- [x] **Step 4: Commit phần ghi kết quả, đưa lên `main`, rồi báo cáo**
 
 ```bash
 git add docs/blueprint/plans/2026-11-19-kim-bun-ux-mobile-m2c.md
