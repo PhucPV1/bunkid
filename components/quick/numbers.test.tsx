@@ -47,6 +47,20 @@ describe("BottleFields", () => {
   });
 });
 
+describe("BottleFields placeholder", () => {
+  it("an empty amount shows 0 as the placeholder", () => {
+    const html = renderToStaticMarkup(
+      <BottleFields
+        values={{ ml: "", milk: "formula" }}
+        onChange={() => {}}
+        recent={[]}
+      />,
+    );
+    expect(html).toContain('placeholder="0"');
+    expect(html).toContain('value=""');
+  });
+});
+
 describe("TemperatureFields", () => {
   it("empty field with a dash placeholder, ±0,1 and where it was measured", () => {
     const onChange = vi.fn();

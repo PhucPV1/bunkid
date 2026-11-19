@@ -5,6 +5,7 @@ import {
   defaultQuickValues,
   DIAPER_KIND_OPTIONS,
   diaperKind,
+  initialQuickValues,
   MEDICINE_PRESETS,
   medicinePrefill,
   ML_STEP,
@@ -393,5 +394,40 @@ describe("TEMP_PRESETS", () => {
       expect(
         buildDetails("temperature", { celsius, method: "nach" }).ok,
       ).toBe(true);
+  });
+});
+
+describe("initialQuickValues", () => {
+  const logs = [bottleLog(180, 90), bottleLog(10, 120)];
+
+  it("a bottle opens with the most recent amount", () => {
+    expect(initialQuickValues("bottle", undefined, logs)).toEqual({
+      ml: "120",
+      milk: "breast_milk",
+    });
+  });
+
+  it("no bottle yet: the amount stays empty", () => {
+    expect(initialQuickValues("bottle", undefined, [])).toEqual({
+      ml: "",
+      milk: "breast_milk",
+    });
+  });
+
+  it("an amount given by the caller wins, even an empty one", () => {
+    expect(initialQuickValues("bottle", { ml: "60" }, logs).ml).toBe("60");
+    expect(initialQuickValues("bottle", { ml: "" }, logs).ml).toBe("");
+  });
+
+  it("other types only merge the defaults with what the caller gave", () => {
+    expect(initialQuickValues("water", undefined, logs)).toEqual({ ml: "" });
+    expect(
+      initialQuickValues("medicine", { name: "Vitamin D" }, logs),
+    ).toEqual({
+      name: "Vitamin D",
+      amount: "",
+      unit: "ml",
+      antipyretic: false,
+    });
   });
 });

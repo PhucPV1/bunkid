@@ -16,7 +16,7 @@ import { useAddInstant } from "@/lib/data/logs";
 import { medicineWarnings } from "@/lib/rules/alerts";
 import {
   buildDetails,
-  defaultQuickValues,
+  initialQuickValues,
   MEDICINE_PRESETS,
   medicinePrefill,
   recentBottleAmounts,
@@ -69,10 +69,9 @@ export function QuickEntrySheet({
 }) {
   const add = useAddInstant(babyId, userId);
   const formId = useId();
-  const [start] = useState<QuickValues>(() => ({
-    ...defaultQuickValues(type),
-    ...initial,
-  }));
+  const [start] = useState<QuickValues>(() =>
+    initialQuickValues(type, initial, recentLogs),
+  );
   const [values, setValues] = useState<QuickValues>(start);
   const [chip, setChip] = useState<TimeChip>("now");
   const [custom, setCustom] = useState(() => toVnLocalInput(new Date()));

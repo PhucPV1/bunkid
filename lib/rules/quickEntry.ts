@@ -137,6 +137,19 @@ export function defaultQuickValues(type: InstantType): QuickValues {
   return { ...DEFAULTS[type] };
 }
 
+// Spec 2026-11-19 §5.3: what a quick-entry sheet starts from. A bottle opens with
+// the most recent amount, unless the caller already gave one.
+export function initialQuickValues(
+  type: InstantType,
+  initial: QuickValues | undefined,
+  recentLogs: LogLike[],
+): QuickValues {
+  const values = { ...defaultQuickValues(type), ...initial };
+  if (type !== "bottle" || initial?.ml !== undefined) return values;
+  const [latest] = recentBottleAmounts(recentLogs);
+  return latest === undefined ? values : { ...values, ml: String(latest) };
+}
+
 function toNumber(value: string | boolean | undefined): number {
   if (typeof value !== "string" || value.trim() === "") return Number.NaN;
   return Number(value.trim().replace(",", "."));

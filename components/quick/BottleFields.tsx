@@ -25,6 +25,7 @@ export function BottleFields({
         label="Số ml"
         value={ml}
         unit="ml"
+        placeholder="0"
         minus={{
           text: "−10",
           label: "Bớt 10 ml",

@@ -49,6 +49,18 @@ describe("QuickEntrySheet", () => {
     expect(html).not.toContain("rounded-xl border");
   });
 
+  it("bottle starts from the latest amount, or empty when there is none", () => {
+    expect(render({ type: "bottle", recentLogs: [bottle] })).toContain(
+      'value="120"',
+    );
+    const empty = render({ type: "bottle" });
+    expect(empty).toContain('placeholder="0"');
+    expect(empty).not.toContain('value="120"');
+    expect(
+      render({ type: "bottle", recentLogs: [bottle], initial: { ml: "60" } }),
+    ).toContain('value="60"');
+  });
+
   it("opens each type with its own fields", () => {
     expect(render({ type: "diaper" })).toMatch(
       /aria-pressed="true"[^>]*>Ướt<\/button>/,
