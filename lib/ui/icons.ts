@@ -43,6 +43,7 @@ export const ICON_PATHS = {
   phoneApp:
     "M17 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zM12 18h.01",
   plus: "M12 5v14M5 12h14",
+  more: "M5 12h.01M12 12h.01M19 12h.01",
   close: "M6 6l12 12M18 6 6 18",
   check: "M20 6 9 17l-5-5",
   chevronLeft: "m15 6-6 6 6 6",

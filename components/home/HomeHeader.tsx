@@ -47,6 +47,14 @@ export function HomeHeaderView({
           aria-pressed={night}
           onClick={onToggleNight}
         />
+        {/* Spec 2026-11-19 §3.1: the third button, between the other two. */}
+        <Link
+          href="/cai-dat"
+          aria-label="Cài đặt"
+          className="glass inline-flex size-11 items-center justify-center rounded-full text-ink"
+        >
+          <Icon name="sliders" size={20} />
+        </Link>
         <Link
           href="/khan-cap"
           aria-label="Khẩn cấp"

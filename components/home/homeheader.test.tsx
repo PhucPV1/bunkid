@@ -55,6 +55,34 @@ describe("HomeHeaderView", () => {
     expect(day).toContain(`d="${ICON_PATHS.phone}"`);
   });
 
+  // Spec 2026-11-19 §3.1: moon, Cài đặt, Khẩn cấp, each a 44 px circle.
+  it("has a glass Cài đặt link between the moon and the emergency button", () => {
+    const tree = HomeHeaderView({
+      name: "Bun",
+      age: "x",
+      night: false,
+      onToggleNight: () => {},
+    });
+    const settings = findByLabel(tree, "Cài đặt");
+    expect(settings?.props.href).toBe("/cai-dat");
+    expect(settings?.props.className).toContain("glass");
+    const icon = settings?.props.children as ReactElement<AnyProps>;
+    expect(icon.props).toMatchObject({ name: "sliders", size: 20 });
+    expect(day).toContain(`d="${ICON_PATHS.sliders}"`);
+
+    const tags = ["Bật chế độ ban đêm", "Cài đặt", "Khẩn cấp"].map((label) =>
+      day.match(new RegExp(`<(?:a|button)[^>]*aria-label="${label}"[^>]*>`)),
+    );
+    for (const tag of tags) {
+      expect(tag?.[0]).toContain("size-11");
+      expect(tag?.[0]).toContain("rounded-full");
+    }
+    const at = tags.map((tag) => tag?.index ?? -1);
+    expect(at[0]).toBeGreaterThan(-1);
+    expect(at[1]).toBeGreaterThan(at[0]);
+    expect(at[2]).toBeGreaterThan(at[1]);
+  });
+
   it("the moon button says what it will do and shows the state", () => {
     expect(day).toContain('aria-label="Bật chế độ ban đêm"');
     expect(day).toContain('aria-pressed="false"');

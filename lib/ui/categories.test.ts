@@ -45,9 +45,14 @@ describe("log categories", () => {
 });
 
 describe("icon paths", () => {
-  it("has the 42 icons the app uses, each a non-empty path", () => {
-    expect(Object.keys(ICON_PATHS)).toHaveLength(42);
+  it("has the 43 icons the app uses, each a non-empty path", () => {
+    expect(Object.keys(ICON_PATHS)).toHaveLength(43);
     for (const d of Object.values(ICON_PATHS)) expect(d).toMatch(/^[Mm]/);
+  });
+
+  // Spec 2026-11-19 §3.4: the "Khác" button on the home page.
+  it("has more: three dots in a row", () => {
+    expect(ICON_PATHS.more).toBe("M5 12h.01M12 12h.01M19 12h.01");
   });
 
   it("has bowl, glass and bath, each a closed shape plus detail strokes", () => {
