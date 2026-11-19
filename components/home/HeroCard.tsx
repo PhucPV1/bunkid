@@ -7,7 +7,6 @@ import { TimerRing } from "@/components/ui/TimerRing";
 import {
   formatClock,
   formatMinutes,
-  ringProgress,
   timerLabel,
   type HeroState,
 } from "@/lib/rules/hero";
@@ -25,6 +24,7 @@ const BIG =
 const BIG_LONG =
   "text-[38px] leading-[44px] font-semibold tracking-[-0.02em] text-ink tabular-nums";
 const META = "text-[15px] text-muted tabular-nums";
+const HOUR_MS = 3_600_000;
 const LEFT: TimerButton = { type: "breast", side: "left" };
 const RIGHT: TimerButton = { type: "breast", side: "right" };
 
@@ -50,6 +50,7 @@ export function HeroCardView({
   // Spec 2026-11-17 §5.3: which side to offer first; null shows no hint.
   nextSide?: NextSide | null;
 }) {
+  if (state.kind === "awake" || state.kind === "none") return null;
   // Without a hint the button's only child stays the plain label.
   const feedButton = (button: TimerButton, side: BreastSide, text: string) => (
     <Button
@@ -92,7 +93,7 @@ export function HeroCardView({
       <>
         <TimerRing
           token={categoryOf(log.type).token}
-          progress={ringProgress(elapsed)}
+          progress={(Math.max(0, elapsed) % HOUR_MS) / HOUR_MS}
         >
           <span className={cx(LABEL, "text-muted")}>
             {timerLabel(log)} <PendingMark pending={pending} />
@@ -131,14 +132,6 @@ export function HeroCardView({
         </span>
         <span className={META}>Dự kiến lúc {formatVnTime(state.due)}</span>
         {feedButtons}
-      </>
-    );
-  } else if (state.kind === "next") {
-    body = (
-      <>
-        <span className={cx(LABEL, "text-muted")}>Cữ bú tiếp theo</span>
-        <span className={BIG}>{formatVnTime(state.due)}</span>
-        <span className={META}>còn {formatMinutes(state.minutesLeft)}</span>
       </>
     );
   } else {

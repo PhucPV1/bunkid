@@ -108,20 +108,6 @@ describe("HeroCardView feed states", () => {
     expect(onTimer).toHaveBeenCalledWith({ type: "breast", side: "right" });
   });
 
-  it("next: expected time large, time left, no buttons", () => {
-    const out = html(
-      props({
-        kind: "next",
-        due: new Date("2026-11-14T07:00:00Z"),
-        minutesLeft: 120,
-      }),
-    );
-    expect(out).toContain(">Cữ bú tiếp theo</span>");
-    expect(out).toContain(">14:00</span>");
-    expect(out).toContain(">còn 2 giờ 00 phút</span>");
-    expect(out).not.toContain("<button");
-  });
-
   it("empty: a sentence, two feed buttons and the sub line", () => {
     const out = html(
       props(
@@ -185,20 +171,8 @@ describe("HeroCardView next-side hint (spec 2026-11-17 §5.3)", () => {
     ]);
   });
 
-  it("shows nothing without a hint, and nothing in the next state", () => {
+  it("shows nothing without a hint", () => {
     expect(html(props(overdue))).not.toContain("Nên bú");
     expect(html(props(overdue))).not.toContain("Lần trước");
-    const next = html(
-      props(
-        {
-          kind: "next",
-          due: new Date("2026-11-14T06:00:00Z"),
-          minutesLeft: 60,
-        },
-        { nextSide },
-      ),
-    );
-    expect(next).not.toContain("Nên bú");
-    expect(next).not.toContain("Lần trước");
   });
 });

@@ -103,9 +103,13 @@ describe("short texts", () => {
     expect(shortDuration(785)).toBe("13g 5p");
   });
 
-  it("totalsLine shows bottle ml and dirty diapers", () => {
+  // Spec 2026-11-19 §3.5: only the non-zero parts.
+  it("totalsLine joins the non-zero parts and is null when both are zero", () => {
     expect(totalsLine({ bottleMl: 180, dirtyDiapers: 2 })).toBe(
       "Bình 180 ml · Tã bẩn 2",
     );
+    expect(totalsLine({ bottleMl: 180, dirtyDiapers: 0 })).toBe("Bình 180 ml");
+    expect(totalsLine({ bottleMl: 0, dirtyDiapers: 2 })).toBe("Tã bẩn 2");
+    expect(totalsLine({ bottleMl: 0, dirtyDiapers: 0 })).toBeNull();
   });
 });

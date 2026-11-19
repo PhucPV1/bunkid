@@ -5,7 +5,6 @@ import {
   formatMinutes,
   heroState,
   longTimerText,
-  ringProgress,
   timerLabel,
 } from "./hero";
 
@@ -28,6 +27,7 @@ const bottle = (h: number) => log("bottle", h, h, { ml: 90, milk: "formula" });
 const state = (logs: LogLike[]) =>
   heroState({ logs, feedIntervalMin: 180, now: NOW });
 
+// Spec 2026-11-19 §3.2: running, empty, overdue, awake, none, in that order.
 describe("heroState", () => {
   it("running: the timer that started last wins", () => {
     const sleep = log("sleep", 2, null);
@@ -38,46 +38,75 @@ describe("heroState", () => {
     });
   });
 
-  it("running beats an overdue feed", () => {
+  it("running beats every other state", () => {
     const tummy = log("tummy", 0.1, null);
+    expect(state([tummy])).toEqual({ kind: "running", log: tummy });
     expect(state([bottle(5), tummy])).toEqual({ kind: "running", log: tummy });
-  });
-
-  it("next: before the expected feed time", () => {
-    expect(state([bottle(1)])).toEqual({
-      kind: "next",
-      due: new Date("2026-11-14T07:00:00Z"),
-      minutesLeft: 120,
-    });
-    expect(state([log("breast", 1, 0.5, { side: "right" })])).toEqual({
-      kind: "next",
-      due: new Date("2026-11-14T07:00:00Z"),
-      minutesLeft: 120,
+    expect(state([bottle(1), log("sleep", 3, 1), tummy])).toEqual({
+      kind: "running",
+      log: tummy,
     });
   });
 
-  it("overdue: at or after the expected feed time", () => {
-    expect(state([bottle(3)])).toEqual({
-      kind: "overdue",
-      due: new Date("2026-11-14T05:00:00Z"),
-      lateMinutes: 0,
-    });
-    expect(state([bottle(3.5)])).toEqual({
-      kind: "overdue",
-      due: new Date("2026-11-14T04:30:00Z"),
-      lateMinutes: 30,
-    });
-  });
-
-  it("empty: no feed in the last 12 hours", () => {
+  it("empty: no feed in the last 12 hours, even after a recent sleep", () => {
     expect(state([])).toEqual({ kind: "empty" });
     expect(state([bottle(12.5), log("sleep", 3, 1)])).toEqual({
       kind: "empty",
     });
   });
 
+  it("overdue: at or after the expected feed time, even after a recent sleep", () => {
+    expect(state([bottle(3)])).toEqual({
+      kind: "overdue",
+      due: new Date("2026-11-14T05:00:00Z"),
+      lateMinutes: 0,
+    });
+    expect(state([bottle(3.5), log("sleep", 2, 1)])).toEqual({
+      kind: "overdue",
+      due: new Date("2026-11-14T04:30:00Z"),
+      lateMinutes: 30,
+    });
+  });
+
   it("a feed exactly 12 hours old still counts", () => {
     expect(state([bottle(12)]).kind).toBe("overdue");
+  });
+
+  it("awake: before the expected feed, since the end of the last sleep", () => {
+    expect(state([bottle(1), log("sleep", 2, 0.75)])).toEqual({
+      kind: "awake",
+      since: new Date("2026-11-14T04:15:00Z"),
+    });
+  });
+
+  it("awake takes the sleep that ended last, not the one that started last", () => {
+    const logs = [
+      bottle(1),
+      log("sleep", 11, 9),
+      log("sleep", 5, 0.5),
+      log("sleep", 3, 2),
+    ];
+    expect(state(logs)).toEqual({
+      kind: "awake",
+      since: new Date("2026-11-14T04:30:00Z"),
+    });
+  });
+
+  it("a sleep that ended exactly 12 hours ago still counts", () => {
+    expect(state([bottle(1), log("sleep", 14, 12)])).toEqual({
+      kind: "awake",
+      since: new Date("2026-11-13T17:00:00Z"),
+    });
+  });
+
+  it("none: before the expected feed with no sleep ended in the last 12 hours", () => {
+    expect(state([bottle(1)])).toEqual({ kind: "none" });
+    expect(state([log("breast", 1, 0.5, { side: "right" })])).toEqual({
+      kind: "none",
+    });
+    expect(state([bottle(1), log("sleep", 14, 12.5)])).toEqual({
+      kind: "none",
+    });
   });
 });
 
@@ -107,13 +136,6 @@ describe("hero text helpers", () => {
     expect(formatMinutes(25)).toBe("25 phút");
     expect(formatMinutes(60)).toBe("1 giờ 00 phút");
     expect(formatMinutes(125)).toBe("2 giờ 05 phút");
-  });
-
-  it("ringProgress fills the ring once an hour", () => {
-    expect(ringProgress(0)).toBe(0);
-    expect(ringProgress(15 * 60_000)).toBe(0.25);
-    expect(ringProgress(75 * 60_000)).toBe(0.25);
-    expect(ringProgress(-1_000)).toBe(0);
   });
 
   it("longTimerText says how long a timer has run and asks if it still is", () => {

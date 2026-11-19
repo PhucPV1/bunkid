@@ -4,14 +4,16 @@ import { formatDuration } from "./time";
 
 export type HeroState<T extends LogLike> =
   | { kind: "running"; log: T }
+  | { kind: "empty" }
   | { kind: "overdue"; due: Date; lateMinutes: number }
-  | { kind: "next"; due: Date; minutesLeft: number }
-  | { kind: "empty" };
+  | { kind: "awake"; since: Date }
+  | { kind: "none" };
 
 const MINUTE_MS = 60_000;
-const HOUR_MS = 3_600_000;
+const STALE_MS = 12 * 3_600_000;
 
-// Spec §7.2: which state the home hero card shows.
+// Spec 2026-11-19 §3.2: which state the home hero card shows. The first match
+// wins: running, empty, overdue, awake, none.
 export function heroState<T extends LogLike>(input: {
   logs: T[];
   feedIntervalMin: number;
@@ -28,10 +30,19 @@ export function heroState<T extends LogLike>(input: {
   if (running) return { kind: "running", log: running };
   const due = feedDue(logs, feedIntervalMin, now);
   if (!due) return { kind: "empty" };
-  const diff = now.getTime() - due.getTime();
-  return diff >= 0
-    ? { kind: "overdue", due, lateMinutes: Math.floor(diff / MINUTE_MS) }
-    : { kind: "next", due, minutesLeft: Math.ceil(-diff / MINUTE_MS) };
+  const late = now.getTime() - due.getTime();
+  if (late >= 0)
+    return { kind: "overdue", due, lateMinutes: Math.floor(late / MINUTE_MS) };
+  // Nothing is running here, so every sleep has an end.
+  let wokeAt: number | null = null;
+  for (const log of logs) {
+    if (log.type !== "sleep" || log.ended_at === null) continue;
+    const ended = Date.parse(log.ended_at);
+    if (wokeAt === null || ended > wokeAt) wokeAt = ended;
+  }
+  if (wokeAt !== null && now.getTime() - wokeAt <= STALE_MS)
+    return { kind: "awake", since: new Date(wokeAt) };
+  return { kind: "none" };
 }
 
 const TIMER_LABEL: Record<string, string> = {
@@ -77,9 +88,4 @@ export function formatClock(ms: number): string {
 export function formatMinutes(minutes: number): string {
   if (minutes < 60) return `${minutes} phút`;
   return `${Math.floor(minutes / 60)} giờ ${String(minutes % 60).padStart(2, "0")} phút`;
-}
-
-// The ring fills once every 60 minutes, then starts again.
-export function ringProgress(ms: number): number {
-  return (Math.max(0, ms) % HOUR_MS) / HOUR_MS;
 }

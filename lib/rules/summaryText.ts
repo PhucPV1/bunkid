@@ -61,9 +61,13 @@ export function homeStatTiles(input: {
   ];
 }
 
+// Spec 2026-11-19 §3.5: only the non-zero parts; null when both are zero.
 export function totalsLine(totals: {
   bottleMl: number;
   dirtyDiapers: number;
-}): string {
-  return `Bình ${totals.bottleMl} ml · Tã bẩn ${totals.dirtyDiapers}`;
+}): string | null {
+  const parts: string[] = [];
+  if (totals.bottleMl > 0) parts.push(`Bình ${totals.bottleMl} ml`);
+  if (totals.dirtyDiapers > 0) parts.push(`Tã bẩn ${totals.dirtyDiapers}`);
+  return parts.length > 0 ? parts.join(" · ") : null;
 }
