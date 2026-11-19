@@ -4,9 +4,9 @@ export type TimeChip = "now" | "5m" | "15m" | "custom";
 
 export const TIME_CHIPS: { value: TimeChip; label: string }[] = [
   { value: "now", label: "Bây giờ" },
-  { value: "5m", label: "5 phút trước" },
-  { value: "15m", label: "15 phút trước" },
-  { value: "custom", label: "Chọn giờ…" },
+  { value: "5m", label: "5p trước" },
+  { value: "15m", label: "15p trước" },
+  { value: "custom", label: "Giờ khác" },
 ];
 
 const MINUTES_AGO: Record<Exclude<TimeChip, "custom">, number> = {

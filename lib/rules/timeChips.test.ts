@@ -16,7 +16,7 @@ describe("timeChipToDate", () => {
     );
   });
 
-  it("Chọn giờ… reads the datetime-local value in Vietnam time", () => {
+  it("Giờ khác reads the datetime-local value in Vietnam time", () => {
     expect(
       timeChipToDate("custom", NOW, "2026-11-14T08:30").toISOString(),
     ).toBe("2026-11-14T01:30:00.000Z");
@@ -44,9 +44,9 @@ describe("timeChipToDate", () => {
   it("lists the four chips in spec order", () => {
     expect(TIME_CHIPS).toEqual([
       { value: "now", label: "Bây giờ" },
-      { value: "5m", label: "5 phút trước" },
-      { value: "15m", label: "15 phút trước" },
-      { value: "custom", label: "Chọn giờ…" },
+      { value: "5m", label: "5p trước" },
+      { value: "15m", label: "15p trước" },
+      { value: "custom", label: "Giờ khác" },
     ]);
   });
 });

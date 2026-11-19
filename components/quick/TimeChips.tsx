@@ -1,8 +1,8 @@
-import { ChipGroup } from "@/components/ui/ChipGroup";
+import { Segmented } from "@/components/ui/Segmented";
 import { TIME_CHIPS, type TimeChip } from "@/lib/rules/timeChips";
 import { FIELD_INPUT, FIELD_LABEL } from "./styles";
 
-// Spec §8.1: "Lúc nào?" — Bây giờ · 5 phút trước · 15 phút trước · Chọn giờ…
+// Spec 2026-11-19 §5.1: "Lúc nào?" as four equal segments, nothing to scroll.
 export function TimeChips({
   chip,
   custom,
@@ -17,7 +17,7 @@ export function TimeChips({
   return (
     <div className="flex flex-col gap-2">
       <span className={FIELD_LABEL}>Lúc nào?</span>
-      <ChipGroup
+      <Segmented
         label="Lúc nào?"
         options={TIME_CHIPS}
         value={chip}
