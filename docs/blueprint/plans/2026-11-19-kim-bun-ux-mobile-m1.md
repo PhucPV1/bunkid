@@ -111,7 +111,7 @@ Plan này là mốc đầu của spec. M2–M6 chưa viết.
 - Consumes: `Segmented` (`components/ui/Segmented.tsx`).
 - Produces: `TIME_CHIPS` với nhãn mới; `TimeChips` giữ nguyên prop `chip`, `custom`, `onChip`, `onCustom`.
 
-- [ ] **Step 0: Tạo nhánh và commit spec cùng plan**
+- [x] **Step 0: Tạo nhánh và commit spec cùng plan**
 
 ```bash
 git checkout -b feat/kim-bun-ux-mobile-m1
@@ -119,7 +119,7 @@ git add docs/blueprint/specs/2026-11-19-kim-bun-ux-mobile-design.md docs/bluepri
 git commit -m "docs(spec): mobile UX spec and the M1 plan" -m "Co-Authored-By: Claude Fable 5.2 <noreply@anthropic.com>"
 ```
 
-- [ ] **Step 1: Viết test đỏ (Patch 1)**
+- [x] **Step 1: Viết test đỏ (Patch 1)**
 
 ```diff
 diff --git a/components/quick/timechips.test.tsx b/components/quick/timechips.test.tsx
@@ -193,12 +193,12 @@ index d0e190b..d14eb76 100644
  });
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run lib/rules/timeChips.test.ts components/quick/timechips.test.tsx`
 Expected: FAIL, `Tests  3 failed | 3 passed (6)`. Ba test đỏ: "lists the four chips in spec order", "shows all four choices as equal segments, nothing to scroll", "Giờ khác opens the date and time field".
 
-- [ ] **Step 3: Sửa code (Patch 2)**
+- [x] **Step 3: Sửa code (Patch 2)**
 
 ```diff
 diff --git a/components/quick/TimeChips.tsx b/components/quick/TimeChips.tsx
@@ -244,12 +244,12 @@ index adb902b..b4545a0 100644
  const MINUTES_AGO: Record<Exclude<TimeChip, "custom">, number> = {
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run lib/rules/timeChips.test.ts components/quick/timechips.test.tsx components/home/quickentry.test.tsx && bun run typecheck`
 Expected: `Tests  12 passed (12)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/rules/timeChips.ts lib/rules/timeChips.test.ts components/quick/TimeChips.tsx components/quick/timechips.test.tsx
@@ -269,7 +269,7 @@ git commit -m "feat(quick-entry): show the four time choices as equal segments" 
 - Consumes: `TEMP_STEP`, `stepAmount`, `NumberStepper`, `cx`.
 - Produces: `TEMP_PRESETS = ["36,5", "37,0", "37,5", "38,0", "38,5", "39,0"] as const` trong `lib/rules/quickEntry.ts`.
 
-- [ ] **Step 1: Viết test đỏ (Patch 3)**
+- [x] **Step 1: Viết test đỏ (Patch 3)**
 
 ```diff
 diff --git a/components/home/quickentry.test.tsx b/components/home/quickentry.test.tsx
@@ -386,12 +386,12 @@ index 7dfc97f..fa102ce 100644
 +});
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run components/quick/numbers.test.tsx components/home/quickentry.test.tsx lib/rules/quickEntry.test.ts`
 Expected: FAIL, `Tests  5 failed | 26 passed (31)`.
 
-- [ ] **Step 3: Sửa code (Patch 4)**
+- [x] **Step 3: Sửa code (Patch 4)**
 
 ```diff
 diff --git a/components/quick/TemperatureFields.tsx b/components/quick/TemperatureFields.tsx
@@ -480,12 +480,12 @@ index b7acfab..f101057 100644
    value: string,
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run components/quick/numbers.test.tsx components/home/quickentry.test.tsx lib/rules/quickEntry.test.ts lib/themeGuard.test.ts lib/ui/glassNesting.test.ts && bun run typecheck`
 Expected: `Tests  33 passed (33)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/rules/quickEntry.ts lib/rules/quickEntry.test.ts components/quick/TemperatureFields.tsx components/quick/numbers.test.tsx components/home/quickentry.test.tsx
@@ -506,7 +506,7 @@ git commit -m "feat(quick-entry): preset temperatures and a dash placeholder" -m
 - Consumes: `defaultQuickValues`, `recentBottleAmounts` (cùng file).
 - Produces: `initialQuickValues(type: InstantType, initial: QuickValues | undefined, recentLogs: LogLike[]): QuickValues`. `QuickEntrySheet` dùng kết quả này làm cả giá trị đang nhập lẫn mốc so sánh `dirty`.
 
-- [ ] **Step 1: Viết test đỏ (Patch 5)**
+- [x] **Step 1: Viết test đỏ (Patch 5)**
 
 ```diff
 diff --git a/components/home/quickentry.test.tsx b/components/home/quickentry.test.tsx
@@ -610,12 +610,12 @@ index fa102ce..4384c5f 100644
 +});
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run components/quick/numbers.test.tsx components/home/quickentry.test.tsx lib/rules/quickEntry.test.ts`
 Expected: FAIL, `Tests  6 failed | 31 passed (37)`. Bốn test của `initialQuickValues` báo `TypeError: initialQuickValues is not a function`.
 
-- [ ] **Step 3: Sửa code (Patch 6)**
+- [x] **Step 3: Sửa code (Patch 6)**
 
 ```diff
 diff --git a/components/home/QuickEntrySheet.tsx b/components/home/QuickEntrySheet.tsx
@@ -683,12 +683,12 @@ index f101057..f12040c 100644
    return Number(value.trim().replace(",", "."));
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run components/quick/numbers.test.tsx components/home/quickentry.test.tsx lib/rules/quickEntry.test.ts && bun run typecheck`
 Expected: `Tests  37 passed (37)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/rules/quickEntry.ts lib/rules/quickEntry.test.ts components/home/QuickEntrySheet.tsx components/home/quickentry.test.tsx components/quick/BottleFields.tsx components/quick/numbers.test.tsx
@@ -709,7 +709,7 @@ git commit -m "feat(quick-entry): open the bottle sheet with the latest amount" 
 - Consumes: `Button` (`components/ui/Button.tsx`).
 - Produces: `BackfillButton({ onClick }: { onClick: () => void })` export từ `components/history/HistoryScreen.tsx`; test chặn `lib/copyGuard.test.ts`.
 
-- [ ] **Step 1: Viết test đỏ (Patch 7)**
+- [x] **Step 1: Viết test đỏ (Patch 7)**
 
 ```diff
 diff --git a/components/history/historyscreen.test.tsx b/components/history/historyscreen.test.tsx
@@ -828,12 +828,12 @@ index 69c1452..3358c5f 100644
        describeLog(
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run lib/copyGuard.test.ts components/history/historyscreen.test.tsx lib/rules/describeLog.test.ts lib/rules/dailyStats.test.ts components/stats/statstable.test.tsx`
 Expected: FAIL, `Tests  6 failed | 20 passed (26)`. Test chặn liệt kê 4 file còn chữ "Tummy".
 
-- [ ] **Step 3: Sửa code (Patch 8)**
+- [x] **Step 3: Sửa code (Patch 8)**
 
 ```diff
 diff --git a/components/history/HistoryScreen.tsx b/components/history/HistoryScreen.tsx
@@ -938,12 +938,12 @@ index 70b3f75..15c6068 100644
  function duration(log: LogLike, now: Date): string {
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run lib/copyGuard.test.ts components/history/historyscreen.test.tsx lib/rules/describeLog.test.ts lib/rules/dailyStats.test.ts components/stats/statstable.test.tsx && bun run typecheck`
 Expected: `Tests  26 passed (26)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/copyGuard.test.ts lib/rules/describeLog.ts lib/rules/describeLog.test.ts lib/rules/dailyStats.ts lib/rules/dailyStats.test.ts components/stats/StatsScreen.tsx components/stats/StatsTable.tsx components/stats/statstable.test.tsx components/history/HistoryScreen.tsx components/history/historyscreen.test.tsx
@@ -961,17 +961,17 @@ git commit -m "feat(copy): say Nằm sấp everywhere and label the Ghi bù butt
 - Consumes: mọi thứ Task 1–4 tạo ra.
 - Produces: `main` có M1; nhánh `feat/kim-bun-ux-mobile-m1` làm nền cho M2.
 
-- [ ] **Step 1: Typecheck và toàn bộ test**
+- [x] **Step 1: Typecheck và toàn bộ test**
 
 Run: `bun run typecheck && bunx vitest run`
 Expected: `tsc --noEmit` không báo lỗi; `Test Files  151 passed (151)`, `Tests  951 passed (951)`.
 
-- [ ] **Step 2: Build production**
+- [x] **Step 2: Build production**
 
 Run: `bun run build`
 Expected: lần đầu dừng với thông báo bảo mật của Next.js 16.4.3 (bình thường). Chạy lại đúng lệnh đó: `✓ Generating static pages` và thoát mã 0.
 
-- [ ] **Step 3: Kiểm trên trình duyệt (phiên chính làm, không bấm Lưu, không đụng timer)**
+- [x] **Step 3: Kiểm trên trình duyệt (phiên chính làm, không bấm Lưu, không đụng timer)**
 
 Chạy `bun run dev` (nếu nó dừng với thông báo bảo mật thì chạy lại). Mở `http://localhost:3000/` trong khung Browser của app ở cỡ 375×812. Đóng mọi sheet bằng phím Esc.
 
@@ -985,7 +985,20 @@ Chạy `bun run dev` (nếu nó dừng với thông báo bảo mật thì chạy
 
 Dừng `bun run dev` khi xong. Ghi kết quả từng mục ngay dưới bước này. Mục nào dữ liệu thật không cho thấy được thì ghi "chưa kiểm".
 
-- [ ] **Step 4: Commit phần ghi kết quả, đưa lên `main`, rồi báo cáo**
+> **Kết quả 2026-11-20.** Task 1–4 làm trên nhánh `feat/kim-bun-ux-mobile-m1`: cả 8 patch áp sạch, số test đỏ và xanh của từng task đúng như ghi. Step 1: `tsc --noEmit` sạch, `Test Files  151 passed (151)`, `Tests  951 passed (951)`. Step 2: `bun run build` lần đầu dừng với thông báo bảo mật của Next.js, lần hai thoát mã 0 với `✓ Generating static pages using 9 workers (38/38)`.
+>
+> Step 3, phiên chính kiểm bằng khung Browser trong app ở 375×812 (`innerWidth` 375), không bấm Lưu, không đụng timer (lúc kiểm có một timer Ngủ đang chạy thật):
+>
+> - Mục 1: sheet Thay tã có đủ 4 ô "Bây giờ", "5p trước", "15p trước", "Giờ khác" trên một hàng, mỗi ô rộng 74 px. `scrollWidth <= clientWidth` đúng với cả 4 ô, kể cả khi "15p trước" đang được chọn (chữ đậm 600). Không cần phương án dự phòng `px-1`.
+> - Mục 2: chạm "Giờ khác" thì hiện ô ngày giờ; Esc hỏi "Bỏ thay đổi?", chọn "Bỏ thay đổi" thì sheet đóng.
+> - Mục 3: ô số của Đo nhiệt độ trống, placeholder "––,–"; 6 nút 36,5 đến 39,0 nằm một hàng, mỗi nút 48×44 px; chạm "38,0" thì ô số thành "38,0" và chỉ nút đó có `aria-pressed="true"`. Đóng bằng Esc rồi "Bỏ thay đổi".
+> - Mục 4: 72 giờ qua không có cữ bình nào nên ô số trống với placeholder "0", Esc đóng ngay không hỏi. **Chưa kiểm:** nhánh "điền sẵn lượng gần nhất" trên dữ liệu thật (chỉ có unit test).
+> - Mục 5: Nhật ký có nút chữ "Ghi bù" 80×44 px, `aria-label="Thêm bản ghi cũ"`, không còn icon lịch; các bản ghi cũ hiện "Nằm sấp · 4 phút", "Nằm sấp · 2 phút"; không tràn ngang.
+> - Mục 6: Thống kê có các chip Ngủ, Bú, Tã, Hút sữa, Nằm sấp, Ăn dặm.
+> - Mục 7: sheet Đo nhiệt độ (kèm hàng "Lúc nào?") đã xem ở Ban đêm và Hồng dịu: chữ đọc rõ, nút đang chọn nổi bật. Sheet Thay tã chỉ xem ở Ban đêm.
+> - Chưa thử: bấm Lưu thật ở bất kỳ sheet nào, và iPhone thật (Safari).
+
+- [x] **Step 4: Commit phần ghi kết quả, đưa lên `main`, rồi báo cáo**
 
 ```bash
 git add docs/blueprint/plans/2026-11-19-kim-bun-ux-mobile-m1.md
