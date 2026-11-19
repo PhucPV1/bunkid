@@ -170,6 +170,9 @@ describe("dailyStats", () => {
 
   it("STATS_TABS ends with Ăn dặm", () => {
     expect(STATS_TABS).toHaveLength(6);
+    expect(STATS_TABS.find((tab) => tab.value === "tummy")?.label).toBe(
+      "Nằm sấp",
+    );
     expect(STATS_TABS.at(-1)).toEqual({ value: "solids", label: "Ăn dặm" });
   });
 

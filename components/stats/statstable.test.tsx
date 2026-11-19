@@ -67,4 +67,12 @@ describe("StatsTable", () => {
     );
     expect(cells).toEqual(["0", "60", "2", "30"]);
   });
+
+  it("the tummy tab's column is called Nằm sấp", () => {
+    const html = renderToStaticMarkup(
+      <StatsTable stats={stats} tab="tummy" now={NOW} />,
+    );
+    expect(html).toContain(">Nằm sấp</th>");
+    expect(html).not.toContain("Tummy");
+  });
 });

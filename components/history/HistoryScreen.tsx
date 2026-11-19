@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/Button";
 import { ChipGroup } from "@/components/ui/ChipGroup";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorCard } from "@/components/ui/ErrorCard";
-import { IconButton } from "@/components/ui/IconButton";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { NeedsNetwork, waitingForNetwork } from "@/components/ui/NeedsNetwork";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -30,6 +29,20 @@ import { HistoryList } from "./HistoryList";
 import { LogEditSheet } from "./LogEditSheet";
 
 type SheetState = { log: LogRow | null } | null;
+
+// Spec 2026-11-19 §10: adding an old log is a labelled button, not a calendar icon.
+export function BackfillButton({ onClick }: { onClick: () => void }) {
+  return (
+    <Button
+      size="md"
+      variant="secondary"
+      aria-label="Thêm bản ghi cũ"
+      onClick={onClick}
+    >
+      Ghi bù
+    </Button>
+  );
+}
 
 export function HistoryScreen({
   baby,
@@ -70,13 +83,7 @@ export function HistoryScreen({
     <main className="mx-auto flex max-w-md flex-col gap-[18px] px-4 pt-2 pb-4">
       <PageHeader
         title="Nhật ký"
-        action={
-          <IconButton
-            label="Thêm bản ghi cũ"
-            icon="calendar"
-            onClick={() => setSheet({ log: null })}
-          />
-        }
+        action={<BackfillButton onClick={() => setSheet({ log: null })} />}
       />
 
       <ChipGroup

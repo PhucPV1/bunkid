@@ -18,6 +18,19 @@ describe("describeLog", () => {
       ),
     ).toBe("Bú trái · 12 phút (đang chạy)");
   });
+  it("names a tummy timer Nằm sấp", () => {
+    expect(
+      describeLog(
+        {
+          type: "tummy",
+          started_at: at("2026-11-13T02:50:00Z"),
+          ended_at: at("2026-11-13T02:54:00Z"),
+          details: {},
+        },
+        now,
+      ),
+    ).toBe("Nằm sấp · 4 phút");
+  });
   it("describes a finished sleep", () => {
     expect(
       describeLog(

@@ -25,7 +25,7 @@ export const STATS_TABS: { value: StatsTab; label: string }[] = [
   { value: "feed", label: "Bú" },
   { value: "diaper", label: "Tã" },
   { value: "pump", label: "Hút sữa" },
-  { value: "tummy", label: "Tummy" },
+  { value: "tummy", label: "Nằm sấp" },
   { value: "solids", label: "Ăn dặm" },
 ];
 

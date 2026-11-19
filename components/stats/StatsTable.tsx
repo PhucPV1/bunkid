@@ -25,7 +25,7 @@ export const STATS_COLUMNS: Record<
   pump: [{ label: "Sữa hút (ml)", value: (s) => String(s.pumpMl) }],
   tummy: [
     {
-      label: "Tummy",
+      label: "Nằm sấp",
       value: (s) =>
         s.tummyMinutes === 0 ? "—" : formatDuration(s.tummyMinutes * 60_000),
     },

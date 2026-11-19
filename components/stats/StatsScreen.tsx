@@ -73,7 +73,7 @@ const SERIES: Record<
     secondaryColor: null,
   },
   tummy: {
-    primary: "Tummy (phút)",
+    primary: "Nằm sấp (phút)",
     secondary: null,
     color: "var(--color-cat-tummy)",
     secondaryColor: null,

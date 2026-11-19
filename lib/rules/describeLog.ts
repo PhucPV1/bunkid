@@ -32,7 +32,7 @@ const AMOUNT = { little: "ít", some: "vừa", lots: "nhiều" } as const;
 const TIMER_LABEL = {
   sleep: "Ngủ",
   pump: "Hút sữa",
-  tummy: "Tummy time",
+  tummy: "Nằm sấp",
 } as const;
 
 function duration(log: LogLike, now: Date): string {
