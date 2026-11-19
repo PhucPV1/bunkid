@@ -116,13 +116,13 @@ Plan này đứng ngay sau M2a và ngay trước M2c.
 - Consumes: `HeroState` (M2a); `formatClock`, `formatMinutes` (`lib/rules/hero.ts`); `CATEGORY_CHIP`, `categoryOf` (`lib/ui/categories.ts`); `Glass`, `Button`, `HintBadge`, `Icon`, `PendingMark`.
 - Produces: `HeroCardView` không còn prop `sub`, trả `null` khi `state.kind === "none"`; `runningLabel(log: { type: string; details: unknown }): string` trong `lib/rules/hero.ts`; `CATEGORY_RUNNING: Record<CategoryToken, string>` trong `lib/ui/categories.ts` (chuyển từ map `RUNNING` của `TimerButtons.tsx`); `components/ui/TimerRing.tsx` và test của nó bị xoá.
 
-- [ ] **Step 0: Tạo nhánh**
+- [x] **Step 0: Tạo nhánh**
 
 ```bash
 git checkout -b feat/kim-bun-ux-mobile-m2b feat/kim-bun-ux-mobile-m2a
 ```
 
-- [ ] **Step 1: Viết test đỏ (Patch 1)**
+- [x] **Step 1: Viết test đỏ (Patch 1)**
 
 ```diff
 diff --git a/components/home/herocard.test.tsx b/components/home/herocard.test.tsx
@@ -479,12 +479,12 @@ index 48535d9..6f42f96 100644
      expect(Object.keys(ICON_PATHS)).toHaveLength(43);
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run components/home/herocard.test.tsx lib/rules/hero.test.ts lib/ui/categories.test.ts components/home/buttons.test.tsx components/home/homescreen.test.tsx`
 Expected: FAIL, `Tests  9 failed | 40 passed (49)`. Lý do đỏ: markup cũ, `runningLabel is not a function`, `CATEGORY_RUNNING` chưa có.
 
-- [ ] **Step 3: Sửa code (Patch 2)**
+- [x] **Step 3: Sửa code (Patch 2)**
 
 ```diff
 diff --git a/components/home/HeroCard.tsx b/components/home/HeroCard.tsx
@@ -943,14 +943,14 @@ index 80c84f5..d84470d 100644
 +};
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run components/home/herocard.test.tsx lib/rules/hero.test.ts lib/ui/categories.test.ts components/home/buttons.test.tsx components/home/homescreen.test.tsx && bun run typecheck`
 Expected: `Tests  49 passed (49)`; `tsc --noEmit` không báo lỗi.
 
 Patch này cũng bỏ `sub` và import `sleepStatusLine` khỏi `HomeScreen.tsx`. Từ đây tới Task 3 của M2c, trang Hôm nay tạm không có dòng "Vitamin D đã uống" và không có giờ cữ bú tiếp.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -- components/home/HeroCard.tsx components/home/HomeScreen.tsx components/home/TimerButtons.tsx components/ui/TimerRing.tsx lib/rules/hero.ts lib/ui/categories.ts components/home/herocard.test.tsx components/ui/timerring.test.tsx lib/rules/hero.test.ts lib/ui/categories.test.ts
@@ -969,7 +969,7 @@ git commit -m "feat(home): compact hero card in five states" -m "Co-Authored-By:
 - Consumes: `StatusTile` (M2a, `lib/rules/status.ts`); `Glass` với `radius="tile"`; `cx`.
 - Produces: `StatusTiles({ tiles, vitaminD }: { tiles: StatusTile[]; vitaminD: string | null })` trong `components/home/StatusTiles.tsx`. Ô có `tone === "warn"` nhận thêm `border-warn!`. Khi `vitaminD` có giá trị, dưới hàng ô có dòng "Vitamin D đã uống {vitaminD}".
 
-- [ ] **Step 1: Viết test đỏ (Patch 3)**
+- [x] **Step 1: Viết test đỏ (Patch 3)**
 
 ```diff
 diff --git a/components/home/statustiles.test.tsx b/components/home/statustiles.test.tsx
@@ -1056,12 +1056,12 @@ index 0000000..f3fe166
 +});
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run components/home/statustiles.test.tsx`
 Expected: FAIL, `Test Files  1 failed (1)`, không test nào chạy được (`Cannot find module './StatusTiles'`).
 
-- [ ] **Step 3: Sửa code (Patch 4)**
+- [x] **Step 3: Sửa code (Patch 4)**
 
 ```diff
 diff --git a/components/home/StatusTiles.tsx b/components/home/StatusTiles.tsx
@@ -1128,12 +1128,12 @@ index 0000000..b70e57d
 +}
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run components/home/statustiles.test.tsx && bun run typecheck`
 Expected: `Tests  5 passed (5)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -- components/home/StatusTiles.tsx components/home/statustiles.test.tsx
@@ -1151,12 +1151,12 @@ git commit -m "feat(home): status tiles with the Vitamin D line" -m "Co-Authored
 - Consumes: mọi thứ Task 1–2 tạo ra.
 - Produces: nhánh của plan này làm nền cho M2c. Nhánh không lên `main` trước khi M2c xong.
 
-- [ ] **Step 1: Typecheck và toàn bộ test**
+- [x] **Step 1: Typecheck và toàn bộ test**
 
 Run: `bun run typecheck && bunx vitest run`
 Expected: `tsc --noEmit` không báo lỗi; `Test Files  151 passed (151)`, `Tests  984 passed (984)`.
 
-- [ ] **Step 2: Commit phần tick**
+- [x] **Step 2: Commit phần tick**
 
 ```bash
 git add docs/blueprint/plans/2026-11-19-kim-bun-ux-mobile-m2b.md
