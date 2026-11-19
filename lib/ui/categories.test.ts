@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { LOG_TYPES } from "@/lib/rules/logDetails";
-import { CATEGORIES, categoryOf } from "./categories";
+import {
+  CATEGORIES,
+  CATEGORY_CHIP,
+  CATEGORY_RUNNING,
+  categoryOf,
+} from "./categories";
 import { ICON_PATHS } from "./icons";
 import { TOKEN_NAMES } from "./tokens";
 
@@ -41,6 +46,20 @@ describe("log categories", () => {
       expect(TOKEN_NAMES).toContain(token);
       expect(ICON_PATHS[icon]).toBeTruthy();
     }
+  });
+});
+
+describe("category class maps", () => {
+  it("CATEGORY_CHIP tints every category with its own colour", () => {
+    expect(CATEGORY_CHIP["cat-feed"]).toBe("bg-cat-feed/15 text-cat-feed");
+    expect(Object.keys(CATEGORY_CHIP)).toHaveLength(8);
+  });
+
+  it("CATEGORY_RUNNING fills every category with its colour inside a halo", () => {
+    expect(CATEGORY_RUNNING["cat-sleep"]).toBe(
+      "bg-cat-sleep ring-4 ring-cat-sleep/30",
+    );
+    expect(Object.keys(CATEGORY_RUNNING)).toHaveLength(8);
   });
 });
 

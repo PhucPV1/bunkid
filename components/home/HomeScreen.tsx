@@ -15,7 +15,6 @@ import { homeAlerts, vitaminDToday } from "@/lib/rules/alerts";
 import { heroState } from "@/lib/rules/hero";
 import { medicinePrefill } from "@/lib/rules/quickEntry";
 import { rateLast24h, WINDOW_MS, windowTotals } from "@/lib/rules/ratings";
-import { sleepStatusLine } from "@/lib/rules/status";
 import { homeStatTiles, totalsLine } from "@/lib/rules/summaryText";
 import { ageDays, formatAgeVi } from "@/lib/rules/time";
 import { nextBreastSide, overdueTimers } from "@/lib/rules/timer";
@@ -69,10 +68,6 @@ export function HomeScreen({ baby, userId }: { baby: Baby; userId: string }) {
   const heroLog = hero.kind === "running" ? hero.log : null;
   const nextSide = nextBreastSide(rows, now);
   const vitaminD = vitaminDToday(rows, now);
-  const sub =
-    [sleepStatusLine(rows, now), vitaminD && `Vitamin D đã uống ${vitaminD}`]
-      .filter(Boolean)
-      .join(" · ") || null;
   const otherTimers = rows.filter(
     (row) => row.ended_at === null && row.id !== heroLog?.id,
   );
@@ -115,7 +110,6 @@ export function HomeScreen({ baby, userId }: { baby: Baby; userId: string }) {
               state={hero}
               now={now}
               who={heroLog ? nameOf(heroLog.created_by) : ""}
-              sub={sub}
               pending={heroLog ? pending.has(heroLog.id) : false}
               busy={actions.busy}
               onTimer={actions.pressTimer}

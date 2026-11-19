@@ -75,6 +75,14 @@ export function longTimerText(
   return `${timerLabel(log)} đã chạy ${ran}. Còn đang ${STILL[log.type] ?? "chạy"} không?`;
 }
 
+// Spec 2026-11-19 §3.2: the label over a running timer on the hero card.
+export function runningLabel(log: { type: string; details: unknown }): string {
+  const doing = `Đang ${STILL[log.type] ?? "chạy"}`;
+  if (log.type !== "breast") return doing;
+  const side = (log.details as { side?: unknown } | null)?.side;
+  return `${doing} ${side === "left" ? "trái" : "phải"}`;
+}
+
 export function formatClock(ms: number): string {
   const total = Math.max(0, Math.floor(ms / 1000));
   const hours = Math.floor(total / 3600);

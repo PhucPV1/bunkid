@@ -47,3 +47,15 @@ export const CATEGORY_CHIP: Record<CategoryToken, string> = {
   "cat-med": "bg-cat-med/15 text-cat-med",
   "cat-temp": "bg-cat-temp/15 text-cat-temp",
 };
+
+// Circle of a running timer: the category colour, solid, inside a 30% halo.
+export const CATEGORY_RUNNING: Record<CategoryToken, string> = {
+  "cat-feed": "bg-cat-feed ring-4 ring-cat-feed/30",
+  "cat-bottle": "bg-cat-bottle ring-4 ring-cat-bottle/30",
+  "cat-sleep": "bg-cat-sleep ring-4 ring-cat-sleep/30",
+  "cat-diaper": "bg-cat-diaper ring-4 ring-cat-diaper/30",
+  "cat-pump": "bg-cat-pump ring-4 ring-cat-pump/30",
+  "cat-tummy": "bg-cat-tummy ring-4 ring-cat-tummy/30",
+  "cat-med": "bg-cat-med ring-4 ring-cat-med/30",
+  "cat-temp": "bg-cat-temp ring-4 ring-cat-temp/30",
+};

@@ -9,7 +9,11 @@ import {
   type QuickAction,
 } from "@/lib/rules/quickActions";
 import type { BreastSide, RunningLog, TimerButton } from "@/lib/rules/timer";
-import { CATEGORIES, type CategoryToken } from "@/lib/ui/categories";
+import {
+  CATEGORIES,
+  CATEGORY_RUNNING,
+  type CategoryToken,
+} from "@/lib/ui/categories";
 import { cx } from "@/lib/ui/cx";
 import { GROUP_LABEL } from "./sectionTitle";
 
@@ -19,17 +23,6 @@ type TimerAction = Extract<QuickAction, { kind: "timer" }>;
 const TIMER_ACTIONS = QUICK_ACTIONS.filter(
   (action): action is TimerAction => action.kind === "timer",
 );
-
-const RUNNING: Record<CategoryToken, string> = {
-  "cat-feed": "bg-cat-feed ring-4 ring-cat-feed/30",
-  "cat-bottle": "bg-cat-bottle ring-4 ring-cat-bottle/30",
-  "cat-sleep": "bg-cat-sleep ring-4 ring-cat-sleep/30",
-  "cat-diaper": "bg-cat-diaper ring-4 ring-cat-diaper/30",
-  "cat-pump": "bg-cat-pump ring-4 ring-cat-pump/30",
-  "cat-tummy": "bg-cat-tummy ring-4 ring-cat-tummy/30",
-  "cat-med": "bg-cat-med ring-4 ring-cat-med/30",
-  "cat-temp": "bg-cat-temp ring-4 ring-cat-temp/30",
-};
 
 const IDLE: Record<CategoryToken, string> = {
   "cat-feed": "text-cat-feed",
@@ -77,7 +70,9 @@ export function TimerButtons({
               <span
                 className={cx(
                   "relative flex size-[58px] items-center justify-center rounded-full",
-                  on ? `${RUNNING[token]} text-bg` : `glass ${IDLE[token]}`,
+                  on
+                    ? `${CATEGORY_RUNNING[token]} text-bg`
+                    : `glass ${IDLE[token]}`,
                 )}
               >
                 <Icon

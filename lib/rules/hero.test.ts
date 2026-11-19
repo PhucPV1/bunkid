@@ -5,6 +5,7 @@ import {
   formatMinutes,
   heroState,
   longTimerText,
+  runningLabel,
   timerLabel,
 } from "./hero";
 
@@ -121,6 +122,18 @@ describe("hero text helpers", () => {
     expect(timerLabel(log("sleep", 1, null))).toBe("Ngủ");
     expect(timerLabel(log("pump", 1, null))).toBe("Hút sữa");
     expect(timerLabel(log("tummy", 1, null))).toBe("Nằm sấp");
+  });
+
+  // Spec 2026-11-19 §3.2: the label on the hero card of a running timer.
+  it("runningLabel says what the baby is doing", () => {
+    const label = (type: string, details: unknown = {}) =>
+      runningLabel(log(type, 1, null, details));
+    expect(label("sleep")).toBe("Đang ngủ");
+    expect(label("breast", { side: "left" })).toBe("Đang bú trái");
+    expect(label("breast", { side: "right" })).toBe("Đang bú phải");
+    expect(label("pump")).toBe("Đang hút sữa");
+    expect(label("tummy")).toBe("Đang nằm sấp");
+    expect(label("vaccine")).toBe("Đang chạy");
   });
 
   it("formatClock shows M:SS, then H:MM:SS from one hour", () => {
