@@ -53,7 +53,7 @@ describe("QuickEntrySheet", () => {
     expect(render({ type: "diaper" })).toMatch(
       /aria-pressed="true"[^>]*>Ướt<\/button>/,
     );
-    expect(render({ type: "temperature" })).toContain('placeholder="37,0"');
+    expect(render({ type: "temperature" })).toContain('placeholder="––,–"');
     const medicine = render({ type: "medicine" });
     expect(medicine).toContain(">Cho uống thuốc</h2>");
     expect(medicine).toContain(">Thuốc hạ sốt</span>");

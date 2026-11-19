@@ -283,6 +283,16 @@ export type StepRule = { start: number; min: number; decimals: number };
 export const ML_STEP: StepRule = { start: 0, min: 0, decimals: 0 };
 export const TEMP_STEP: StepRule = { start: 37, min: 0, decimals: 1 };
 
+// Spec 2026-11-19 §5.2: the six preset temperatures, as the text the field shows.
+export const TEMP_PRESETS = [
+  "36,5",
+  "37,0",
+  "37,5",
+  "38,0",
+  "38,5",
+  "39,0",
+] as const;
+
 // The −/+ buttons next to a number field. An empty or unreadable field starts at `rule.start`.
 export function stepAmount(
   value: string,

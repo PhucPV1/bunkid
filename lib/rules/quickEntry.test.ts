@@ -14,6 +14,7 @@ import {
   recentMedicineNames,
   stepAmount,
   STOOL_OPTIONS,
+  TEMP_PRESETS,
   TEMP_STEP,
   withDiaperKind,
 } from "@/lib/rules/quickEntry";
@@ -375,5 +376,22 @@ describe("diaper kind", () => {
       "pale",
       "red",
     ]);
+  });
+});
+
+describe("TEMP_PRESETS", () => {
+  it("six values from 36,5 to 39,0 that the temperature form accepts", () => {
+    expect(TEMP_PRESETS).toEqual([
+      "36,5",
+      "37,0",
+      "37,5",
+      "38,0",
+      "38,5",
+      "39,0",
+    ]);
+    for (const celsius of TEMP_PRESETS)
+      expect(
+        buildDetails("temperature", { celsius, method: "nach" }).ok,
+      ).toBe(true);
   });
 });

@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { findElements } from "@/components/ui/testTree";
+import { TEMP_PRESETS } from "@/lib/rules/quickEntry";
 import { BottleFields } from "./BottleFields";
 import { TemperatureFields } from "./TemperatureFields";
 
@@ -47,13 +48,13 @@ describe("BottleFields", () => {
 });
 
 describe("TemperatureFields", () => {
-  it("empty field with 37,0 placeholder, ±0,1 and where it was measured", () => {
+  it("empty field with a dash placeholder, ±0,1 and where it was measured", () => {
     const onChange = vi.fn();
     const values = { celsius: "", method: "nach" };
     const html = renderToStaticMarkup(
       <TemperatureFields values={values} onChange={onChange} />,
     );
-    expect(html).toContain('placeholder="37,0"');
+    expect(html).toContain('placeholder="––,–"');
     expect(html).toContain(">°C</span>");
     expect(html).toContain('aria-label="Thêm 0,1 độ"');
     expect(html).toMatch(/aria-pressed="true"[^>]*>Nách<\/button>/);
@@ -63,6 +64,39 @@ describe("TemperatureFields", () => {
     expect(onChange).toHaveBeenLastCalledWith({
       celsius: "37,1",
       method: "nach",
+    });
+  });
+
+  it("six preset temperatures; the one equal to the value is pressed", () => {
+    const html = renderToStaticMarkup(
+      <TemperatureFields
+        values={{ celsius: "38,0", method: "nach" }}
+        onChange={() => {}}
+      />,
+    );
+    const group = html.slice(
+      html.indexOf('aria-label="Mốc nhiệt độ"'),
+      html.indexOf('aria-label="Đo ở"'),
+    );
+    expect(group.match(/<button/g)).toHaveLength(6);
+    for (const preset of TEMP_PRESETS)
+      expect(group).toContain(`>${preset}</button>`);
+    expect(group.match(/aria-pressed="true"/g)).toHaveLength(1);
+    expect(group).toMatch(
+      /aria-pressed="true"[^>]*bg-ink text-bg[^>]*>38,0<\/button>/,
+    );
+    expect(group).toMatch(/aria-pressed="false"[^>]*glass[^>]*>37,5<\/button>/);
+  });
+
+  it("a preset fills the field with exactly its text", () => {
+    const onChange = vi.fn();
+    const values = { celsius: "", method: "tai" };
+    const tree = TemperatureFields({ values, onChange });
+    const [chip] = findElements(tree, (el) => el.props.children === "38,5");
+    (chip.props.onClick as () => void)();
+    expect(onChange).toHaveBeenLastCalledWith({
+      celsius: "38,5",
+      method: "tai",
     });
   });
 });
