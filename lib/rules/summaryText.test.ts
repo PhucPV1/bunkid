@@ -26,12 +26,11 @@ const LOGS: LogLike[] = [
   log("diaper", 6, 6, { wet: true, dirty: true }),
   log("diaper", 7, 7, { wet: false, dirty: true }),
 ];
-const rated = (rating: "green" | "yellow" | "red", value: number) => ({
-  status: "rated" as const,
-  rating,
-  value,
-  explain: "x",
-});
+const rated = (
+  rating: "green" | "yellow" | "red",
+  value: number,
+  explain = "x",
+) => ({ status: "rated" as const, rating, value, explain });
 
 describe("homeStatTiles", () => {
   it("always shows the counts from the last 24 hours", () => {
@@ -46,18 +45,21 @@ describe("homeStatTiles", () => {
         value: "2g 30p",
         note: "Đánh giá sau 24 giờ đầu",
         tone: "muted",
+        explain: null,
       },
       {
         label: "Cữ bú",
         value: "2",
         note: "Đánh giá sau 24 giờ đầu",
         tone: "muted",
+        explain: null,
       },
       {
         label: "Tã ướt",
         value: "2",
         note: "Đánh giá sau 24 giờ đầu",
         tone: "muted",
+        explain: null,
       },
     ]);
   });
@@ -91,7 +93,24 @@ describe("homeStatTiles", () => {
       value: "2g 30p",
       note: "Không đánh giá ở tuổi này",
       tone: "muted",
+      explain: null,
     });
+  });
+
+  // Spec 2026-11-19 §3.5: the sentence shown under the tiles.
+  it("carries the explain sentence of a yellow or red rating only", () => {
+    const ratings: DayRatings = {
+      sleepMinutes: rated("green", 150, "Bé ngủ đủ (chuẩn 14–17 giờ)"),
+      feeds: rated("yellow", 2, "Ít cữ bú hơn chuẩn (từ 8 cữ)"),
+      wetDiapers: rated("red", 2, "Rất ít tã ướt: nguy cơ mất nước"),
+    };
+    expect(
+      homeStatTiles({ ratings, logs: LOGS, now: NOW }).map((t) => t.explain),
+    ).toEqual([
+      null,
+      "Ít cữ bú hơn chuẩn (từ 8 cữ)",
+      "Rất ít tã ướt: nguy cơ mất nước",
+    ]);
   });
 });
 

@@ -162,7 +162,7 @@ export function HomeScreen({ baby, userId }: { baby: Baby; userId: string }) {
           {logs.data && (
             <StatsSection
               tiles={homeStatTiles({ ratings, logs: rows, now })}
-              totals={totalsLine(windowTotals(rows, now)) ?? ""}
+              totals={totalsLine(windowTotals(rows, now))}
             />
           )}
 

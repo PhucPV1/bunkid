@@ -13,7 +13,11 @@ export type HomeStatTile = {
   value: string;
   note: string;
   tone: "good" | "warn" | "danger" | "muted";
+  // Spec 2026-11-19 §3.5: the rating's sentence, only when it is yellow or red.
+  explain: string | null;
 };
+
+type Rated = Pick<HomeStatTile, "note" | "tone" | "explain">;
 
 const RATED: Record<Rating, Pick<HomeStatTile, "note" | "tone">> = {
   green: { note: "Bình thường", tone: "good" },
@@ -21,11 +25,15 @@ const RATED: Record<Rating, Pick<HomeStatTile, "note" | "tone">> = {
   red: { note: "Báo bác sĩ", tone: "danger" },
 };
 
-function noteFor(result: MetricResult): Pick<HomeStatTile, "note" | "tone"> {
-  if (result.status === "rated") return RATED[result.rating];
+function noteFor(result: MetricResult): Rated {
+  if (result.status === "rated")
+    return {
+      ...RATED[result.rating],
+      explain: result.rating === "green" ? null : result.explain,
+    };
   if (result.status === "not-rated")
-    return { note: "Không đánh giá ở tuổi này", tone: "muted" };
-  return { note: "Đánh giá sau 24 giờ đầu", tone: "muted" };
+    return { note: "Không đánh giá ở tuổi này", tone: "muted", explain: null };
+  return { note: "Đánh giá sau 24 giờ đầu", tone: "muted", explain: null };
 }
 
 export function shortDuration(minutes: number): string {

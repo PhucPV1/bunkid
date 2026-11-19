@@ -24,7 +24,7 @@ export function StatTile({
   return (
     <Glass radius="tile" className="flex flex-col gap-1 p-3.5">
       <span className="text-xs text-muted">{label}</span>
-      <span className="text-[22px] leading-7 font-bold text-ink tabular-nums">
+      <span className="text-xl leading-[26px] font-bold whitespace-nowrap text-ink tabular-nums">
         {value}
       </span>
       {note && (

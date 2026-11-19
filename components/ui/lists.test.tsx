@@ -87,6 +87,16 @@ describe("StatTile", () => {
       renderToStaticMarkup(<StatTile label="a" value="1" />),
     ).not.toContain("text-[11px]");
   });
+
+  // Spec 2026-11-19 §3.5: "14g 38p" stays on one line at 375 px.
+  it("sets the value 20/26 and never wraps it", () => {
+    const html = renderToStaticMarkup(
+      <StatTile label="Giấc ngủ" value="14g 38p" />,
+    );
+    expect(html).toContain(
+      '<span class="text-xl leading-[26px] font-bold whitespace-nowrap text-ink tabular-nums">14g 38p</span>',
+    );
+  });
 });
 
 describe("Skeleton", () => {
