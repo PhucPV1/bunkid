@@ -116,7 +116,7 @@ Plan này đứng sau M1 (đã ở trên `main` @ `5c4ea5f`) và ngay trước M
 - Consumes: `feedDue` (`lib/rules/status.ts`), `shortDuration` (`lib/rules/summaryText.ts`), `detailsSchemas` (`lib/rules/logDetails.ts`), `WINDOW_MS` (`lib/rules/ratings.ts`), `formatVnTime`.
 - Produces: `HeroState<T>` gồm `running | empty | overdue | awake | none`, với `{ kind: "awake"; since: Date }` (không còn `next`); `statusTiles({ logs, feedIntervalMin, now }): StatusTile[]` và kiểu `StatusTile = { label: string; value: string; note: string; tone: "good" | "warn" | "muted" }` trong `lib/rules/status.ts`; `totalsLine(...): string | null`; `ringProgress` bị xoá.
 
-- [ ] **Step 0: Tạo nhánh**
+- [x] **Step 0: Tạo nhánh**
 
 ```bash
 git checkout -b feat/kim-bun-ux-mobile-m2a main
@@ -124,7 +124,7 @@ git add docs/blueprint/plans/2026-11-19-kim-bun-ux-mobile-m2a.md docs/blueprint/
 git commit -m "docs(plan): the three M2 plans for the home page" -m "Co-Authored-By: Claude Fable 5.2 <noreply@anthropic.com>"
 ```
 
-- [ ] **Step 1: Viết test đỏ (Patch 1)**
+- [x] **Step 1: Viết test đỏ (Patch 1)**
 
 ```diff
 diff --git a/components/home/herocard.test.tsx b/components/home/herocard.test.tsx
@@ -544,12 +544,12 @@ index 45a90a5..54001ab 100644
  });
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run lib/rules/hero.test.ts lib/rules/status.test.ts lib/rules/summaryText.test.ts components/home/herocard.test.tsx`
 Expected: FAIL, `Tests  23 failed | 30 passed (53)`. Lý do đỏ: `statusTiles is not a function`, `kind: 'next'` ở chỗ chờ `awake` hoặc `none`, `'Bình 180 ml · Tã bẩn 0'`.
 
-- [ ] **Step 3: Sửa code (Patch 2)**
+- [x] **Step 3: Sửa code (Patch 2)**
 
 ```diff
 diff --git a/components/home/HeroCard.tsx b/components/home/HeroCard.tsx
@@ -829,14 +829,14 @@ index a2016c5..8fd7b9a 100644
  }
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run lib/rules/hero.test.ts lib/rules/status.test.ts lib/rules/summaryText.test.ts components/home/herocard.test.tsx && bun run typecheck`
 Expected: `Tests  53 passed (53)`; `tsc --noEmit` không báo lỗi.
 
 Sau patch này code vẫn biên dịch nhờ ba chỉnh tạm: `HeroCard.tsx` bỏ nhánh `next`, tự tính tiến độ vòng tròn bằng hằng `HOUR_MS` cục bộ, và trả `null` cho `awake` và `none`; `HomeScreen.tsx` dùng `totalsLine(...) ?? ""`. M2b và M2c gỡ các chỉnh tạm này.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -- components/home/HeroCard.tsx components/home/HomeScreen.tsx lib/rules/hero.ts lib/rules/status.ts lib/rules/summaryText.ts components/home/herocard.test.tsx lib/rules/hero.test.ts lib/rules/status.test.ts lib/rules/summaryText.test.ts
@@ -857,7 +857,7 @@ git commit -m "feat(home): hero states without next, status tile rule, nullable 
 - Consumes: `Icon`, `ICON_PATHS` (`lib/ui/icons.ts`), `HomeHeaderView`.
 - Produces: `ICON_PATHS.more = "M5 12h.01M12 12h.01M19 12h.01"` (tên icon `more`); `HomeHeaderView` có nút thứ ba là `Link` tới `/cai-dat`, `aria-label="Cài đặt"`, đứng giữa nút trăng và nút Khẩn cấp.
 
-- [ ] **Step 1: Viết test đỏ (Patch 3)**
+- [x] **Step 1: Viết test đỏ (Patch 3)**
 
 ```diff
 diff --git a/components/home/homeheader.test.tsx b/components/home/homeheader.test.tsx
@@ -924,12 +924,12 @@ index e382a65..48535d9 100644
      for (const name of ["bowl", "glass", "bath"]) {
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run components/home/homeheader.test.tsx lib/ui/categories.test.ts`
 Expected: FAIL, `Tests  3 failed | 10 passed (13)`.
 
-- [ ] **Step 3: Sửa code (Patch 4)**
+- [x] **Step 3: Sửa code (Patch 4)**
 
 ```diff
 diff --git a/components/home/HomeHeader.tsx b/components/home/HomeHeader.tsx
@@ -965,12 +965,12 @@ index ebe76b9..1fc1597 100644
    chevronLeft: "m15 6-6 6 6 6",
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run components/home/homeheader.test.tsx lib/ui/categories.test.ts && bun run typecheck`
 Expected: `Tests  13 passed (13)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -- components/home/HomeHeader.tsx lib/ui/icons.ts components/home/homeheader.test.tsx lib/ui/categories.test.ts
@@ -988,12 +988,12 @@ git commit -m "feat(home): settings button in the header and the more icon" -m "
 - Consumes: mọi thứ Task 1–2 tạo ra.
 - Produces: nhánh của plan này làm nền cho M2b. Nhánh không lên `main` trước khi M2c xong.
 
-- [ ] **Step 1: Typecheck và toàn bộ test**
+- [x] **Step 1: Typecheck và toàn bộ test**
 
 Run: `bun run typecheck && bunx vitest run`
 Expected: `tsc --noEmit` không báo lỗi; `Test Files  151 passed (151)`, `Tests  972 passed (972)`.
 
-- [ ] **Step 2: Commit phần tick**
+- [x] **Step 2: Commit phần tick**
 
 ```bash
 git add docs/blueprint/plans/2026-11-19-kim-bun-ux-mobile-m2a.md
