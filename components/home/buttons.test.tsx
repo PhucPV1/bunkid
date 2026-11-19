@@ -75,24 +75,60 @@ describe("TimerButtons next-side hint (spec 2026-11-17 §5.3)", () => {
   });
 });
 
+// Spec 2026-11-19 §3.4.
 describe("QuickLogGrid", () => {
-  it("is a 2×2 grid of glass pills with a coloured chip, in spec order", () => {
-    const onInstant = vi.fn();
-    const html = renderToStaticMarkup(<QuickLogGrid onInstant={onInstant} />);
+  const html = renderToStaticMarkup(
+    <QuickLogGrid onInstant={() => {}} onMore={() => {}} />,
+  );
+
+  it("is one row of five 58 px round buttons with labels, in spec order", () => {
     expect(html).toContain(">Ghi nhanh</h2>");
-    expect(html).toContain("grid-cols-2");
-    expect(html.match(/min-h-14/g)).toHaveLength(4);
-    const labels = [...html.matchAll(/<span>([^<]+)<\/span><\/button>/g)].map(
-      (m) => m[1],
-    );
-    expect(labels).toEqual(["Thay tã", "Bú bình", "Thuốc", "Nhiệt độ"]);
-    expect(html).toContain("bg-cat-diaper/15 text-cat-diaper");
-    expect(html).toContain(`d="${ICON_PATHS.thermo}"`);
+    expect(html).toContain('<div class="grid grid-cols-5 gap-1">');
+    expect(html.match(/<button/g)).toHaveLength(5);
+    expect(html.match(/size-\[58px\]/g)).toHaveLength(5);
+    const labels = [
+      ...html.matchAll(/text-xs leading-4 font-medium text-ink">([^<]+)</g),
+    ].map((m) => m[1]);
+    expect(labels).toEqual(["Thay tã", "Bú bình", "Thuốc", "Nhiệt độ", "Khác"]);
+    expect(html).not.toContain("grid-cols-2");
+    expect(html).not.toContain("min-h-14");
+  });
+
+  it("tints the four log circles with their category colour, without glass", () => {
+    for (const token of ["diaper", "bottle", "med", "temp"])
+      expect(html).toContain(
+        `rounded-full bg-cat-${token}/15 text-cat-${token}`,
+      );
+    for (const icon of ["drop", "bottle", "pill", "thermo"] as const)
+      expect(html).toContain(`d="${ICON_PATHS[icon]}"`);
+    expect(html.match(/stroke-width="2.2"/g)).toHaveLength(4);
+    expect(html).not.toContain("glass");
+  });
+
+  it("draws Khác as three bold dots on a muted circle", () => {
+    expect(html).toContain("rounded-full bg-muted/15 text-ink");
+    expect(html).toContain(`d="${ICON_PATHS.more}"`);
+    expect(html.match(/stroke-width="3"/g)).toHaveLength(1);
+  });
+
+  it("the first four open their sheet, Khác calls onMore with no argument", () => {
+    const onInstant = vi.fn();
+    const onMore = vi.fn();
     const buttons = findElements(
-      QuickLogGrid({ onInstant }),
+      QuickLogGrid({ onInstant, onMore }),
       (el) => el.type === "button",
     );
-    (buttons[0].props.onClick as () => void)();
-    expect(onInstant).toHaveBeenCalledWith("diaper");
+    expect(buttons).toHaveLength(5);
+    for (const button of buttons.slice(0, 4))
+      (button.props.onClick as () => void)();
+    expect(onInstant.mock.calls).toEqual([
+      ["diaper"],
+      ["bottle"],
+      ["medicine"],
+      ["temperature"],
+    ]);
+    expect(onMore).not.toHaveBeenCalled();
+    (buttons[4].props.onClick as (event: unknown) => void)({ type: "click" });
+    expect(onMore.mock.calls).toEqual([[]]);
   });
 });

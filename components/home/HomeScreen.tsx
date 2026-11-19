@@ -137,7 +137,10 @@ export function HomeScreen({ baby, userId }: { baby: Baby; userId: string }) {
             suggestSide={nextSide?.suggest ?? null}
           />
 
-          <QuickLogGrid onInstant={(type) => actions.openInstant(type)} />
+          <QuickLogGrid
+            onInstant={(type) => actions.openInstant(type)}
+            onMore={() => {}}
+          />
 
           {actions.error && (
             <p role="alert" className="px-1 text-danger">

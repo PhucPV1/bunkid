@@ -11,33 +11,44 @@ const INSTANTS: { type: InstantType; label: string }[] = [
   { type: "temperature", label: "Nhiệt độ" },
 ];
 
+const BUTTON =
+  "flex flex-col items-center gap-1.5 transition-transform duration-[120ms] active:scale-[0.97]";
+const CIRCLE = "flex size-[58px] items-center justify-center rounded-full";
+const LABEL = "text-xs leading-4 font-medium text-ink";
+
+// Spec 2026-11-19 §3.4: one row of five round buttons, sized like the timer
+// row. The circles are tinted, not glass, so the two rows look different.
 export function QuickLogGrid({
   onInstant,
+  onMore,
 }: {
   onInstant: (type: InstantType) => void;
+  // "Khác": opens the "+" sheet for what has no button here.
+  onMore: () => void;
 }) {
   return (
     <section className="flex flex-col gap-2.5">
       <h2 className={GROUP_LABEL}>Ghi nhanh</h2>
-      <div className="grid grid-cols-2 gap-2.5">
+      <div className="grid grid-cols-5 gap-1">
         {INSTANTS.map(({ type, label }) => (
           <button
             key={type}
             type="button"
             onClick={() => onInstant(type)}
-            className="glass flex min-h-14 items-center gap-3 rounded-full pr-4 pl-3 text-base font-semibold text-ink transition-transform duration-[120ms] active:scale-[0.97]"
+            className={BUTTON}
           >
-            <span
-              className={cx(
-                "flex size-8 shrink-0 items-center justify-center rounded-full",
-                CATEGORY_CHIP[CATEGORIES[type].token],
-              )}
-            >
-              <Icon name={CATEGORIES[type].icon} size={17} strokeWidth={2.2} />
+            <span className={cx(CIRCLE, CATEGORY_CHIP[CATEGORIES[type].token])}>
+              <Icon name={CATEGORIES[type].icon} size={24} strokeWidth={2.2} />
             </span>
-            <span>{label}</span>
+            <span className={LABEL}>{label}</span>
           </button>
         ))}
+        <button type="button" onClick={() => onMore()} className={BUTTON}>
+          <span className={cx(CIRCLE, "bg-muted/15 text-ink")}>
+            <Icon name="more" size={24} strokeWidth={3} />
+          </span>
+          <span className={LABEL}>Khác</span>
+        </button>
       </div>
     </section>
   );
