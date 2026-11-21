@@ -18,11 +18,16 @@ import {
   parseChoices,
   toDoseRecords,
 } from "@/lib/rules/vaccineForm";
-import { buildSchedule, type ScheduleItem } from "@/lib/rules/vaccines";
+import {
+  buildSchedule,
+  nextDose,
+  type ScheduleItem,
+} from "@/lib/rules/vaccines";
 import type { Baby } from "@/lib/supabase/rows";
 import { ChoiceFields } from "./ChoiceFields";
 import { DoseSections } from "./DoseSections";
 import { DoseSheet } from "./DoseSheet";
+import { NextDoseCard } from "./NextDoseCard";
 import { VaccineSetup } from "./VaccineSetup";
 import { VaccineSourceRow } from "./VaccineSourceRow";
 
@@ -76,18 +81,21 @@ export function VaccineScreen({
 
   const rows = doses.data;
   const records = toDoseRecords(rows);
+  const today = vnDateString(new Date());
   const items = buildSchedule({
     doses: VACCINES.doses,
     choices,
     dob: baby.dob,
     records,
-    today: vnDateString(new Date()),
+    today,
   });
   const unchosen = VACCINES.groups.filter(
     (group) => cleanChoices([group], choices)[group.code] === undefined,
   ).length;
   const needsSetup =
     isOwner && Object.keys(choices).length === 0 && !setupLater;
+  // Spec 2026-11-19 §7: nothing to do first while the setup step is showing.
+  const next = needsSetup ? null : nextDose(items);
   const rowFor = (item: ScheduleItem) =>
     rows.find(
       (row) =>
@@ -97,6 +105,7 @@ export function VaccineScreen({
   return (
     <main className="mx-auto flex max-w-md flex-col gap-[18px] px-4 pt-2 pb-4">
       {header}
+      {next && <NextDoseCard item={next} today={today} onOpen={setOpen} />}
       <VaccineSourceRow text={VACCINES.disclaimer} />
       {needsSetup ? (
         <section className="flex flex-col gap-3">
