@@ -115,7 +115,7 @@ Plan này đứng sau M6 (đã ở trên `main` @ `34f18f6`) và ngay trước M
 - Consumes: `ScheduleItem`, `buildSchedule` (`lib/rules/vaccines.ts`); `vnDayStartMs` (`lib/rules/days.ts`).
 - Produces: `nextDose(items: ScheduleItem[]): ScheduleItem | null` (bỏ qua `unchosen`, `pastMaxAge`, `done`, `skipped`); `nextDoseLabel(item: ScheduleItem, today: string): { text: string; overdue: boolean }`, với `today` là ngày Việt Nam dạng `YYYY-MM-DD`.
 
-- [ ] **Step 0: Tạo nhánh**
+- [x] **Step 0: Tạo nhánh**
 
 ```bash
 git checkout -b feat/kim-bun-ux-mobile-m5a main
@@ -123,7 +123,7 @@ git add docs/blueprint/specs/2026-11-19-kim-bun-ux-mobile-design.md docs/bluepri
 git commit -m "docs(plan): the three M5 plans, vaccine table details in the spec" -m "Co-Authored-By: Claude Fable 5.2 <noreply@anthropic.com>"
 ```
 
-- [ ] **Step 1: Viết test đỏ (Patch 1)**
+- [x] **Step 1: Viết test đỏ (Patch 1)**
 
 ```diff
 diff --git a/lib/rules/vaccines.test.ts b/lib/rules/vaccines.test.ts
@@ -249,12 +249,12 @@ index 91f8d68..f09aa30 100644
 +});
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run lib/rules/vaccines.test.ts`
 Expected: FAIL, `Tests  7 failed | 10 passed (17)`. Lý do đỏ: `nextDose is not a function`, `nextDoseLabel is not a function`.
 
-- [ ] **Step 3: Sửa code (Patch 2)**
+- [x] **Step 3: Sửa code (Patch 2)**
 
 ```diff
 diff --git a/lib/rules/vaccines.ts b/lib/rules/vaccines.ts
@@ -311,12 +311,12 @@ index bb24206..a19211a 100644
 +}
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run lib/rules/vaccines.test.ts && bun run typecheck`
 Expected: `Tests  17 passed (17)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -- lib/rules/vaccines.ts lib/rules/vaccines.test.ts
@@ -337,7 +337,7 @@ git commit -m "feat(vaccines): pick the dose to deal with first" -m "Co-Authored
 - Consumes: `nextDose`, `nextDoseLabel` (Task 1); `formatDueDate` (`lib/rules/vaccineForm.ts`); `DoseSheet` qua state `open` có sẵn của `VaccineScreen`.
 - Produces: `NextDoseCard({ item, today, onOpen }: { item: ScheduleItem; today: string; onOpen: (item: ScheduleItem) => void })` trong `components/vaccines/NextDoseCard.tsx`; `VaccineScreen` vẽ thẻ ngay dưới `PageHeader` khi `needsSetup` sai và `nextDose` khác `null`.
 
-- [ ] **Step 1: Viết test đỏ (Patch 3)**
+- [x] **Step 1: Viết test đỏ (Patch 3)**
 
 ```diff
 diff --git a/components/vaccines/nextdose.test.tsx b/components/vaccines/nextdose.test.tsx
@@ -624,12 +624,12 @@ index 0000000..e217c6b
 +});
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run components/vaccines/nextdose.test.tsx components/vaccines/vaccinescreen.test.tsx`
 Expected: FAIL, `Test Files  2 failed (2)`, `Tests  4 failed | 3 passed (7)`. File `nextdose.test.tsx` không nạp được (`Cannot find module './NextDoseCard'`) nên 5 test của nó chưa được đếm.
 
-- [ ] **Step 3: Sửa code (Patch 4)**
+- [x] **Step 3: Sửa code (Patch 4)**
 
 ```diff
 diff --git a/components/vaccines/NextDoseCard.tsx b/components/vaccines/NextDoseCard.tsx
@@ -733,12 +733,12 @@ index 50a23cd..38a6046 100644
          <section className="flex flex-col gap-3">
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run components/vaccines/nextdose.test.tsx components/vaccines/vaccinescreen.test.tsx && bun run typecheck`
 Expected: `Tests  12 passed (12)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -- components/vaccines/NextDoseCard.tsx components/vaccines/VaccineScreen.tsx components/vaccines/nextdose.test.tsx components/vaccines/vaccinescreen.test.tsx
@@ -759,7 +759,7 @@ git commit -m "feat(vaccines): a do-this-first card at the top of the page" -m "
 - Consumes: `ScheduleItem` (`lib/rules/vaccines.ts`); `VaccineGroup` (`lib/content/vaccineSchema.ts`).
 - Produces: `formatDayFull(day: string): string` trong `lib/rules/days.ts` ("2026-10-29" thành "29/10/2026"). Trong file mới `lib/rules/vaccineGrid.ts`: kiểu `GridRow` (hàng vắc xin có `cells: (ScheduleItem | null)[]`, hoặc hàng chưa chọn loại), `DoseTone = "done" | "skipped" | "late" | "soon" | "open"`, `vaccineGrid(items: ScheduleItem[], groups: VaccineGroup[]): { columns: number; rows: GridRow[] }`, `doseCell(item: ScheduleItem): { label: string; date: string | null; tone: DoseTone }` với `date` là ngày thô `YYYY-MM-DD`.
 
-- [ ] **Step 1: Viết test đỏ (Patch 5)**
+- [x] **Step 1: Viết test đỏ (Patch 5)**
 
 ```diff
 diff --git a/lib/rules/days.test.ts b/lib/rules/days.test.ts
@@ -1114,12 +1114,12 @@ index 0000000..c670bc7
 +});
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run lib/rules/days.test.ts lib/rules/vaccineGrid.test.ts`
 Expected: FAIL, `Test Files  2 failed (2)`, `Tests  1 failed | 6 passed (7)`. `formatDayFull is not a function`; file `vaccineGrid.test.ts` không nạp được `./vaccineGrid` nên test của nó chưa được đếm.
 
-- [ ] **Step 3: Sửa code (Patch 6)**
+- [x] **Step 3: Sửa code (Patch 6)**
 
 ```diff
 diff --git a/lib/rules/days.ts b/lib/rules/days.ts
@@ -1254,14 +1254,14 @@ index 0000000..8a5d11e
 +}
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run lib/rules/days.test.ts lib/rules/vaccineGrid.test.ts && bun run typecheck`
 Expected: `Tests  22 passed (22)`; `tsc --noEmit` không báo lỗi.
 
 Ở task này nhãn hàng còn dùng tên `series` mỗi khi các mũi cho ra nhãn khác nhau. Task 3 của M5b thu hẹp luật đó theo đúng §7.2.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -- lib/rules/days.ts lib/rules/vaccineGrid.ts lib/rules/days.test.ts lib/rules/vaccineGrid.test.ts
@@ -1279,12 +1279,12 @@ git commit -m "feat(vaccines): rules that lay the schedule out as vaccine by dos
 - Consumes: mọi thứ Task 1–3 tạo ra.
 - Produces: nhánh `feat/kim-bun-ux-mobile-m5a` làm nền cho M5b. Nhánh này không lên `main` trước khi M5b xong.
 
-- [ ] **Step 1: Typecheck và toàn bộ test**
+- [x] **Step 1: Typecheck và toàn bộ test**
 
 Run: `bun run typecheck && bunx vitest run`
 Expected: `tsc --noEmit` không báo lỗi; `Test Files  156 passed (156)`, `Tests  1051 passed (1051)`.
 
-- [ ] **Step 2: Commit phần tick**
+- [x] **Step 2: Commit phần tick**
 
 ```bash
 git add docs/blueprint/plans/2026-11-19-kim-bun-ux-mobile-m5a.md
