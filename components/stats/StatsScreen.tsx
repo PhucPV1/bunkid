@@ -20,9 +20,12 @@ import {
   hasStatsData,
   STATS_TABS,
   statsFetchSince,
+  statsFootnote,
   type StatsTab,
 } from "@/lib/rules/dailyStats";
 import { vnDayRange } from "@/lib/rules/days";
+import { dailyNorm } from "@/lib/rules/ratings";
+import { ageDays } from "@/lib/rules/time";
 import type { Baby } from "@/lib/supabase/rows";
 import { StatsTable } from "./StatsTable";
 
@@ -39,11 +42,13 @@ const StatsChart = dynamic(
   { ssr: false, loading: () => <div className="h-60" /> },
 );
 
-const SERIES: Record<
+// Spec 2026-11-19 §8: `unit` is the caption at the chart's top left.
+export const SERIES: Record<
   StatsTab,
   {
     primary: string;
     secondary: string | null;
+    unit: string;
     color: string;
     secondaryColor: string | null;
   }
@@ -51,36 +56,42 @@ const SERIES: Record<
   sleep: {
     primary: "Giờ ngủ",
     secondary: null,
+    unit: "giờ",
     color: "var(--color-cat-sleep)",
     secondaryColor: null,
   },
   feed: {
     primary: "Số cữ bú",
     secondary: null,
+    unit: "cữ",
     color: "var(--color-cat-feed)",
     secondaryColor: null,
   },
   diaper: {
     primary: "Tã ướt",
     secondary: "Tã bẩn",
+    unit: "tã",
     color: "var(--color-cat-diaper)",
     secondaryColor: "var(--color-muted)",
   },
   pump: {
     primary: "Sữa hút (ml)",
     secondary: null,
+    unit: "ml",
     color: "var(--color-cat-pump)",
     secondaryColor: null,
   },
   tummy: {
     primary: "Nằm sấp (phút)",
     secondary: null,
+    unit: "phút",
     color: "var(--color-cat-tummy)",
     secondaryColor: null,
   },
   solids: {
     primary: "Bữa ăn dặm",
     secondary: null,
+    unit: "bữa",
     color: "var(--color-cat-bottle)",
     secondaryColor: null,
   },
@@ -100,6 +111,9 @@ export function StatsScreen({ baby }: { baby: Baby }) {
   const logs = useStatsLogs(baby.id, statsFetchSince(days));
   const stats = dailyStats(logs.data ?? [], days, now);
   const series = SERIES[tab];
+  // Spec 2026-11-19 §8: one age, taken at now, for the whole range.
+  const norm = dailyNorm(tab, ageDays(baby.dob, now));
+  const charted = hasStatsData(stats, tab);
 
   return (
     <main className="mx-auto flex max-w-md flex-col gap-[18px] px-4 pt-2 pb-4">
@@ -135,10 +149,12 @@ export function StatsScreen({ baby }: { baby: Baby }) {
         />
       ) : (
         <>
-          {hasStatsData(stats, tab) ? (
+          {charted ? (
             <Glass className="p-3">
               <StatsChart
                 rows={chartRows(stats, tab)}
+                unit={series.unit}
+                norm={norm}
                 primaryName={series.primary}
                 secondaryName={series.secondary}
                 decimals={tab === "sleep"}
@@ -153,7 +169,7 @@ export function StatsScreen({ baby }: { baby: Baby }) {
           )}
           <StatsTable stats={stats} tab={tab} now={now} />
           <p className="px-1 text-[13px] text-muted">
-            Tính theo ngày lịch giờ Việt Nam. Hôm nay tính đến hiện tại.
+            {statsFootnote(tab, norm, charted)}
           </p>
         </>
       )}

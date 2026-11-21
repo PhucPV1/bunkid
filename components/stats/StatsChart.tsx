@@ -28,8 +28,8 @@ export function StatsChart({
   secondaryColor,
 }: {
   rows: { label: string; primary: number; secondary: number | null }[];
-  unit?: string;
-  norm?: DailyNorm | null;
+  unit: string;
+  norm: DailyNorm | null;
   primaryName: string;
   secondaryName: string | null;
   decimals: boolean;
