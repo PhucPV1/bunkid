@@ -550,8 +550,8 @@ Kết quả: Chờ người dùng.
 
 ## Bước 34 — Canh timer (spec 2026-11-17 §5, §4.3)
 
-1. Bấm "Nằm sấp" ở trang chủ, sang tab Nhật ký. Kỳ vọng: một viên kính ngay trên thanh tab ghi "Nằm sấp · m:ss" đang nhảy và chữ "Dừng"; về tab Hôm nay thì viên biến mất.
-2. Ở Nhật ký bấm "Dừng" trên viên. Kỳ vọng: viên biến mất, toast Hoàn tác hiện phía trên chỗ viên vừa nằm.
+1. Bấm "Nằm sấp" ở trang chủ, sang tab Nhật ký. Kỳ vọng: tab "Hôm nay" trong thanh tab thành ô timer rộng hơn hai tab còn lại, có ô tròn màu của Nằm sấp, đồng hồ "m:ss" đang nhảy và chữ "Hôm nay" bên dưới; không có viên kính nào phía trên thanh tab và không có nút "Dừng"; về tab Hôm nay thì tab "Hôm nay" trở lại như thường.
+2. Ở Nhật ký chạm ô timer. Kỳ vọng: về trang Hôm nay, thẻ đầu trang chủ ghi "Đang nằm sấp" và có nút "Dừng". Bấm "Dừng". Kỳ vọng: timer dừng, toast Hoàn tác hiện ngay phía trên thanh tab.
 3. Sau một cữ bú mẹ đã xong: thẻ đầu trang chủ (khi đang "Trễ cữ bú") và hàng "Bấm giờ" có nhãn "Nên bú" trên nút của bên ngược lại, kèm dòng "Lần trước: … lúc …"; bảng "+" cũng có nhãn đó.
 4. Bấm "Nằm sấp" và để yên 31 phút. Kỳ vọng: nhận "Timer Nằm sấp đã chạy quá 30 phút"; trang chủ có dải vàng "Nằm sấp đã chạy … Còn đang nằm sấp không?" với nút "Dừng".
 5. Dọn dẹp: dừng timer, xóa các bản ghi Nằm sấp thử.
