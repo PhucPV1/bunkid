@@ -4,9 +4,13 @@ import {
   ageDate,
   buildSchedule,
   dueDates,
+  nextDose,
+  nextDoseLabel,
   NOT_TAKING,
   visibleDoses,
   type DoseRecord,
+  type DoseState,
+  type ScheduleItem,
 } from "./vaccines";
 
 const base = {
@@ -178,5 +182,104 @@ describe("buildSchedule", () => {
     // Day 84 is 24/07: still inside the limit that day, past it the day after.
     expect(schedule("2026-07-24")).toEqual([["2026-07-01", "overdue", false]]);
     expect(schedule("2026-07-25")).toEqual([["2026-07-01", "overdue", true]]);
+  });
+});
+
+const item = (
+  code: string,
+  state: DoseState,
+  due: string,
+  extra: Partial<ScheduleItem> = {},
+): ScheduleItem => ({
+  dose: dose(code, 1, 0),
+  due,
+  state,
+  record: null,
+  unchosen: false,
+  pastMaxAge: false,
+  ...extra,
+});
+
+// Spec 2026-11-19 §7.
+describe("nextDose", () => {
+  it("skips doses that are done, skipped, of an unchosen group or past the age limit", () => {
+    const items = [
+      item("given", "done", "2026-09-14"),
+      item("left", "skipped", "2026-09-24"),
+      item("combo", "overdue", "2026-10-14", { unchosen: true }),
+      item("rota", "overdue", "2026-10-20", { pastMaxAge: true }),
+      item("pcv", "overdue", "2026-11-14"),
+      item("mmr", "upcoming", "2026-12-01"),
+    ];
+    expect(nextDose(items)).toBe(items[4]);
+  });
+
+  it("takes the first item in list order: overdue, else upcoming, else later", () => {
+    const upcoming = item("mmr", "upcoming", "2026-12-01");
+    const later = item("je", "later", "2027-09-14");
+    expect(nextDose([upcoming, later])).toBe(upcoming);
+    expect(nextDose([item("given", "done", "2026-09-14"), later])).toBe(later);
+  });
+
+  it("returns null for an empty list and when no dose qualifies", () => {
+    expect(nextDose([])).toBeNull();
+    expect(
+      nextDose([
+        item("given", "done", "2026-09-14"),
+        item("left", "skipped", "2026-09-24"),
+        item("combo", "upcoming", "2026-12-01", { unchosen: true }),
+        item("rota", "overdue", "2026-10-20", { pastMaxAge: true }),
+      ]),
+    ).toBeNull();
+  });
+
+  it("reads a real schedule: the unchosen group and the given dose are passed over", () => {
+    const items = buildSchedule({
+      doses: [...doses, dose("pcv", 1, 60)],
+      choices: {},
+      dob: "2026-09-14",
+      records: [record("bcg", 1, { given_on: "2026-09-14" })],
+      today: "2026-11-20",
+    });
+    expect(nextDose(items)?.dose.code).toBe("pcv");
+  });
+});
+
+describe("nextDoseLabel", () => {
+  const today = "2026-11-20";
+
+  it("overdue: the calendar days since the due date, flagged as overdue", () => {
+    expect(nextDoseLabel(item("pcv", "overdue", "2026-11-19"), today)).toEqual({
+      text: "Quá hạn 1 ngày",
+      overdue: true,
+    });
+    expect(nextDoseLabel(item("pcv", "overdue", "2026-10-31"), today)).toEqual({
+      text: "Quá hạn 20 ngày",
+      overdue: true,
+    });
+    // Across a year end.
+    expect(
+      nextDoseLabel(item("pcv", "overdue", "2026-12-30"), "2027-01-02"),
+    ).toEqual({ text: "Quá hạn 3 ngày", overdue: true });
+  });
+
+  it("upcoming: the days left, or hôm nay when it is due today", () => {
+    expect(nextDoseLabel(item("pcv", "upcoming", "2026-12-20"), today)).toEqual(
+      { text: "Sắp tới · còn 30 ngày", overdue: false },
+    );
+    expect(nextDoseLabel(item("pcv", "upcoming", "2026-11-21"), today)).toEqual(
+      { text: "Sắp tới · còn 1 ngày", overdue: false },
+    );
+    expect(nextDoseLabel(item("pcv", "upcoming", today), today)).toEqual({
+      text: "Sắp tới · hôm nay",
+      overdue: false,
+    });
+  });
+
+  it("later: no day count", () => {
+    expect(nextDoseLabel(item("je", "later", "2027-09-14"), today)).toEqual({
+      text: "Mũi tiếp theo",
+      overdue: false,
+    });
   });
 });

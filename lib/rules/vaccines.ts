@@ -1,5 +1,5 @@
 import type { VaccineDose } from "@/lib/content/vaccineSchema";
-import { addDays, addMonths } from "./days";
+import { addDays, addMonths, vnDayStartMs } from "./days";
 
 // vaccine_choices[group] = series code, or NOT_TAKING when the family skips that group.
 export const NOT_TAKING = "none";
@@ -148,4 +148,41 @@ export function buildSchedule(input: {
         a.dose.code.localeCompare(b.dose.code) ||
         a.dose.doseNo - b.dose.doseNo,
     );
+}
+
+// Spec 2026-11-19 §7: the dose to deal with first. `items` comes sorted by due
+// date, so this is the first open dose of a chosen series. A dose past the
+// product's age limit is passed over, as in pushSelection.ts.
+export function nextDose(items: ScheduleItem[]): ScheduleItem | null {
+  return (
+    items.find(
+      (item) =>
+        !item.unchosen &&
+        !item.pastMaxAge &&
+        (item.state === "overdue" ||
+          item.state === "upcoming" ||
+          item.state === "later"),
+    ) ?? null
+  );
+}
+
+const DAY_MS = 86_400_000;
+
+// Spec 2026-11-19 §7: the label of the "cần làm trước" card. The count is the
+// calendar days between `due` and `today`, both Vietnam days.
+export function nextDoseLabel(
+  item: ScheduleItem,
+  today: string,
+): { text: string; overdue: boolean } {
+  const days = Math.round(
+    Math.abs(vnDayStartMs(item.due) - vnDayStartMs(today)) / DAY_MS,
+  );
+  if (item.state === "overdue")
+    return { text: `Quá hạn ${days} ngày`, overdue: true };
+  if (item.state === "upcoming")
+    return {
+      text: days === 0 ? "Sắp tới · hôm nay" : `Sắp tới · còn ${days} ngày`,
+      overdue: false,
+    };
+  return { text: "Mũi tiếp theo", overdue: false };
 }
