@@ -107,13 +107,13 @@ Plan này đứng ngay sau M5b. M3 và M4 chưa lên `main` và không dùng gì
 - Consumes: `formatDayShort` (`lib/rules/days.ts`); `GrowthInput` (`lib/rules/growthForm.ts`); `ScheduleItem` (`lib/rules/vaccines.ts`).
 - Produces: `growthCardText(rows: Pick<GrowthInput, "measured_on" | "weight_g">[]): string | null` và `vaccineCardText(next: ScheduleItem | null): string | null` trong file mới `lib/rules/exploreCards.ts`.
 
-- [ ] **Step 0: Tạo nhánh**
+- [x] **Step 0: Tạo nhánh**
 
 ```bash
 git checkout -b feat/kim-bun-ux-mobile-m5c main
 ```
 
-- [ ] **Step 1: Viết test đỏ (Patch 1)**
+- [x] **Step 1: Viết test đỏ (Patch 1)**
 
 ```diff
 diff --git a/lib/rules/exploreCards.test.ts b/lib/rules/exploreCards.test.ts
@@ -212,12 +212,12 @@ index 0000000..d94b15d
 +});
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run lib/rules/exploreCards.test.ts`
 Expected: FAIL, `Test Files  1 failed (1)`, không test nào chạy được (`Cannot find module './exploreCards'`).
 
-- [ ] **Step 3: Sửa code (Patch 2)**
+- [x] **Step 3: Sửa code (Patch 2)**
 
 ```diff
 diff --git a/lib/rules/exploreCards.ts b/lib/rules/exploreCards.ts
@@ -257,12 +257,12 @@ index 0000000..0c2883a
 +}
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run lib/rules/exploreCards.test.ts && bun run typecheck`
 Expected: `Tests  7 passed (7)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -- lib/rules/exploreCards.ts lib/rules/exploreCards.test.ts
@@ -282,7 +282,7 @@ git commit -m "feat(explore): the live lines of the growth and vaccine cards" -m
 - Consumes: `growthCardText`, `vaccineCardText` (Task 1); `nextDose` (M5a); `useGrowth` (`lib/data/growth.ts`), `useVaccineDoses` (`lib/data/vaccines.ts`); `buildSchedule`, `parseChoices`, `toDoseRecords`, `VACCINES`.
 - Produces: `ExploreScreen({ baby }: { baby: Baby })`, giờ là client component (`"use client"`); `app/kham-pha/page.tsx` truyền `ctx.baby`. Thẻ `/tang-truong` và `/tiem-chung` hiện dòng số liệu thật, tối đa 2 dòng; chưa có dữ liệu thì hiện mô tả tĩnh.
 
-- [ ] **Step 1: Viết test đỏ (Patch 3)**
+- [x] **Step 1: Viết test đỏ (Patch 3)**
 
 ```diff
 diff --git a/components/explore/explore.test.tsx b/components/explore/explore.test.tsx
@@ -613,12 +613,12 @@ index 8c2fa18..5e6299d 100644
  });
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run components/explore/explore.test.tsx`
 Expected: FAIL, `Tests  8 failed | 7 passed (15)`. Lý do đỏ: hook chưa được gọi với id của bé, chưa có `line-clamp-2`, chưa có dòng số liệu thật.
 
-- [ ] **Step 3: Sửa code (Patch 4)**
+- [x] **Step 3: Sửa code (Patch 4)**
 
 ```diff
 diff --git a/app/kham-pha/page.tsx b/app/kham-pha/page.tsx
@@ -733,12 +733,12 @@ index 9f5ca11..e41973f 100644
          </div>
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run components/explore/explore.test.tsx && bun run typecheck`
 Expected: `Tests  15 passed (15)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -- app/kham-pha/page.tsx components/explore/ExploreScreen.tsx components/explore/explore.test.tsx
@@ -756,17 +756,17 @@ git commit -m "feat(explore): show the latest weight and the next dose on Khám 
 - Consumes: mọi thứ của M5a, M5b và Task 1–2.
 - Produces: `main` có M5c; các mốc sau cắt nhánh từ `main`.
 
-- [ ] **Step 1: Typecheck và toàn bộ test**
+- [x] **Step 1: Typecheck và toàn bộ test**
 
 Run: `bun run typecheck && bunx vitest run`
 Expected: `tsc --noEmit` không báo lỗi; `Test Files  158 passed (158)`, `Tests  1094 passed (1094)`.
 
-- [ ] **Step 2: Build production**
+- [x] **Step 2: Build production**
 
 Run: `bun run build`
 Expected: lần đầu có thể dừng với thông báo bảo mật của Next.js 16.4.3 (bình thường). Chạy lại đúng lệnh đó: `✓ Generating static pages` và thoát mã 0.
 
-- [ ] **Step 3: Kiểm trên trình duyệt (phiên chính làm, không bấm Lưu, không đụng timer)**
+- [x] **Step 3: Kiểm trên trình duyệt (phiên chính làm, không bấm Lưu, không đụng timer)**
 
 Chạy `bun run dev` (nếu nó dừng với thông báo bảo mật thì chạy lại). Dùng khung Browser của app ở cỡ 375×812. Đóng mọi sheet bằng phím Esc.
 
@@ -781,7 +781,28 @@ Mở `http://localhost:3000/kham-pha`.
 
 Dừng `bun run dev` khi xong. Ghi kết quả từng mục ngay dưới bước này. Mục nào dữ liệu thật không cho thấy được thì ghi "chưa kiểm".
 
-- [ ] **Step 4: Commit phần ghi kết quả, đưa lên `main`, rồi báo cáo**
+**Kết quả (2026-11-21, khung Browser của app, 375×812, dữ liệu thật của gia đình, chỉ xem):**
+
+Step 1 và Step 2:
+
+- Task 1: đỏ `Test Files  1 failed (1)`, không test nào chạy; xanh `Tests  7 passed (7)`. Task 2: đỏ `Tests  8 failed | 7 passed (15)`; xanh `Tests  15 passed (15)`. Đúng như plan.
+- `tsc --noEmit` không báo lỗi; `Test Files  158 passed (158)`, `Tests  1097 passed (1097)`. Nhiều hơn con số dự kiến 3 test, là 3 test của commit `0ada3b5` thêm ở M5b.
+- `bun run build`: lần đầu dừng với thông báo bảo mật, lần hai thoát mã 0, `✓ Generating static pages using 9 workers (38/38)`.
+
+Step 3:
+
+1. Đạt. Thẻ Tăng trưởng: "Cân nặng 5.500 g · 15/11".
+2. Đạt. Thẻ Tiêm chủng: "Quá hạn: Bexsero mũi 1", màu cảnh báo, đậm (`font-weight` 600). Khớp với thẻ "cần làm trước" ở `/tiem-chung` ("Quá hạn 11 ngày", "Bexsero mũi 1").
+3. Đạt. Hai dòng đều cao 36 px (đúng 2 dòng, không bị cắt chữ).
+4. Đạt. Thống kê: "Biểu đồ ngủ, bú, tã 7 và 14 ngày". Phát triển: "Các mốc theo tháng tuổi".
+5. Đạt: `true`.
+6. Đạt ở `rose` và `night`, thêm `dark` là theme gia đình đang dùng. Ở `night` dòng "Quá hạn" phân biệt với chữ thường chủ yếu nhờ nét đậm, vì cả theme đều tông hổ phách.
+
+Chưa kiểm: dạng "{dd/mm} · {tên mũi}" màu nhạt (dữ liệu thật đang có mũi quá hạn nên không hiện dạng này; có unit test); thẻ Tăng trưởng khi chưa có lần cân nào (có unit test); Safari trên iPhone.
+
+Không dừng `bun run dev`: M3 dùng tiếp cho phần kiểm trình duyệt.
+
+- [x] **Step 4: Commit phần ghi kết quả, đưa lên `main`, rồi báo cáo**
 
 ```bash
 git add docs/blueprint/plans/2026-11-19-kim-bun-ux-mobile-m5c.md
