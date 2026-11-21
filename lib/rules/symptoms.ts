@@ -59,6 +59,22 @@ export function pickedSymptomCount(
   ).length;
 }
 
+// Spec 2026-11-19 §6: n on the result bar, the picked chips (the locked fever
+// chip included) plus the switches that are on, among those shown.
+export function triageAnswerCount(input: {
+  chips: TriageSymptom[];
+  selected: ReadonlySet<string>;
+  feverLocked: boolean;
+  questions: TriageQuestion[];
+  checked: ReadonlySet<string>;
+}): number {
+  const { chips, selected, feverLocked, questions, checked } = input;
+  return (
+    pickedSymptomCount(chips, selected, feverLocked) +
+    questions.filter((question) => checked.has(question.code)).length
+  );
+}
+
 // A copy of the set with the item added, or removed if it was there.
 export function toggled<T>(set: ReadonlySet<T>, item: T): Set<T> {
   const next = new Set(set);

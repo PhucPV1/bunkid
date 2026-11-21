@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useHideChrome } from "@/components/actions/ChromeVisibility";
 import { Call115Button } from "@/components/emergency/CallList";
 import { FIELD_INPUT, FIELD_LABEL } from "@/components/quick/styles";
-import { Button } from "@/components/ui/Button";
 import { Glass } from "@/components/ui/Glass";
 import { ListGroup } from "@/components/ui/ListGroup";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -19,6 +19,7 @@ import {
   type Suggestion,
   suggestConditions,
   toggled,
+  triageAnswerCount,
   visibleSymptoms,
 } from "@/lib/rules/symptoms";
 import { ageDays, formatAgeVi } from "@/lib/rules/time";
@@ -32,6 +33,7 @@ import {
   type TriageResult as Result,
 } from "@/lib/rules/triage";
 import type { Baby } from "@/lib/supabase/rows";
+import { ResultBar } from "./ResultBar";
 import { SymptomChips } from "./SymptomChips";
 import { TriageResult } from "./TriageResult";
 
@@ -54,6 +56,9 @@ export function TriageScreen({ baby }: { baby: Baby }) {
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
   const [outcome, setOutcome] = useState<Outcome | null>(null);
+  // Spec 2026-11-19 §6: the result bar takes the tab bar's place until there
+  // is a result; leaving the page shows the tab bar again.
+  useHideChrome(outcome === null);
   // Step 1 (spec gốc §6.6): prefilled from a temperature logged in the last 6 hours, editable.
   const temperature =
     celsius ?? (logged === null ? "" : String(logged).replace(".", ","));
@@ -61,6 +66,13 @@ export function TriageScreen({ baby }: { baby: Baby }) {
   const feverLocked = parsedNow !== "bad" && hasFever(parsedNow);
   const questions = visibleQuestions(TRIAGE.questions, age);
   const chips = visibleSymptoms(TRIAGE.symptoms, age);
+  const answers = triageAnswerCount({
+    chips,
+    selected: symptoms,
+    feverLocked,
+    questions,
+    checked,
+  });
   const wet = wetDiapersInWindow(logs.data ?? [], now);
   const diapersLogged = (logs.data ?? []).some(
     (log) =>
@@ -94,6 +106,8 @@ export function TriageScreen({ baby }: { baby: Baby }) {
     const parsed = parseCelsius(temperature);
     if (parsed === "bad") {
       setError("Nhiệt độ từ 30 đến 43°C, ví dụ 38,5.");
+      // Spec 2026-11-19 §6: the error line is in the first card.
+      window.scrollTo({ top: 0 });
       return;
     }
     setError(null);
@@ -121,6 +135,9 @@ export function TriageScreen({ baby }: { baby: Baby }) {
     window.scrollTo({ top: 0 });
   }
 
+  // Bottom room for the result bar (Spec 2026-11-19 §6): AuthGate's 120 px
+  // plus pb-4 clear its 70 px (56 px buttons, 6 px padding, 1 px border), also
+  // when it sits 44 px above the bottom on a notched phone.
   return (
     <main className="mx-auto flex max-w-md flex-col gap-[18px] px-4 pt-2 pb-4">
       <PageHeader
@@ -226,10 +243,7 @@ export function TriageScreen({ baby }: { baby: Baby }) {
               </ListGroup>
             );
           })}
-          <Button size="lg" block onClick={submit}>
-            Xem kết quả
-          </Button>
-          <Call115Button label="Gọi cấp cứu 115" />
+          <ResultBar count={answers} onSubmit={submit} />
         </>
       )}
     </main>

@@ -11,6 +11,7 @@ import {
   pickedSymptomCount,
   suggestConditions,
   toggled,
+  triageAnswerCount,
   visibleSymptoms,
 } from "./symptoms";
 
@@ -197,5 +198,37 @@ describe("toggled", () => {
     expect([...toggled(start, "skin")]).toEqual(["fever", "skin"]);
     expect([...toggled(start, "fever")]).toEqual([]);
     expect([...start]).toEqual(["fever"]);
+  });
+});
+
+describe("triageAnswerCount (spec 2026-11-19 §6)", () => {
+  const chips = [s("fever", []), s("cough", [])];
+  const questions = [q("convulsion"), q("blue_lips")];
+  const count = (
+    selected: string[],
+    feverLocked: boolean,
+    checked: string[],
+  ) =>
+    triageAnswerCount({
+      chips,
+      selected: new Set(selected),
+      feverLocked,
+      questions,
+      checked: new Set(checked),
+    });
+
+  it("is 0 with nothing picked", () => {
+    expect(count([], false, [])).toBe(0);
+  });
+
+  it("adds the picked chips, the locked fever chip and the switches on", () => {
+    expect(count(["cough"], false, [])).toBe(1);
+    expect(count([], true, [])).toBe(1);
+    expect(count([], false, ["convulsion", "blue_lips"])).toBe(2);
+    expect(count(["cough"], true, ["convulsion"])).toBe(3);
+  });
+
+  it("ignores codes that are not among the chips or questions shown", () => {
+    expect(count(["rash"], false, ["infant_hot"])).toBe(0);
   });
 });

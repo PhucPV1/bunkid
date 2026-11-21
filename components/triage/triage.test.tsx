@@ -1,19 +1,68 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { TabBarView } from "@/components/nav/TabBar";
 import { findElements } from "@/components/ui/testTree";
 import { CONDITIONS } from "@/lib/content/conditions";
 import { TRIAGE } from "@/lib/content/triage";
+import { logsKey } from "@/lib/data/logs";
 import {
   visibleQuestions,
   type TriageResult as Result,
 } from "@/lib/rules/triage";
 import { visibleSymptoms } from "@/lib/rules/symptoms";
 import { ageDays } from "@/lib/rules/time";
-import type { Baby } from "@/lib/supabase/rows";
+import type { Baby, LogRow } from "@/lib/supabase/rows";
 import { SymptomChips } from "./SymptomChips";
 import { TriageResult } from "./TriageResult";
 import { TriageScreen } from "./TriageScreen";
+
+// Spec 2026-11-19 §6: what TriageScreen asks of the chrome and gives the bar.
+const state = vi.hoisted(() => ({
+  hideChrome: undefined as boolean | undefined,
+  bar: null as { count: number; onSubmit: () => void } | null,
+  // Makes the temperature field read as invalid.
+  badTemperature: false,
+  // How many times a result was worked out.
+  evaluated: 0,
+}));
+vi.mock("@/components/actions/ChromeVisibility", () => ({
+  useHideChrome: (hide: boolean) => {
+    state.hideChrome = hide;
+  },
+}));
+vi.mock("./ResultBar", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./ResultBar")>();
+  type Props = Parameters<typeof actual.ResultBar>[0];
+  return {
+    ResultBar: (props: Props) => {
+      state.bar = props;
+      return actual.ResultBar(props);
+    },
+  };
+});
+vi.mock("@/lib/rules/triage", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/rules/triage")>();
+  return {
+    ...actual,
+    parseCelsius: (raw: string) =>
+      state.badTemperature ? "bad" : actual.parseCelsius(raw),
+    evaluateTriage: (...args: Parameters<typeof actual.evaluateTriage>) => {
+      state.evaluated += 1;
+      return actual.evaluateTriage(...args);
+    },
+  };
+});
+
+beforeEach(() => {
+  state.hideChrome = undefined;
+  state.bar = null;
+  state.badTemperature = false;
+  state.evaluated = 0;
+});
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 const baby = {
   id: "b1",
@@ -22,13 +71,19 @@ const baby = {
   dob: "2026-09-10",
 } as Baby;
 
+function renderScreen(logs: LogRow[] = []) {
+  const client = new QueryClient();
+  client.setQueryData(logsKey("b1"), logs);
+  return renderToStaticMarkup(
+    <QueryClientProvider client={client}>
+      <TriageScreen baby={baby} />
+    </QueryClientProvider>,
+  );
+}
+
 describe("TriageScreen", () => {
-  it("a glass temperature card, one switch per visible question, a large Xem kết quả and the 115 pill", () => {
-    const html = renderToStaticMarkup(
-      <QueryClientProvider client={new QueryClient()}>
-        <TriageScreen baby={baby} />
-      </QueryClientProvider>,
-    );
+  it("a glass temperature card, one switch per visible question and the 115 pill", () => {
+    const html = renderScreen();
     const visible = visibleQuestions(
       TRIAGE.questions,
       ageDays(baby.dob, new Date()),
@@ -37,7 +92,6 @@ describe("TriageScreen", () => {
     expect(html.match(/role="switch"/g)).toHaveLength(visible.length);
     expect(html).not.toContain('type="checkbox"');
     expect(html).toContain('inputMode="decimal"');
-    expect(html).toMatch(/min-h-\[50px\][^>]*>Xem kết quả<\/button>/);
     expect(html).toContain("bg-danger-solid");
     expect(html).not.toContain("bg-alarm");
     const age = ageDays(baby.dob, new Date());
@@ -55,6 +109,122 @@ describe("TriageScreen", () => {
       html.indexOf("Có dấu hiệu nào dưới đây?"),
     );
     expect(html).not.toContain("Đánh dấu những gì bé đang có:");
+  });
+
+  // Spec 2026-11-19 §6.
+  it("the result bar replaces the buttons at the end of the form", () => {
+    const html = renderScreen();
+    expect(state.bar?.count).toBe(0);
+    expect(html).not.toContain("min-h-[50px]");
+    expect(html.match(/>Xem kết quả<\/button>/g)).toHaveLength(1);
+    // The 115 pill at the top and the round 115 button of the bar.
+    expect(html.match(/href="tel:115"/g)).toHaveLength(2);
+    expect(html.match(/>Gọi cấp cứu 115<\/span>/g)).toHaveLength(1);
+    expect(html.indexOf(">Gọi cấp cứu 115</span>")).toBeLessThan(
+      html.indexOf(">Có dấu hiệu nào dưới đây?</h2>"),
+    );
+    expect(html.match(/aria-label="Gọi cấp cứu 115"/g)).toHaveLength(1);
+  });
+
+  it("hides the tab bar and + while there is no result", () => {
+    renderScreen();
+    expect(state.hideChrome).toBe(true);
+  });
+
+  it("the bar counts the fever chip locked by a logged temperature", () => {
+    const at = new Date(Date.now() - 3_600_000).toISOString();
+    const fever = {
+      id: "c1",
+      baby_id: "b1",
+      type: "temperature",
+      started_at: at,
+      ended_at: at,
+      details: { celsius: 38.5, method: "nach" },
+      note: null,
+      created_by: "u1",
+      created_at: at,
+      updated_at: at,
+    } as LogRow;
+    const html = renderScreen([fever]);
+    expect(state.bar?.count).toBe(1);
+    expect(html).toContain(">Xem kết quả · đã chọn 1</button>");
+  });
+
+  it("Xem kết quả with a bad temperature scrolls to the top and works out nothing", () => {
+    const scrollTo = vi.fn();
+    vi.stubGlobal("window", { scrollTo });
+    state.badTemperature = true;
+    renderScreen();
+    state.bar?.onSubmit();
+    expect(scrollTo).toHaveBeenCalledExactlyOnceWith({ top: 0 });
+    expect(state.evaluated).toBe(0);
+  });
+
+  it("Xem kết quả with a valid temperature works out the result", () => {
+    const scrollTo = vi.fn();
+    vi.stubGlobal("window", { scrollTo });
+    renderScreen();
+    state.bar?.onSubmit();
+    expect(state.evaluated).toBe(1);
+    expect(scrollTo).toHaveBeenCalledExactlyOnceWith({ top: 0 });
+  });
+});
+
+// Spec 2026-11-19 §6.
+describe("ResultBar", () => {
+  const bar = async (count: number) => {
+    const { ResultBar } =
+      await vi.importActual<typeof import("./ResultBar")>("./ResultBar");
+    return renderToStaticMarkup(
+      <ResultBar count={count} onSubmit={() => {}} />,
+    );
+  };
+
+  it("sits where the tab bar sits, a fully round glass-strong bar", async () => {
+    const html = await bar(0);
+    const outer = html.slice(0, html.indexOf(">")).split(/[" ]/);
+    // The classes that place the tab bar, read from its own markup.
+    const nav = renderToStaticMarkup(<TabBarView current={null} />);
+    const place = (/<nav[^>]* class="([^"]*)"/.exec(nav)?.[1] ?? "")
+      .split(" ")
+      .filter((name) =>
+        /^(fixed|inset-|bottom-|z-|mx-auto|max-w-|print:)/.test(name),
+      );
+    expect(place).toEqual([
+      "fixed",
+      "inset-x-4",
+      "bottom-[max(calc(env(safe-area-inset-bottom)+10px),26px)]",
+      "z-10",
+      "mx-auto",
+      "max-w-md",
+      "print:hidden",
+    ]);
+    for (const name of [
+      ...place,
+      "glass-strong",
+      "rounded-full",
+      "p-1.5",
+      "gap-2",
+    ])
+      expect(outer).toContain(name);
+  });
+
+  it("a round 56 px 115 link, then the primary button", async () => {
+    const html = await bar(0);
+    expect(html).toMatch(
+      /<a href="tel:115" aria-label="Gọi cấp cứu 115" class="[^"]*\bsize-14\b[^"]*\brounded-full\b[^"]*\bbg-danger-solid text-on-danger\b[^"]*">/,
+    );
+    expect(html).toContain('d="M22 16.9v3');
+    expect(html.indexOf('href="tel:115"')).toBeLessThan(
+      html.indexOf("<button"),
+    );
+    expect(html).toMatch(
+      /<button type="button" class="[^"]*\bh-14\b[^"]*\bflex-1\b[^"]*\bbg-accent text-on-accent\b[^"]*">Xem kết quả<\/button>/,
+    );
+  });
+
+  it("says how many answers are picked once there are some", async () => {
+    expect(await bar(3)).toContain(">Xem kết quả · đã chọn 3</button>");
   });
 });
 
