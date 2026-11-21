@@ -15,7 +15,7 @@ Bản vẽ chỉ để xem hình. Chỗ nào bản vẽ khác spec này thì spe
 2. **Timer ngoài trang Hôm nay.** Bỏ viên timer nổi. Timer đang chạy hiện ngay trong tab "Hôm nay" của thanh tab.
 3. **Sheet ghi nhanh.** Hàng "Lúc nào?" hiện đủ 4 lựa chọn không cần cuộn. Nhiệt độ có 6 mốc chọn sẵn. Bú bình điền sẵn lượng gần nhất. Sheet "+" xếp nhóm hay dùng gần ngón cái.
 4. **Triệu chứng.** Chip triệu chứng gập theo nhóm. Nút "Xem kết quả" dính đáy màn hình.
-5. **Tiêm chủng.** Có thẻ "cần làm trước" ở đầu trang. Mũi của nhóm chưa chọn loại không còn lẫn trong "Quá hạn".
+5. **Tiêm chủng.** Có thẻ "cần làm trước" ở đầu trang. Lịch tiêm là một bảng vắc xin × mũi nhìn một lần là thấy mũi nào xong, mũi nào trễ; mỗi nhóm chưa chọn loại chỉ chiếm một hàng. (Sửa 2026-11-21, xem §7.)
 6. **Thống kê.** Biểu đồ có đơn vị, vùng chuẩn theo tuổi, cột hôm nay nhạt hơn.
 7. **Khám phá.** Thẻ Tăng trưởng và thẻ Tiêm chủng hiện số liệu thật.
 8. **Chữ.** Hết "Tummy". Nút lịch ở Nhật ký đổi thành nút chữ "Ghi bù".
@@ -39,7 +39,7 @@ Ngoài phạm vi: đổi số tab hay tên tab; ghi tã một chạm; đổi lu�
 - Mọi giờ tính theo giờ Việt Nam (UTC+7), dùng `formatVnTime`, `vnDateString` có sẵn.
 - Mọi ghi bản ghi (`logs`) đi qua outbox như hiện tại. Spec này không thêm đường ghi mới.
 - Chữ về sức khoẻ: không thêm ngưỡng hay câu khuyên mới. Chỉ dùng lại ngưỡng và câu `explain` đang có trong `lib/rules/ratings.ts`.
-- Ở bề ngang 375 px không chữ nào trong các khối mới bị xuống dòng hoặc bị cắt "…", trừ tên bé, tên thành viên, tên mũi tiêm và dòng mô tả của thẻ ở Khám phá (§9, tối đa 2 dòng).
+- Ở bề ngang 375 px không chữ nào trong các khối mới bị xuống dòng hoặc bị cắt "…", trừ tên bé, tên thành viên, tên mũi tiêm, nhãn hàng của bảng tiêm chủng (§7.2, tối đa 3 dòng) và dòng mô tả của thẻ ở Khám phá (§9, tối đa 2 dòng).
 - Dev đang nối vào Supabase thật của gia đình. Kiểm tay không được bấm Lưu, không bắt đầu hay dừng đồng hồ, không bật tắt công tắc ở Cài đặt.
 - Push lên `main` cần người dùng đồng ý từng lần.
 - Test hiện có phải xanh: 935 test vitest (148 file), pgTAP 001–013, `bun run typecheck`, `bun run build`.
@@ -183,14 +183,56 @@ Cách lưu của sheet Thay tã, Thuốc, Ăn dặm, Uống nước, Tắm, Ghi 
 
 ## 7. Tiêm chủng
 
-- Hàm thuần mới `nextDose(items)` trong `lib/rules/vaccines.ts`: trả về phần tử đầu tiên của `items` (đã sắp theo `due`) có `unchosen === false`, `pastMaxAge === false` và `state` là `overdue`, `upcoming` hoặc `later`; không có thì `null`. Mũi đã quá tuổi khuyến cáo (`pastMaxAge`) bị bỏ qua, giống `lib/rules/pushSelection.ts`; nó vẫn nằm trong danh sách với dòng "hỏi bác sĩ" đang có. Không đổi `vaccineSummary` trong `lib/rules/report.ts`.
-- **Thẻ "cần làm trước"**: ngay dưới `PageHeader`, chỉ khi không ở bước thiết lập (`needsSetup === false`) và `nextDose` khác `null`. Thẻ là `button` `glass` bo 28 px, padding 16 px, chạm mở `DoseSheet` của mũi đó. Nội dung:
+**Sửa ngày 2026-11-21 theo yêu cầu người dùng.** Người dùng thấy danh sách theo trạng thái "hơi rối, khó quan sát theo dõi" và gửi ảnh một sổ tiêm dạng bảng. Danh sách vì thế được thay bằng **bảng vắc xin × mũi**: hàng là vắc xin, cột là "Mũi 1", "Mũi 2", …, mỗi ô tô màu theo trạng thái. Chỉ mượn bố cục bảng; màu, chữ và icon dùng token của Kim Bun. Bản trước của mục này (mục "Chưa chọn loại" gập sẵn) bị bỏ.
+
+### 7.1 Thẻ "cần làm trước"
+
+- Hàm thuần mới `nextDose(items)` trong `lib/rules/vaccines.ts`: trả về phần tử đầu tiên của `items` (đã sắp theo `due`) có `unchosen === false`, `pastMaxAge === false` và `state` là `overdue`, `upcoming` hoặc `later`; không có thì `null`. Mũi đã quá tuổi khuyến cáo (`pastMaxAge`) bị bỏ qua, giống `lib/rules/pushSelection.ts`. Không đổi `vaccineSummary` trong `lib/rules/report.ts`.
+- Thẻ nằm ngay dưới `PageHeader`, chỉ khi không ở bước thiết lập (`needsSetup === false`) và `nextDose` khác `null`. Thẻ là `button` `glass` bo 28 px, padding 16 px, chạm mở `DoseSheet` của mũi đó. Nội dung:
   - Nhãn 13/18 đậm 600 viết hoa: "Quá hạn {n} ngày" (`text-warn`, thẻ có `border-warn!`) khi `overdue`; "Sắp tới · còn {n} ngày" khi `upcoming` (hạn là hôm nay thì "Sắp tới · hôm nay"); "Mũi tiếp theo" khi `later`.
   - `n` là số ngày lịch giữa `due` và hôm nay theo giờ Việt Nam (`vnDateString`).
   - Tên mũi 20/26 đậm 700.
   - Dòng 13/18 `text-muted`: "Hẹn {formatDueDate(due)} · {Tiêm chủng mở rộng | Dịch vụ}".
-- **Danh sách**: các mục "Quá hạn", "Sắp tới (≤ 30 ngày)", "Sau này" chỉ đếm và liệt kê mũi có `unchosen === false`. Mọi mũi còn mở (`overdue`, `upcoming`, `later`) có `unchosen === true` gom vào một mục mới "Chưa chọn loại ({n})", đặt sau "Sắp tới" và trước "Đã tiêm". Mục này đóng lúc mở trang: chỉ có một hàng `button` cao 52 px "Xem {n} mũi của nhóm chưa chọn loại" kèm chevron; chạm thì hiện danh sách `DoseLine` như cũ, chạm lần nữa thì đóng. Hàng có `aria-expanded`, icon `chevronDown` khi đóng và `chevronUp` khi mở.
-- Đoạn chữ "Còn {n} nhóm chưa chọn loại vaccine…" và nút "Chọn loại vaccine" không đổi.
+
+### 7.2 Bảng vắc xin × mũi
+
+Hàm thuần mới `vaccineGrid(items, groups)` trong file mới `lib/rules/vaccineGrid.ts` trả về `{ columns, rows }`:
+
+- **Hàng vắc xin:** mỗi mã vắc xin (`dose.code`) có `unchosen === false` là một hàng, theo thứ tự mã đó xuất hiện lần đầu trong `items`. `cells` dài đúng `columns`; phần tử thứ `doseNo − 1` là `ScheduleItem` của mũi đó, chỗ không có mũi là `null`.
+- **Nhãn hàng vắc xin:** tên của mũi có `doseNo` nhỏ nhất, bỏ đuôi " mũi N" hoặc " lần N" (ví dụ "6 trong 1 mũi 1" thành "6 trong 1"). Nếu các mũi của cùng mã cho ra nhãn khác nhau sau khi bỏ đuôi (ví dụ "Sởi (9 tháng)" và mũi 18 tháng) thì dùng tên `series` của mã đó trong `groups`.
+- **Hàng chưa chọn loại:** mỗi nhóm (`dose.group`) có mũi `unchosen === true` còn mở (`overdue`, `upcoming`, `later`) là **một** hàng duy nhất, đặt tại vị trí mũi đầu tiên của nhóm trong `items`; nhãn là tên nhóm trong `groups`. Các loại thay thế của nhóm đó không được liệt kê.
+- **Số cột:** `columns` là `doseNo` lớn nhất trong các hàng vắc xin, ít nhất là 1.
+
+Hàm thuần `doseCell(item)` (cùng file) trả về `{ label, date, tone }`, xét theo thứ tự:
+
+| Thứ tự | Trường hợp                       | `label`     | `date`                              | `tone`    | Lớp của ô                         |
+| ------ | -------------------------------- | ----------- | ----------------------------------- | --------- | --------------------------------- |
+| 1      | `state === "done"`               | "Đã tiêm"   | `given_on` nếu có, không thì `null` | `done`    | `bg-good-soft text-good-ink`      |
+| 2      | `state === "skipped"`            | "Bỏ qua"    | `null`                              | `skipped` | `bg-muted/10 text-muted`          |
+| 3      | `pastMaxAge === true`            | "Quá tuổi"  | `due`                               | `late`    | `bg-danger-soft text-danger-ink`  |
+| 4      | `state === "overdue"`            | "Trễ hẹn"   | `due`                               | `late`    | `bg-danger-soft text-danger-ink`  |
+| 5      | `state === "upcoming"`           | "Sắp tới"   | `due`                               | `soon`    | `bg-warn-soft text-warn-ink`      |
+| 6      | `state === "later"`              | "Chưa tiêm" | `due`                               | `open`    | `bg-muted/10 text-ink`            |
+
+Ngày viết dạng `dd/mm/yyyy` bằng hàm mới `formatDayFull(day)` trong `lib/rules/days.ts` ("2026-10-29" thành "29/10/2026").
+
+Component mới `components/vaccines/DoseGrid.tsx` (không có hook) vẽ bảng bằng `<table>` thật, thay cho `DoseSections`:
+
+- Vỏ ngoài là thẻ `glass` bo 22 px, `overflow-hidden`; bên trong là vùng `overflow-x-auto` để bảng cuộn ngang khi có hơn 3 cột mũi.
+- Hàng tiêu đề: "Vắc xin", rồi "Mũi 1" … "Mũi {columns}". Chữ 13/18 đậm 600 `text-muted`.
+- Cột nhãn rộng 108 px, dính mép trái (`sticky left-0`) với nền `bg-glass-solid`; nhãn 13/18 đậm 500 `text-ink`, tối đa 3 dòng (`line-clamp-3`).
+- Mỗi cột mũi rộng 78 px. Ô có mũi là một `button` 70 px × tối thiểu 56 px, bo 14 px, hai dòng canh giữa: `label` 13 px đậm 600 (ô `done` có thêm icon `check` cỡ 12), dưới là `date` 12 px `tabular-nums` (không có `date` thì chỉ một dòng). `aria-label` là "{tên mũi}: {label} {date}". Chạm mở `DoseSheet` của mũi đó. Mũi đang chờ đồng bộ có `PendingMark` như danh sách cũ.
+- Ô không có mũi để trống.
+- Hàng chưa chọn loại: sau nhãn là một ô trải hết các cột mũi (`colSpan`). Chủ gia đình thấy một `button` cao tối thiểu 56 px, bo 14 px, viền nét đứt `border-muted`, chữ "Chưa chọn loại" 13 px đậm 600 kèm icon `chevronRight`; chạm thì mở phần "Loại vaccine" (như nút "Chọn loại vaccine") và cuộn về đầu trang. Người không phải chủ gia đình thấy dòng chữ "Chưa chọn loại" `text-muted`, không bấm được.
+- Khi `columns > 3`, mép phải của thẻ có dải mờ 24 px (`from-glass-solid`) báo còn cột.
+- Dưới bảng là hàng chú giải 12 px `text-muted`, mỗi mục một ô vuông 10 px bo 3 px cùng lớp nền với ô tương ứng: "Đã tiêm", "Trễ hẹn", "Sắp tới", "Chưa tiêm".
+
+### 7.3 Phần còn lại của trang
+
+- Thứ tự trong `VaccineScreen`: `PageHeader`, thẻ "cần làm trước", hàng "Nguồn lịch tiêm", phần thiết lập hoặc phần chọn loại (như cũ), rồi bảng và chú giải.
+- Đoạn chữ "Còn {n} nhóm chưa chọn loại vaccine…" đổi câu sau thành: "Mỗi nhóm này hiện một hàng "Chưa chọn loại" trong bảng và không có nhắc lịch." Nút "Chọn loại vaccine" không đổi.
+- `DoseSheet`: ngay đầu thân sheet hiện những gì danh sách cũ từng hiện cho mũi đó: dòng "{Hẹn … | Đã tiêm … | Đã bỏ qua} · {Tiêm chủng mở rộng | Dịch vụ}", câu "Đã quá tuổi khuyến cáo của loại vaccine này, hỏi bác sĩ." khi `pastMaxAge`, và `dose.note` khi mũi chưa tiêm. `DoseLine` được sửa để chỉ vẽ ba dòng này (không còn tên mũi và nhãn "Chưa chọn loại").
+- Xoá `components/vaccines/DoseSections.tsx` và `STATE_SECTIONS`.
 
 ## 8. Thống kê
 
@@ -230,14 +272,15 @@ Cách lưu của sheet Thay tã, Thuốc, Ăn dặm, Uống nước, Tắm, Ghi 
 - `formatTabClock`: 0 giây, 59:59, đúng 1 giờ, 1 giờ 5 phút.
 - `totalsLine`: 4 tổ hợp 0 và khác 0.
 - `nextDose`: bỏ qua `unchosen`, `pastMaxAge`, `done`, `skipped`; danh sách rỗng.
+- `vaccineGrid`: thứ tự hàng, nhãn hàng (bỏ đuôi, và trường hợp dùng tên `series`), một hàng cho mỗi nhóm chưa chọn loại, số cột, ô `null`. `doseCell`: đủ 6 hàng của bảng §7.2. `formatDayFull`.
 - `dailyNorm`: biên tuổi 5, 6, 30, 31, 90, 91, 180, 181 ngày.
 - `growthCardText`, `vaccineCardText`: có dữ liệu, không dữ liệu, quá hạn.
-- Component: `HeroCardView` 5 trạng thái; `StatusTiles`; `QuickLogGrid` 5 nút và nút "Khác" gọi `openActionSheet(["other"])`; `TabBarView` có và không có ô timer; `TimeChips` 4 ô; `TemperatureFields` 6 mốc; `SymptomChips` đóng mở và đếm; `TriageScreen` có thanh kết quả, đếm đúng `n`; `DoseSections` có mục "Chưa chọn loại"; `ActionSheet` với `groups`.
+- Component: `HeroCardView` 5 trạng thái; `StatusTiles`; `QuickLogGrid` 5 nút và nút "Khác" gọi `openActionSheet(["other"])`; `TabBarView` có và không có ô timer; `TimeChips` 4 ô; `TemperatureFields` 6 mốc; `SymptomChips` đóng mở và đếm; `TriageScreen` có thanh kết quả, đếm đúng `n`; `DoseGrid` (tiêu đề cột, lớp của từng loại ô, ô trống, hàng chưa chọn loại có và không có `onChoose`, chú giải); `DoseSheet` có dòng hẹn, câu quá tuổi và ghi chú; `ActionSheet` với `groups`.
 - Test của `TimerPill`, `TimerRing`, `ringProgress`, trạng thái `next` bị xoá cùng code.
 
 ### 11.2 Kiểm trong trình duyệt
 
-Ở 375×812, cả theme `rose` và `night`, không bấm Lưu, không đụng timer. Chrome không thu nhỏ dưới 455 px, nên phần này dùng khung Browser trong app và phải hỏi người dùng trước mỗi phiên. Kiểm: tiêu chí §3.6; không chữ nào bị cắt hay xuống dòng ở §3.3, §4, §5.1, §5.4; ô timer trong tab ở Nhật ký; thanh kết quả ở Triệu chứng và thanh tab hiện lại sau khi có kết quả; thẻ "cần làm trước" ở Tiêm chủng; vùng chuẩn ở Thống kê.
+Ở 375×812, cả theme `rose` và `night`, không bấm Lưu, không đụng timer. Chrome không thu nhỏ dưới 455 px, nên phần này dùng khung Browser trong app và phải hỏi người dùng trước mỗi phiên. Kiểm: tiêu chí §3.6; không chữ nào bị cắt hay xuống dòng ở §3.3, §4, §5.1, §5.4; ô timer trong tab ở Nhật ký; thanh kết quả ở Triệu chứng và thanh tab hiện lại sau khi có kết quả; thẻ "cần làm trước" và bảng vắc xin × mũi ở Tiêm chủng (cuộn ngang được, cột nhãn đứng yên); vùng chuẩn ở Thống kê.
 
 Không tạo dữ liệu để kiểm. Tiêu chí §3.6 đo khi dữ liệu thật đang ở trạng thái `running` (không phải bú), không có banner và đã uống Vitamin D. Nếu dữ liệu đang ở `awake` với cùng điều kiện thì ngưỡng là `bottom ≤ 718 px`, vì thẻ `awake` thấp hơn 6 px. Ô timer trong tab chỉ kiểm được khi đang có timer chạy sẵn. Dữ liệu không ở các trạng thái đó thì ghi "chưa kiểm" trong plan và để bước 36 (§11.3) xác nhận.
 
