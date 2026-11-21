@@ -230,9 +230,10 @@ describe("HomeScreen with logs", () => {
     expect(html).not.toMatch(/<p[^>]*>(Bình|Tã bẩn) /);
   });
 
-  it("Khác opens the + sheet and passes nothing on", () => {
+  // Spec 2026-11-19 §5.4.
+  it("Khác opens the + sheet with only the Khác group, whatever the click passes", () => {
     loaded(DAY);
     state.onMore?.({ type: "click" });
-    expect(openActionSheet.mock.calls).toEqual([[]]);
+    expect(openActionSheet.mock.calls).toEqual([[["other"]]]);
   });
 });

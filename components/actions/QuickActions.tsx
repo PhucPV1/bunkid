@@ -4,6 +4,7 @@ import {
   createContext,
   useContext,
   useEffect,
+  useReducer,
   useRef,
   useState,
   type ReactNode,
@@ -21,7 +22,12 @@ import {
   useTimerPress,
 } from "@/lib/data/logs";
 import type { LogType } from "@/lib/rules/logDetails";
-import { shouldAskPumpAmounts } from "@/lib/rules/quickActions";
+import {
+  ACTION_SHEET_CLOSED,
+  actionSheetReducer,
+  shouldAskPumpAmounts,
+  type QuickActionGroup,
+} from "@/lib/rules/quickActions";
 import type { InstantType, QuickValues } from "@/lib/rules/quickEntry";
 import {
   nextBreastSide,
@@ -58,7 +64,10 @@ export type QuickActionsValue = {
   openInstant: (type: InstantType, initial?: QuickValues) => void;
   // The "+" action sheet (spec §6.3), open from any page inside the provider.
   actionSheetOpen: boolean;
-  openActionSheet: () => void;
+  // Spec 2026-11-19 §5.4: the groups it shows; all three when left out. From
+  // onClick call `() => openActionSheet()`, or the event is taken for groups.
+  actionSheetGroups?: QuickActionGroup[];
+  openActionSheet: (groups?: QuickActionGroup[]) => void;
   toggleActionSheet: () => void;
   closeActionSheet: () => void;
 };
@@ -86,7 +95,10 @@ export function QuickActionsProvider({
     type: InstantType;
     initial?: QuickValues;
   } | null>(null);
-  const [actionSheetOpen, setActionSheetOpen] = useState(false);
+  const [actionSheet, dispatchActionSheet] = useReducer(
+    actionSheetReducer,
+    ACTION_SHEET_CLOSED,
+  );
   // Id of a pumping log that was just stopped: ask for ml (spec gốc §6.13).
   const [pumpStopped, setPumpStopped] = useState<string | null>(null);
   // Spec §7.4: the Undo toast for that stop waits until the ml sheet closes.
@@ -155,10 +167,11 @@ export function QuickActionsProvider({
     stopTimer: (log) =>
       stop.mutate(log.id, { onSuccess: () => afterStop(log) }),
     openInstant: (type, initial) => setSheet({ type, initial }),
-    actionSheetOpen,
-    openActionSheet: () => setActionSheetOpen(true),
-    toggleActionSheet: () => setActionSheetOpen((open) => !open),
-    closeActionSheet: () => setActionSheetOpen(false),
+    actionSheetOpen: actionSheet.open,
+    actionSheetGroups: actionSheet.groups,
+    openActionSheet: (groups) => dispatchActionSheet({ type: "open", groups }),
+    toggleActionSheet: () => dispatchActionSheet({ type: "toggle" }),
+    closeActionSheet: () => dispatchActionSheet({ type: "close" }),
   };
 
   return (

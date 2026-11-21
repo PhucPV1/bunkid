@@ -5,6 +5,7 @@ import {
   CATEGORY_CHIP,
   CATEGORY_RUNNING,
   CATEGORY_SOLID,
+  CATEGORY_TEXT,
   categoryOf,
 } from "./categories";
 import { ICON_PATHS } from "./icons";
@@ -69,6 +70,12 @@ describe("category class maps", () => {
     expect(Object.keys(CATEGORY_SOLID)).toHaveLength(8);
     for (const classes of Object.values(CATEGORY_SOLID))
       expect(classes).not.toContain("ring");
+  });
+
+  // The idle circle of a round timer button: only the icon takes the colour.
+  it("CATEGORY_TEXT colours every category's icon", () => {
+    expect(CATEGORY_TEXT["cat-pump"]).toBe("text-cat-pump");
+    expect(Object.keys(CATEGORY_TEXT)).toHaveLength(8);
   });
 });
 

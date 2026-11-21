@@ -5,9 +5,20 @@ import { ToastProvider } from "@/components/ui/Toast";
 import { logsKey } from "@/lib/data/logs";
 import type { Baby, FamilyMember, LogRow } from "@/lib/supabase/rows";
 import { ActionChrome } from "./ActionChrome";
-import { QuickActionsProvider } from "./QuickActions";
+import { QuickActionsProvider, type QuickActionsValue } from "./QuickActions";
 
 const nav = vi.hoisted(() => ({ pathname: "/nhat-ky" }));
+// Static rendering cannot press a button, so a test sets the sheet's state.
+const sheet = vi.hoisted(() => ({
+  state: null as Partial<QuickActionsValue> | null,
+}));
+vi.mock("./QuickActions", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./QuickActions")>();
+  return {
+    ...actual,
+    useQuickActions: () => ({ ...actual.useQuickActions(), ...sheet.state }),
+  };
+});
 // TabBar reads the current path; outside the Next router there is none.
 vi.mock("next/navigation", () => ({ usePathname: () => nav.pathname }));
 vi.mock("@/lib/hooks/useNow", () => ({
@@ -54,8 +65,12 @@ function render(logs: LogRow[] = []) {
 }
 const homeTab = (html: string) => html.split("<a ")[1];
 
+const groupTitles = (html: string) =>
+  [...html.matchAll(/<h3[^>]*>([^<]+)<\/h3>/g)].map((m) => m[1]);
+
 beforeEach(() => {
   nav.pathname = "/nhat-ky";
+  sheet.state = null;
 });
 
 describe("ActionChrome", () => {
@@ -105,5 +120,16 @@ describe("ActionChrome with a running timer", () => {
     expect(home).toContain('aria-current="page"');
     expect(home).toContain("bg-cat-sleep/15");
     expect(home).not.toContain("bg-accent-tint");
+  });
+});
+
+// Spec 2026-11-19 §5.4.
+describe("ActionChrome action sheet groups", () => {
+  it("gives the sheet the groups it was opened with, all three by default", () => {
+    expect(groupTitles(render())).toEqual(["Khác", "Ghi nhanh", "Bấm giờ"]);
+    sheet.state = { actionSheetOpen: true, actionSheetGroups: ["other"] };
+    const html = render();
+    expect(html).toContain('aria-expanded="true"');
+    expect(groupTitles(html)).toEqual(["Khác"]);
   });
 });

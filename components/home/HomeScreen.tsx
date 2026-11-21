@@ -152,7 +152,7 @@ export function HomeScreen({ baby, userId }: { baby: Baby; userId: string }) {
 
           <QuickLogGrid
             onInstant={(type) => actions.openInstant(type)}
-            onMore={() => actions.openActionSheet()}
+            onMore={() => actions.openActionSheet(["other"])}
           />
 
           {actions.error && (

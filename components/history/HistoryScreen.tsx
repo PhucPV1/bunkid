@@ -113,7 +113,8 @@ export function HistoryScreen({
             text="Chưa có bản ghi nào."
             action={{
               label: "Ghi bản đầu tiên",
-              onClick: actions.openActionSheet,
+              // Not passed as is: the click event would be taken for groups.
+              onClick: () => actions.openActionSheet(),
             }}
           />
         ) : (

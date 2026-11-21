@@ -12,7 +12,7 @@ import type { BreastSide, RunningLog, TimerButton } from "@/lib/rules/timer";
 import {
   CATEGORIES,
   CATEGORY_RUNNING,
-  type CategoryToken,
+  CATEGORY_TEXT,
 } from "@/lib/ui/categories";
 import { cx } from "@/lib/ui/cx";
 import { GROUP_LABEL } from "./sectionTitle";
@@ -23,17 +23,6 @@ type TimerAction = Extract<QuickAction, { kind: "timer" }>;
 const TIMER_ACTIONS = QUICK_ACTIONS.filter(
   (action): action is TimerAction => action.kind === "timer",
 );
-
-const IDLE: Record<CategoryToken, string> = {
-  "cat-feed": "text-cat-feed",
-  "cat-bottle": "text-cat-bottle",
-  "cat-sleep": "text-cat-sleep",
-  "cat-diaper": "text-cat-diaper",
-  "cat-pump": "text-cat-pump",
-  "cat-tummy": "text-cat-tummy",
-  "cat-med": "text-cat-med",
-  "cat-temp": "text-cat-temp",
-};
 
 export function TimerButtons({
   running,
@@ -72,7 +61,7 @@ export function TimerButtons({
                   "relative flex size-[58px] items-center justify-center rounded-full",
                   on
                     ? `${CATEGORY_RUNNING[token]} text-bg`
-                    : `glass ${IDLE[token]}`,
+                    : `glass ${CATEGORY_TEXT[token]}`,
                 )}
               >
                 <Icon

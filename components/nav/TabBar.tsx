@@ -13,11 +13,7 @@ import {
 } from "@/lib/nav";
 import { formatClock, formatTabClock, timerLabel } from "@/lib/rules/hero";
 import type { LogRow } from "@/lib/supabase/rows";
-import {
-  CATEGORY_CHIP,
-  CATEGORY_SOLID,
-  categoryOf,
-} from "@/lib/ui/categories";
+import { CATEGORY_CHIP, CATEGORY_SOLID, categoryOf } from "@/lib/ui/categories";
 import { cx } from "@/lib/ui/cx";
 
 // The running timer the Hôm nay tab shows, and how many others are running.

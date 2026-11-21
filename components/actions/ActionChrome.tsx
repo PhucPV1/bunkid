@@ -22,6 +22,7 @@ export function ActionChrome({ babyName }: { babyName: string }) {
         open={actions.actionSheetOpen}
         onClose={actions.closeActionSheet}
         babyName={babyName}
+        groups={actions.actionSheetGroups}
       />
     </>
   );

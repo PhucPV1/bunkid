@@ -71,3 +71,15 @@ export const CATEGORY_SOLID: Record<CategoryToken, string> = {
   "cat-med": "bg-cat-med text-bg",
   "cat-temp": "bg-cat-temp text-bg",
 };
+
+// Only the icon takes the category colour, e.g. on a glass circle.
+export const CATEGORY_TEXT: Record<CategoryToken, string> = {
+  "cat-feed": "text-cat-feed",
+  "cat-bottle": "text-cat-bottle",
+  "cat-sleep": "text-cat-sleep",
+  "cat-diaper": "text-cat-diaper",
+  "cat-pump": "text-cat-pump",
+  "cat-tummy": "text-cat-tummy",
+  "cat-med": "text-cat-med",
+  "cat-temp": "text-cat-temp",
+};

@@ -31,6 +31,35 @@ export const QUICK_ACTION_GROUPS: { group: QuickActionGroup; title: string }[] =
     { group: "timer", title: "Bấm giờ" },
   ];
 
+// Spec 2026-11-19 §5.4: the groups the "+" sheet draws. A caller may ask for
+// only some of them; the order stays that of QUICK_ACTION_GROUPS.
+export function sheetGroups(
+  only?: QuickActionGroup[],
+): { group: QuickActionGroup; title: string }[] {
+  return only
+    ? QUICK_ACTION_GROUPS.filter(({ group }) => only.includes(group))
+    : QUICK_ACTION_GROUPS;
+}
+
+export type ActionSheetState = { open: boolean; groups?: QuickActionGroup[] };
+export type ActionSheetEvent =
+  | { type: "open"; groups?: QuickActionGroup[] }
+  | { type: "toggle" }
+  | { type: "close" };
+
+export const ACTION_SHEET_CLOSED: ActionSheetState = { open: false };
+
+// "open" shows the groups asked for; "toggle" (the "+" button) opens all of
+// them. Closing keeps the groups, so the sheet does not change on its way out.
+export function actionSheetReducer(
+  state: ActionSheetState,
+  event: ActionSheetEvent,
+): ActionSheetState {
+  if (event.type === "open") return { open: true, groups: event.groups };
+  if (!state.open) return event.type === "toggle" ? { open: true } : state;
+  return { ...state, open: false };
+}
+
 // Group by group, timers first: the home page's timer row (TimerButtons) takes
 // the kind "timer" entries in this order. QUICK_ACTION_GROUPS orders the sheet.
 export const QUICK_ACTIONS: QuickAction[] = [

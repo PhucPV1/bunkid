@@ -1,12 +1,16 @@
 import { describe, expect, it } from "vitest";
 import {
+  ACTION_SHEET_CLOSED,
   actionLabel,
+  actionSheetReducer,
   isActionRunning,
   isSuggestedSide,
   NEXT_SIDE_LABEL,
   QUICK_ACTION_GROUPS,
   QUICK_ACTIONS,
+  sheetGroups,
   shouldAskPumpAmounts,
+  type QuickActionGroup,
 } from "./quickActions";
 import type { RunningLog } from "./timer";
 
@@ -89,6 +93,57 @@ describe("QUICK_ACTIONS", () => {
       category: "temperature",
       instant: "temperature",
     });
+  });
+});
+
+// Spec 2026-11-19 §5.4: the "+" sheet can be opened with only some groups.
+describe("sheetGroups", () => {
+  it("draws all three groups without a filter", () => {
+    expect(sheetGroups()).toEqual(QUICK_ACTION_GROUPS);
+    expect(sheetGroups(undefined)).toEqual(QUICK_ACTION_GROUPS);
+  });
+
+  it("keeps only the groups asked for, in the sheet's own order", () => {
+    expect(sheetGroups(["other"])).toEqual([{ group: "other", title: "Khác" }]);
+    expect(sheetGroups(["timer", "other"]).map((g) => g.group)).toEqual([
+      "other",
+      "timer",
+    ]);
+  });
+});
+
+describe("actionSheetReducer", () => {
+  const opened = (groups?: QuickActionGroup[]) =>
+    actionSheetReducer(ACTION_SHEET_CLOSED, { type: "open", groups });
+
+  it("starts closed", () => {
+    expect(ACTION_SHEET_CLOSED).toEqual({ open: false });
+  });
+
+  it("opens with the groups asked for, or with all of them", () => {
+    expect(opened(["other"])).toEqual({ open: true, groups: ["other"] });
+    expect(opened().open).toBe(true);
+    expect(sheetGroups(opened().groups)).toHaveLength(3);
+  });
+
+  it("+ opens every group, also right after a filtered sheet was closed", () => {
+    const closed = actionSheetReducer(opened(["other"]), { type: "close" });
+    const again = actionSheetReducer(closed, { type: "toggle" });
+    expect(again.open).toBe(true);
+    expect(again.groups).toBeUndefined();
+  });
+
+  it("closing keeps the groups, so the sheet does not change on its way out", () => {
+    const shut = { open: false, groups: ["other"] };
+    expect(actionSheetReducer(opened(["other"]), { type: "close" })).toEqual(
+      shut,
+    );
+    expect(actionSheetReducer(opened(["other"]), { type: "toggle" })).toEqual(
+      shut,
+    );
+    expect(actionSheetReducer(ACTION_SHEET_CLOSED, { type: "close" })).toBe(
+      ACTION_SHEET_CLOSED,
+    );
   });
 });
 
