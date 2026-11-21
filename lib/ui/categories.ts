@@ -59,3 +59,15 @@ export const CATEGORY_RUNNING: Record<CategoryToken, string> = {
   "cat-med": "bg-cat-med ring-4 ring-cat-med/30",
   "cat-temp": "bg-cat-temp ring-4 ring-cat-temp/30",
 };
+
+// The same solid circle without the halo, under an icon in the page colour.
+export const CATEGORY_SOLID: Record<CategoryToken, string> = {
+  "cat-feed": "bg-cat-feed text-bg",
+  "cat-bottle": "bg-cat-bottle text-bg",
+  "cat-sleep": "bg-cat-sleep text-bg",
+  "cat-diaper": "bg-cat-diaper text-bg",
+  "cat-pump": "bg-cat-pump text-bg",
+  "cat-tummy": "bg-cat-tummy text-bg",
+  "cat-med": "bg-cat-med text-bg",
+  "cat-temp": "bg-cat-temp text-bg",
+};

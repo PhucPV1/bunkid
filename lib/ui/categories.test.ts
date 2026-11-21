@@ -4,6 +4,7 @@ import {
   CATEGORIES,
   CATEGORY_CHIP,
   CATEGORY_RUNNING,
+  CATEGORY_SOLID,
   categoryOf,
 } from "./categories";
 import { ICON_PATHS } from "./icons";
@@ -60,6 +61,14 @@ describe("category class maps", () => {
       "bg-cat-sleep ring-4 ring-cat-sleep/30",
     );
     expect(Object.keys(CATEGORY_RUNNING)).toHaveLength(8);
+  });
+
+  // Spec 2026-11-19 §4: the 36 px circle of the tab bar's timer tile.
+  it("CATEGORY_SOLID fills every category with its colour, without a halo", () => {
+    expect(CATEGORY_SOLID["cat-sleep"]).toBe("bg-cat-sleep text-bg");
+    expect(Object.keys(CATEGORY_SOLID)).toHaveLength(8);
+    for (const classes of Object.values(CATEGORY_SOLID))
+      expect(classes).not.toContain("ring");
   });
 });
 

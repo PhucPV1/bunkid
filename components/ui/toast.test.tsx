@@ -10,10 +10,11 @@ describe("ToastView", () => {
     );
     expect(html).toContain('role="status"');
     expect(html).toContain('aria-live="polite"');
-    // Spec 2026-11-17 §5.2: rises by the pill's height when the timer pill shows.
+    // Spec 2026-11-19 §4: no timer pill to rise above any more.
     expect(html).toContain(
-      "bottom-[calc(max(env(safe-area-inset-bottom)+10px,26px)+74px+var(--pill-offset))]",
+      "bottom-[calc(max(env(safe-area-inset-bottom)+10px,26px)+74px)]",
     );
+    expect(html).not.toContain("pill-offset");
     expect(html).toContain("print:hidden");
     expect(html).not.toContain("glass-strong");
   });

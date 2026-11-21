@@ -46,7 +46,8 @@ import { tapFeedback } from "@/lib/ui/haptics";
 
 export type QuickActionsValue = {
   running: RunningLog[];
-  // The running timers as full rows, for the timer pill (spec 2026-11-17 §5.2).
+  // The running timers as full rows, for the tab bar's timer tile
+  // (spec 2026-11-19 §4).
   runningRows: LogRow[];
   // Spec 2026-11-17 §5.3: the breast side to label "Nên bú", or null.
   suggestSide: BreastSide | null;

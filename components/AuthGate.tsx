@@ -93,14 +93,14 @@ export function AuthGate({
   if (!session || !baby || !member)
     return (
       <>
-        <div className="pb-[calc(120px+var(--pill-offset))]">{content}</div>
+        <div className="pb-[120px]">{content}</div>
         <TabBar />
       </>
     );
   return (
     <QuickActionsProvider baby={baby} member={member} userId={session.user.id}>
       <SyncBarProvider userId={session.user.id}>
-        <div className="pb-[calc(120px+var(--pill-offset))]">{content}</div>
+        <div className="pb-[120px]">{content}</div>
       </SyncBarProvider>
       <ActionChrome babyName={baby.name} />
     </QuickActionsProvider>

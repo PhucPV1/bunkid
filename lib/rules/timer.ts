@@ -104,8 +104,8 @@ export function nextBreastSide(logs: TimedLog[], now: Date): NextSide | null {
   };
 }
 
-// Spec §5.2: the pill shows the running timer that started last, plus how
-// many others are running.
+// Spec 2026-11-19 §4: the tab bar's timer tile shows the running timer that
+// started last, plus how many others are running.
 export function pillTimer<T extends TimedLog>(
   logs: T[],
 ): { log: T; more: number } | null {

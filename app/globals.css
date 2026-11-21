@@ -308,16 +308,6 @@
   }
 }
 
-/* Spec 2026-11-17 §5.2: room for the timer pill (44 px + 8 px) above the tab bar.
-   TimerPill sets data-timer-pill on <html> while it shows. */
-:root {
-  --pill-offset: 0px;
-}
-
-:root[data-timer-pill="on"] {
-  --pill-offset: 52px;
-}
-
 @utility glass {
   background: var(--color-glass);
   border: 1px solid var(--color-edge);
