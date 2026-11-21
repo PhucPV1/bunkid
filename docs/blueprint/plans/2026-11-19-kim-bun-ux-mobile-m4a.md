@@ -116,7 +116,7 @@ Plan này đứng sau M3b (đã ở trên `main` @ `4a443df`) và ngay trước 
 - Consumes: `ActionChrome` (sau M3: dựng `TabBar` có prop `timer`, và `ActionSheet`); `AuthGate`; mẫu context của `components/sync/SyncSlot.tsx`.
 - Produces: `components/actions/ChromeVisibility.tsx`: `ChromeVisibilityProvider`, `useChromeHidden(): boolean`, `useHideChrome(hide: boolean): void` (chạy trong `useLayoutEffect`), `holdChromeHidden(hide, setHidden): (() => void) | undefined` (phần thuần của effect, để test không cần DOM). `ActionChrome` không dựng `TabBar` khi cờ bật; `ActionSheet` vẫn được dựng. `AuthGate` bọc nội dung và `ActionChrome` trong provider.
 
-- [ ] **Step 0: Tạo nhánh**
+- [x] **Step 0: Tạo nhánh**
 
 ```bash
 git checkout -b feat/kim-bun-ux-mobile-m4a main
@@ -124,7 +124,7 @@ git add docs/blueprint/plans/2026-11-19-kim-bun-ux-mobile-m4a.md docs/blueprint/
 git commit -m "docs(plan): the two M4 plans for the symptom page" -m "Co-Authored-By: Claude Fable 5.2 <noreply@anthropic.com>"
 ```
 
-- [ ] **Step 1: Viết test đỏ (Patch 1)**
+- [x] **Step 1: Viết test đỏ (Patch 1)**
 
 ```diff
 diff --git a/components/actions/actionchrome.test.tsx b/components/actions/actionchrome.test.tsx
@@ -254,12 +254,12 @@ index 0000000..802c0e7
 +});
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run components/actions/chromevisibility.test.tsx components/actions/actionchrome.test.tsx`
 Expected: FAIL, `Test Files  2 failed (2)`, `Tests  1 failed | 7 passed (8)`. File test mới chưa chạy được (`Cannot find module './ChromeVisibility'`).
 
-- [ ] **Step 3: Sửa code (Patch 2)**
+- [x] **Step 3: Sửa code (Patch 2)**
 
 ```diff
 diff --git a/components/AuthGate.tsx b/components/AuthGate.tsx
@@ -390,12 +390,12 @@ index 0000000..4bc6cf2
 +}
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run components/actions/chromevisibility.test.tsx components/actions/actionchrome.test.tsx && bun run typecheck`
 Expected: `Tests  13 passed (13)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -- components/AuthGate.tsx components/actions/ActionChrome.tsx components/actions/ChromeVisibility.tsx components/actions/actionchrome.test.tsx components/actions/chromevisibility.test.tsx
@@ -417,7 +417,7 @@ git commit -m "feat(actions): a page can hide the tab bar and the + button" -m "
 - Consumes: `FEVER_SYMPTOM`, `visibleSymptoms` (`lib/rules/symptoms.ts`); `TRIAGE.groups`; icon `chevronDown`, `chevronUp`; `findElements` (`components/ui/testTree.ts`).
 - Produces: `pickedSymptomCount(chips, selected, feverLocked): number` và `toggled<T>(set, item): Set<T>` trong `lib/rules/symptoms.ts`; `SymptomChips` nhận thêm `openGroups: ReadonlySet<string>` và `onToggleGroup(code)`, mỗi hàng tiêu đề là `button` nằm trong `h3`, có `aria-expanded` và (khi mở) `aria-controls` trỏ tới khối chip `id="symptom-group-{code}"`; `TriageScreen` giữ state `openGroups` (rỗng lúc mở trang, rỗng lại khi bấm "Làm lại") và đổi dòng hướng dẫn.
 
-- [ ] **Step 1: Viết test đỏ (Patch 3)**
+- [x] **Step 1: Viết test đỏ (Patch 3)**
 
 ```diff
 diff --git a/components/triage/triage.test.tsx b/components/triage/triage.test.tsx
@@ -653,12 +653,12 @@ index 86ade2d..e8e46d9 100644
 +});
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run components/triage/triage.test.tsx lib/rules/symptoms.test.ts`
 Expected: FAIL, `Tests  12 failed | 12 passed (24)`.
 
-- [ ] **Step 3: Sửa code (Patch 4)**
+- [x] **Step 3: Sửa code (Patch 4)**
 
 ```diff
 diff --git a/components/triage/SymptomChips.tsx b/components/triage/SymptomChips.tsx
@@ -906,12 +906,12 @@ index 15da5c8..ced3d49 100644
    symptoms: TriageSymptom[];
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run components/triage/triage.test.tsx lib/rules/symptoms.test.ts && bun run typecheck`
 Expected: `Tests  24 passed (24)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -- components/triage/SymptomChips.tsx components/triage/TriageScreen.tsx lib/rules/symptoms.ts components/triage/triage.test.tsx lib/rules/symptoms.test.ts
@@ -929,12 +929,12 @@ git commit -m "feat(triage): symptom chips in groups that open and close" -m "Co
 - Consumes: mọi thứ Task 1–2 tạo ra.
 - Produces: nhánh `feat/kim-bun-ux-mobile-m4a` làm nền cho M4b. Nhánh này không lên `main` trước khi M4b xong.
 
-- [ ] **Step 1: Typecheck và toàn bộ test**
+- [x] **Step 1: Typecheck và toàn bộ test**
 
 Run: `bun run typecheck && bunx vitest run`
 Expected: `tsc --noEmit` không báo lỗi; `Test Files  158 passed (158)`, `Tests  1138 passed (1138)`.
 
-- [ ] **Step 2: Commit phần tick**
+- [x] **Step 2: Commit phần tick**
 
 ```bash
 git add docs/blueprint/plans/2026-11-19-kim-bun-ux-mobile-m4a.md
