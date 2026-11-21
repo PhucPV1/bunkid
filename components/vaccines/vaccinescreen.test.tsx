@@ -1,9 +1,15 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import type { Baby, VaccineDoseRow } from "@/lib/supabase/rows";
+import type { DoseGrid } from "./DoseGrid";
 import { VaccineScreen } from "./VaccineScreen";
 
-const state = vi.hoisted(() => ({ doses: {} as Record<string, unknown> }));
+type GridProps = Parameters<typeof DoseGrid>[0];
+
+const state = vi.hoisted(() => ({
+  doses: {} as Record<string, unknown>,
+  grid: null as GridProps | null,
+}));
 // Four doses: one at birth, two at two months (one of them in a group), one late.
 const content = vi.hoisted(() => {
   const base = {
@@ -84,6 +90,16 @@ vi.mock("@/lib/data/vaccines", () => {
   };
 });
 vi.mock("@/lib/hooks/useOutboxEntries", () => ({ useOutboxEntries: () => [] }));
+// The real table, with its props kept for the tests below.
+vi.mock("./DoseGrid", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./DoseGrid")>();
+  return {
+    DoseGrid: (props: GridProps) => {
+      state.grid = props;
+      return actual.DoseGrid(props);
+    },
+  };
+});
 
 const CHOSEN = { dtp_combo: "6in1" };
 const CARD = /<button type="button" class="glass [^"]*rounded-\[28px\]/;
@@ -186,7 +202,9 @@ describe("VaccineScreen: the cần làm trước card", () => {
 
   it("is hidden when no dose is left to do", () => {
     const html = render(["bcg", "hexa", "pcv", "mmr"].map(done));
-    expect(html).toContain(">Đã tiêm (4)</h2>");
+    expect(
+      html.match(/aria-label="[^"]*: Đã tiêm 15\/11\/2026"/g),
+    ).toHaveLength(4);
     expect(html).not.toMatch(CARD);
   });
 
@@ -194,5 +212,70 @@ describe("VaccineScreen: the cần làm trước card", () => {
     const html = render(undefined);
     expect(html).toContain("kb-pulse");
     expect(html).not.toMatch(CARD);
+  });
+});
+
+// Spec 2026-11-19 §7.2 and §7.3.
+describe("VaccineScreen: the table", () => {
+  it("comes after the card, the source row and the choices, with its legend", () => {
+    const html = render([]);
+    const at = [
+      html.indexOf("</header>"),
+      html.search(CARD),
+      html.indexOf("Nguồn lịch tiêm"),
+      html.indexOf(">Chọn loại vaccine</button>"),
+      html.indexOf("<table"),
+      html.indexOf("</table>"),
+      html.indexOf(">Chưa tiêm</li>"),
+    ];
+    expect(at.every((n) => n > -1)).toBe(true);
+    expect([...at].sort((a, b) => a - b)).toEqual(at);
+    expect(html.slice(html.indexOf("</table>"))).not.toContain("<button");
+  });
+
+  it("one row per vaccine, no list by state", () => {
+    const html = render([done("bcg")]);
+    const labels = [
+      ...html.matchAll(/line-clamp-3[^"]*">([^<]+)<\/span>/g),
+    ].map((m) => m[1]);
+    expect(labels).toEqual(["Lao (BCG)", "6 trong 1", "Phế cầu", "Sởi"]);
+    expect(html).toContain('aria-label="Lao (BCG): Đã tiêm 15/11/2026"');
+    expect(html).toContain('aria-label="6 trong 1 mũi 1: Trễ hẹn 14/11/2026"');
+    expect(html).not.toContain("Quá hạn (");
+    expect(html).not.toContain("Sau này (");
+  });
+
+  it("not the owner: the unchosen group is plain text, and the new sentence", () => {
+    const html = render([], {}, false);
+    expect(state.grid?.onChoose).toBeUndefined();
+    expect(html).toContain(">Bạch hầu, ho gà, uốn ván</span></th>");
+    expect(html).toMatch(/text-muted">Chưa chọn loại<\/span><\/td>/);
+    expect(html).toContain(
+      "Còn 1 nhóm chưa chọn loại vaccine. Mỗi nhóm này hiện một hàng &quot;Chưa chọn loại&quot; trong bảng và không có nhắc lịch.",
+    );
+    expect(html).not.toContain("hiện nhãn");
+  });
+
+  it("the owner: a dashed button that scrolls back to the top", () => {
+    // A stored choice for a group that no longer exists: past setup, one unchosen.
+    const html = render([], { legacy: "x" });
+    expect(html).not.toContain(">Thiết lập lịch tiêm</h2>");
+    expect(html).toMatch(/border-dashed border-muted[^"]*">Chưa chọn loại<svg/);
+    expect(html).toContain("Còn 1 nhóm chưa chọn loại vaccine.");
+    const scrollTo = vi.fn();
+    vi.stubGlobal("window", { scrollTo });
+    try {
+      state.grid?.onChoose?.();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+    expect(scrollTo).toHaveBeenCalledExactlyOnceWith({ top: 0 });
+  });
+
+  it("the owner during setup: the button still scrolls to the setup step", () => {
+    const html = render([], {});
+    expect(html).toContain(">Thiết lập lịch tiêm</h2>");
+    expect(html).toMatch(/border-dashed border-muted/);
+    expect(state.grid?.onChoose).toBeTypeOf("function");
   });
 });

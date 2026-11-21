@@ -1,14 +1,9 @@
-import { PendingMark } from "@/components/sync/PendingMark";
 import { formatDueDate } from "@/lib/rules/vaccineForm";
 import type { ScheduleItem } from "@/lib/rules/vaccines";
 
-export function DoseLine({
-  item,
-  pending,
-}: {
-  item: ScheduleItem;
-  pending: boolean;
-}) {
+// Spec 2026-11-19 §7.3: the facts of one dose at the top of DoseSheet. The
+// sheet title carries the name and the table carries the pending mark.
+export function DoseLine({ item }: { item: ScheduleItem }) {
   const { dose, record } = item;
   const when =
     item.state === "done"
@@ -20,17 +15,9 @@ export function DoseLine({
         : `Hẹn ${formatDueDate(item.due)}`;
   return (
     <>
-      <span className="text-base font-medium text-ink">
-        {dose.name} <PendingMark pending={pending} />
-      </span>
       <span className="text-[13px] text-muted tabular-nums">
         {when} · {dose.program === "tcmr" ? "Tiêm chủng mở rộng" : "Dịch vụ"}
       </span>
-      {item.unchosen && (
-        <span className="mt-0.5 rounded-full bg-muted/15 px-2 text-[13px] text-ink">
-          Chưa chọn loại
-        </span>
-      )}
       {item.pastMaxAge && (
         <span className="text-[13px] text-danger">
           Đã quá tuổi khuyến cáo của loại vaccine này, hỏi bác sĩ.

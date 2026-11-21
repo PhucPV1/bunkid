@@ -16,6 +16,7 @@ import {
 } from "@/lib/rules/vaccineForm";
 import type { ScheduleItem } from "@/lib/rules/vaccines";
 import type { VaccineDoseRow } from "@/lib/supabase/rows";
+import { DoseLine } from "./DoseLine";
 
 const ACTIONS: { value: DoseAction; label: string }[] = [
   { value: "done", label: "Đã tiêm" },
@@ -145,6 +146,10 @@ export function DoseSheet({
       }
     >
       <form id={formId} onSubmit={submit} className="flex flex-col gap-4 pt-1">
+        {/* Spec 2026-11-19 §7.3: what the old list showed for this dose. */}
+        <div className="flex flex-col gap-0.5">
+          <DoseLine item={item} />
+        </div>
         <p className="text-[15px] text-muted">
           Phòng: {item.dose.protects.join(", ")}. Hẹn {formatDueDate(item.due)}.
         </p>

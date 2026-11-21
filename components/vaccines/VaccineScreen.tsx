@@ -25,7 +25,7 @@ import {
 } from "@/lib/rules/vaccines";
 import type { Baby } from "@/lib/supabase/rows";
 import { ChoiceFields } from "./ChoiceFields";
-import { DoseSections } from "./DoseSections";
+import { DoseGrid } from "./DoseGrid";
 import { DoseSheet } from "./DoseSheet";
 import { NextDoseCard } from "./NextDoseCard";
 import { VaccineSetup } from "./VaccineSetup";
@@ -96,6 +96,12 @@ export function VaccineScreen({
     isOwner && Object.keys(choices).length === 0 && !setupLater;
   // Spec 2026-11-19 §7: nothing to do first while the setup step is showing.
   const next = needsSetup ? null : nextDose(items);
+  // Spec 2026-11-19 §7.2: an unchosen row opens "Loại vaccine" at the top of
+  // the page; during setup the setup step up there is where to choose.
+  const choose = () => {
+    if (!needsSetup) setEditing(true);
+    window.scrollTo({ top: 0 });
+  };
   const rowFor = (item: ScheduleItem) =>
     rows.find(
       (row) =>
@@ -129,10 +135,12 @@ export function VaccineScreen({
           setEditing={setEditing}
         />
       )}
-      <DoseSections
+      <DoseGrid
         items={items}
+        groups={VACCINES.groups}
         pending={pending}
         onOpen={(item) => setOpen(item)}
+        onChoose={isOwner ? choose : undefined}
       />
       {open && (
         <DoseSheet
@@ -163,27 +171,17 @@ function ChoicesSection({
   editing: boolean;
   setEditing: (on: boolean) => void;
 }) {
-  const update = useUpdateChoices(baby.id);
-  const [draft, setDraft] = useState(choices);
-
   if (!editing)
     return (
       <section className="flex flex-col gap-2.5">
         {unchosen > 0 && (
           <p className="px-1 text-[15px] text-muted">
-            Còn {unchosen} nhóm chưa chọn loại vaccine. Mũi của các nhóm này
-            hiện nhãn "Chưa chọn loại" và không có nhắc lịch.
+            Còn {unchosen} nhóm chưa chọn loại vaccine. Mỗi nhóm này hiện một
+            hàng "Chưa chọn loại" trong bảng và không có nhắc lịch.
           </p>
         )}
         {isOwner ? (
-          <Button
-            variant="secondary"
-            block
-            onClick={() => {
-              setDraft(choices);
-              setEditing(true);
-            }}
-          >
+          <Button variant="secondary" block onClick={() => setEditing(true)}>
             Chọn loại vaccine
           </Button>
         ) : (
@@ -195,6 +193,29 @@ function ChoicesSection({
         )}
       </section>
     );
+
+  return (
+    <ChoicesEditor
+      baby={baby}
+      choices={choices}
+      onClose={() => setEditing(false)}
+    />
+  );
+}
+
+// Mounted each time it opens (from the button or from a row of the table), so
+// the draft always starts from the saved choices.
+function ChoicesEditor({
+  baby,
+  choices,
+  onClose,
+}: {
+  baby: Baby;
+  choices: Record<string, string>;
+  onClose: () => void;
+}) {
+  const update = useUpdateChoices(baby.id);
+  const [draft, setDraft] = useState(choices);
 
   return (
     <section className="flex flex-col gap-3">
@@ -210,7 +231,7 @@ function ChoicesSection({
           busy={update.isPending}
           onClick={() =>
             update.mutate(cleanChoices(VACCINES.groups, draft), {
-              onSuccess: () => setEditing(false),
+              onSuccess: onClose,
             })
           }
         >
@@ -222,7 +243,7 @@ function ChoicesSection({
           {toVietnameseError(update.error)}
         </p>
       )}
-      <Button variant="secondary" block onClick={() => setEditing(false)}>
+      <Button variant="secondary" block onClick={onClose}>
         Đóng
       </Button>
     </section>

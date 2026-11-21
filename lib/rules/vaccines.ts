@@ -27,14 +27,6 @@ export type ScheduleItem = {
 
 export const UPCOMING_DAYS = 30;
 
-export const STATE_SECTIONS: { state: DoseState; title: string }[] = [
-  { state: "overdue", title: "Quá hạn" },
-  { state: "upcoming", title: "Sắp tới (≤ 30 ngày)" },
-  { state: "done", title: "Đã tiêm" },
-  { state: "skipped", title: "Đã bỏ qua" },
-  { state: "later", title: "Sau này" },
-];
-
 export function visibleDoses(
   doses: VaccineDose[],
   choices: Record<string, string>,

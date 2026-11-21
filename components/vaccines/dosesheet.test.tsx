@@ -29,11 +29,11 @@ const rescheduled = {
   updated_at: "2026-11-01T00:00:00.000Z",
 } as VaccineDoseRow;
 
-const render = (row: VaccineDoseRow | null) =>
+const render = (row: VaccineDoseRow | null, dose: ScheduleItem = item) =>
   renderToStaticMarkup(
     <QueryClientProvider client={new QueryClient()}>
       <DoseSheet
-        item={item}
+        item={dose}
         row={row}
         babyId="b1"
         userId="u1"
@@ -71,5 +71,26 @@ describe("DoseSheet", () => {
     expect(html).not.toContain("Nơi tiêm");
     expect(html).toContain(">Xóa đánh dấu</button>");
     expect(html).toContain("text-danger!");
+  });
+
+  // Spec 2026-11-19 §7.3: what the old list showed for the dose, at the top.
+  it("starts with when and program, the age-limit sentence and the note", () => {
+    const html = render(null, {
+      ...item,
+      state: "overdue",
+      pastMaxAge: true,
+      dose: { ...item.dose, note: "Uống trước 24 tuần tuổi." },
+    } as ScheduleItem);
+    expect(html).toMatch(
+      /<form [^>]*><div class="flex flex-col gap-0\.5"><span class="text-\[13px\] text-muted tabular-nums">Hẹn Thứ Sáu, 20\/11\/2026 · Dịch vụ<\/span><span class="text-\[13px\] text-danger">Đã quá tuổi khuyến cáo của loại vaccine này, hỏi bác sĩ\.<\/span><span class="text-\[13px\] text-muted">Uống trước 24 tuần tuổi\.<\/span><\/div><p /,
+    );
+  });
+
+  it("the facts of a plain dose: just when and program", () => {
+    const html = render(null);
+    expect(html).toMatch(
+      /<form [^>]*><div class="flex flex-col gap-0\.5"><span [^>]*>Hẹn Thứ Sáu, 20\/11\/2026 · Dịch vụ<\/span><\/div>/,
+    );
+    expect(html).not.toContain("Đã quá tuổi");
   });
 });
