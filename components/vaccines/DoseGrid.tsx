@@ -25,6 +25,9 @@ const LEGEND = [
 const HEAD = "text-[13px] leading-[18px] font-semibold text-muted";
 const LABEL_COLUMN =
   "sticky left-0 z-10 bg-glass-solid w-[108px] min-w-[108px]";
+// 108 px label column + 4 px cell padding + 12 px inside the box: the text
+// keeps its place while the table scrolls sideways.
+const UNCHOSEN_TEXT = "sticky left-[124px]";
 
 // Spec 2026-11-19 §7.2: vaccines × dose numbers. `onChoose` is given to the
 // family owner only; without it an unchosen group is plain text.
@@ -47,7 +50,13 @@ export function DoseGrid({
     <div className="flex flex-col gap-2.5">
       <div className="glass relative overflow-hidden rounded-[22px]">
         <div className="overflow-x-auto">
-          <table className="border-separate border-spacing-0">
+          {/* With the fade, 20 px of room at the end lets the last column clear it. */}
+          <table
+            className={cx(
+              "border-separate border-spacing-0",
+              columns > 3 && "pr-5",
+            )}
+          >
             <thead>
               <tr>
                 <th
@@ -87,14 +96,23 @@ export function DoseGrid({
                         <button
                           type="button"
                           onClick={onChoose}
-                          className="flex min-h-14 w-full items-center justify-center gap-1 rounded-[14px] border border-dashed border-muted px-3 text-[13px] leading-[18px] font-semibold whitespace-nowrap text-ink"
+                          className="flex min-h-14 w-full items-center justify-start rounded-[14px] border border-dashed border-muted px-3 text-[13px] leading-[18px] font-semibold whitespace-nowrap text-ink"
                         >
-                          Chưa chọn loại
-                          <Icon name="chevronRight" size={16} />
+                          <span
+                            className={cx(
+                              UNCHOSEN_TEXT,
+                              "flex items-center gap-1",
+                            )}
+                          >
+                            Chưa chọn loại
+                            <Icon name="chevronRight" size={16} />
+                          </span>
                         </button>
                       ) : (
-                        <span className="block px-2 text-[13px] leading-[18px] whitespace-nowrap text-muted">
-                          Chưa chọn loại
+                        <span className="block px-3 text-[13px] leading-[18px] whitespace-nowrap text-muted">
+                          <span className={cx(UNCHOSEN_TEXT, "inline-block")}>
+                            Chưa chọn loại
+                          </span>
                         </span>
                       )}
                     </td>

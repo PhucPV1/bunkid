@@ -177,7 +177,7 @@ describe("DoseGrid", () => {
     const html = render(items, { onChoose: () => {} });
     expect(html).toContain(">Tiêu chảy do Rota</span></th>");
     expect(html).toMatch(
-      /<td colSpan="4" [^>]*><button type="button" class="[^"]*\bmin-h-14\b[^"]*\brounded-\[14px\] border border-dashed border-muted\b[^"]*\btext-\[13px\][^"]*\bfont-semibold\b[^"]*">Chưa chọn loại<svg/,
+      /<td colSpan="4" [^>]*><button type="button" class="[^"]*\bmin-h-14\b[^"]*\brounded-\[14px\] border border-dashed border-muted\b[^"]*\btext-\[13px\][^"]*\bfont-semibold\b[^"]*"><span class="sticky left-\[124px\] flex items-center gap-1">Chưa chọn loại<svg/,
     );
     expect(html).toContain(`d="${ICON_PATHS.chevronRight}"`);
     expect(html).not.toContain("Rotarix");
@@ -189,7 +189,9 @@ describe("DoseGrid", () => {
     const td = row.slice(row.indexOf("<td"), row.indexOf("</td>"));
     expect(td).toContain('colSpan="4"');
     expect(td).not.toContain("<button");
-    expect(td).toMatch(/class="[^"]*\btext-muted\b[^"]*">Chưa chọn loại</);
+    expect(td).toMatch(
+      /class="[^"]*\bpx-3\b[^"]*\btext-muted\b[^"]*"><span class="sticky left-\[124px\] inline-block">Chưa chọn loại</,
+    );
     expect(html).not.toContain(ICON_PATHS.chevronRight);
   });
 
@@ -198,6 +200,35 @@ describe("DoseGrid", () => {
     expect(render(items)).toMatch(fade);
     expect(render(items)).toMatch(/aria-hidden="true" class="[^"]*\bw-6\b/);
     expect(render(items.slice(0, 4))).not.toMatch(fade);
+  });
+
+  it("with the fade, the table ends in 20 px of room so the last column clears it", () => {
+    expect(render(items)).toMatch(/<table class="[^"]*\bpr-5\b/);
+    expect(render(items.slice(0, 4))).not.toMatch(
+      /<table class="[^"]*\bpr-5\b/,
+    );
+  });
+
+  it("the unchosen button starts its text next to the label column", () => {
+    const html = render(items, { onChoose: () => {} });
+    const button =
+      /<td colSpan="4" [^>]*><button type="button" class="([^"]*)"/.exec(
+        html,
+      )?.[1];
+    expect(button).toContain("justify-start");
+    expect(button).not.toContain("justify-center");
+  });
+
+  it("the unchosen text sticks right after the label column while the table scrolls", () => {
+    // 108 px label column + 4 px cell padding + 12 px inside the box.
+    const sticky = /<span class="sticky left-\[124px\] [^"]*">Chưa chọn loại/g;
+    expect(render(items, { onChoose: () => {} }).match(sticky)).toHaveLength(1);
+    expect(render(items).match(sticky)).toHaveLength(1);
+    const button =
+      /<td colSpan="4" [^>]*><button type="button" class="([^"]*)"/.exec(
+        render(items, { onChoose: () => {} }),
+      )?.[1];
+    expect(button).toMatch(/\bpx-3\b/);
   });
 
   it("a legend of four under the table", () => {

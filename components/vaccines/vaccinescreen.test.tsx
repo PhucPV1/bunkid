@@ -249,7 +249,9 @@ describe("VaccineScreen: the table", () => {
     const html = render([], {}, false);
     expect(state.grid?.onChoose).toBeUndefined();
     expect(html).toContain(">Bạch hầu, ho gà, uốn ván</span></th>");
-    expect(html).toMatch(/text-muted">Chưa chọn loại<\/span><\/td>/);
+    expect(html).toMatch(
+      /text-muted"><span[^>]*>Chưa chọn loại<\/span><\/span><\/td>/,
+    );
     expect(html).toContain(
       "Còn 1 nhóm chưa chọn loại vaccine. Mỗi nhóm này hiện một hàng &quot;Chưa chọn loại&quot; trong bảng và không có nhắc lịch.",
     );
@@ -260,7 +262,9 @@ describe("VaccineScreen: the table", () => {
     // A stored choice for a group that no longer exists: past setup, one unchosen.
     const html = render([], { legacy: "x" });
     expect(html).not.toContain(">Thiết lập lịch tiêm</h2>");
-    expect(html).toMatch(/border-dashed border-muted[^"]*">Chưa chọn loại<svg/);
+    expect(html).toMatch(
+      /border-dashed border-muted[^"]*"><span[^>]*>Chưa chọn loại<svg/,
+    );
     expect(html).toContain("Còn 1 nhóm chưa chọn loại vaccine.");
     const scrollTo = vi.fn();
     vi.stubGlobal("window", { scrollTo });
