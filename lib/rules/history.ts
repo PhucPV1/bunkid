@@ -122,3 +122,26 @@ export function daySummary(input: {
   }
   return `${feeds} cữ · ${diapers} tã · ngủ ${shortDuration(Math.round(sleepMs / 60_000))}`;
 }
+
+// The rows a phone screen shows first on Nhật ký. A tab switch renders only
+// these, and the days below them right after, so the tap is not held while a
+// week of rows is built.
+export const FIRST_SCREEN_ROWS = 12;
+
+export function firstScreen<T extends { logs: unknown[] }>(
+  groups: T[],
+  rows = FIRST_SCREEN_ROWS,
+): T[] {
+  const out: T[] = [];
+  let left = rows;
+  for (const group of groups) {
+    if (left <= 0) break;
+    out.push(
+      group.logs.length > left
+        ? { ...group, logs: group.logs.slice(0, left) }
+        : group,
+    );
+    left -= group.logs.length;
+  }
+  return out;
+}

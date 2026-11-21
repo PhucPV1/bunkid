@@ -1,6 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import {
+  memo,
+  useCallback,
+  useDeferredValue,
+  useMemo,
+  useState,
+} from "react";
 import { useQuickActions } from "@/components/actions/QuickActions";
 import { Button } from "@/components/ui/Button";
 import { ChipGroup } from "@/components/ui/ChipGroup";
@@ -19,6 +25,7 @@ import { useOutboxEntries } from "@/lib/hooks/useOutboxEntries";
 import {
   canModifyLog,
   daySummary,
+  firstScreen,
   groupByVnDay,
   HISTORY_FILTERS,
   matchesFilter,
@@ -29,6 +36,10 @@ import { HistoryList } from "./HistoryList";
 import { LogEditSheet } from "./LogEditSheet";
 
 type SheetState = { log: LogRow | null } | null;
+
+// Skips re-rendering a week of rows when only the query state, the outbox or
+// the quick-actions context changed.
+const MemoHistoryList = memo(HistoryList);
 
 // Spec 2026-11-19 §10: adding an old log is a labelled button, not a calendar icon.
 export function BackfillButton({ onClick }: { onClick: () => void }) {
@@ -58,26 +69,48 @@ export function HistoryScreen({
   const history = useHistoryLogs(baby.id, baby.dob);
   const members = useMembers(baby.family_id);
   const actions = useQuickActions();
-  const pending = pendingRowIds(entriesFor(useOutboxEntries(userId), "logs"));
+  const outbox = useOutboxEntries(userId);
+  // Kept as a string so a new outbox array with the same rows keeps the same Set.
+  const pendingKey = [...pendingRowIds(entriesFor(outbox, "logs"))]
+    .sort()
+    .join(",");
+  const pending = useMemo(
+    () => new Set(pendingKey ? pendingKey.split(",") : []),
+    [pendingKey],
+  );
   const [filter, setFilter] = useState<HistoryFilter>("all");
   const [sheet, setSheet] = useState<SheetState>(null);
 
-  const rows = history.data?.pages.flat() ?? [];
+  const rows = useMemo(() => history.data?.pages.flat() ?? [], [history.data]);
   // The day summary counts every log of the day; the filter only hides rows (spec §9).
-  const groups = groupByVnDay(rows)
-    .map((group) => ({
-      day: group.day,
-      summary: daySummary({
-        day: group.day,
-        logs: group.logs,
-        all: rows,
-        now,
-      }),
-      logs: group.logs.filter((row) => matchesFilter(row, filter)),
-    }))
-    .filter((group) => group.logs.length > 0);
-  const nameOf = (userId: string) =>
-    members.data?.find((m) => m.user_id === userId)?.display_name ?? "Ai đó";
+  const groups = useMemo(
+    () =>
+      groupByVnDay(rows)
+        .map((group) => ({
+          day: group.day,
+          summary: daySummary({
+            day: group.day,
+            logs: group.logs,
+            all: rows,
+            now,
+          }),
+          logs: group.logs.filter((row) => matchesFilter(row, filter)),
+        }))
+        .filter((group) => group.logs.length > 0),
+    [rows, filter, now],
+  );
+  // A tab switch commits the first screen of rows only; React renders the
+  // days below right after, so the tap is not held for the whole week.
+  const deferredGroups = useDeferredValue(groups, firstScreen(groups));
+  // Rows that arrive after the skeleton keep the first screen while the rest renders.
+  const shownGroups =
+    deferredGroups.length === 0 ? firstScreen(groups) : deferredGroups;
+  const nameOf = useCallback(
+    (userId: string) =>
+      members.data?.find((m) => m.user_id === userId)?.display_name ?? "Ai đó",
+    [members.data],
+  );
+  const openLog = useCallback((log: LogRow) => setSheet({ log }), []);
 
   return (
     <main className="mx-auto flex max-w-md flex-col gap-[18px] px-4 pt-2 pb-4">
@@ -128,12 +161,12 @@ export function HistoryScreen({
           />
         )
       ) : (
-        <HistoryList
-          groups={groups}
+        <MemoHistoryList
+          groups={shownGroups}
           now={now}
           nameOf={nameOf}
           pending={pending}
-          onOpen={(log) => setSheet({ log })}
+          onOpen={openLog}
         />
       )}
 

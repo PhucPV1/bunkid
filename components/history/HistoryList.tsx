@@ -26,7 +26,11 @@ export function HistoryList({
   return (
     <>
       {groups.map((group) => (
-        <section key={group.day} className="flex flex-col gap-2.5">
+        // Days below the screen skip layout and paint until scrolled near.
+        <section
+          key={group.day}
+          className="flex flex-col gap-2.5 [contain-intrinsic-size:auto_1400px] [content-visibility:auto]"
+        >
           <div className="flex items-baseline justify-between gap-3 px-1">
             <h2 className="text-xl leading-[26px] font-bold text-ink">
               {vnDayLabel(group.day, now)}
