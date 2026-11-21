@@ -116,13 +116,13 @@ Plan này đứng ngay sau M4a và là plan code cuối của spec; sau nó ch�
 - Consumes: `useHideChrome` (M4a); `pickedSymptomCount` (M4a); `visibleQuestions`; `TabBarView` (`components/nav/TabBar.tsx`, test đọc lớp vị trí từ markup của nó).
 - Produces: `triageAnswerCount(input): number` trong `lib/rules/symptoms.ts`; `components/triage/ResultBar.tsx` với `ResultBar({ count, onSubmit })`; `TriageScreen` gọi `useHideChrome(outcome === null)`, bỏ hai nút cuối form, cuộn về đầu trang khi nhiệt độ sai.
 
-- [ ] **Step 0: Tạo nhánh**
+- [x] **Step 0: Tạo nhánh**
 
 ```bash
 git checkout -b feat/kim-bun-ux-mobile-m4b feat/kim-bun-ux-mobile-m4a
 ```
 
-- [ ] **Step 1: Viết test đỏ (Patch 1)**
+- [x] **Step 1: Viết test đỏ (Patch 1)**
 
 ```diff
 diff --git a/components/triage/triage.test.tsx b/components/triage/triage.test.tsx
@@ -408,12 +408,12 @@ index e8e46d9..9ba8da6 100644
 +});
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run components/triage/triage.test.tsx lib/rules/symptoms.test.ts`
 Expected: FAIL, `Tests  11 failed | 24 passed (35)`.
 
-- [ ] **Step 3: Sửa code (Patch 2)**
+- [x] **Step 3: Sửa code (Patch 2)**
 
 ```diff
 diff --git a/components/triage/ResultBar.tsx b/components/triage/ResultBar.tsx
@@ -568,12 +568,12 @@ index ced3d49..7bbb246 100644
    const next = new Set(set);
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run components/triage/triage.test.tsx lib/rules/symptoms.test.ts && bun run typecheck`
 Expected: `Tests  35 passed (35)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -- components/triage/ResultBar.tsx components/triage/TriageScreen.tsx lib/rules/symptoms.ts components/triage/triage.test.tsx lib/rules/symptoms.test.ts
@@ -594,7 +594,7 @@ git commit -m "feat(triage): a result bar pinned to the bottom in place of the t
 - Consumes: Kích thước trang Hôm nay đo trên trang thật ngày 2026-11-21 ở 375 px: khoảng cách 14 px; thẻ lớn 104 px ở dạng thấp nhất; ba ô trạng thái 80 px; hai hàng nút (nhãn 18 px, cách 10 px, hàng nút 80 px); mục "24 giờ qua" và "Gần đây" mỗi mục có hàng tiêu đề 44 px; ba ô số 96,5 px. `Skeleton`.
 - Produces: `HomeSkeleton` vẽ: thẻ lớn 104 px, ba ô 80 px, hai hàng (nhãn 18 px và 5 ô tròn 58 px trong ô cao 80 px), rồi hai mục có hàng tiêu đề 44 px: ba ô số 96 px, và bốn hàng danh sách 60 px. `GateLoading` dùng khoảng cách 14 px.
 
-- [ ] **Step 1: Viết test đỏ (Patch 3)**
+- [x] **Step 1: Viết test đỏ (Patch 3)**
 
 ```diff
 diff --git a/components/auth/gate.test.tsx b/components/auth/gate.test.tsx
@@ -681,12 +681,12 @@ index bbae64e..ed0213d 100644
    it("a load error replaces the hero with a retry card; logging buttons stay", () => {
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run components/home/homescreen.test.tsx components/auth/gate.test.tsx`
 Expected: FAIL, `Tests  2 failed | 10 passed (12)`.
 
-- [ ] **Step 3: Sửa code (Patch 4)**
+- [x] **Step 3: Sửa code (Patch 4)**
 
 ```diff
 diff --git a/components/AuthGate.tsx b/components/AuthGate.tsx
@@ -773,12 +773,12 @@ index 2bb20fe..7ddd25d 100644
  }
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run components/home/homescreen.test.tsx components/auth/gate.test.tsx && bun run typecheck`
 Expected: `Tests  12 passed (12)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -- components/AuthGate.tsx components/home/HomeSkeleton.tsx components/auth/gate.test.tsx components/home/homescreen.test.tsx
@@ -796,17 +796,17 @@ git commit -m "fix(home): loading shapes match the current home page" -m "Co-Aut
 - Consumes: mọi thứ của M4a và Task 1–2.
 - Produces: `main` có cả M4a và M4b; cả 6 mốc của spec đã ở trên `main`.
 
-- [ ] **Step 1: Typecheck và toàn bộ test**
+- [x] **Step 1: Typecheck và toàn bộ test**
 
 Run: `bun run typecheck && bunx vitest run`
 Expected: `tsc --noEmit` không báo lỗi; `Test Files  158 passed (158)`, `Tests  1149 passed (1149)`.
 
-- [ ] **Step 2: Build production**
+- [x] **Step 2: Build production**
 
 Run: `bun run build`
 Expected: lần đầu có thể dừng với thông báo bảo mật của Next.js 16.4.3 (bình thường). Chạy lại đúng lệnh đó: `✓ Generating static pages` và thoát mã 0.
 
-- [ ] **Step 3: Kiểm trên trình duyệt (phiên chính làm, không bấm Lưu, không đụng timer)**
+- [x] **Step 3: Kiểm trên trình duyệt (phiên chính làm, không bấm Lưu, không đụng timer)**
 
 Chạy `bun run dev` (nếu nó dừng với thông báo bảo mật thì chạy lại). Dùng khung Browser của app ở cỡ 375×812. Đóng mọi sheet bằng phím Esc.
 
@@ -825,7 +825,32 @@ Trang Triệu chứng không ghi dữ liệu nào (`components/triage/` chỉ đ
 
 Dừng `bun run dev` khi xong. Ghi kết quả từng mục ngay dưới bước này. Mục nào dữ liệu thật không cho thấy được thì ghi "chưa kiểm".
 
-- [ ] **Step 4: Commit phần ghi kết quả, đưa lên `main`, rồi báo cáo**
+**Kết quả (2026-11-21, khung Browser của app, 375×812, dữ liệu thật của gia đình; trang Triệu chứng không ghi gì, các trang khác chỉ xem):**
+
+Step 1 và Step 2:
+
+- M4a: Task 1 đỏ `Tests  1 failed | 7 passed (8)`, xanh 13; Task 2 đỏ `Tests  12 failed | 12 passed (24)`, xanh 24; cả bộ `Test Files  158 passed (158)`, `Tests  1138 passed (1138)`. M4b: Task 1 đỏ `Tests  11 failed | 24 passed (35)`, xanh 35; Task 2 đỏ `Tests  2 failed | 10 passed (12)`, xanh 12. Đúng như plan.
+- `tsc --noEmit` không báo lỗi; `Test Files  158 passed (158)`, `Tests  1149 passed (1149)`.
+- `bun run build`: lần đầu dừng với thông báo bảo mật, lần hai thoát mã 0, `✓ Generating static pages using 9 workers (38/38)`.
+
+Step 3:
+
+1. Đạt. `nav` 0; sáu nhóm (Sốt, Hô hấp, Tiêu hóa, Da, Hành vi, ăn bú, Khác) đều `"false"`, mỗi hàng tiêu đề cao 52 px và nằm trong `h3`; dòng hướng dẫn đúng; `bar`: `left` 16, `width` 343, `fromBottom` 26, `height` 70; `text` "Xem kết quả". Trang cao 3.426 px (trước M4: 4.526 px). 32 công tắc; chỉ còn một nút "Xem kết quả".
+2. Đạt. Thanh tab (đo ở `/kham-pha`): `left` 16, `width` 343, `fromBottom` 26, cao 62 px. Ba số đầu bằng của thanh kết quả.
+3. Đạt. Mở "Sốt" và "Hô hấp": cả hai `aria-expanded="true"`, có `aria-controls` trỏ tới `symptom-group-fever` và `symptom-group-breathing`. Chọn một chip ở mỗi nhóm: mỗi hàng tiêu đề có nhãn "1 đã chọn", nút thành "Xem kết quả · đã chọn 2". Bật một công tắc: "Xem kết quả · đã chọn 3". `lines` 1, `spare` 84 px. Chip cao 44 px (chip hai dòng 47 px).
+4. Đạt. `lastSwitchBottom` 665, mép dưới của hàng cuối 675, `barTop` 716.
+5. Đạt. Với `50` trong ô nhiệt độ, bấm nút từ cuối trang (`scrollY` 2.841): `scrollY` về 0, có dòng "Nhiệt độ từ 30 đến 43°C, ví dụ 38,5.", thanh kết quả vẫn còn, thanh tab vẫn ẩn. Đã xoá ô nhiệt độ.
+6. Đạt. Bấm "Xem kết quả": hiện kết quả ("Đi cấp cứu ngay", vì chip sốt được chọn cho bé dưới 3 tháng), thanh kết quả biến mất, thanh tab và nút "+" hiện lại (`nav` 1). Bấm "Làm lại": sáu nhóm đều đóng, không công tắc nào bật, thanh kết quả hiện lại với chữ "Xem kết quả", `nav` 0.
+7. Đạt. Bấm link "Khám phá": sang `/kham-pha`, có thanh tab, không có thanh kết quả.
+8. Đạt: `true`.
+9. Đạt ở `rose` và `night`, thêm `dark` là theme gia đình đang dùng. Ở `night` nút 115 là đỏ sẫm theo tông của theme, nhận ra nhờ icon điện thoại.
+10. Không bắt được khung chờ trên trang thật (dữ liệu về quá nhanh): **chưa nhìn tận mắt khung chờ trên trang thật**. Thay vào đó `GateLoading` được dựng trên một trang tạm `app/chk/page.tsx` (đã xoá trước khi commit) và đo: thanh đầu ở 16 px cao 44; thẻ lớn ở 74 cao 104; ô trạng thái ở 192 cao 80; hai hàng nút ở 286 và 408 (nhãn 18, hàng 80); tiêu đề "24 giờ qua" ở 530 cao 44, ô số ở 584 cao 96; tiêu đề "Gần đây" ở 694 cao 44, hàng danh sách từ 748 cao 60; 26 khối nhấp nháy. Trang thật đo lúc 19:49 (thẻ lớn "Trễ cữ bú" cao 192 px, có dòng Vitamin D): thẻ lớn ở 74, ô trạng thái ở 280, "Bấm giờ" ở 400, "Ghi nhanh" ở 522, "24 giờ qua" ở 644 (tiêu đề 44, ô số 96,5), "Gần đây" ở 865. Vậy với thẻ lớn ở dạng thấp nhất và không có dòng Vitamin D thì các khối trùng nhau; ở trạng thái lúc đo, mọi thứ dưới thẻ lớn vẫn dịch xuống 88 đến 114 px khi dữ liệu về (Diễn giải 7).
+
+Chưa kiểm: Safari trên iPhone; khung chờ trên trang thật; việc thanh tab không chớp lên khi mở thẳng `/trieu-chung` (lý do dùng `useLayoutEffect`) chỉ kiểm bằng mắt qua ảnh chụp sau khi tải, không đo từng khung hình.
+
+Không dừng `bun run dev` trong lúc ghi kết quả; dừng sau khi bước 36 của checklist được ghi.
+
+- [x] **Step 4: Commit phần ghi kết quả, đưa lên `main`, rồi báo cáo**
 
 ```bash
 git add docs/blueprint/plans/2026-11-19-kim-bun-ux-mobile-m4b.md
