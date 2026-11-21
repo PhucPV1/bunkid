@@ -968,6 +968,14 @@ Dừng `bun run dev` khi xong. Ghi kết quả từng mục ngay dưới bước
 > - Biểu đồ "ml" không có chuẩn: không vùng, không đường; ngày có giá trị 0 không có cột.
 > - Đã xem ở Hồng dịu và Ban đêm (vùng chuẩn theo tông hổ phách); không tràn ngang.
 > - **Chưa kiểm:** trang `/thong-ke` thật với dữ liệu của gia đình (đổi tab, dòng chú thích hiện trên màn hình, tab chưa có dữ liệu), và iPhone thật. Các phần này mới có unit test.
+>
+> **Kiểm bổ sung 2026-11-21, sau khi người dùng đăng nhập lại ở khung Browser.** Trang `/thong-ke` thật ở 375×812, chỉ bấm các tab:
+>
+> - "Ngủ": chữ "giờ"; 1 vùng tô nhạt, 0 đường kẻ; 7 cột, cột cuối `fill-opacity` 0.45; dòng dưới bảng: "Tính theo ngày lịch giờ Việt Nam. Hôm nay tính đến hiện tại. Vùng tô nhạt: chuẩn 14–17 giờ mỗi ngày. Cột nhạt là hôm nay, chưa hết ngày."
+> - "Bú": chữ "cữ"; 1 đường kẻ; cột cuối 0.45; câu "Đường kẻ: chuẩn từ 6 cữ mỗi ngày."
+> - "Tã": chữ "tã"; 1 đường kẻ; cột tã ướt của hôm nay 0.45 (hôm nay chưa có tã bẩn nên không có cột thứ hai); câu "Đường kẻ: chuẩn từ 6 tã ướt mỗi ngày."
+> - "Hút sữa": chữ "ml"; không vùng, không đường; chỉ thêm câu "Cột nhạt là hôm nay, chưa hết ngày."
+> - Trang không tràn ngang. Vẫn chưa kiểm: tab chưa có dữ liệu nào, và iPhone thật.
 
 - [x] **Step 4: Commit phần ghi kết quả, đưa lên `main`, rồi báo cáo**
 

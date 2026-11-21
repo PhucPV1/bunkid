@@ -199,8 +199,8 @@ Cách lưu của sheet Thay tã, Thuốc, Ăn dặm, Uống nước, Tắm, Ghi 
 Hàm thuần mới `vaccineGrid(items, groups)` trong file mới `lib/rules/vaccineGrid.ts` trả về `{ columns, rows }`:
 
 - **Hàng vắc xin:** mỗi mã vắc xin (`dose.code`) có `unchosen === false` là một hàng, theo thứ tự mã đó xuất hiện lần đầu trong `items`. `cells` dài đúng `columns`; phần tử thứ `doseNo − 1` là `ScheduleItem` của mũi đó, chỗ không có mũi là `null`.
-- **Nhãn hàng vắc xin:** tên của mũi có `doseNo` nhỏ nhất, bỏ đuôi " mũi N" hoặc " lần N" (ví dụ "6 trong 1 mũi 1" thành "6 trong 1"). Nếu các mũi của cùng mã cho ra nhãn khác nhau sau khi bỏ đuôi (ví dụ "Sởi (9 tháng)" và mũi 18 tháng) thì dùng tên `series` của mã đó trong `groups`.
-- **Hàng chưa chọn loại:** mỗi nhóm (`dose.group`) có mũi `unchosen === true` còn mở (`overdue`, `upcoming`, `later`) là **một** hàng duy nhất, đặt tại vị trí mũi đầu tiên của nhóm trong `items`; nhãn là tên nhóm trong `groups`. Các loại thay thế của nhóm đó không được liệt kê.
+- **Nhãn hàng vắc xin:** tên của mũi có `doseNo` nhỏ nhất, bỏ đuôi " mũi N" hoặc " lần N" cùng mọi chữ đứng sau nó ("6 trong 1 mũi 1" và "6 trong 1 mũi 4 (nhắc)" đều thành "6 trong 1"). Nếu các mũi của cùng mã cho ra nhãn khác nhau sau khi bỏ đuôi thì: khi `series` của mã đó chỉ gồm đúng một mã vắc xin trong `items`, dùng tên `series` trong `groups` (ví dụ "Sởi 9 tháng, Sởi – Rubella 18 tháng"); khi `series` còn chứa mã khác (ví dụ `tcmr_5in1` gồm `dpt_vgb_hib`, `opv`, `ipv`), giữ nhãn của mũi có `doseNo` nhỏ nhất ("DPT-VGB-Hib (5 trong 1)").
+- **Hàng chưa chọn loại:** mỗi nhóm (`dose.group`) có mũi `unchosen === true` còn mở (`overdue`, `upcoming`, `later`) là **một** hàng duy nhất, đặt tại vị trí mũi đầu tiên của nhóm trong `items`; nhãn là tên nhóm trong `groups`. Các loại thay thế của nhóm đó không được liệt kê. Mũi đã tiêm hoặc đã bỏ qua của một nhóm chưa chọn loại không hiện trong bảng cho tới khi nhóm đó được chọn loại.
 - **Số cột:** `columns` là `doseNo` lớn nhất trong các hàng vắc xin, ít nhất là 1.
 
 Hàm thuần `doseCell(item)` (cùng file) trả về `{ label, date, tone }`, xét theo thứ tự:
@@ -216,7 +216,7 @@ Hàm thuần `doseCell(item)` (cùng file) trả về `{ label, date, tone }`, x
 
 Ngày viết dạng `dd/mm/yyyy` bằng hàm mới `formatDayFull(day)` trong `lib/rules/days.ts` ("2026-10-29" thành "29/10/2026").
 
-Component mới `components/vaccines/DoseGrid.tsx` (không có hook) vẽ bảng bằng `<table>` thật, thay cho `DoseSections`:
+Component mới `components/vaccines/DoseGrid.tsx` (không có hook, prop `items`, `groups`, `pending`, `onOpen`, `onChoose` tuỳ chọn) vẽ bảng bằng `<table>` thật, thay cho `DoseSections`:
 
 - Vỏ ngoài là thẻ `glass` bo 22 px, `overflow-hidden`; bên trong là vùng `overflow-x-auto` để bảng cuộn ngang khi có hơn 3 cột mũi.
 - Hàng tiêu đề: "Vắc xin", rồi "Mũi 1" … "Mũi {columns}". Chữ 13/18 đậm 600 `text-muted`.
@@ -231,7 +231,7 @@ Component mới `components/vaccines/DoseGrid.tsx` (không có hook) vẽ bảng
 
 - Thứ tự trong `VaccineScreen`: `PageHeader`, thẻ "cần làm trước", hàng "Nguồn lịch tiêm", phần thiết lập hoặc phần chọn loại (như cũ), rồi bảng và chú giải.
 - Đoạn chữ "Còn {n} nhóm chưa chọn loại vaccine…" đổi câu sau thành: "Mỗi nhóm này hiện một hàng "Chưa chọn loại" trong bảng và không có nhắc lịch." Nút "Chọn loại vaccine" không đổi.
-- `DoseSheet`: ngay đầu thân sheet hiện những gì danh sách cũ từng hiện cho mũi đó: dòng "{Hẹn … | Đã tiêm … | Đã bỏ qua} · {Tiêm chủng mở rộng | Dịch vụ}", câu "Đã quá tuổi khuyến cáo của loại vaccine này, hỏi bác sĩ." khi `pastMaxAge`, và `dose.note` khi mũi chưa tiêm. `DoseLine` được sửa để chỉ vẽ ba dòng này (không còn tên mũi và nhãn "Chưa chọn loại").
+- `DoseSheet`: ngay đầu thân sheet hiện một dòng chương trình ("Tiêm chủng mở rộng" hoặc "Dịch vụ"), câu "Đã quá tuổi khuyến cáo của loại vaccine này, hỏi bác sĩ." khi `pastMaxAge`, và `dose.note` khi mũi chưa tiêm. Ngày hẹn đã nằm trong đoạn "Phòng: …. Hẹn …." có sẵn của sheet nên không lặp lại. `DoseLine` được sửa để chỉ vẽ ba dòng này (không còn tên mũi, ngày và nhãn "Chưa chọn loại").
 - Xoá `components/vaccines/DoseSections.tsx` và `STATE_SECTIONS`.
 
 ## 8. Thống kê
