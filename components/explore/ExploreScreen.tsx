@@ -1,7 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import { Icon } from "@/components/ui/Icon";
 import { ListGroup, ListRow } from "@/components/ui/ListGroup";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { VACCINES } from "@/lib/content/vaccines";
+import { useGrowth } from "@/lib/data/growth";
+import { useVaccineDoses } from "@/lib/data/vaccines";
 import {
   EXPLORE_EMERGENCY,
   EXPLORE_GUIDES,
@@ -9,6 +14,11 @@ import {
   EXPLORE_SOOTHE,
   EXPLORE_TRACK,
 } from "@/lib/nav";
+import { growthCardText, vaccineCardText } from "@/lib/rules/exploreCards";
+import { vnDateString } from "@/lib/rules/time";
+import { parseChoices, toDoseRecords } from "@/lib/rules/vaccineForm";
+import { buildSchedule, nextDose } from "@/lib/rules/vaccines";
+import type { Baby } from "@/lib/supabase/rows";
 import type { CategoryToken } from "@/lib/ui/categories";
 import { cx } from "@/lib/ui/cx";
 
@@ -38,7 +48,53 @@ function SectionTitle({ children }: { children: string }) {
   return <h2 className="mx-1 text-xl font-bold text-ink">{children}</h2>;
 }
 
-export function ExploreScreen() {
+type LiveLine = { text: string | null; warn: boolean };
+
+// Spec 2026-11-19 §9: a card with a live line shows it in at most two lines
+// and falls back to the static description; the other cards stay as they were.
+function TrackDetail({ detail, live }: { detail?: string; live?: LiveLine }) {
+  if (!live)
+    return (
+      <span className="text-[13px] leading-[18px] text-muted">{detail}</span>
+    );
+  return (
+    <span
+      className={cx(
+        "line-clamp-2 text-[13px] leading-[18px]",
+        live.warn ? "font-semibold text-warn" : "text-muted",
+      )}
+    >
+      {live.text ?? detail}
+    </span>
+  );
+}
+
+export function ExploreScreen({ baby }: { baby: Baby }) {
+  const growth = useGrowth(baby.id);
+  const doses = useVaccineDoses(baby.id);
+  // No data yet (loading, offline, error) leaves the static descriptions.
+  const next = doses.data
+    ? nextDose(
+        buildSchedule({
+          doses: VACCINES.doses,
+          choices: parseChoices(baby.vaccine_choices),
+          dob: baby.dob,
+          records: toDoseRecords(doses.data),
+          today: vnDateString(new Date()),
+        }),
+      )
+    : null;
+  const live: Partial<Record<string, LiveLine>> = {
+    "/tang-truong": {
+      text: growth.data ? growthCardText(growth.data) : null,
+      warn: false,
+    },
+    "/tiem-chung": {
+      text: vaccineCardText(next),
+      warn: next?.state === "overdue",
+    },
+  };
+
   return (
     <main className="mx-auto flex max-w-md flex-col gap-[22px] px-4 pt-2">
       <PageHeader title="Khám phá" />
@@ -77,9 +133,7 @@ export function ExploreScreen() {
                 <Icon name={item.icon} size={18} strokeWidth={2.2} />
               </span>
               <span className="text-base font-bold">{item.label}</span>
-              <span className="text-[13px] leading-[18px] text-muted">
-                {item.detail}
-              </span>
+              <TrackDetail detail={item.detail} live={live[item.href]} />
             </Link>
           ))}
         </div>
