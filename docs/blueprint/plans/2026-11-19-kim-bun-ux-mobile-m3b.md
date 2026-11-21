@@ -126,13 +126,13 @@ Plan này đứng ngay sau M3a và trước M4 (chưa viết).
 - Consumes: `QUICK_ACTION_GROUPS` (M3a); `CATEGORY_CHIP`, `CATEGORY_RUNNING`; `HintBadge`; `useQuickActions`; `QuickLogGrid.onMore` ở `HomeScreen` (M2c).
 - Produces: `sheetGroups` và `actionSheetReducer` trong `lib/rules/quickActions.ts`; `QuickActionsValue.openActionSheet(groups?: QuickActionGroup[])` và trường `actionSheetGroups`; `ActionSheet` chỉ vẽ các nhóm được chọn; nhóm `timer` là lưới 5 cột nút tròn 58 px; `CATEGORY_TEXT` trong `lib/ui/categories.ts` (chuyển từ map `IDLE` của `TimerButtons.tsx`). `HistoryScreen` gọi `() => actions.openActionSheet()`; `HomeScreen` gọi `actions.openActionSheet(["other"])`.
 
-- [ ] **Step 0: Tạo nhánh**
+- [x] **Step 0: Tạo nhánh**
 
 ```bash
 git checkout -b feat/kim-bun-ux-mobile-m3b feat/kim-bun-ux-mobile-m3a
 ```
 
-- [ ] **Step 1: Viết test đỏ (Patch 1)**
+- [x] **Step 1: Viết test đỏ (Patch 1)**
 
 ```diff
 diff --git a/components/actions/actionchrome.test.tsx b/components/actions/actionchrome.test.tsx
@@ -610,12 +610,12 @@ index 0c1b87a..8c114d5 100644
  describe("icon paths", () => {
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run lib/rules/quickActions.test.ts lib/ui/categories.test.ts components/actions/actionsheet.test.tsx components/actions/actionchrome.test.tsx components/actions/quickactions.test.tsx components/history/historyscreen.test.tsx components/home/homescreen.test.tsx components/home/buttons.test.tsx`
 Expected: FAIL, `Tests  19 failed | 50 passed (69)`.
 
-- [ ] **Step 3: Sửa code (Patch 2)**
+- [x] **Step 3: Sửa code (Patch 2)**
 
 ```diff
 diff --git a/components/actions/ActionChrome.tsx b/components/actions/ActionChrome.tsx
@@ -1074,14 +1074,14 @@ index 62f1950..2134e22 100644
 +};
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run lib/rules/quickActions.test.ts lib/ui/categories.test.ts components/actions/actionsheet.test.tsx components/actions/actionchrome.test.tsx components/actions/quickactions.test.tsx components/history/historyscreen.test.tsx components/home/homescreen.test.tsx components/home/buttons.test.tsx && bun run typecheck`
 Expected: `Tests  69 passed (69)`; `tsc --noEmit` không báo lỗi.
 
 Patch code này mang theo một dòng thuộc về M3a: câu import từ `lib/ui/categories` trong `components/nav/TabBar.tsx` được gộp lại một dòng. Không đổi hành vi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -- components/actions/ActionChrome.tsx components/actions/ActionSheet.tsx components/actions/QuickActions.tsx components/history/HistoryScreen.tsx components/home/HomeScreen.tsx components/home/TimerButtons.tsx components/nav/TabBar.tsx lib/rules/quickActions.ts lib/ui/categories.ts components/actions/actionchrome.test.tsx components/actions/actionsheet.test.tsx components/history/historyscreen.test.tsx components/home/homescreen.test.tsx lib/rules/quickActions.test.ts lib/ui/categories.test.ts
@@ -1099,7 +1099,7 @@ git commit -m "feat(actions): thumb-first + sheet with round timer buttons and a
 - Consumes: ô timer của M3a.
 - Produces: mục 1 và 2 của bước 34 tả ô timer trong thanh tab thay cho viên timer nổi. Bước 34 vẫn ghi "Chờ người dùng".
 
-- [ ] **Step 1: Sửa tài liệu (Patch 3)**
+- [x] **Step 1: Sửa tài liệu (Patch 3)**
 
 ```diff
 diff --git a/docs/device-checklist.md b/docs/device-checklist.md
@@ -1119,7 +1119,7 @@ index 4b23fa1..7b1d5a1 100644
  5. Dọn dẹp: dừng timer, xóa các bản ghi Nằm sấp thử.
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add docs/device-checklist.md
@@ -1137,17 +1137,17 @@ git commit -m "docs(checklist): step 34 describes the timer tile in the tab bar"
 - Consumes: mọi thứ của M3a và Task 1–2.
 - Produces: `main` có cả M3a và M3b; M4 cắt nhánh từ `main`.
 
-- [ ] **Step 1: Typecheck và toàn bộ test**
+- [x] **Step 1: Typecheck và toàn bộ test**
 
 Run: `bun run typecheck && bunx vitest run`
 Expected: `tsc --noEmit` không báo lỗi; `Test Files  157 passed (157)`, `Tests  1122 passed (1122)`.
 
-- [ ] **Step 2: Build production**
+- [x] **Step 2: Build production**
 
 Run: `bun run build`
 Expected: lần đầu có thể dừng với thông báo bảo mật của Next.js 16.4.3 (bình thường). Chạy lại đúng lệnh đó: `✓ Generating static pages` và thoát mã 0.
 
-- [ ] **Step 3: Kiểm trên trình duyệt (phiên chính làm, không bấm Lưu, không đụng timer)**
+- [x] **Step 3: Kiểm trên trình duyệt (phiên chính làm, không bấm Lưu, không đụng timer)**
 
 Chạy `bun run dev` (nếu nó dừng với thông báo bảo mật thì chạy lại). Dùng khung Browser của app ở cỡ 375×812. Đóng mọi sheet bằng phím Esc.
 
@@ -1163,7 +1163,41 @@ Không bấm nút nào của hàng Bấm giờ, không bấm "Dừng", không ch
 
 Dừng `bun run dev` khi xong. Ghi kết quả từng mục ngay dưới bước này. Mục nào dữ liệu thật không cho thấy được thì ghi "chưa kiểm".
 
-- [ ] **Step 4: Commit phần ghi kết quả, đưa lên `main`, rồi báo cáo**
+**Kết quả (2026-11-21, khung Browser của app, 375×812, chỉ xem):**
+
+Step 1 và Step 2:
+
+- M3a: Task 1 đỏ `Tests  7 failed | 30 passed (37)`, xanh 37; Task 2 đỏ `Tests  13 failed | 20 passed (33)`, xanh 33; cả bộ `Test Files  157 passed (157)`, `Tests  1107 passed (1107)`. M3b Task 1: đỏ `Tests  19 failed | 50 passed (69)`, xanh 69. Đúng như plan.
+- `tsc --noEmit` không báo lỗi; `Test Files  157 passed (157)`, `Tests  1122 passed (1122)`.
+- `bun run build`: lần đầu dừng với thông báo bảo mật, lần hai thoát mã 0, `✓ Generating static pages using 9 workers (38/38)`.
+
+Step 3. Lúc kiểm, dữ liệu thật của gia đình không có timer nào đang chạy, và phiên này không được bấm giờ trên dữ liệu thật. Vì vậy ô timer được xem trên một trang tạm `app/chk/page.tsx` (dựng `TabBarView` với một bản ghi giả, không đọc hay ghi dữ liệu; đã xoá trước khi commit), còn sheet "+" được xem trên trang thật.
+
+1. Trên trang thật `/nhat-ky` (không có timer): ba tab bằng nhau, mỗi tab 87 px, `pill` là 0, không có nút "Dừng". Ô timer trên trang thật: **chưa kiểm**. Trên trang tạm, năm trạng thái:
+
+   | Trạng thái | Chữ trong ô | `w` | `ratio` | `inside` | `spare` | `aria-label` |
+   | --- | --- | --- | --- | --- | --- | --- |
+   | Ngủ 54 phút | "54:43", "Hôm nay" | 119,9 | 1,7 | true | 20,5 | "Hôm nay, Ngủ đã chạy 54:43" |
+   | Ngủ 10 giờ | "10g 00p", "Hôm nay" | 119,9 | 1,7 | true | 0,9 | "Hôm nay, Ngủ đã chạy 10:00:00" |
+   | Bú trái 12 phút, còn 2 timer khác | "11:59", "Hôm nay · +2" | 119,9 | 1,7 | true | 3,9 | "Hôm nay, Bú trái đã chạy 11:59" |
+   | Hút sữa 1 giờ 5 phút | "1g 05p", "Hôm nay" | 119,9 | 1,7 | true | 11,9 | "Hôm nay, Hút sữa đã chạy 1:05:00" |
+   | Nằm sấp 3 phút | "2:59", "Hôm nay" | 119,9 | 1,7 | true | 26 | "Hôm nay, Nằm sấp đã chạy 2:59" |
+
+   Đồng hồ nhảy từng giây ("54:38" rồi "54:39"). Ô cao 52 px. Trường hợp chật nhất ("10g 00p") còn dư 0,9 px, đúng như Diễn giải 1 của M3a.
+2. Chạm ô timer để về Hôm nay: **chưa kiểm** trên trang thật. Ô là link tới `/` (có unit test).
+3. `/cai-dat` khi timer còn chạy: **chưa kiểm** trên trang thật. Trên trang tạm, với `current="home"` ô có `aria-current="page"`.
+4. Đạt, trên trang thật `/nhat-ky`. Ba nhóm theo thứ tự "Khác", "Ghi nhanh", "Bấm giờ"; nhóm "Bấm giờ" là một hàng 5 nút tròn 58 px (Bú trái, Bú phải, Ngủ, Hút sữa, Nằm sấp), nút "Bú trái" có nhãn "Nên bú". `out` rỗng. `tightest`: "Nằm sấp" 9,8 px, "Uống nước" 9,9 px, "Hút sữa" 15,6 px. Đóng bằng Esc, không chọn ô nào.
+5. Đạt, trên trang thật. Chạm "Khác" ở Hôm nay: sheet chỉ có nhóm "Khác" với 4 ô (Ăn dặm, Uống nước, Tắm, Ghi chú). Esc. Chạm "+": đủ ba nhóm. Esc.
+6. Đạt: `true` ở `/nhat-ky` và ở `/`.
+7. Ô timer: nhìn ở `dark` (Ngủ), `rose` (Bú, "Hôm nay · +2"), `night` (Nằm sấp), `light` (Hút sữa) trên trang tạm; chữ và icon đọc rõ. Sheet "+": nhìn ở `dark`, `rose`, `night` trên trang thật; đọc rõ.
+
+Thấy thêm trên trang thật khi làm mục 5 (trạng thái của M2 trước đây chưa nhìn được): thẻ lớn ở trạng thái "TRỄ CỮ BÚ", "16 phút", "Dự kiến lúc 19:30", hai nút "Bú trái" (có nhãn "Nên bú") và "Bú phải", dòng "Lần trước: phải lúc 16:30"; ô "Cữ bú tiếp" ghi "19:30", "trễ 16p"; có dòng "Vitamin D đã uống 09:07".
+
+Chưa kiểm: ô timer với timer thật (mục 1–3); Safari trên iPhone. Việc này nằm ở bước 34 và bước 36 của checklist thiết bị.
+
+Không dừng `bun run dev`: M4 dùng tiếp cho phần kiểm trình duyệt.
+
+- [x] **Step 4: Commit phần ghi kết quả, đưa lên `main`, rồi báo cáo**
 
 ```bash
 git add docs/blueprint/plans/2026-11-19-kim-bun-ux-mobile-m3b.md
