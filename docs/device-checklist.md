@@ -567,14 +567,51 @@ Kết quả: Chờ người dùng.
 ## Bước 35 — Popup đóng mượt và phân loại triệu chứng (spec 2026-11-17 trieu-chung §3, §8)
 
 1. Trang chủ, bấm "+" để mở "Ghi lại cho {tên bé}", rồi đóng bằng nút ✕. Mở lại, đóng bằng chạm vào nền tối. Kỳ vọng: bảng trượt hết xuống dưới đáy màn hình, nền tối mờ dần cùng lúc, không có cú nhảy hay chớp ở cuối. Không bấm ô nào trong lưới.
-2. Khám phá → Triệu chứng ở bề ngang điện thoại. Kỳ vọng: các chip triệu chứng xuống dòng, không có thanh cuộn ngang ở màn nhập.
-3. Nhập 38,2; chọn "Sổ mũi, nghẹt mũi, hắt hơi" và "Dụi, kéo tai, quấy hơn khi nằm"; không bật công tắc nào; bấm "Xem kết quả". Kỳ vọng theo tuổi bé:
+2. Khám phá → Triệu chứng ở bề ngang điện thoại. Chạm tên từng nhóm để mở hết các nhóm chip. Kỳ vọng: các chip triệu chứng xuống dòng, không có thanh cuộn ngang ở màn nhập.
+3. Nhập 38,2; chọn "Sổ mũi, nghẹt mũi, hắt hơi" (nhóm "Hô hấp") và "Dụi, kéo tai, quấy hơn khi nằm" (nhóm "Khác"); không bật công tắc nào; bấm "Xem kết quả" ở thanh sát đáy màn hình. Kỳ vọng theo tuổi bé:
    - dưới 90 ngày: thẻ đỏ "Bé dưới 3 tháng sốt từ 38°C trở lên", khối "Nếu bé đang sốt", "Trên đường đi"; tab: Cảm lạnh, Viêm tai giữa, Sổ mũi, Sốt, Tay chân miệng, Croup;
    - đúng 90 ngày: như trên, có thêm Mọc răng ngay sau Sổ mũi;
    - 91–182 ngày: thẻ vàng, thẻ "Trong lúc chờ đi khám" có khối sốt; tab: Cảm lạnh, Viêm tai giữa, Sổ mũi, Mọc răng, Sốt, (từ 150 ngày: Sốt phát ban), Tay chân miệng, Croup;
    - từ 183 ngày: thẻ xanh "Theo dõi tại nhà", thẻ "Làm ngay tại nhà" có khối sốt; tab như dòng trên.
 4. Chạm từng tab. Kỳ vọng: nội dung bên dưới đổi theo; thanh tab cuộn ngang được.
 5. Bấm "Làm lại". Kỳ vọng: chip, công tắc và nhiệt độ về như lúc mới vào.
+
+Kết quả: Chờ người dùng.
+
+| Máy           | iOS | Kết quả | Ghi chú |
+| ------------- | --- | ------- | ------- |
+| iPhone 11     |     |         |         |
+| iPhone 16     |     |         |         |
+| iPhone 17 Pro |     |         |         |
+
+## Bước 36 — Tối ưu trải nghiệm mobile (spec 2026-11-19 §3–§10)
+
+Bước này tạo vài bản ghi thử (Ngủ, Bú trái, Bú bình); mục cuối xoá chúng.
+
+1. Tab Hôm nay khi không có timer nào chạy. Kỳ vọng: ngay trên hàng "Bấm giờ" có 3 ô "Cữ bú tiếp", "Bú gần nhất", "Tã gần nhất", không chữ nào bị cắt hay xuống dòng; ô "Cữ bú tiếp" ghi giờ của cữ tiếp kèm "còn …", hoặc "trễ …" khi đã quá giờ. Thẻ lớn có nhãn viết hoa "Trễ cữ bú", dòng "Dự kiến lúc HH:mm" và hai nút "Bú trái", "Bú phải" khi đã quá giờ; chưa quá giờ mà bé có giấc ngủ kết thúc trong 12 giờ qua thì là "Đang thức", thời gian đã thức và "từ HH:mm". Hàng "Ghi nhanh" là một hàng 5 nút tròn: Thay tã, Bú bình, Thuốc, Nhiệt độ, Khác.
+2. Bấm "Ngủ" ở hàng "Bấm giờ". Kỳ vọng: thẻ lớn có nhãn "Đang ngủ", đồng hồ đang chạy, dòng "{tên người bấm} · từ HH:mm" và nút "Dừng" ở bên phải; 3 ô trạng thái vẫn hiện bên dưới. Khi không có dải cảnh báo nào và hôm nay đã ghi Vitamin D: hàng 3 ô "24 giờ qua" nằm trọn phía trên thanh tab, không cần cuộn.
+3. Timer Ngủ vẫn chạy, sang tab Nhật ký rồi tab Khám phá. Kỳ vọng: không còn viên timer nổi phía trên thanh tab; tab "Hôm nay" thành ô timer rộng hơn hai tab kia, gồm ô tròn có icon, đồng hồ đang chạy (dưới 1 giờ dạng "54:38", từ 1 giờ dạng "1g 05p") và chữ "Hôm nay" bên dưới, không chữ nào bị cắt hay tràn ra ngoài ô; không có nút "Dừng". Chạm ô timer thì về tab Hôm nay; ở đó tab "Hôm nay" vẽ như bình thường.
+4. Về Hôm nay, bấm thêm "Bú trái" (timer Ngủ vẫn chạy). Kỳ vọng: thẻ lớn thành "Đang bú trái" với hai nút "Đổi bên" và "Dừng"; ô "Cữ bú tiếp" ghi "Đang bú" và "từ HH:mm". Sang tab Nhật ký: ô timer có dòng chữ nhỏ "Hôm nay · +1", không bị cắt.
+5. Ở tab Nhật ký, bấm "+". Kỳ vọng: bảng có ba nhóm theo thứ tự "Khác", "Ghi nhanh", "Bấm giờ"; nhóm "Bấm giờ" nằm gần ngón cái nhất, là một hàng 5 nút tròn, hai nút của timer đang chạy được tô màu; mọi nhãn nằm trên một dòng, kể cả "Uống nước". Đóng bảng, không bấm ô nào. Về Hôm nay, bấm "Khác" ở hàng "Ghi nhanh". Kỳ vọng: bảng chỉ có nhóm "Khác" với 4 ô Ăn dặm, Uống nước, Tắm, Ghi chú. Đóng bảng, bấm "+". Kỳ vọng: lại đủ ba nhóm. Đóng bảng.
+6. Bấm "Thay tã" ở hàng "Ghi nhanh". Kỳ vọng: hàng "Lúc nào?" hiện đủ 4 lựa chọn "Bây giờ", "5p trước", "15p trước", "Giờ khác" trên một hàng, không phải cuộn ngang, không chữ nào bị cắt; chọn "Giờ khác" thì hiện ô chọn ngày giờ. Đóng sheet, không bấm Lưu.
+7. Bấm "Nhiệt độ" ở hàng "Ghi nhanh". Kỳ vọng: ô số còn trống hiện "––,–"; dưới ô số có hàng 6 nút 36,5 · 37,0 · 37,5 · 38,0 · 38,5 · 39,0. Chạm "38,0": ô số thành 38,0 và nút đó đổi sang nền đậm. Bấm "+0,1": ô số thành 38,1 và không nút mốc nào còn nền đậm. Đóng sheet, không bấm Lưu.
+8. Bấm "Bú bình", nhập 90 ml, bấm Lưu. Bấm "Bú bình" lần nữa. Kỳ vọng: ô ml điền sẵn 90; đóng sheet ngay thì không bị hỏi "Bỏ thay đổi?".
+9. Tab Nhật ký. Kỳ vọng: góc trên phải là nút có chữ "Ghi bù" (không còn nút chỉ có icon lịch); bấm thì mở phần thêm bản ghi cũ như trước. Đóng lại, không lưu.
+10. Khám phá. Kỳ vọng: thẻ "Tăng trưởng" ghi "Cân nặng {gam} g · {ngày/tháng}" của lần cân mới nhất (chưa cân lần nào thì vẫn là dòng mô tả cũ); thẻ "Tiêm chủng" ghi "Quá hạn: {tên mũi}" chữ đậm màu cảnh báo, hoặc "{ngày/tháng} · {tên mũi}" của mũi sắp tới; mỗi dòng không quá 2 dòng chữ.
+11. Khám phá → Tiêm chủng (đã chọn xong loại vaccine lần đầu). Kỳ vọng: ngay dưới tiêu đề trang có một thẻ với nhãn viết hoa "Quá hạn {n} ngày", "Sắp tới · còn {n} ngày" (hạn là hôm nay thì "Sắp tới · hôm nay") hoặc "Mũi tiếp theo", bên dưới là tên mũi chữ lớn và dòng "Hẹn {thứ}, {ngày} · Tiêm chủng mở rộng" hoặc "… · Dịch vụ"; tên mũi trùng với thẻ "Tiêm chủng" ở Khám phá. Chạm thẻ thì mở sheet của đúng mũi đó; đóng lại, không lưu.
+12. Vẫn ở Tiêm chủng, xem bảng. Kỳ vọng: hàng tiêu đề "Vắc xin", "Mũi 1", "Mũi 2", …; mỗi vắc xin một hàng, mỗi mũi một ô có trạng thái và ngày: "Đã tiêm" nền xanh nhạt có dấu tích, "Trễ hẹn" nền đỏ nhạt, "Sắp tới" nền vàng nhạt, "Chưa tiêm" nền xám nhạt; không chữ nào trong ô bị cắt. Vuốt bảng sang trái: cột "Vắc xin" đứng yên, các cột mũi trượt bên dưới, cột mũi cuối không bị dải mờ ở mép phải che. Mỗi nhóm chưa chọn loại chỉ có một hàng với ô "Chưa chọn loại ›"; khi vuốt bảng, chữ "Chưa chọn loại" vẫn nằm sát cột "Vắc xin", không trượt xuống dưới cột đó. Dưới bảng có chú giải "Đã tiêm", "Trễ hẹn", "Sắp tới", "Chưa tiêm". Trang không cuộn ngang, chỉ bảng cuộn.
+13. Chạm một ô có mũi. Kỳ vọng: mở sheet của đúng mũi đó, đầu sheet có dòng "Tiêm chủng mở rộng" hoặc "Dịch vụ", ngày hẹn chỉ xuất hiện một lần. Đóng lại, không lưu. Bằng tài khoản chủ gia đình, chạm một ô "Chưa chọn loại ›". Kỳ vọng: phần "Loại vaccine" mở ra và trang cuộn về đầu. Bấm "Đóng", không bấm Lưu.
+14. Khám phá → Triệu chứng. Kỳ vọng: mọi nhóm chip triệu chứng đang đóng, có dòng "Mở nhóm rồi chạm để chọn, chọn được nhiều."; chạm tên nhóm thì nhóm mở ra, mở được nhiều nhóm cùng lúc, chọn chip thì cạnh tên nhóm có nhãn "{n} đã chọn"; các công tắc dấu hiệu nguy hiểm vẫn mở sẵn. Sát đáy màn hình có một thanh gồm nút tròn gọi 115 và nút "Xem kết quả · đã chọn {n}" (n là số chip đang chọn cộng số công tắc đang bật; chưa chọn gì thì chỉ ghi "Xem kết quả"); cuối trang không còn nút "Xem kết quả" nào khác; thanh tab và nút "+" ẩn đi, và không chớp hiện lúc trang vừa mở; cuộn hết trang thì công tắc cuối cùng không bị thanh che. Không chạm nút gọi 115.
+15. Cuộn xuống cuối trang Triệu chứng, nhập 50 vào ô nhiệt độ rồi bấm "Xem kết quả". Kỳ vọng: trang cuộn về đầu, dưới ô nhiệt độ có dòng "Nhiệt độ từ 30 đến 43°C, ví dụ 38,5.", chưa có kết quả. Xoá ô nhiệt độ, bấm "Xem kết quả". Kỳ vọng: hiện kết quả, thanh ở đáy biến mất, thanh tab và nút "+" hiện lại. Bấm "Làm lại". Kỳ vọng: mọi nhóm chip đóng lại, thanh ở đáy hiện lại với chữ "Xem kết quả".
+16. Khám phá → Thống kê, tab "Ngủ". Kỳ vọng: góc trên trái biểu đồ có chữ "giờ"; có một vùng tô nhạt nằm ngang đúng khoảng chuẩn theo tuổi của bé (bé đến 90 ngày tuổi: 14–17 giờ) và trục Y cao tới hết vùng đó; cột của hôm nay (cột cuối) nhạt hơn các cột khác; dòng chữ dưới bảng có thêm "Vùng tô nhạt: chuẩn 14–17 giờ mỗi ngày. Cột nhạt là hôm nay, chưa hết ngày." (hai số theo tuổi của bé).
+17. Vẫn ở Thống kê, bấm lần lượt các tab còn lại. Kỳ vọng:
+    - "Bú": chữ "cữ"; khi bé chưa quá 180 ngày tuổi có một đường kẻ nét đứt tại 8 (bé đến 30 ngày tuổi) hoặc tại 6, và câu "Đường kẻ: chuẩn từ 8 cữ mỗi ngày." hoặc "… từ 6 cữ mỗi ngày.";
+    - "Tã": chữ "tã"; khi bé trên 5 ngày tuổi có một đường kẻ nét đứt tại 6 và câu "Đường kẻ: chuẩn từ 6 tã ướt mỗi ngày.";
+    - "Hút sữa" (chữ "ml"), "Nằm sấp" (chữ "phút"), "Ăn dặm" (chữ "bữa"): không có vùng tô hay đường kẻ, dưới bảng chỉ thêm câu "Cột nhạt là hôm nay, chưa hết ngày.";
+    - tab nào chưa có dữ liệu thì không có biểu đồ, dòng chữ dưới bảng không có các câu trên.
+18. Bật Ban đêm rồi lặp lại mục 3, mục 12, mục 14 và mục 16. Kỳ vọng: chữ đọc rõ; ô timer, các ô của bảng tiêm chủng, thanh kết quả, vùng tô nhạt và đường kẻ theo tông hổ phách, không có màu xanh.
+19. Đóng hẳn app rồi mở lại từ màn hình chính. Kỳ vọng: trong lúc chờ, khung chờ có hình dạng của trang Hôm nay (một thẻ lớn thấp, 3 ô, hai hàng 5 ô tròn); khi dữ liệu hiện ra, phần trên của trang không nhảy nhiều (thẻ lớn có thể cao lên khi đang trễ cữ bú).
+20. Dọn dẹp: về tab Hôm nay bấm "Dừng" cả hai timer, rồi xóa bản ghi Ngủ thử, Bú trái thử và Bú bình 90 ml thử trong Nhật ký.
 
 Kết quả: Chờ người dùng.
 
