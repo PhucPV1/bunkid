@@ -7,9 +7,16 @@ import { NotInvited } from "./NotInvited";
 describe("AuthGate states", () => {
   it("loading draws the home page's shapes, not text", () => {
     const html = renderToStaticMarkup(<GateLoading />);
-    expect(html).toContain('aria-busy="true"');
-    expect(html).toContain("h-[300px]");
-    expect(html.match(/kb-pulse/g)?.length).toBeGreaterThanOrEqual(9);
+    expect(html).toMatch(/^<main aria-busy="true" class="[^"]*\bgap-3\.5\b/);
+    expect(html).not.toContain("gap-[18px]");
+    // The header bar, then the shapes of the current home page.
+    expect(html.indexOf("h-11 w-48 rounded-full")).toBeGreaterThan(-1);
+    expect(html.indexOf("h-11 w-48 rounded-full")).toBeLessThan(
+      html.indexOf("h-[104px] rounded-[32px]"),
+    );
+    expect(html).not.toContain("h-[300px]");
+    expect(html.match(/size-\[58px\] rounded-full/g)).toHaveLength(10);
+    expect(html.match(/kb-pulse/g)).toHaveLength(26);
     expect(html).not.toContain("Đang tải…");
   });
 

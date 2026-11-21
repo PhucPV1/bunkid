@@ -120,6 +120,42 @@ beforeEach(() => {
   openActionSheet.mockClear();
 });
 
+// The loading shapes follow the page of spec 2026-11-19 §3: hero 104, three
+// 80 px tiles, two rows of five 58 px circles under a label, then two sections
+// with a 44 px title row each: three 96 px stat tiles, and four list rows.
+// 25 pulsing blocks in all.
+function expectHomeShapes(html: string) {
+  expect(html).toContain(
+    '<div aria-busy="true" class="flex flex-col gap-3.5">',
+  );
+  expect(html).not.toContain("h-[300px]");
+  expect(html.match(/h-\[104px\] rounded-\[32px\]/g)).toHaveLength(1);
+  expect(html.match(/h-20 rounded-\[24px\]/g)).toHaveLength(3);
+  expect(html).toContain("grid grid-cols-3 gap-2");
+  expect(html.match(/h-\[18px\]/g)).toHaveLength(2);
+  expect(html.match(/size-\[58px\] rounded-full/g)).toHaveLength(10);
+  expect(html.match(/grid grid-cols-5 gap-1/g)).toHaveLength(2);
+  expect(html).not.toContain("h-[92px]");
+  expect(html.match(/h-24 rounded-\[24px\]/g)).toHaveLength(3);
+  expect(html.match(/h-\[60px\]/g)).toHaveLength(4);
+  // A 44 px title row opens "24 giờ qua" and "Gần đây".
+  const title = '<div class="flex h-11 items-center px-1">';
+  expect(html.split(title)).toHaveLength(3);
+  expect(html.indexOf(title)).toBeLessThan(html.indexOf("h-24 rounded-[24px]"));
+  expect(html.lastIndexOf(title)).toBeGreaterThan(
+    html.lastIndexOf("h-24 rounded-[24px]"),
+  );
+  expect(html.lastIndexOf(title)).toBeLessThan(html.indexOf("h-[60px]"));
+  expect(html.match(/kb-pulse/g)).toHaveLength(25);
+  expectInOrder(html, [
+    "h-[104px]",
+    "h-20 rounded-[24px]",
+    "size-[58px]",
+    "h-24 rounded-[24px]",
+    "h-[60px]",
+  ]);
+}
+
 describe("HomeScreen", () => {
   it("while logs load: header, sync line, then the home shapes and nothing else", () => {
     const html = render({
@@ -132,9 +168,8 @@ describe("HomeScreen", () => {
       html.indexOf("</header>"),
     );
     expect(html).toContain('aria-busy="true"');
-    expect(html).toContain("h-[300px]");
-    expect(html.match(/kb-pulse/g)).toHaveLength(8);
     expect(html).not.toContain("Thay tã");
+    expectHomeShapes(html);
   });
 
   it("a load error replaces the hero with a retry card; logging buttons stay", () => {

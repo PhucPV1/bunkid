@@ -18,12 +18,13 @@ import { gateRedirect, resolveLanding, type GateNeed } from "@/lib/routing";
 
 export type GateState = { session: Session | null; ctx: FamilyContext };
 
-// Spec §10: the gate waits with the home page's shapes under a header-sized bar.
+// Spec §10: the gate waits with the home page's shapes under a header-sized
+// bar, with the home page's 14 px gap.
 export function GateLoading() {
   return (
     <main
       aria-busy="true"
-      className="mx-auto flex max-w-md flex-col gap-[18px] p-4"
+      className="mx-auto flex max-w-md flex-col gap-3.5 p-4"
     >
       <Skeleton className="h-11 w-48 rounded-full" />
       <HomeSkeleton />
