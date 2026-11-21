@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   addDays,
   addMonths,
+  formatDayFull,
   formatDayShort,
   vnDayLabel,
   vnDayRange,
@@ -38,6 +39,12 @@ describe("days", () => {
 
   it("formatDayShort gives dd/MM", () => {
     expect(formatDayShort("2026-01-05")).toBe("05/01");
+  });
+
+  // Spec 2026-11-19 §7.2: the dates in the vaccine table.
+  it("formatDayFull gives dd/MM/yyyy", () => {
+    expect(formatDayFull("2026-10-29")).toBe("29/10/2026");
+    expect(formatDayFull("2027-01-05")).toBe("05/01/2027");
   });
 
   it("vnDayLabel names today, yesterday and older days", () => {

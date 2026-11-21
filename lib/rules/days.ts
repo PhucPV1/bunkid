@@ -42,6 +42,12 @@ export function formatDayShort(day: string): string {
   return `${date}/${month}`;
 }
 
+// Spec 2026-11-19 §7.2: "2026-10-29" → "29/10/2026".
+export function formatDayFull(day: string): string {
+  const [year, month, date] = day.split("-");
+  return `${date}/${month}/${year}`;
+}
+
 export function vnDayLabel(day: string, now: Date): string {
   const today = vnDateString(now);
   if (day === today) return "Hôm nay";
