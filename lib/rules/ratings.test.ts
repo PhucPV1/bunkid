@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import type { LogLike } from "@/lib/rules/describeLog";
 import {
   countFeedsInWindow,
+  dailyNorm,
   groupFeedSessions,
+  type MetricResult,
   rateLast24h,
   sleepMinutesInWindow,
   wetDiapersInWindow,
@@ -169,5 +171,61 @@ describe("rateLast24h", () => {
     expect(
       rate([log("diaper", 1, 1, { wet: false, dirty: true })], 60),
     ).toMatchObject({ rating: "red", value: 0 });
+  });
+});
+
+// Spec 2026-11-19 §8: the norm the Thống kê chart draws.
+describe("dailyNorm", () => {
+  const AGES = [5, 6, 30, 31, 90, 91, 180, 181];
+
+  it("gives the sleep band of the age, in hours", () => {
+    expect(dailyNorm("sleep", 5)).toEqual({ min: 14, max: 17 });
+    expect(dailyNorm("sleep", 90)).toEqual({ min: 14, max: 17 });
+    expect(dailyNorm("sleep", 91)).toEqual({ min: 12, max: 15 });
+    expect(dailyNorm("sleep", 364)).toEqual({ min: 12, max: 15 });
+    expect(dailyNorm("sleep", 365)).toEqual({ min: 11, max: 14 });
+    expect(dailyNorm("sleep", 729)).toEqual({ min: 11, max: 14 });
+    expect(dailyNorm("sleep", 730)).toEqual({ min: 10, max: 13 });
+  });
+
+  it("gives the feed minimum up to 180 days and nothing after", () => {
+    expect(dailyNorm("feed", 5)).toEqual({ min: 8 });
+    expect(dailyNorm("feed", 30)).toEqual({ min: 8 });
+    expect(dailyNorm("feed", 31)).toEqual({ min: 6 });
+    expect(dailyNorm("feed", 180)).toEqual({ min: 6 });
+    expect(dailyNorm("feed", 181)).toBeNull();
+  });
+
+  it("gives the wet-diaper minimum from day 6", () => {
+    expect(dailyNorm("diaper", 5)).toBeNull();
+    expect(dailyNorm("diaper", 6)).toEqual({ min: 6 });
+    expect(dailyNorm("diaper", 181)).toEqual({ min: 6 });
+  });
+
+  it("has no norm for the other tabs", () => {
+    for (const tab of ["pump", "tummy", "solids"] as const)
+      for (const age of AGES) expect(dailyNorm(tab, age)).toBeNull();
+  });
+
+  it("uses the numbers rateLast24h explains at every boundary age", () => {
+    // What the rating says: its explain line, or its status when not rated.
+    const said = (result: MetricResult) =>
+      result.status === "rated" ? result.explain : result.status;
+    const logs = [log("sleep", 20, 5), ...bottlesEvery3h(8), ...wets(6)];
+    for (const ageDays of AGES) {
+      const day = rateLast24h({ logs, ageDays, firstLogAt: OLD, now: NOW });
+      const sleep = dailyNorm("sleep", ageDays);
+      const feed = dailyNorm("feed", ageDays);
+      const wet = dailyNorm("diaper", ageDays);
+      expect(said(day.sleepMinutes)).toContain(
+        `${sleep?.min}–${sleep?.max} giờ`,
+      );
+      expect(said(day.feeds)).toContain(
+        feed ? `từ ${feed.min} cữ` : "not-rated",
+      );
+      expect(said(day.wetDiapers)).toContain(
+        wet ? `từ ${wet.min} tã` : "not-rated",
+      );
+    }
   });
 });

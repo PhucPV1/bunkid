@@ -8,6 +8,7 @@ import {
   sleepHours,
   STATS_TABS,
   statsFetchSince,
+  statsFootnote,
 } from "./dailyStats";
 
 const days = ["2026-11-13", "2026-11-14"];
@@ -244,5 +245,37 @@ describe("empty stats", () => {
     expect(emptyStatsText("solids", 14)).toBe(
       "Chưa có bữa ăn dặm nào trong 14 ngày",
     );
+  });
+});
+
+// Spec 2026-11-19 §8: the note under the table.
+describe("statsFootnote", () => {
+  const BASE = "Tính theo ngày lịch giờ Việt Nam. Hôm nay tính đến hiện tại.";
+
+  it("names the shaded band when the norm has a max", () => {
+    expect(statsFootnote("sleep", { min: 14, max: 17 }, true)).toBe(
+      "Tính theo ngày lịch giờ Việt Nam. Hôm nay tính đến hiện tại. Vùng tô nhạt: chuẩn 14–17 giờ mỗi ngày. Cột nhạt là hôm nay, chưa hết ngày.",
+    );
+  });
+
+  it("names the line when the norm only has a min", () => {
+    expect(statsFootnote("feed", { min: 8 }, true)).toBe(
+      `${BASE} Đường kẻ: chuẩn từ 8 cữ mỗi ngày. Cột nhạt là hôm nay, chưa hết ngày.`,
+    );
+    expect(statsFootnote("diaper", { min: 6 }, true)).toBe(
+      `${BASE} Đường kẻ: chuẩn từ 6 tã ướt mỗi ngày. Cột nhạt là hôm nay, chưa hết ngày.`,
+    );
+  });
+
+  it("only explains the pale bar when the tab has no norm", () => {
+    expect(statsFootnote("pump", null, true)).toBe(
+      `${BASE} Cột nhạt là hôm nay, chưa hết ngày.`,
+    );
+  });
+
+  it("keeps to the old note when no chart is drawn", () => {
+    expect(statsFootnote("sleep", { min: 14, max: 17 }, false)).toBe(BASE);
+    expect(statsFootnote("diaper", { min: 6 }, false)).toBe(BASE);
+    expect(statsFootnote("tummy", null, false)).toBe(BASE);
   });
 });

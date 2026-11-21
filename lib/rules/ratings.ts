@@ -1,3 +1,4 @@
+import type { StatsTab } from "./dailyStats";
 import type { LogLike } from "./describeLog";
 import { detailsSchemas } from "./logDetails";
 import { TIMER_LIMIT_MIN } from "./timer";
@@ -230,4 +231,24 @@ export function rateLast24h(input: {
     feeds: rateFeeds(logs, ageDays, enoughHistory, now),
     wetDiapers: rateWet(logs, ageDays, enoughHistory, now),
   };
+}
+
+export type DailyNorm = { min: number; max?: number };
+
+// Spec 2026-11-19 §8: the norm the Thống kê chart draws for one day, from the
+// same thresholds as the ratings above. Sleep is in hours; feeds and wet
+// diapers are counts.
+export function dailyNorm(tab: StatsTab, ageDays: number): DailyNorm | null {
+  if (tab === "sleep") {
+    const band =
+      SLEEP_BANDS.find((b) => ageDays <= b.maxAge) ??
+      SLEEP_BANDS[SLEEP_BANDS.length - 1];
+    return { min: band.min, max: band.max };
+  }
+  if (tab === "feed") {
+    if (ageDays > 180) return null;
+    return { min: ageDays <= 30 ? 8 : 6 };
+  }
+  if (tab === "diaper") return ageDays > 5 ? { min: 6 } : null;
+  return null;
 }

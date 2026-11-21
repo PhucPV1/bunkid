@@ -1,7 +1,7 @@
 import { addDays, vnDayStartMs } from "./days";
 import type { LogLike } from "./describeLog";
 import { detailsSchemas } from "./logDetails";
-import { groupFeedSessions } from "./ratings";
+import { type DailyNorm, groupFeedSessions } from "./ratings";
 import { vnDateString } from "./time";
 
 export type DayStat = {
@@ -151,4 +151,26 @@ const EMPTY_NOUN: Record<StatsTab, string> = {
 // Spec §9 Thống kê: shown instead of the chart when the range has nothing.
 export function emptyStatsText(tab: StatsTab, days: number): string {
   return `Chưa có ${EMPTY_NOUN[tab]} nào trong ${days} ngày`;
+}
+
+const STATS_NOTE =
+  "Tính theo ngày lịch giờ Việt Nam. Hôm nay tính đến hiện tại.";
+
+// Spec 2026-11-19 §8: the note under the table. The sentences about the chart
+// are only added when the chart is drawn.
+export function statsFootnote(
+  tab: StatsTab,
+  norm: DailyNorm | null,
+  charted: boolean,
+): string {
+  if (!charted) return STATS_NOTE;
+  const sentences = [STATS_NOTE];
+  if (norm?.max !== undefined)
+    sentences.push(`Vùng tô nhạt: chuẩn ${norm.min}–${norm.max} giờ mỗi ngày.`);
+  else if (norm) {
+    const what = tab === "diaper" ? "tã ướt" : "cữ";
+    sentences.push(`Đường kẻ: chuẩn từ ${norm.min} ${what} mỗi ngày.`);
+  }
+  sentences.push("Cột nhạt là hôm nay, chưa hết ngày.");
+  return sentences.join(" ");
 }
