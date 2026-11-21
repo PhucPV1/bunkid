@@ -18,14 +18,15 @@ describe("QuickActionGrid", () => {
       <QuickActionGrid running={[]} onPick={() => {}} />,
     );
     const titles = [...html.matchAll(/<h3 class="([^"]*)">([^<]+)<\/h3>/g)];
-    expect(titles.map((m) => m[2])).toEqual(["Bấm giờ", "Ghi nhanh", "Khác"]);
+    // Spec 2026-11-19 §5.4: the most used group sits lowest, near the thumb.
+    expect(titles.map((m) => m[2])).toEqual(["Khác", "Ghi nhanh", "Bấm giờ"]);
     expect(titles[0][1]).toBe(
       "text-[13px] leading-[18px] font-semibold text-muted",
     );
     expect(html.match(/grid grid-cols-4 gap-2/g)).toHaveLength(3);
     const tiles = html.split("<section").slice(1);
     expect(tiles.map((part) => part.match(/<button/g)?.length)).toEqual([
-      5, 4, 4,
+      4, 4, 5,
     ]);
     expect(html.match(/h-\[84px\][^"]*rounded-\[20px\]/g)).toHaveLength(13);
     expect(html.match(/size-\[38px\]/g)).toHaveLength(13);
@@ -60,12 +61,16 @@ describe("QuickActionGrid", () => {
       QuickActionGrid({ running: [], onPick }),
       "button",
     );
-    (buttons[6].props.onClick as () => void)();
+    // Buttons follow the sheet's group order; QUICK_ACTIONS keeps its own.
+    (buttons[5].props.onClick as () => void)();
     expect(onPick).toHaveBeenCalledWith(QUICK_ACTIONS[6]);
     expect(QUICK_ACTIONS[6].label).toBe("Thay tã");
-    (buttons[12].props.onClick as () => void)();
+    (buttons[3].props.onClick as () => void)();
     expect(onPick).toHaveBeenLastCalledWith(QUICK_ACTIONS[12]);
     expect(QUICK_ACTIONS[12]).toMatchObject({ instant: "note" });
+    (buttons[8].props.onClick as () => void)();
+    expect(onPick).toHaveBeenLastCalledWith(QUICK_ACTIONS[0]);
+    expect(QUICK_ACTIONS[0].label).toBe("Bú trái");
   });
 });
 
@@ -94,8 +99,9 @@ describe("QuickActionGrid next-side hint (spec 2026-11-17 §5.3)", () => {
       <QuickActionGrid running={[]} onPick={() => {}} suggestSide="left" />,
     );
     expect(html.match(/Nên bú/g)).toHaveLength(1);
-    const first = html.split("<section")[1];
-    expect(first).toMatch(/Nên bú<\/span>.*Bú trái/s);
+    const [other, quick, timers] = html.split("<section").slice(1);
+    expect(timers).toMatch(/Nên bú<\/span>.*Bú trái/s);
+    expect(other + quick).not.toContain("Nên bú");
     expect(html.match(/<button/g)).toHaveLength(13);
   });
 

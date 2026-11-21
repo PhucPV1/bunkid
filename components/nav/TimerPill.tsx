@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import { useQuickActions } from "@/components/actions/QuickActions";
 import { Icon } from "@/components/ui/Icon";
 import { useNow } from "@/lib/hooks/useNow";
-import { showsTimerPill } from "@/lib/nav";
+import { showsTabTimer } from "@/lib/nav";
 import { formatClock, timerLabel } from "@/lib/rules/hero";
 import { pillTimer } from "@/lib/rules/timer";
 import type { LogRow } from "@/lib/supabase/rows";
@@ -90,7 +90,7 @@ function LivePill({ log, more }: { log: LogRow; more: number }) {
 
 export function TimerPill() {
   const actions = useQuickActions();
-  const pill = showsTimerPill(usePathname())
+  const pill = showsTabTimer(usePathname())
     ? pillTimer(actions.runningRows)
     : null;
   return pill ? <LivePill log={pill.log} more={pill.more} /> : null;

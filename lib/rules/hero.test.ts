@@ -3,6 +3,7 @@ import type { LogLike } from "./describeLog";
 import {
   formatClock,
   formatMinutes,
+  formatTabClock,
   heroState,
   longTimerText,
   runningLabel,
@@ -142,6 +143,18 @@ describe("hero text helpers", () => {
     expect(formatClock(59 * 60_000 + 59_999)).toBe("59:59");
     expect(formatClock(3_725_000)).toBe("1:02:05");
     expect(formatClock(-5_000)).toBe("0:00");
+  });
+
+  // Spec 2026-11-19 §4: the clock on the tab bar's timer tile.
+  it("formatTabClock shows M:SS, then hours and minutes from one hour", () => {
+    expect(formatTabClock(0)).toBe("0:00");
+    expect(formatTabClock(54 * 60_000 + 38_000)).toBe("54:38");
+    expect(formatTabClock(59 * 60_000 + 59_999)).toBe("59:59");
+    expect(formatTabClock(3_600_000)).toBe("1g 00p");
+    expect(formatTabClock(3_900_000)).toBe("1g 05p");
+    expect(formatTabClock(3_959_999)).toBe("1g 05p");
+    expect(formatTabClock(14 * 3_600_000 + 30 * 60_000)).toBe("14g 30p");
+    expect(formatTabClock(-5_000)).toBe("0:00");
   });
 
   it("formatMinutes switches to hours from 60 minutes", () => {

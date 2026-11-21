@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import * as nav from "./nav";
 import {
   activeTab,
   EXPLORE_EMERGENCY,
@@ -6,7 +7,7 @@ import {
   EXPLORE_REPORT,
   EXPLORE_SOOTHE,
   EXPLORE_TRACK,
-  showsTimerPill,
+  showsTabTimer,
   TABS,
 } from "./nav";
 
@@ -94,11 +95,16 @@ describe("nav", () => {
   });
 });
 
-describe("showsTimerPill (spec 2026-11-17 §5.2)", () => {
+describe("showsTabTimer (spec 2026-11-19 §4)", () => {
   it("is off on Hôm nay, which already has the hero card, and on elsewhere", () => {
-    expect(showsTimerPill("/")).toBe(false);
-    expect(showsTimerPill("/nhat-ky")).toBe(true);
-    expect(showsTimerPill("/kham-pha")).toBe(true);
-    expect(showsTimerPill("/cai-dat/cu-bu")).toBe(true);
+    expect(showsTabTimer("/")).toBe(false);
+    expect(showsTabTimer("/nhat-ky")).toBe(true);
+    expect(showsTabTimer("/kham-pha")).toBe(true);
+    expect(showsTabTimer("/cai-dat")).toBe(true);
+    expect(showsTabTimer("/cai-dat/cu-bu")).toBe(true);
+  });
+
+  it("replaces showsTimerPill: the old name is gone", () => {
+    expect(Object.keys(nav)).not.toContain("showsTimerPill");
   });
 });

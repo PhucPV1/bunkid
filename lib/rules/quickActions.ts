@@ -22,16 +22,17 @@ export type QuickAction =
       instant: InstantType;
     };
 
-// Spec 2026-11-17 §3.3: the "+" sheet draws one titled block per group, in this order.
+// Spec 2026-11-19 §5.4: the "+" sheet draws one titled block per group, in this
+// order. The most used group comes last, nearest the thumb.
 export const QUICK_ACTION_GROUPS: { group: QuickActionGroup; title: string }[] =
   [
-    { group: "timer", title: "Bấm giờ" },
-    { group: "quick", title: "Ghi nhanh" },
     { group: "other", title: "Khác" },
+    { group: "quick", title: "Ghi nhanh" },
+    { group: "timer", title: "Bấm giờ" },
   ];
 
-// Group by group, in the order the "+" sheet shows them. The home page's timer row
-// (TimerButtons) takes the kind "timer" entries in this same order.
+// Group by group, timers first: the home page's timer row (TimerButtons) takes
+// the kind "timer" entries in this order. QUICK_ACTION_GROUPS orders the sheet.
 export const QUICK_ACTIONS: QuickAction[] = [
   {
     key: "breast-left",

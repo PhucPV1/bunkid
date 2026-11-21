@@ -93,6 +93,16 @@ export function formatClock(ms: number): string {
     : `${minutes}:${seconds}`;
 }
 
+// Spec 2026-11-19 §4: the clock on the tab bar's timer tile. Like formatClock
+// under one hour; from one hour it drops the seconds to stay narrow.
+export function formatTabClock(ms: number): string {
+  const total = Math.max(0, Math.floor(ms / 1000));
+  if (total < 3600) return formatClock(ms);
+  const hours = Math.floor(total / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+  return `${hours}g ${String(minutes).padStart(2, "0")}p`;
+}
+
 export function formatMinutes(minutes: number): string {
   if (minutes < 60) return `${minutes} phút`;
   return `${Math.floor(minutes / 60)} giờ ${String(minutes % 60).padStart(2, "0")} phút`;

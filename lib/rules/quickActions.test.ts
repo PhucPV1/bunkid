@@ -49,11 +49,12 @@ describe("QUICK_ACTIONS", () => {
     expect(new Set(QUICK_ACTIONS.map((a) => a.key)).size).toBe(13);
   });
 
-  it("QUICK_ACTION_GROUPS titles the three groups; the timer group is exactly the timers", () => {
+  // Spec 2026-11-19 §5.4: the "+" sheet lists Khác, Ghi nhanh, then Bấm giờ.
+  it("QUICK_ACTION_GROUPS titles the three groups, timers last; the timer group is exactly the timers", () => {
     expect(QUICK_ACTION_GROUPS).toEqual([
-      { group: "timer", title: "Bấm giờ" },
-      { group: "quick", title: "Ghi nhanh" },
       { group: "other", title: "Khác" },
+      { group: "quick", title: "Ghi nhanh" },
+      { group: "timer", title: "Bấm giờ" },
     ]);
     for (const action of QUICK_ACTIONS)
       expect(action.group === "timer").toBe(action.kind === "timer");
