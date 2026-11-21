@@ -118,13 +118,13 @@ Plan này đứng ngay sau M5a và ngay trước M5c.
 - Consumes: `vaccineGrid`, `doseCell`, `DoseTone`, `formatDayFull` (M5a); `doseKey` (`lib/rules/vaccineForm.ts`); `Icon`, `PendingMark`.
 - Produces: `DoseGrid({ items, groups, pending, onOpen, onChoose }: { items: ScheduleItem[]; groups: VaccineGroup[]; pending: Set<string>; onOpen: (item: ScheduleItem) => void; onChoose?: () => void })` trong `components/vaccines/DoseGrid.tsx`, không có hook, tự gọi `vaccineGrid`. Có `onChoose` thì hàng chưa chọn loại là nút; không có thì là chữ.
 
-- [ ] **Step 0: Tạo nhánh**
+- [x] **Step 0: Tạo nhánh**
 
 ```bash
 git checkout -b feat/kim-bun-ux-mobile-m5b feat/kim-bun-ux-mobile-m5a
 ```
 
-- [ ] **Step 1: Viết test đỏ (Patch 1)**
+- [x] **Step 1: Viết test đỏ (Patch 1)**
 
 ```diff
 diff --git a/components/vaccines/dosegrid.test.tsx b/components/vaccines/dosegrid.test.tsx
@@ -370,12 +370,12 @@ index 0000000..346cb33
 +});
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run components/vaccines/dosegrid.test.tsx`
 Expected: FAIL, `Test Files  1 failed (1)`, không test nào chạy được (`Cannot find module './DoseGrid'`).
 
-- [ ] **Step 3: Sửa code (Patch 2)**
+- [x] **Step 3: Sửa code (Patch 2)**
 
 ```diff
 diff --git a/components/vaccines/DoseGrid.tsx b/components/vaccines/DoseGrid.tsx
@@ -561,12 +561,12 @@ index 0000000..dfcb594
 +}
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run components/vaccines/dosegrid.test.tsx && bun run typecheck`
 Expected: `Tests  13 passed (13)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -- components/vaccines/DoseGrid.tsx components/vaccines/dosegrid.test.tsx
@@ -591,7 +591,7 @@ git commit -m "feat(vaccines): the vaccine by dose table" -m "Co-Authored-By: Cl
 - Consumes: `DoseGrid` (Task 1); `VACCINES.groups`; state `editing` có sẵn của `VaccineScreen`; `DoseLine`.
 - Produces: `VaccineScreen` vẽ `DoseGrid` thay cho `DoseSections`; chủ gia đình có `onChoose` (mở phần "Loại vaccine" và cuộn về đầu trang), người khác thì không. Phần sửa loại vaccine tách thành component nội bộ `ChoicesEditor`. `DoseLine({ item })` không còn tên mũi, nhãn "Chưa chọn loại" và prop `pending`; `DoseSheet` vẽ nó ở đầu form. `components/vaccines/DoseSections.tsx` và `STATE_SECTIONS` bị xoá.
 
-- [ ] **Step 1: Viết test đỏ (Patch 3)**
+- [x] **Step 1: Viết test đỏ (Patch 3)**
 
 ```diff
 diff --git a/components/vaccines/doses.test.tsx b/components/vaccines/doses.test.tsx
@@ -889,12 +889,12 @@ index e217c6b..a8ebb50 100644
 +});
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run components/vaccines/doses.test.tsx components/vaccines/dosesheet.test.tsx components/vaccines/vaccinescreen.test.tsx`
 Expected: FAIL, `Tests  10 failed | 13 passed (23)`.
 
-- [ ] **Step 3: Sửa code (Patch 4)**
+- [x] **Step 3: Sửa code (Patch 4)**
 
 ```diff
 diff --git a/components/vaccines/DoseLine.tsx b/components/vaccines/DoseLine.tsx
@@ -1151,14 +1151,14 @@ index a19211a..9864b52 100644
    choices: Record<string, string>,
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run components/vaccines/doses.test.tsx components/vaccines/dosesheet.test.tsx components/vaccines/vaccinescreen.test.tsx && bun run typecheck`
 Expected: `Tests  23 passed (23)`; `tsc --noEmit` không báo lỗi.
 
 Sau task này `DoseLine` còn in dòng "Hẹn …", trùng với đoạn "Phòng: …. Hẹn …." có sẵn của sheet. Task 3 bỏ chỗ trùng đó.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -- components/vaccines/DoseLine.tsx components/vaccines/DoseSections.tsx components/vaccines/DoseSheet.tsx components/vaccines/VaccineScreen.tsx lib/rules/vaccines.ts components/vaccines/doses.test.tsx components/vaccines/dosesheet.test.tsx components/vaccines/vaccinescreen.test.tsx
@@ -1180,7 +1180,7 @@ git commit -m "feat(vaccines): the page shows the table instead of the lists" -m
 - Consumes: `vaccineGrid` (M5a); `DoseLine` (Task 2).
 - Produces: `vaccineGrid`: khi các mũi của một mã cho ra nhãn khác nhau, chỉ dùng tên `series` nếu trong `items` chỉ có đúng một mã thuộc `series` đó (cùng `group`); ngược lại giữ nhãn của mũi có `doseNo` nhỏ nhất. `DoseLine` chỉ còn: dòng chương trình ("Tiêm chủng mở rộng" hoặc "Dịch vụ"), câu quá tuổi khi `pastMaxAge`, và `dose.note` khi mũi chưa tiêm.
 
-- [ ] **Step 1: Viết test đỏ (Patch 5)**
+- [x] **Step 1: Viết test đỏ (Patch 5)**
 
 ```diff
 diff --git a/components/vaccines/doses.test.tsx b/components/vaccines/doses.test.tsx
@@ -1320,12 +1320,12 @@ index c670bc7..f1c66c7 100644
        ]);
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run lib/rules/vaccineGrid.test.ts components/vaccines/doses.test.tsx components/vaccines/dosesheet.test.tsx`
 Expected: FAIL, `Tests  8 failed | 19 passed (27)`.
 
-- [ ] **Step 3: Sửa code (Patch 6)**
+- [x] **Step 3: Sửa code (Patch 6)**
 
 ```diff
 diff --git a/components/vaccines/DoseLine.tsx b/components/vaccines/DoseLine.tsx
@@ -1402,12 +1402,12 @@ index 8a5d11e..296f6b1 100644
  }
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run lib/rules/vaccineGrid.test.ts components/vaccines/doses.test.tsx components/vaccines/dosesheet.test.tsx && bun run typecheck`
 Expected: `Tests  27 passed (27)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -- components/vaccines/DoseLine.tsx lib/rules/vaccineGrid.ts components/vaccines/doses.test.tsx components/vaccines/dosesheet.test.tsx lib/rules/vaccineGrid.test.ts
@@ -1425,17 +1425,17 @@ git commit -m "fix(vaccines): own name for rows of a shared series, no repeated 
 - Consumes: mọi thứ của M5a và Task 1–3.
 - Produces: `main` có M5a và M5b; nhánh `feat/kim-bun-ux-mobile-m5b` làm nền cho M5c.
 
-- [ ] **Step 1: Typecheck và toàn bộ test**
+- [x] **Step 1: Typecheck và toàn bộ test**
 
 Run: `bun run typecheck && bunx vitest run`
 Expected: `tsc --noEmit` không báo lỗi; `Test Files  157 passed (157)`, `Tests  1076 passed (1076)`.
 
-- [ ] **Step 2: Build production**
+- [x] **Step 2: Build production**
 
 Run: `bun run build`
 Expected: lần đầu có thể dừng với thông báo bảo mật của Next.js 16.4.3 (bình thường). Chạy lại đúng lệnh đó: `✓ Generating static pages` và thoát mã 0.
 
-- [ ] **Step 3: Kiểm trên trình duyệt (phiên chính làm, không bấm Lưu, không đụng timer)**
+- [x] **Step 3: Kiểm trên trình duyệt (phiên chính làm, không bấm Lưu, không đụng timer)**
 
 Chạy `bun run dev` (nếu nó dừng với thông báo bảo mật thì chạy lại). Dùng khung Browser của app ở cỡ 375×812. Đóng mọi sheet bằng phím Esc.
 
@@ -1453,7 +1453,48 @@ Mở `http://localhost:3000/tiem-chung`. Trong `DoseSheet` không bấm "Lưu" h
 
 Dừng `bun run dev` khi xong. Ghi kết quả từng mục ngay dưới bước này. Mục nào dữ liệu thật không cho thấy được thì ghi "chưa kiểm".
 
-- [ ] **Step 4: Commit phần ghi kết quả, đưa lên `main`, rồi báo cáo**
+**Kết quả (2026-11-21, khung Browser của app, 375×812, dữ liệu thật của gia đình, chỉ xem, không bấm Lưu):**
+
+Step 1 và Step 2, chạy lại sau commit sửa thêm `0ada3b5` (xem cuối phần này):
+
+- `tsc --noEmit` không báo lỗi; `Test Files  157 passed (157)`, `Tests  1079 passed (1079)`. Nhiều hơn con số dự kiến 3 test, là 3 test của commit sửa thêm.
+- `bun run build`: lần đầu dừng với thông báo bảo mật, lần hai thoát mã 0, `✓ Generating static pages using 9 workers (38/38)`.
+
+Step 3:
+
+1. Đạt. Thẻ: "QUÁ HẠN 11 NGÀY", "Bexsero mũi 1", "Hẹn Thứ Ba, 10/11/2026 · Dịch vụ".
+2. Đạt. `head`: Vắc xin, Mũi 1, Mũi 2, Mũi 3, Mũi 4. `clipped` rỗng. 12 hàng, ba nhóm chưa chọn loại mỗi nhóm một hàng:
+   - Vắc xin lao (BCG): Đã tiêm
+   - Viêm gan B liều sơ sinh: Đã tiêm 11/09/2026
+   - Bexsero: Trễ hẹn 10/11/2026, Chưa tiêm 10/01/2027, Chưa tiêm 10/09/2027
+   - 6 trong 1: Đã tiêm 12/11/2026, Sắp tới 10/12/2026, Chưa tiêm 10/01/2027, Chưa tiêm 10/12/2027
+   - Prevenar 13: Trễ hẹn 10/11/2026, Sắp tới 10/12/2026, Chưa tiêm 10/01/2027, Chưa tiêm 10/09/2027
+   - Rotarix (uống): Đã tiêm 12/11/2026, Sắp tới 10/12/2026
+   - Cúm mùa: Chưa tiêm 10/03/2027, Chưa tiêm 10/04/2027
+   - Viêm não Nhật Bản: Chưa chọn loại
+   - Sởi – Quai bị – Rubella (dịch vụ): Chưa chọn loại
+   - Sởi 9 tháng, Sởi – Rubella 18 tháng: Chưa tiêm 10/06/2027, Chưa tiêm 10/03/2028
+   - Thủy đậu: Chưa chọn loại
+   - Viêm gan A (Avaxim 80U): Chưa tiêm 10/09/2027, Chưa tiêm 10/03/2028
+3. Đạt, với một ngoại lệ đúng thiết kế: ô BCG "Đã tiêm" chỉ có một dòng vì bản ghi không có ngày tiêm.
+4. Đạt. Bảng 440 px trong hộp 341 px, cuộn ngang được 99 px; cột "Vắc xin" đứng yên; mép phải có dải mờ.
+5. Đạt. Chạm ô "Bexsero mũi 2": sheet tên "Bexsero mũi 2", dòng "Dịch vụ", rồi "Phòng: Não mô cầu nhóm B. Hẹn Chủ nhật, 10/01/2027."; ngày hẹn xuất hiện đúng một lần. Đóng bằng Esc, không có hộp hỏi lại.
+6. Đạt. Chạm nút "Chưa chọn loại" của hàng Viêm não Nhật Bản: phần "Loại vaccine" mở ra, trang cuộn về đầu (`scrollY` 0, tiêu đề ở 315 px). Không bấm Lưu; tải lại trang để thoát.
+7. Đạt: Đã tiêm, Trễ hẹn, Sắp tới, Chưa tiêm.
+8. Đạt: `true`. Chiều cao trang 1.426 px (trang cũ 4.701 px).
+9. Đạt ở `rose` và `night` (nhìn tận mắt), thêm `dark` là theme gia đình đang dùng. Ngoài ra đo bằng script tỷ lệ tương phản chữ trên nền của bốn loại ô, nhãn hàng và nút "Chưa chọn loại" ở cả 7 theme: thấp nhất 5,7:1 (ô "Trễ hẹn" ở `night`), mọi giá trị đều trên 4,5:1.
+
+Sửa thêm sau khi nhìn trang thật, ngoài các patch của plan (commit `0ada3b5`, test trước, code sau):
+
+- Khi có dải mờ ở mép phải, bảng có thêm 20 px ở cuối (`pr-5`), để cột mũi cuối không nằm dưới dải mờ. Đo khi cuộn hết: ô cuối cách mép hộp 24 px.
+- Chữ "Chưa chọn loại" bắt đầu ở mép trái của khung thay vì ở giữa, và dính ở 124 px (`sticky left-[124px]`) khi cuộn ngang. Trước khi sửa, cuộn hết sang phải thì chữ trượt xuống dưới cột "Vắc xin", chỉ còn thấy "ại ›". Đo sau khi sửa: mép trái của chữ ở 141–142 px với `scrollLeft` 0, 50 và 99.
+- Hai test của `vaccinescreen.test.tsx` đổi theo markup mới.
+
+Chưa kiểm: Safari trên iPhone. Riêng chữ dính của nút "Chưa chọn loại", nếu Safari không áp `sticky` bên trong nút thì chữ cuộn theo khung như trước khi sửa.
+
+Không dừng `bun run dev`: M5c dùng tiếp cho phần kiểm trình duyệt.
+
+- [x] **Step 4: Commit phần ghi kết quả, đưa lên `main`, rồi báo cáo**
 
 ```bash
 git add docs/blueprint/plans/2026-11-19-kim-bun-ux-mobile-m5b.md
