@@ -34,11 +34,14 @@ function TimerTab({
   const { log, more } = timer;
   const category = categoryOf(log.type);
   const ms = now.getTime() - Date.parse(log.started_at);
+  // The name a screen reader says; it also carries the count that the small
+  // line shows as "· +n".
+  const name = `${tab.label}, ${timerLabel(log)} đã chạy ${formatClock(ms)}`;
   return (
     <Link
       href={tab.href}
       aria-current={current ? "page" : undefined}
-      aria-label={`${tab.label}, ${timerLabel(log)} đã chạy ${formatClock(ms)}`}
+      aria-label={more > 0 ? `${name}, còn ${more} timer khác đang chạy` : name}
       className={cx(
         "flex flex-1 items-center justify-center gap-1.5 rounded-full px-1",
         CATEGORY_CHIP[category.token],

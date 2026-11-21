@@ -116,7 +116,9 @@ describe("ActionChrome with a running timer", () => {
     const html = render(TIMERS);
     const home = homeTab(html);
     expect(home).toContain('href="/"');
-    expect(home).toContain('aria-label="Hôm nay, Ngủ đã chạy 12:34"');
+    expect(home).toContain(
+      'aria-label="Hôm nay, Ngủ đã chạy 12:34, còn 1 timer khác đang chạy"',
+    );
     expect(home).toContain(">12:34</span>");
     expect(home).toContain(">Hôm nay · +1</span>");
     expect(home).not.toContain("aria-current");

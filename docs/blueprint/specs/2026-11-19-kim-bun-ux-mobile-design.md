@@ -136,7 +136,7 @@ Thay §5.2 của spec 17/11.
   - Ở `/cai-dat`, nơi tab "Hôm nay" đang là tab hiện tại, ô timer vẫn dùng nền màu loại thay cho `bg-accent-tint` và giữ `aria-current="page"`.
   - Đồng hồ dùng hàm mới `formatTabClock(ms)` trong `lib/rules/hero.ts`: dưới 1 giờ ra "M:SS" như `formatClock` ("54:38"); từ 1 giờ ra "{h}g {mm}p" ("1g 05p").
   - Có thêm `n` timer khác thì dòng dưới thành "Hôm nay · +{n}". Không có nhãn tròn riêng vì ô chỉ rộng 121 px ở 375 px.
-  - Vẫn là `Link` tới `/`. `aria-label`: "Hôm nay, {timerLabel} đã chạy {formatClock}".
+  - Vẫn là `Link` tới `/`. `aria-label`: "Hôm nay, {timerLabel} đã chạy {formatClock}"; có thêm `n` timer khác thì nối thêm ", còn {n} timer khác đang chạy" (thêm ngày 2026-11-21 theo ý người dùng, để trình đọc màn hình cũng đọc được số mà dòng "· +{n}" cho thấy).
   - Chỉ ô này cập nhật mỗi giây, và chỉ khi đang hiện.
 - Ngoài trang Hôm nay không còn nút "Dừng". Muốn dừng thì chạm ô timer để về Hôm nay.
 - Ở trang Hôm nay, tab "Hôm nay" vẽ như cũ.

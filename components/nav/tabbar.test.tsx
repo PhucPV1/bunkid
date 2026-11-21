@@ -192,7 +192,10 @@ describe("TabBarView timer tile", () => {
       />,
     );
     const [home] = anchorsOf(html);
-    expect(home).toContain('aria-label="Hôm nay, Ngủ đã chạy 1:30:05"');
+    // A screen reader hears the count that sighted users read as "· +2".
+    expect(home).toContain(
+      'aria-label="Hôm nay, Ngủ đã chạy 1:30:05, còn 2 timer khác đang chạy"',
+    );
     expect(home).toContain(">1g 30p</span>");
     expect(home).toContain(">Hôm nay · +2</span>");
     expect(home).toContain("bg-cat-sleep/15");
@@ -200,6 +203,21 @@ describe("TabBarView timer tile", () => {
     expect(home).toContain(`d="${ICON_PATHS.moon}"`);
     // No separate round counter: the tile is too narrow for one.
     expect(home).not.toContain(">+2<");
+  });
+
+  it("the tile's name counts the other timers only when there are some", () => {
+    const label = (more: number) =>
+      /aria-label="([^"]*)"/.exec(
+        anchorsOf(
+          renderToStaticMarkup(
+            <TabBarView current="history" timer={{ log: row({}), more }} />,
+          ),
+        )[0],
+      )?.[1];
+    expect(label(0)).toBe("Hôm nay, Bú trái đã chạy 12:34");
+    expect(label(1)).toBe(
+      "Hôm nay, Bú trái đã chạy 12:34, còn 1 timer khác đang chạy",
+    );
   });
 
   it("on Cài đặt the tile stays the current tab but keeps the category tint", () => {
