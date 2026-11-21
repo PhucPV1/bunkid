@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import { findElements } from "@/components/ui/testTree";
 import { CONDITIONS } from "@/lib/content/conditions";
 import { TRIAGE } from "@/lib/content/triage";
 import {
@@ -41,7 +42,13 @@ describe("TriageScreen", () => {
     expect(html).not.toContain("bg-alarm");
     const age = ageDays(baby.dob, new Date());
     const chips = visibleSymptoms(TRIAGE.symptoms, age);
-    expect(html.match(/aria-pressed=/g)).toHaveLength(chips.length);
+    // Spec 2026-11-19 §6: every chip group starts closed.
+    const groups = new Set(chips.map((chip) => chip.group));
+    expect(html.match(/aria-expanded="false"/g)).toHaveLength(groups.size);
+    expect(html).not.toContain('aria-expanded="true"');
+    expect(html).not.toContain("aria-pressed=");
+    expect(html).toContain(">Mở nhóm rồi chạm để chọn, chọn được nhiều.</p>");
+    expect(html).not.toContain("Chạm để chọn, chọn được nhiều.");
     expect(html).toContain(">Bé đang có gì?</h2>");
     expect(html).toContain(">Có dấu hiệu nào dưới đây?</h2>");
     expect(html.indexOf("Bé đang có gì?")).toBeLessThan(
@@ -154,48 +161,131 @@ describe("TriageResult", () => {
   });
 });
 
-describe("SymptomChips (spec 2026-11-17 §6.1)", () => {
+// Spec 2026-11-19 §6: one glass list of groups that open and close.
+describe("SymptomChips", () => {
   const symptoms = TRIAGE.symptoms.filter((s) =>
     ["fever", "cough", "diaper_rash"].includes(s.code),
   );
-
-  it("groups wrapped multi-select chips, pressed ones inked with a tick", () => {
-    const html = renderToStaticMarkup(
+  const chips = ({
+    selected = [] as string[],
+    open = [] as string[],
+    feverLocked = false,
+  }) =>
+    renderToStaticMarkup(
       <SymptomChips
         groups={TRIAGE.groups}
         symptoms={symptoms}
-        selected={new Set(["cough"])}
-        feverLocked={false}
+        selected={new Set(selected)}
+        feverLocked={feverLocked}
+        openGroups={new Set(open)}
         onToggle={() => {}}
+        onToggleGroup={() => {}}
       />,
     );
-    expect(html.match(/role="group"/g)).toHaveLength(3);
+  // The markup of one group's header button, found by its name.
+  function header(html: string, name: string): string {
+    const buttons = html.match(/<button[^>]*aria-expanded.*?<\/button>/g);
+    return buttons?.find((button) => button.includes(`>${name}<`)) ?? "";
+  }
+
+  it("closed groups: one glass list, a 52 px header per group and no chips", () => {
+    const html = chips({});
+    expect(html).toMatch(
+      /^<ul class="glass overflow-hidden rounded-\[22px\]">/,
+    );
+    expect(html.match(/aria-expanded="false"/g)).toHaveLength(3);
+    expect(html).not.toContain('aria-expanded="true"');
+    expect(html).not.toContain("aria-pressed");
+    expect(html).not.toContain('role="group"');
+    expect(html).not.toContain("đã chọn");
+    const resp = header(html, "Hô hấp");
+    expect(resp).toContain("min-h-[52px]");
+    expect(resp).toMatch(/text-base[^>]*>Hô hấp</);
+    expect(resp).toContain('d="m6 9 6 6 6-6"');
+  });
+
+  it("a closed group with picked chips shows how many in the badge", () => {
+    const html = chips({ selected: ["cough"] });
+    const resp = header(html, "Hô hấp");
+    expect(resp).toMatch(
+      /class="[^"]*\bbg-accent-tint\b[^"]*\btext-accent-text\b[^"]*">1 đã chọn<\/span>/,
+    );
+    expect(resp).toMatch(/text-xs[^"]*font-bold[^>]*>1 đã chọn</);
+    expect(header(html, "Da")).not.toContain("đã chọn");
+    expect(html).not.toContain("aria-pressed");
+  });
+
+  it("an open group draws its chips with the classes they had", () => {
+    const html = chips({ selected: ["cough"], open: ["breathing"] });
+    const resp = header(html, "Hô hấp");
+    expect(resp).toContain('aria-expanded="true"');
+    expect(resp).toContain('d="m6 15 6-6 6 6"');
+    expect(header(html, "Da")).toContain('aria-expanded="false"');
+    expect(html.match(/role="group"/g)).toHaveLength(1);
     expect(html).toContain('aria-label="Hô hấp"');
     expect(html).toContain("flex flex-wrap gap-2");
-    expect(html).toMatch(
-      /aria-pressed="true"[^>]*>✓ Ho<\/button>/,
-    );
+    expect(html).toMatch(/aria-pressed="true"[^>]*>✓ Ho<\/button>/);
     expect(html).toMatch(/class="[^"]*\bbg-ink\b[^"]*\btext-bg\b[^"]*">✓ Ho</);
+    expect(html).toContain("min-h-11");
+    expect(html).not.toContain(">Sốt hoặc sờ thấy nóng</button>");
+  });
+
+  it("several groups can be open at once", () => {
+    const html = chips({ open: ["fever", "breathing", "skin"] });
+    expect(html.match(/aria-expanded="true"/g)).toHaveLength(3);
+    expect(html.match(/role="group"/g)).toHaveLength(3);
     expect(html).toMatch(
       /aria-pressed="false"[^>]*glass[^>]*>Sốt hoặc sờ thấy nóng<\/button>/,
     );
-    expect(html).toContain("min-h-11");
     expect(html).not.toContain("Bật theo nhiệt độ đã nhập.");
   });
 
-  it("locks the fever chip on when the temperature is from 38°C", () => {
-    const html = renderToStaticMarkup(
-      <SymptomChips
-        groups={TRIAGE.groups}
-        symptoms={symptoms}
-        selected={new Set()}
-        feverLocked
-        onToggle={() => {}}
-      />,
+  it("a header sits in a heading and names the chips it opens", () => {
+    const closed = chips({});
+    expect(
+      closed.match(/<h3><button type="button" aria-expanded="false"/g),
+    ).toHaveLength(3);
+    expect(closed).not.toContain("aria-controls");
+    const open = chips({ open: ["breathing"] });
+    expect(open).toContain(
+      '<h3><button type="button" aria-expanded="true" aria-controls="symptom-group-breathing"',
     );
-    expect(html).toMatch(
+    expect(open).toContain('<div id="symptom-group-breathing"');
+    expect(open.match(/aria-controls=/g)).toHaveLength(1);
+  });
+
+  it("tapping a header asks to toggle that group and nothing else", () => {
+    const onToggle = vi.fn();
+    const onToggleGroup = vi.fn();
+    const headers = findElements(
+      SymptomChips({
+        groups: TRIAGE.groups,
+        symptoms,
+        selected: new Set(),
+        feverLocked: false,
+        openGroups: new Set(),
+        onToggle,
+        onToggleGroup,
+      }),
+      (el) => el.type === "button" && "aria-expanded" in el.props,
+    );
+    const shown = TRIAGE.groups.filter((group) =>
+      symptoms.some((symptom) => symptom.group === group.code),
+    );
+    expect(headers).toHaveLength(shown.length);
+    (headers[1].props.onClick as () => void)();
+    expect(onToggleGroup).toHaveBeenCalledExactlyOnceWith(shown[1].code);
+    expect(onToggle).not.toHaveBeenCalled();
+  });
+
+  it("the fever chip locked by the temperature counts, open or closed", () => {
+    const closed = chips({ feverLocked: true });
+    expect(header(closed, "Sốt")).toContain(">1 đã chọn</span>");
+    expect(closed).not.toContain("Bật theo nhiệt độ đã nhập.");
+    const open = chips({ feverLocked: true, open: ["fever"] });
+    expect(open).toMatch(
       /aria-pressed="true" aria-disabled="true"[^>]*>✓ Sốt hoặc sờ thấy nóng<\/button>/,
     );
-    expect(html).toContain(">Bật theo nhiệt độ đã nhập.</p>");
+    expect(open).toContain(">Bật theo nhiệt độ đã nhập.</p>");
   });
 });

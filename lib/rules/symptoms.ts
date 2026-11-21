@@ -46,6 +46,26 @@ export function effectiveSymptoms(
   return out;
 }
 
+// Spec 2026-11-19 §6: how many of these chips show as picked, the fever chip
+// locked by the temperature included.
+export function pickedSymptomCount(
+  chips: TriageSymptom[],
+  selected: ReadonlySet<string>,
+  feverLocked: boolean,
+): number {
+  return chips.filter(
+    (chip) =>
+      selected.has(chip.code) || (feverLocked && chip.code === FEVER_SYMPTOM),
+  ).length;
+}
+
+// A copy of the set with the item added, or removed if it was there.
+export function toggled<T>(set: ReadonlySet<T>, item: T): Set<T> {
+  const next = new Set(set);
+  if (!next.delete(item)) next.add(item);
+  return next;
+}
+
 // Spec 2026-11-17 §5.2: each selected symptom gives 1/n to each of its n articles.
 export function suggestConditions(input: {
   symptoms: TriageSymptom[];

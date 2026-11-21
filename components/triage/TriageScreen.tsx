@@ -18,6 +18,7 @@ import {
   firstAidFor,
   type Suggestion,
   suggestConditions,
+  toggled,
   visibleSymptoms,
 } from "@/lib/rules/symptoms";
 import { ageDays, formatAgeVi } from "@/lib/rules/time";
@@ -49,6 +50,8 @@ export function TriageScreen({ baby }: { baby: Baby }) {
   const [celsius, setCelsius] = useState<string | null>(null);
   const [checked, setChecked] = useState<Set<string>>(new Set());
   const [symptoms, setSymptoms] = useState<Set<string>>(new Set());
+  // Spec 2026-11-19 §6: the chip groups that are open; all closed at first.
+  const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
   const [outcome, setOutcome] = useState<Outcome | null>(null);
   // Step 1 (spec gốc §6.6): prefilled from a temperature logged in the last 6 hours, editable.
@@ -81,6 +84,10 @@ export function TriageScreen({ baby }: { baby: Baby }) {
       else next.add(code);
       return next;
     });
+  }
+
+  function toggleGroup(code: string) {
+    setOpenGroups((prev) => toggled(prev, code));
   }
 
   function submit() {
@@ -133,6 +140,7 @@ export function TriageScreen({ baby }: { baby: Baby }) {
             setOutcome(null);
             setChecked(new Set());
             setSymptoms(new Set());
+            setOpenGroups(new Set());
             setCelsius(null);
             setError(null);
             window.scrollTo({ top: 0 });
@@ -170,14 +178,18 @@ export function TriageScreen({ baby }: { baby: Baby }) {
             <h2 className="text-xl leading-[26px] font-bold text-ink">
               Bé đang có gì?
             </h2>
-            <p className="text-sm text-muted">Chạm để chọn, chọn được nhiều.</p>
+            <p className="text-sm text-muted">
+              Mở nhóm rồi chạm để chọn, chọn được nhiều.
+            </p>
           </div>
           <SymptomChips
             groups={TRIAGE.groups}
             symptoms={chips}
             selected={symptoms}
             feverLocked={feverLocked}
+            openGroups={openGroups}
             onToggle={toggleSymptom}
+            onToggleGroup={toggleGroup}
           />
           <h2 className="px-1 text-xl leading-[26px] font-bold text-ink">
             Có dấu hiệu nào dưới đây?

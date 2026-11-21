@@ -8,7 +8,9 @@ import type {
 import {
   effectiveSymptoms,
   firstAidFor,
+  pickedSymptomCount,
   suggestConditions,
+  toggled,
   visibleSymptoms,
 } from "./symptoms";
 
@@ -164,5 +166,36 @@ describe("firstAidFor (spec 2026-11-17 §5.3)", () => {
 
   it("ignores a ticked question hidden for this age", () => {
     expect(codes(["infant_hot"], null, 200)).toEqual([]);
+  });
+});
+
+describe("pickedSymptomCount (spec 2026-11-19 §6)", () => {
+  const chips = [s("fever", []), s("cough", []), s("vomit", [])];
+
+  it("counts the picked chips among the given ones", () => {
+    expect(pickedSymptomCount(chips, new Set(), false)).toBe(0);
+    expect(pickedSymptomCount(chips, new Set(["cough", "vomit"]), false)).toBe(
+      2,
+    );
+    expect(pickedSymptomCount(chips, new Set(["rash"]), false)).toBe(0);
+  });
+
+  it("counts the fever chip locked by the temperature once", () => {
+    expect(pickedSymptomCount(chips, new Set(), true)).toBe(1);
+    expect(pickedSymptomCount(chips, new Set(["fever"]), true)).toBe(1);
+    expect(pickedSymptomCount(chips, new Set(["cough"]), true)).toBe(2);
+  });
+
+  it("a locked fever does not count where there is no fever chip", () => {
+    expect(pickedSymptomCount([s("cough", [])], new Set(), true)).toBe(0);
+  });
+});
+
+describe("toggled", () => {
+  it("adds an item that is missing, removes one that is there, and leaves the input alone", () => {
+    const start: ReadonlySet<string> = new Set(["fever"]);
+    expect([...toggled(start, "skin")]).toEqual(["fever", "skin"]);
+    expect([...toggled(start, "fever")]).toEqual([]);
+    expect([...start]).toEqual(["fever"]);
   });
 });
