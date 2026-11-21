@@ -110,7 +110,7 @@ Plan này đứng sau M2 (đã ở trên `main` @ `e1e729f`). M3, M4, M5 chưa v
 - Consumes: `SLEEP_BANDS` và các ngưỡng cữ bú, tã ướt đang có trong `lib/rules/ratings.ts`; `StatsTab` (`lib/rules/dailyStats.ts`).
 - Produces: `DailyNorm = { min: number; max?: number }` và `dailyNorm(tab: StatsTab, ageDays: number): DailyNorm | null` trong `lib/rules/ratings.ts` (ngủ tính bằng giờ, bú và tã là số lần); `statsFootnote(tab: StatsTab, norm: DailyNorm | null, charted: boolean): string` trong `lib/rules/dailyStats.ts`.
 
-- [ ] **Step 0: Tạo nhánh**
+- [x] **Step 0: Tạo nhánh**
 
 ```bash
 git checkout -b feat/kim-bun-ux-mobile-m6 main
@@ -118,7 +118,7 @@ git add docs/blueprint/specs/2026-11-19-kim-bun-ux-mobile-design.md docs/bluepri
 git commit -m "docs(spec): vaccine page as a vaccine-by-dose table, and the M6 plan" -m "Co-Authored-By: Claude Fable 5.2 <noreply@anthropic.com>"
 ```
 
-- [ ] **Step 1: Viết test đỏ (Patch 1)**
+- [x] **Step 1: Viết test đỏ (Patch 1)**
 
 ```diff
 diff --git a/lib/rules/dailyStats.test.ts b/lib/rules/dailyStats.test.ts
@@ -245,12 +245,12 @@ index 236a36b..a2380af 100644
 +});
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run lib/rules/dailyStats.test.ts lib/rules/ratings.test.ts`
 Expected: FAIL, `Tests  9 failed | 21 passed (30)`. Lý do đỏ: `dailyNorm` và `statsFootnote` chưa có.
 
-- [ ] **Step 3: Sửa code (Patch 2)**
+- [x] **Step 3: Sửa code (Patch 2)**
 
 ```diff
 diff --git a/lib/rules/dailyStats.ts b/lib/rules/dailyStats.ts
@@ -327,12 +327,12 @@ index c2848d3..0e36d9d 100644
 +}
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run lib/rules/dailyStats.test.ts lib/rules/ratings.test.ts && bun run typecheck`
 Expected: `Tests  30 passed (30)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -- lib/rules/dailyStats.ts lib/rules/ratings.ts lib/rules/dailyStats.test.ts lib/rules/ratings.test.ts
@@ -351,7 +351,7 @@ git commit -m "feat(stats): the daily norm and the chart footnote" -m "Co-Author
 - Consumes: `DailyNorm` (Task 1); `ReferenceArea`, `ReferenceLine`, `Rectangle`, `BarShapeProps` của gói `recharts` đang có.
 - Produces: `StatsChart` nhận thêm hai prop bắt buộc `unit: string` và `norm: DailyNorm | null`. Có `norm.max` thì vẽ `ReferenceArea` từ `min` tới `max`; chỉ có `min` thì vẽ `ReferenceLine` nét đứt; cả hai dùng `ifOverflow="extendDomain"` để trục Y chứa hết. Cột của hàng cuối có `fillOpacity` 0,45.
 
-- [ ] **Step 1: Viết test đỏ (Patch 3)**
+- [x] **Step 1: Viết test đỏ (Patch 3)**
 
 ```diff
 diff --git a/components/stats/statschart.test.tsx b/components/stats/statschart.test.tsx
@@ -513,12 +513,12 @@ index 0000000..53921fc
 +});
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run components/stats/statschart.test.tsx`
 Expected: FAIL, `Tests  6 failed (6)`.
 
-- [ ] **Step 3: Sửa code (Patch 4)**
+- [x] **Step 3: Sửa code (Patch 4)**
 
 ```diff
 diff --git a/components/stats/StatsChart.tsx b/components/stats/StatsChart.tsx
@@ -628,12 +628,12 @@ index d65fb45..1213136 100644
          </BarChart>
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run components/stats/statschart.test.tsx && bun run typecheck`
 Expected: `Tests  6 passed (6)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -- components/stats/StatsChart.tsx components/stats/statschart.test.tsx
@@ -653,7 +653,7 @@ git commit -m "feat(stats): unit, norm band or line and a paler bar for today" -
 - Consumes: `dailyNorm`, `statsFootnote` (Task 1); `StatsChart` với `unit`, `norm` (Task 2); `ageDays` (`lib/rules/time.ts`); `hasStatsData`.
 - Produces: `SERIES` (giờ được export) có thêm `unit` cho từng tab: "giờ", "cữ", "tã", "ml", "phút", "bữa". `StatsScreen` tính `dailyNorm(tab, ageDays(baby.dob, now))` và dùng `statsFootnote` cho dòng dưới bảng.
 
-- [ ] **Step 1: Viết test đỏ (Patch 5)**
+- [x] **Step 1: Viết test đỏ (Patch 5)**
 
 ```diff
 diff --git a/components/stats/statsscreen.test.tsx b/components/stats/statsscreen.test.tsx
@@ -777,12 +777,12 @@ index 0000000..ebb7764
 +});
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run components/stats/statsscreen.test.tsx`
 Expected: FAIL, `Tests  3 failed (3)`.
 
-- [ ] **Step 3: Sửa code (Patch 6)**
+- [x] **Step 3: Sửa code (Patch 6)**
 
 ```diff
 diff --git a/components/stats/StatsChart.tsx b/components/stats/StatsChart.tsx
@@ -910,12 +910,12 @@ index e6f3cb3..056ef63 100644
        )}
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run components/stats/statsscreen.test.tsx && bun run typecheck`
 Expected: `Tests  3 passed (3)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -- components/stats/StatsChart.tsx components/stats/StatsScreen.tsx components/stats/statsscreen.test.tsx
@@ -933,17 +933,17 @@ git commit -m "feat(stats): pass the age norm and unit to the chart" -m "Co-Auth
 - Consumes: mọi thứ Task 1–3 tạo ra.
 - Produces: `main` có M6; các mốc sau cắt nhánh từ `main`.
 
-- [ ] **Step 1: Typecheck và toàn bộ test**
+- [x] **Step 1: Typecheck và toàn bộ test**
 
 Run: `bun run typecheck && bunx vitest run`
 Expected: `tsc --noEmit` không báo lỗi; `Test Files  153 passed (153)`, `Tests  1016 passed (1016)`.
 
-- [ ] **Step 2: Build production**
+- [x] **Step 2: Build production**
 
 Run: `bun run build`
 Expected: lần đầu có thể dừng với thông báo bảo mật của Next.js 16.4.3 (bình thường). Chạy lại đúng lệnh đó: `✓ Generating static pages` và thoát mã 0.
 
-- [ ] **Step 3: Kiểm trên trình duyệt (phiên chính làm, không bấm Lưu, không đụng timer)**
+- [x] **Step 3: Kiểm trên trình duyệt (phiên chính làm, không bấm Lưu, không đụng timer)**
 
 Chạy `bun run dev` (nếu nó dừng với thông báo bảo mật thì chạy lại). Dùng khung Browser của app ở cỡ 375×812. Đóng mọi sheet bằng phím Esc.
 
@@ -958,7 +958,18 @@ Mở `http://localhost:3000/thong-ke`. Chỉ bấm các tab và nút "7 ngày" /
 
 Dừng `bun run dev` khi xong. Ghi kết quả từng mục ngay dưới bước này. Mục nào dữ liệu thật không cho thấy được thì ghi "chưa kiểm".
 
-- [ ] **Step 4: Commit phần ghi kết quả, đưa lên `main`, rồi báo cáo**
+> **Kết quả 2026-11-21.** Cả 6 patch áp sạch trên nhánh `feat/kim-bun-ux-mobile-m6`; số test đỏ và xanh của cả ba task đúng như ghi. Step 1: `tsc --noEmit` sạch, `Test Files  153 passed (153)`, `Tests  1016 passed (1016)`. Step 2: `bun run build` lần đầu dừng với thông báo bảo mật của Next.js, lần hai thoát mã 0 với `✓ Generating static pages using 9 workers (38/38)`.
+>
+> Step 3 **không làm được trên trang Thống kê thật**: khung Browser trong app đã bị đăng xuất sau khi phiên làm việc khởi động lại, và phiên chính không đăng nhập Google thay người dùng được. Thay vào đó, phiên chính dựng một trang tạm `app/chk/page.tsx` (đã xoá, không commit) vẽ thẳng `StatsChart` với số liệu mẫu, rồi xem ở 375×812:
+>
+> - Biểu đồ "giờ" với chuẩn 14–17: chữ "giờ" ở góc trên trái; có 1 vùng tô nhạt, không có đường kẻ; trục Y lên tới 20 nên chứa trọn vùng; 6 cột đầu `fill-opacity` 1, cột cuối 0.45.
+> - Biểu đồ "cữ" với chuẩn từ 6, số liệu cao nhất là 5: có 1 đường kẻ nét đứt tại 6; trục Y tự nới tới 8; cột cuối 0.45.
+> - Biểu đồ "tã" hai chuỗi với chuẩn từ 6: đường kẻ tại 6; cột cuối của cả hai chuỗi đều 0.45; chú giải "Tã ướt", "Tã bẩn" vẫn có.
+> - Biểu đồ "ml" không có chuẩn: không vùng, không đường; ngày có giá trị 0 không có cột.
+> - Đã xem ở Hồng dịu và Ban đêm (vùng chuẩn theo tông hổ phách); không tràn ngang.
+> - **Chưa kiểm:** trang `/thong-ke` thật với dữ liệu của gia đình (đổi tab, dòng chú thích hiện trên màn hình, tab chưa có dữ liệu), và iPhone thật. Các phần này mới có unit test.
+
+- [x] **Step 4: Commit phần ghi kết quả, đưa lên `main`, rồi báo cáo**
 
 ```bash
 git add docs/blueprint/plans/2026-11-19-kim-bun-ux-mobile-m6.md
