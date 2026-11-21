@@ -4,6 +4,7 @@ import type { Session } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
 import { ActionChrome } from "@/components/actions/ActionChrome";
+import { ChromeVisibilityProvider } from "@/components/actions/ChromeVisibility";
 import { QuickActionsProvider } from "@/components/actions/QuickActions";
 import { HomeSkeleton } from "@/components/home/HomeSkeleton";
 import { TabBar } from "@/components/nav/TabBar";
@@ -99,10 +100,12 @@ export function AuthGate({
     );
   return (
     <QuickActionsProvider baby={baby} member={member} userId={session.user.id}>
-      <SyncBarProvider userId={session.user.id}>
-        <div className="pb-[120px]">{content}</div>
-      </SyncBarProvider>
-      <ActionChrome babyName={baby.name} />
+      <ChromeVisibilityProvider>
+        <SyncBarProvider userId={session.user.id}>
+          <div className="pb-[120px]">{content}</div>
+        </SyncBarProvider>
+        <ActionChrome babyName={baby.name} />
+      </ChromeVisibilityProvider>
     </QuickActionsProvider>
   );
 }

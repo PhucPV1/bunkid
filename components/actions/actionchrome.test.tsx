@@ -19,6 +19,11 @@ vi.mock("./QuickActions", async (importOriginal) => {
     useQuickActions: () => ({ ...actual.useQuickActions(), ...sheet.state }),
   };
 });
+// Spec 2026-11-19 §6: a page (Triệu chứng) can hide the tab bar and "+".
+const chrome = vi.hoisted(() => ({ hidden: false }));
+vi.mock("./ChromeVisibility", () => ({
+  useChromeHidden: () => chrome.hidden,
+}));
 // TabBar reads the current path; outside the Next router there is none.
 vi.mock("next/navigation", () => ({ usePathname: () => nav.pathname }));
 vi.mock("@/lib/hooks/useNow", () => ({
@@ -71,6 +76,7 @@ const groupTitles = (html: string) =>
 beforeEach(() => {
   nav.pathname = "/nhat-ky";
   sheet.state = null;
+  chrome.hidden = false;
 });
 
 describe("ActionChrome", () => {
@@ -82,6 +88,25 @@ describe("ActionChrome", () => {
     expect(html).toContain(">Ghi lại cho Bun</h2>");
     expect(html).toContain(">Hôm nay</a>");
     expect(html).not.toContain("đã chạy");
+  });
+});
+
+// Spec 2026-11-19 §6.
+describe("ActionChrome while a page hides the chrome", () => {
+  it("draws neither the tab bar nor +, the closed sheet stays", () => {
+    chrome.hidden = true;
+    const html = render(TIMERS);
+    expect(html).not.toContain('aria-label="Điều hướng chính"');
+    expect(html).not.toContain('href="/nhat-ky"');
+    expect(html).not.toContain('aria-label="Ghi lại"');
+    expect(html).not.toContain("đã chạy");
+    expect(html).toContain(">Ghi lại cho Bun</h2>");
+  });
+
+  it("draws both again once the flag is down", () => {
+    const html = render();
+    expect(html).toContain('aria-label="Điều hướng chính"');
+    expect(html).toContain('aria-label="Ghi lại"');
   });
 });
 
