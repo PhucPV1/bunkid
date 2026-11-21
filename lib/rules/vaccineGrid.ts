@@ -21,11 +21,25 @@ const isOpen = (item: ScheduleItem) =>
   item.state === "upcoming" ||
   item.state === "later";
 
-function vaccineLabel(doses: ScheduleItem[], groups: VaccineGroup[]): string {
+function vaccineLabel(
+  doses: ScheduleItem[],
+  items: ScheduleItem[],
+  groups: VaccineGroup[],
+): string {
   const sorted = [...doses].sort((a, b) => a.dose.doseNo - b.dose.doseNo);
   const names = sorted.map((item) => item.dose.name.replace(DOSE_SUFFIX, ""));
   if (names.every((name) => name === names[0])) return names[0];
   const { group, series } = sorted[0].dose;
+  // The series name only when it names this code alone among `items`
+  // (tcmr_5in1 also holds opv and ipv, so dpt_vgb_hib keeps its own name).
+  const codes = new Set(
+    items
+      .filter(
+        (item) => item.dose.group === group && item.dose.series === series,
+      )
+      .map((item) => item.dose.code),
+  );
+  if (series === undefined || codes.size !== 1) return names[0];
   const named = groups
     .find((g) => g.code === group)
     ?.series.find((s) => s.code === series);
@@ -77,7 +91,7 @@ export function vaccineGrid(
       () => null,
     );
     for (const item of doses) cells[item.dose.doseNo - 1] = item;
-    return { kind, key, label: vaccineLabel(doses, groups), cells };
+    return { kind, key, label: vaccineLabel(doses, items, groups), cells };
   });
   return { columns, rows };
 }

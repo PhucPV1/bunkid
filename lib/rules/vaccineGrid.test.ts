@@ -119,6 +119,19 @@ describe("vaccineGrid", () => {
     );
   });
 
+  it("keeps the lowest dose's name when its series holds other codes too", () => {
+    const five = { group: "dtp_combo", series: "tcmr_5in1" };
+    const items = [
+      item("dpt_vgb_hib", 1, "DPT-VGB-Hib (5 trong 1) mũi 1", { dose: five }),
+      item("opv", 1, "Uống bại liệt (OPV) lần 1", { dose: five }),
+      item("dpt_vgb_hib", 4, "DPT nhắc lại (18 tháng)", { dose: five }),
+    ];
+    expect(vaccineGrid(items, groups).rows.map((row) => row.label)).toEqual([
+      "DPT-VGB-Hib (5 trong 1)",
+      "Uống bại liệt (OPV)",
+    ]);
+  });
+
   it("keeps the stripped name when the series is not found", () => {
     const items = [item("x", 1, "X mũi 1"), item("x", 2, "Y mũi 2")];
     expect(vaccineGrid(items, groups).rows[0].label).toBe("X");
@@ -238,7 +251,7 @@ describe("vaccineGrid", () => {
       ]);
     });
 
-    it("the 5 trong 1 series: three rows, the DPT row falls back to the series name", () => {
+    it("the 5 trong 1 series: three rows, the DPT row keeps its own name", () => {
       const grid = vaccineGrid(
         schedule({ dtp_combo: "tcmr_5in1" }),
         VACCINES.groups,
@@ -249,7 +262,7 @@ describe("vaccineGrid", () => {
       expect(labels).toEqual([
         "Vắc xin lao (BCG)",
         "Viêm gan B liều sơ sinh",
-        "Tiêm chủng mở rộng: 5 trong 1, bại liệt uống và tiêm",
+        "DPT-VGB-Hib (5 trong 1)",
         "Uống bại liệt (OPV)",
         "Tiêm bại liệt (IPV)",
       ]);

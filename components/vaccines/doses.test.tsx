@@ -32,13 +32,14 @@ const render = (dose: ScheduleItem) =>
 
 // Spec 2026-11-19 §7.3: DoseLine now draws only the facts shown in DoseSheet.
 describe("DoseLine", () => {
-  it("an open dose: when and program, then the note; no name, no pill", () => {
+  it("an open dose: the program, then the note; no name, date or pill", () => {
     const html = render(item("upcoming", { unchosen: true }));
     expect(html).toBe(
-      '<span class="text-[13px] text-muted tabular-nums">Hẹn Thứ Sáu, 20/11/2026 · Tiêm chủng mở rộng</span>' +
+      '<span class="text-[13px] text-muted">Tiêm chủng mở rộng</span>' +
         '<span class="text-[13px] text-muted">Uống trước 24 tuần tuổi.</span>',
     );
     expect(html).not.toContain("Rotarix");
+    expect(html).not.toContain("Hẹn");
     expect(html).not.toContain("Chưa chọn loại");
   });
 
@@ -46,13 +47,13 @@ describe("DoseLine", () => {
     const html = render(
       item("overdue", { pastMaxAge: true, dose: { program: "dich_vu" } }),
     );
-    expect(html).toContain(">Hẹn Thứ Sáu, 20/11/2026 · Dịch vụ</span>");
+    expect(html).toContain('<span class="text-[13px] text-muted">Dịch vụ</span>');
     expect(html).toContain(
       '<span class="text-[13px] text-danger">Đã quá tuổi khuyến cáo của loại vaccine này, hỏi bác sĩ.</span>',
     );
   });
 
-  it("done: the day it was given, no note", () => {
+  it("done: the program only, no date and no note", () => {
     const given = (given_on: string | null) =>
       item("done", {
         record: {
@@ -64,16 +65,16 @@ describe("DoseLine", () => {
         },
       });
     const html = render(given("2026-11-15"));
-    expect(html).toContain(
-      ">Đã tiêm Chủ nhật, 15/11/2026 · Tiêm chủng mở rộng<",
+    expect(html).toBe(
+      '<span class="text-[13px] text-muted">Tiêm chủng mở rộng</span>',
     );
-    expect(html).not.toContain("Uống trước");
-    expect(render(given(null))).toContain(">Đã tiêm · Tiêm chủng mở rộng<");
+    expect(render(given(null))).toBe(html);
   });
 
-  it("skipped: Đã bỏ qua, the note still shown", () => {
+  it("skipped: the program, the note still shown", () => {
     const html = render(item("skipped"));
-    expect(html).toContain(">Đã bỏ qua · Tiêm chủng mở rộng<");
+    expect(html).toContain(">Tiêm chủng mở rộng</span>");
+    expect(html).not.toContain("bỏ qua");
     expect(html).toContain(">Uống trước 24 tuần tuổi.</span>");
   });
 

@@ -74,7 +74,7 @@ describe("DoseSheet", () => {
   });
 
   // Spec 2026-11-19 §7.3: what the old list showed for the dose, at the top.
-  it("starts with when and program, the age-limit sentence and the note", () => {
+  it("starts with the program, the age-limit sentence and the note", () => {
     const html = render(null, {
       ...item,
       state: "overdue",
@@ -82,15 +82,16 @@ describe("DoseSheet", () => {
       dose: { ...item.dose, note: "Uống trước 24 tuần tuổi." },
     } as ScheduleItem);
     expect(html).toMatch(
-      /<form [^>]*><div class="flex flex-col gap-0\.5"><span class="text-\[13px\] text-muted tabular-nums">Hẹn Thứ Sáu, 20\/11\/2026 · Dịch vụ<\/span><span class="text-\[13px\] text-danger">Đã quá tuổi khuyến cáo của loại vaccine này, hỏi bác sĩ\.<\/span><span class="text-\[13px\] text-muted">Uống trước 24 tuần tuổi\.<\/span><\/div><p /,
+      /<form [^>]*><div class="flex flex-col gap-0\.5"><span class="text-\[13px\] text-muted">Dịch vụ<\/span><span class="text-\[13px\] text-danger">Đã quá tuổi khuyến cáo của loại vaccine này, hỏi bác sĩ\.<\/span><span class="text-\[13px\] text-muted">Uống trước 24 tuần tuổi\.<\/span><\/div><p /,
     );
   });
 
-  it("the facts of a plain dose: just when and program", () => {
+  it("the facts of a plain dose: just the program; the date only once", () => {
     const html = render(null);
     expect(html).toMatch(
-      /<form [^>]*><div class="flex flex-col gap-0\.5"><span [^>]*>Hẹn Thứ Sáu, 20\/11\/2026 · Dịch vụ<\/span><\/div>/,
+      /<form [^>]*><div class="flex flex-col gap-0\.5"><span [^>]*>Dịch vụ<\/span><\/div><p class="text-\[15px\] text-muted">Phòng: Lao\. Hẹn Thứ Sáu, 20\/11\/2026\.<\/p>/,
     );
+    expect(html.match(/20\/11\/2026/g)).toHaveLength(1);
     expect(html).not.toContain("Đã quá tuổi");
   });
 });
