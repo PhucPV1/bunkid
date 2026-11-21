@@ -119,7 +119,7 @@ Plan này đứng sau M5c (đã ở trên `main` @ `2448528`) và ngay trước 
 - Consumes: `formatClock` (`lib/rules/hero.ts`); `showsTimerPill` (`lib/nav.ts`); `QUICK_ACTION_GROUPS` (`lib/rules/quickActions.ts`).
 - Produces: `formatTabClock(ms: number): string` trong `lib/rules/hero.ts` (dưới 1 giờ "M:SS", từ 1 giờ "{h}g {mm}p"); `showsTabTimer(pathname: string): boolean` trong `lib/nav.ts` thay cho `showsTimerPill`, cùng luật `pathname !== "/"`; `QUICK_ACTION_GROUPS` theo thứ tự `other`, `quick`, `timer`.
 
-- [ ] **Step 0: Tạo nhánh**
+- [x] **Step 0: Tạo nhánh**
 
 ```bash
 git checkout -b feat/kim-bun-ux-mobile-m3a main
@@ -127,7 +127,7 @@ git add docs/blueprint/plans/2026-11-19-kim-bun-ux-mobile-m3a.md docs/blueprint/
 git commit -m "docs(plan): the two M3 plans for the tab timer and the + sheet" -m "Co-Authored-By: Claude Fable 5.2 <noreply@anthropic.com>"
 ```
 
-- [ ] **Step 1: Viết test đỏ (Patch 1)**
+- [x] **Step 1: Viết test đỏ (Patch 1)**
 
 ```diff
 diff --git a/components/actions/actionsheet.test.tsx b/components/actions/actionsheet.test.tsx
@@ -277,12 +277,12 @@ index 806fb78..d138a81 100644
        expect(action.group === "timer").toBe(action.kind === "timer");
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run lib/rules/hero.test.ts lib/nav.test.ts lib/rules/quickActions.test.ts components/actions/actionsheet.test.tsx`
 Expected: FAIL, `Tests  7 failed | 30 passed (37)`.
 
-- [ ] **Step 3: Sửa code (Patch 2)**
+- [x] **Step 3: Sửa code (Patch 2)**
 
 ```diff
 diff --git a/components/nav/TimerPill.tsx b/components/nav/TimerPill.tsx
@@ -373,14 +373,14 @@ index 0439bf2..3046ed8 100644
      key: "breast-left",
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run lib/rules/hero.test.ts lib/nav.test.ts lib/rules/quickActions.test.ts components/actions/actionsheet.test.tsx && bun run typecheck`
 Expected: `Tests  37 passed (37)`; `tsc --noEmit` không báo lỗi.
 
 Để code vẫn biên dịch, patch này chỉ đổi thêm một chỗ: `components/nav/TimerPill.tsx` gọi `showsTabTimer` thay cho tên cũ. File đó bị xoá ở Task 2. Vì `QUICK_ACTION_GROUPS` đổi thứ tự nên sheet "+" đổi thứ tự nhóm ngay từ task này; ba kiểm tra thứ tự trong `actionsheet.test.tsx` đi cùng patch test.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -- components/nav/TimerPill.tsx lib/nav.ts lib/rules/hero.ts lib/rules/quickActions.ts components/actions/actionsheet.test.tsx lib/nav.test.ts lib/rules/hero.test.ts lib/rules/quickActions.test.ts
@@ -411,7 +411,7 @@ git commit -m "feat(nav): tab clock format, showsTabTimer, Khác first in the + 
 - Consumes: `formatTabClock`, `showsTabTimer` (Task 1); `pillTimer` (`lib/rules/timer.ts`); `timerLabel`, `formatClock`; `CATEGORY_CHIP`, `categoryOf`; `useNow`; `TABS`.
 - Produces: `TabBarView` nhận thêm `timer?: { log: LogRow; more: number } | null`; khi có, tab "Hôm nay" vẽ thành ô timer (component nội bộ `TimerTab`, nơi duy nhất gọi `useNow(1000)`). `TabBar` chỉ truyền `timer` khi `showsTabTimer(pathname)`. `ActionChrome` truyền `pillTimer(actions.runningRows)`. `CATEGORY_SOLID: Record<CategoryToken, string>` mới trong `lib/ui/categories.ts`. `components/nav/TimerPill.tsx`, `--pill-offset` và `data-timer-pill` bị xoá.
 
-- [ ] **Step 1: Viết test đỏ (Patch 3)**
+- [x] **Step 1: Viết test đỏ (Patch 3)**
 
 ```diff
 diff --git a/components/actions/actionchrome.test.tsx b/components/actions/actionchrome.test.tsx
@@ -892,12 +892,12 @@ index 6f42f96..0c1b87a 100644
  describe("icon paths", () => {
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run components/nav/tabbar.test.tsx components/ui/toast.test.tsx components/actions/actionchrome.test.tsx lib/ui/categories.test.ts`
 Expected: FAIL, `Tests  13 failed | 20 passed (33)`.
 
-- [ ] **Step 3: Sửa code (Patch 4)**
+- [x] **Step 3: Sửa code (Patch 4)**
 
 ```diff
 diff --git a/app/globals.css b/app/globals.css
@@ -1298,12 +1298,12 @@ index d84470d..62f1950 100644
 +};
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run components/nav/tabbar.test.tsx components/ui/toast.test.tsx components/actions/actionchrome.test.tsx lib/ui/categories.test.ts && bun run typecheck`
 Expected: `Tests  33 passed (33)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -- app/globals.css components/AuthGate.tsx components/actions/ActionChrome.tsx components/actions/QuickActions.tsx components/nav/TabBar.tsx components/nav/TimerPill.tsx components/ui/Toast.tsx lib/rules/timer.ts lib/ui/categories.ts components/actions/actionchrome.test.tsx components/nav/tabbar.test.tsx components/nav/timerpill.test.tsx components/ui/toast.test.tsx lib/ui/categories.test.ts
@@ -1321,12 +1321,12 @@ git commit -m "feat(nav): show the running timer inside the Hôm nay tab" -m "Co
 - Consumes: mọi thứ Task 1–2 tạo ra.
 - Produces: nhánh `feat/kim-bun-ux-mobile-m3a` làm nền cho M3b. Nhánh này không lên `main` trước khi M3b xong.
 
-- [ ] **Step 1: Typecheck và toàn bộ test**
+- [x] **Step 1: Typecheck và toàn bộ test**
 
 Run: `bun run typecheck && bunx vitest run`
 Expected: `tsc --noEmit` không báo lỗi; `Test Files  157 passed (157)`, `Tests  1107 passed (1107)`.
 
-- [ ] **Step 2: Commit phần tick**
+- [x] **Step 2: Commit phần tick**
 
 ```bash
 git add docs/blueprint/plans/2026-11-19-kim-bun-ux-mobile-m3a.md
