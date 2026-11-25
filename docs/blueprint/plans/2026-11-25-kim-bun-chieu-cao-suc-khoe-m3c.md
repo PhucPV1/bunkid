@@ -1330,6 +1330,14 @@ Chưa kiểm: **trạng thái "đã có mục tiêu" của trang thật** (bốn
 
 Dọn: `bun run dev` đã dừng; `app/fixture-height/` đã xóa; `.next/dev/types` đã xóa sau khi typecheck đỏ vì nó (chạy lại thì sạch, vitest vẫn 178 file, 1521 test); `.claude/launch.json` tạm đã xóa; khung Browser đã trả về cỡ thường. Ảnh: thư mục ghi chú chung của các phiên, `m3c-screens/` (17 ảnh).
 
+**Cập nhật (2026-11-25): đã sửa chỗ A.** Được hỏi "Sửa tiêu đề sheet trước, hay đưa nhánh M3c lên main luôn?", người dùng chọn "Sửa tiêu đề trước". Tiêu đề sheet đổi từ "Mục tiêu và chiều cao bố mẹ" thành "Mục tiêu chiều cao" (chữ do phiên thực thi đề xuất trong báo cáo, người dùng chọn sửa theo đề xuất đó).
+
+- Test trước: `components/height/heightgoalsheet.test.tsx` đổi khẳng định về tiêu đề; đỏ `Test Files  1 failed | 177 passed (178)`, `Tests  1 failed | 1520 passed (1521)`. Code sau: `title` trong `components/height/HeightGoalSheet.tsx`, và dòng chú thích nhắc tên sheet trong `lib/rules/heightGoal.ts`; xanh `Test Files  178 passed (178)`, `Tests  1521 passed (1521)`, `tsc --noEmit` sạch.
+- Spec §6.5 đã sửa tiêu đề mục và câu "Tiêu đề …", có đánh dấu "(sửa 2026-11-25 …)" (file spec vẫn untracked).
+- Giữ nguyên: tên đọc của nút bút chì, "Sửa mục tiêu và chiều cao bố mẹ" (§6.3 mục 1), vì nó không hiện trên màn và vẫn nói đúng việc nút làm. Các khối Patch 1 và Patch 2 ở trên là bản đã áp lúc đầu, còn ghi tiêu đề cũ; mục 12 của Step 4 cũng vậy.
+- Trình duyệt, trang thật ở 375×812, `night`: tiêu đề "Mục tiêu chiều cao" nằm một dòng, rộng 190,9 px, cách nút "Đóng" 90,1 px; ba ô vẫn trống; Esc đóng sheet luôn; ba thẻ phía sau không đổi. Không bấm "Lưu". Chưa xem lại ở các theme khác (chỉ đổi chữ, không đổi màu hay bố cục). Sau lần đổi chữ: `bun run build` lần đầu mã 1 (cảnh báo bảo mật như trước), lần hai mã 0, 40/40 trang, có `/tang-truong/chieu-cao`; `tsc --noEmit` sạch; 178 file, 1521 test xanh. `.claude/launch.json` tạm đã xóa, dev đã dừng.
+- Chỗ B giữ nguyên như plan đã lường.
+
 - [x] **Step 5: Xóa trang fixture, commit phần ghi kết quả rồi dừng lại hỏi người dùng**
 
 ```bash
