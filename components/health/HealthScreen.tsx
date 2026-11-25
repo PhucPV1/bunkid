@@ -129,7 +129,7 @@ export function GrowthCard({
             strokeWidth={2.2}
             // 16 px in an 18 px line: level with the first line when the
             // text wraps onto two.
-            className="mt-px shrink-0 text-accent"
+            className="mt-px shrink-0 text-accent-text"
           />
           <span>{goal}</span>
         </span>

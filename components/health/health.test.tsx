@@ -346,7 +346,8 @@ describe("HealthScreen: the Tăng trưởng card", () => {
     expect(card).toContain(
       '<span class="flex items-start gap-2 border-t border-line pt-3 text-[13px] leading-[18px] text-ink">',
     );
-    expect(card).toContain("mt-px shrink-0 text-accent");
+    // accent-text, not accent: on night, accent is the dark fill of a button.
+    expect(card).toContain('class="mt-px shrink-0 text-accent-text"');
     // It is the last thing in the card, under the three values.
     expect(card.indexOf("Mục tiêu 180 cm")).toBeGreaterThan(
       card.indexOf(">Vòng đầu</span>"),
