@@ -1,6 +1,8 @@
+import { Children, type ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-import { findElements } from "@/components/ui/testTree";
+import { StatusChip } from "@/components/ui/StatusChip";
+import { findElements, type TreeProps } from "@/components/ui/testTree";
 import type { GrowthListItem } from "@/lib/rules/growthView";
 import type { GrowthRow } from "@/lib/supabase/rows";
 import { GrowthList } from "./GrowthList";
@@ -57,6 +59,36 @@ describe("GrowthList", () => {
     expect(
       html.match(/bg-good-soft text-good-ink">Bình thường<\/span>/g),
     ).toHaveLength(2);
+  });
+
+  // Beside the whole row the chip left the text 200 px at 375 px wide, and a
+  // row with all three values broke between a number and its unit.
+  it("the chip sits beside the title only; the values and the change run the full width", () => {
+    const [button] = findElements(
+      GrowthList(props()),
+      (el) => el.type === "button",
+    );
+    expect(button.props.className).toContain("flex-col");
+    const [head, values, delta] = Children.toArray(
+      button.props.children,
+    ) as ReactElement<TreeProps>[];
+    expect(head.props.className).toBe("flex items-start gap-3");
+    expect(findElements(head, (el) => el.type === StatusChip)).toHaveLength(1);
+    expect(values.props.children).toBe("5,2 kg · 58,5 cm");
+    expect(delta.props.children).toBe("+0,8 kg · +3,5 cm so với lần trước");
+  });
+
+  it("the words Ngoài bảng WHO sit beside the title too", () => {
+    const [button] = findElements(
+      GrowthList(
+        props({ items: [item("g1", "u1", { chip: null, outside: true })] }),
+      ),
+      (el) => el.type === "button",
+    );
+    const [head] = Children.toArray(
+      button.props.children,
+    ) as ReactElement<TreeProps>[];
+    expect(renderToStaticMarkup(head)).toContain("Ngoài bảng WHO");
   });
 
   it("no longer writes z-scores or percentile codes", () => {
