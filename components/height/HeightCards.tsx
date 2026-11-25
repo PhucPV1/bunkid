@@ -40,17 +40,20 @@ export function HeightGoalCard({
     );
   return (
     <section className={`${CARD} gap-2`}>
-      <div className="flex items-center justify-between gap-2">
-        <span className={LABEL}>Mục tiêu lúc trưởng thành</span>
+      <span className={LABEL}>Mục tiêu lúc trưởng thành</span>
+      {/* The chip sits on the line of the figure: beside the label, a chip
+          such as "Dưới đường mục tiêu" pushed the label onto two lines at
+          375 px. The row wraps, so the chip never runs past the card. */}
+      <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+        <span className="flex items-baseline gap-2">
+          <span className="text-[44px] leading-[48px] font-bold tracking-[-0.02em] text-ink tabular-nums">
+            {goal.target}
+          </span>
+          <span className="text-xl leading-[26px] font-bold text-ink">cm</span>
+        </span>
         {goal.chip && (
           <StatusChip tone={goal.chip.tone}>{goal.chip.text}</StatusChip>
         )}
-      </div>
-      <div className="flex items-baseline gap-2">
-        <span className="text-[44px] leading-[48px] font-bold tracking-[-0.02em] text-ink tabular-nums">
-          {goal.target}
-        </span>
-        <span className="text-xl leading-[26px] font-bold text-ink">cm</span>
       </div>
       <p className={BODY}>{goal.sentence}</p>
     </section>

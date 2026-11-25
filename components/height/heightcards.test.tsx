@@ -35,6 +35,21 @@ describe("HeightGoalCard", () => {
     );
   });
 
+  // At 375 px the label and a chip such as "Dưới đường mục tiêu" do not fit
+  // on one line: the label wrapped onto two.
+  // The longest pair, "190,5 cm" and "Dưới đường mục tiêu", is close to the
+  // width of the card: the row wraps, so the chip can never run past its edge.
+  it("the label has a line to itself; the chip sits on the line of the figure", () => {
+    const html = renderToStaticMarkup(<HeightGoalCard goal={goal} isOwner />);
+    expect(html).toContain(
+      '>Mục tiêu lúc trưởng thành</span><div class="flex flex-wrap items-center justify-between gap-x-2 gap-y-1"><span class="flex items-baseline gap-2">',
+    );
+    expect(html.indexOf("Đang đúng hướng")).toBeGreaterThan(
+      html.indexOf(">cm</span>"),
+    );
+    expect(html.indexOf("Đang đúng hướng")).toBeLessThan(html.indexOf("<p"));
+  });
+
   it("below the line is said in a neutral chip, never in warn or danger", () => {
     const html = renderToStaticMarkup(
       <HeightGoalCard
