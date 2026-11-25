@@ -75,14 +75,9 @@ const oneDecimal = new Intl.NumberFormat("vi-VN", {
 });
 const tenth = (n: number) => Math.round(n * 10) / 10;
 
-// The measurements of one indicator that fall inside the WHO table, newest
-// first: by measured_on, then created_at; rows with neither keep their order.
-export function readings(
-  rows: GrowthMeasure[],
-  table: LmsRow[],
-  dob: string,
-  indicator: WhoIndicator,
-): Reading[] {
+// Newest first: by measured_on, then created_at; rows with neither keep
+// their order.
+export function newestFirst<T extends GrowthMeasure>(rows: T[]): T[] {
   return rows
     .map((row, index) => ({ row, index }))
     .sort(
@@ -91,22 +86,33 @@ export function readings(
         (b.row.created_at ?? "").localeCompare(a.row.created_at ?? "") ||
         a.index - b.index,
     )
-    .flatMap(({ row }): Reading[] => {
-      const value = indicatorValue(row, indicator);
-      if (value === null || !(value > 0)) return [];
-      const ageDays = ageOnDay(dob, row.measured_on);
-      const lms = lmsAt(table, ageDays);
-      if (!lms) return [];
-      return [
-        {
-          day: row.measured_on,
-          ageDays,
-          value,
-          z: zScore(lms, value),
-          median: lms.m,
-        },
-      ];
-    });
+    .map(({ row }) => row);
+}
+
+// The measurements of one indicator that fall inside the WHO table, newest
+// first: by measured_on, then created_at; rows with neither keep their order.
+export function readings(
+  rows: GrowthMeasure[],
+  table: LmsRow[],
+  dob: string,
+  indicator: WhoIndicator,
+): Reading[] {
+  return newestFirst(rows).flatMap((row): Reading[] => {
+    const value = indicatorValue(row, indicator);
+    if (value === null || !(value > 0)) return [];
+    const ageDays = ageOnDay(dob, row.measured_on);
+    const lms = lmsAt(table, ageDays);
+    if (!lms) return [];
+    return [
+      {
+        day: row.measured_on,
+        ageDays,
+        value,
+        z: zScore(lms, value),
+        median: lms.m,
+      },
+    ];
+  });
 }
 
 // Where a z-score sits against the ±2 and ±3 lines; null inside ±2.

@@ -1,3 +1,4 @@
+import * as growth from "./growth";
 import { describe, expect, it } from "vitest";
 import {
   loadWhoTable,
@@ -140,8 +141,9 @@ describe("assess", () => {
   });
 });
 
+// Spec 2026-11-25 §5.4.
 describe("curve", () => {
-  it("gives the five percentile lines every `step` days within the table", () => {
+  it("gives the edges of the normal band (z −2 and z +2) and the median every `step` days", () => {
     const rows: LmsRow[] = Array.from({ length: 11 }, (_, day) => [
       day,
       1,
@@ -150,8 +152,18 @@ describe("curve", () => {
     ]);
     const points = curve(rows, 0, 20, 5);
     expect(points.map((p) => p.day)).toEqual([0, 5, 10]);
-    expect(points[1].P50).toBeCloseTo(15, 10);
-    expect(points[1].P97).toBeCloseTo(15 * (1 + 0.1 * 1.881), 10);
-    expect(points[1].P3).toBeCloseTo(15 * (1 - 0.1 * 1.881), 10);
+    expect(Object.keys(points[1])).toEqual(["day", "low", "mid", "high"]);
+    expect(points[1].mid).toBeCloseTo(15, 10);
+    expect(points[1].high).toBeCloseTo(15 * (1 + 0.1 * 2), 10);
+    expect(points[1].low).toBeCloseTo(15 * (1 - 0.1 * 2), 10);
+  });
+
+  it("BAND_LINES replaces the five percentile lines", () => {
+    expect(growth.BAND_LINES).toEqual([
+      { label: "low", z: -2 },
+      { label: "mid", z: 0 },
+      { label: "high", z: 2 },
+    ]);
+    expect(Object.keys(growth)).not.toContain("PERCENTILE_LINES");
   });
 });

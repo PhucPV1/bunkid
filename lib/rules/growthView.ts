@@ -1,17 +1,19 @@
 import type { WhoIndicator, WhoSex } from "@/lib/content/who";
-import { percentile } from "./growth";
+import { ageOnDay, percentile } from "./growth";
 import {
   alertTone,
   type GrowthAlert,
   type GrowthMeasure,
   type GrowthTables,
   type GrowthTone,
+  newestFirst,
   readings,
 } from "./growthAlerts";
 import {
   comparePhrase,
   formatGrowthValue,
   INDICATORS,
+  indicatorValue,
   outOf100,
 } from "./growthForm";
 
@@ -102,4 +104,74 @@ export function alertDots(
   return Object.fromEntries(
     alerts.map((alert) => [alert.indicator, alertTone(alert.level)]),
   );
+}
+
+// Spec 2026-11-25 §5.4: what the chart of one indicator draws besides the band.
+export type ChartView = {
+  title: string;
+  unit: "kg" | "cm";
+  // Oldest first; `day` is the age in days.
+  points: { day: number; value: number }[];
+  last: {
+    day: number;
+    value: number;
+    label: string;
+    tone: "accent" | "warn" | "danger";
+  } | null;
+  ariaLabel: string;
+  alertTone: "warn" | "danger" | null;
+  // A falling or rising alert: the caption adds a sentence about direction.
+  shifted: boolean;
+};
+
+export function chartView(input: {
+  indicator: WhoIndicator;
+  rows: GrowthMeasure[];
+  dob: string;
+  alerts: GrowthAlert[];
+  summaries: IndicatorSummary[];
+}): ChartView {
+  const { indicator } = input;
+  const name = INDICATORS.find((item) => item.key === indicator)!.title;
+  const title = `${name} theo tháng tuổi`;
+  const measured = newestFirst(input.rows).flatMap((row) => {
+    const value = indicatorValue(row, indicator);
+    return value === null
+      ? []
+      : [
+          {
+            on: row.measured_on,
+            day: ageOnDay(input.dob, row.measured_on),
+            value,
+          },
+        ];
+  });
+  const [newest] = measured;
+  // An alert is about the newest measurement the WHO table can place; a newer
+  // one outside the table is drawn plainly.
+  const alert = input.alerts.find(
+    (item) => item.indicator === indicator && item.measuredOn === newest?.on,
+  );
+  const summary = input.summaries.find((item) => item.indicator === indicator);
+  const tone = alert ? alertTone(alert.level) : null;
+  const value = newest ? formatGrowthValue(indicator, newest.value) : "";
+  return {
+    title,
+    unit: indicator === "wfa" ? "kg" : "cm",
+    points: measured.map(({ day, value: v }) => ({ day, value: v })).reverse(),
+    last: newest
+      ? {
+          day: newest.day,
+          value: newest.value,
+          label: alert ? `${value} · ${alert.chip}` : value,
+          tone: tone ?? "accent",
+        }
+      : null,
+    ariaLabel:
+      measured.length === 0
+        ? `${title}. Chưa có lần đo.`
+        : `${title}. ${measured.length} lần đo.${summary ? ` Lần gần nhất: ${summary.chip.text}.` : ""}`,
+    alertTone: tone,
+    shifted: alert?.kind === "falling" || alert?.kind === "rising",
+  };
 }

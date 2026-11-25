@@ -21,8 +21,22 @@ vi.mock("@/lib/hooks/useOutboxEntries", () => ({ useOutboxEntries: () => [] }));
 vi.mock("next/dynamic", () => ({
   default:
     () =>
-    ({ unit, points }: { unit: string; points: unknown[] }) => (
-      <div data-chart={`${unit}:${points.length}`} />
+    ({
+      unit,
+      points,
+      last,
+      band,
+    }: {
+      unit: string;
+      points: unknown[];
+      last: { label: string; tone: string } | null;
+      band: Record<string, number>[];
+    }) => (
+      <div
+        data-chart={`${unit}:${points.length}`}
+        data-last={last ? `${last.label}|${last.tone}` : ""}
+        data-band={Object.keys(band[0] ?? {}).join(",")}
+      />
     ),
 }));
 
@@ -198,6 +212,25 @@ describe("GrowthScreen", () => {
     expect(html).toContain('aria-label="Chỉ số"');
     expect(html).toContain("data-chart");
     expect(html).not.toContain("Chưa có lần đo nào.");
+  });
+
+  it("the chart card: a title, the band of the chosen indicator, the newest point", () => {
+    const html = render([
+      measure("2026-11-15", 5500),
+      measure("2026-10-14", 4400, 55),
+    ]);
+    expect(html).toContain(">Cân nặng theo tháng tuổi</h2>");
+    expect(html).toContain('data-band="day,low,mid,high"');
+    expect(html).toContain('data-last="5,5 kg|accent"');
+    expect(html).toContain("95 trong 100 bé khỏe mạnh nằm trong vùng xanh.");
+    expect(html).not.toContain("Đường WHO P3");
+    expect(html).not.toContain("Lần đo có cảnh báo");
+  });
+
+  it("the chart of an indicator with an alert marks its newest point", () => {
+    const html = render([measure("2026-11-15", 4000)]);
+    expect(html).toContain('data-last="4 kg · Thấp|warn"');
+    expect(html).toContain("Lần đo có cảnh báo");
   });
 
   it("the why popup is closed until asked for", () => {

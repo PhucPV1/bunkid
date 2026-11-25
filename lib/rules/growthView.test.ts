@@ -8,6 +8,7 @@ import {
 } from "./growthAlerts";
 import {
   alertDots,
+  chartView,
   defaultIndicator,
   formatChange,
   gaugePosition,
@@ -168,5 +169,102 @@ describe("defaultIndicator and alertDots", () => {
     expect(alerts.map((a) => a.indicator)).toEqual(["hcfa", "lhfa"]);
     expect(defaultIndicator(alerts)).toBe("lhfa");
     expect(alertDots(alerts)).toEqual({ lhfa: "warn", hcfa: "danger" });
+  });
+});
+
+// Spec 2026-11-25 §5.4.
+describe("chartView", () => {
+  const chart = (
+    rows: GrowthMeasure[],
+    indicator: "wfa" | "lhfa" | "hcfa" = "wfa",
+  ) => {
+    const { alerts, summaries } = view(rows);
+    return chartView({ indicator, rows, dob: DOB, alerts, summaries });
+  };
+
+  it("titles the chart and names the unit", () => {
+    expect(chart([], "wfa")).toMatchObject({
+      title: "Cân nặng theo tháng tuổi",
+      unit: "kg",
+    });
+    expect(chart([], "lhfa")).toMatchObject({
+      title: "Chiều dài theo tháng tuổi",
+      unit: "cm",
+    });
+    expect(chart([], "hcfa").title).toBe("Vòng đầu theo tháng tuổi");
+  });
+
+  it("lists the measurements of the indicator oldest first, by day of age", () => {
+    const { points } = chart([
+      measure(86, 17.5),
+      measure(60, null, 16),
+      measure(40, 16),
+    ]);
+    expect(points).toEqual([
+      { day: 40, value: 16 },
+      { day: 86, value: 17.5 },
+    ]);
+  });
+
+  it("the newest point carries its value as the label, in the accent colour", () => {
+    expect(chart([measure(86, 17.5), measure(40, 16)]).last).toEqual({
+      day: 86,
+      value: 17.5,
+      label: "17,5 kg",
+      tone: "accent",
+    });
+  });
+
+  it("with an alert the newest point takes the alert colour and the chip in its label", () => {
+    const yellow = chart([measure(40, 11)]);
+    expect(yellow.last).toEqual({
+      day: 40,
+      value: 11,
+      label: "11 kg · Thấp",
+      tone: "warn",
+    });
+    expect(yellow.alertTone).toBe("warn");
+    expect(chart([measure(40, 9)]).last?.tone).toBe("danger");
+    expect(chart([measure(40, 9)]).alertTone).toBe("danger");
+  });
+
+  it("an alert on another indicator leaves this chart alone", () => {
+    const other = chart([measure(40, 16, 9)], "wfa");
+    expect(other.last?.tone).toBe("accent");
+    expect(other.alertTone).toBeNull();
+  });
+
+  it("shifted is set for falling and rising only", () => {
+    expect(
+      chart([measure(54, null, 13.34), measure(40, null, 16)], "lhfa").shifted,
+    ).toBe(true);
+    expect(chart([measure(40, null, 11)], "lhfa").shifted).toBe(false);
+    expect(chart([measure(40, 16)]).shifted).toBe(false);
+  });
+
+  it("no measurement: no points and no newest point", () => {
+    const empty = chart([measure(40, null, 16)], "wfa");
+    expect(empty.points).toEqual([]);
+    expect(empty.last).toBeNull();
+    expect(empty.ariaLabel).toBe("Cân nặng theo tháng tuổi. Chưa có lần đo.");
+  });
+
+  it("describes itself: the indicator, how many measurements, the newest status", () => {
+    expect(chart([measure(86, 17.5), measure(40, 16)]).ariaLabel).toBe(
+      "Cân nặng theo tháng tuổi. 2 lần đo. Lần gần nhất: Bình thường.",
+    );
+    expect(chart([measure(40, 11)]).ariaLabel).toBe(
+      "Cân nặng theo tháng tuổi. 1 lần đo. Lần gần nhất: Thấp.",
+    );
+  });
+
+  it("a newest point the WHO table cannot place keeps the plain label", () => {
+    const late = chart([measure(1857, 9), measure(40, 16)]);
+    expect(late.last).toEqual({
+      day: 1857,
+      value: 9,
+      label: "9 kg",
+      tone: "accent",
+    });
   });
 });

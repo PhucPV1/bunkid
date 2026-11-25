@@ -4,7 +4,6 @@ import dynamic from "next/dynamic";
 import { useState } from "react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorCard } from "@/components/ui/ErrorCard";
-import { Glass } from "@/components/ui/Glass";
 import { IconButton } from "@/components/ui/IconButton";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Popup } from "@/components/ui/Popup";
@@ -24,20 +23,17 @@ import {
   growthAlerts,
   type GrowthTables,
 } from "@/lib/rules/growthAlerts";
-import {
-  chartRange,
-  indicatorValue,
-  INDICATORS,
-  latestGrowth,
-} from "@/lib/rules/growthForm";
+import { chartRange, INDICATORS, latestGrowth } from "@/lib/rules/growthForm";
 import {
   alertDots,
+  chartView,
   defaultIndicator,
   indicatorSummaries,
 } from "@/lib/rules/growthView";
 import { ageDays, formatAgeVi } from "@/lib/rules/time";
 import type { Baby, GrowthRow } from "@/lib/supabase/rows";
 import { GrowthAlertCard } from "./GrowthAlertCard";
+import { GrowthChartCard } from "./GrowthChartCard";
 import { GrowthList } from "./GrowthList";
 import { GrowthSheet } from "./GrowthSheet";
 import { GrowthVerdict } from "./GrowthVerdict";
@@ -96,12 +92,12 @@ export function GrowthScreen({
   const lms = tables[indicator];
   const range = chartRange(ageDays(baby.dob, new Date()));
   const current = INDICATORS.find((i) => i.key === indicator)!;
-  const points = rows.flatMap((row) => {
-    const value = indicatorValue(row, indicator);
-    const days = Math.round(
-      (Date.parse(row.measured_on) - Date.parse(baby.dob)) / 86_400_000,
-    );
-    return value === null ? [] : [{ day: days, value }];
+  const chart = chartView({
+    indicator,
+    rows,
+    dob: baby.dob,
+    alerts,
+    summaries,
   });
   const canEdit = (row: GrowthRow) => isOwner || row.created_by === userId;
 
@@ -145,25 +141,27 @@ export function GrowthScreen({
             value={indicator}
             onChange={setPicked}
           />
-          <Glass className="p-3">
+          <GrowthChartCard
+            title={chart.title}
+            babyName={baby.name}
+            alertTone={chart.alertTone}
+            shifted={chart.shifted}
+          >
             {lms ? (
               <GrowthChart
-                curve={curve(lms, 0, range.to, range.step)}
-                points={points}
+                band={curve(lms, 0, range.to, range.step)}
+                points={chart.points}
+                last={chart.last}
                 to={range.to}
-                unit={indicator === "wfa" ? "kg" : "cm"}
+                unit={chart.unit}
+                label={chart.ariaLabel}
               />
             ) : table.isError ? (
               <ChartUnavailable />
             ) : (
               <Skeleton className="h-72" />
             )}
-          </Glass>
-          <p className="px-1 text-[13px] text-muted">
-            Đường WHO P3, P15, P50 (đậm), P85, P97 cho{" "}
-            {sex === "girls" ? "bé gái" : "bé trai"}; chấm là các lần đo của bé.
-            Nguồn: WHO Child Growth Standards.
-          </p>
+          </GrowthChartCard>
         </>
       )}
       {waitingForNetwork(growth) ? (

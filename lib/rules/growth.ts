@@ -6,13 +6,12 @@ export type GrowthLevel = "green" | "yellow" | "red";
 
 const DAY_MS = 86_400_000;
 
-// Spec §7.3: P3 / P15 / P50 / P85 / P97 lines.
-export const PERCENTILE_LINES = [
-  { label: "P3", z: -1.881 },
-  { label: "P15", z: -1.036 },
-  { label: "P50", z: 0 },
-  { label: "P85", z: 1.036 },
-  { label: "P97", z: 1.881 },
+// Spec 2026-11-25 §5.4: the edges of the normal band and its median. The
+// band ends where rateZ starts to warn.
+export const BAND_LINES = [
+  { label: "low", z: -2 },
+  { label: "mid", z: 0 },
+  { label: "high", z: 2 },
 ] as const;
 
 export function lmsAt(rows: LmsRow[], day: number): Lms | null {
@@ -88,7 +87,7 @@ export function assess(
 }
 
 export type CurvePoint = { day: number } & Record<
-  (typeof PERCENTILE_LINES)[number]["label"],
+  (typeof BAND_LINES)[number]["label"],
   number
 >;
 
@@ -104,8 +103,7 @@ export function curve(
     const lms = lmsAt(rows, day);
     if (!lms) break;
     const point = { day } as CurvePoint;
-    for (const line of PERCENTILE_LINES)
-      point[line.label] = valueAtZ(lms, line.z);
+    for (const line of BAND_LINES) point[line.label] = valueAtZ(lms, line.z);
     points.push(point);
   }
   return points;

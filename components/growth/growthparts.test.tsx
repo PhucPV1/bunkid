@@ -5,6 +5,7 @@ import type { GrowthAlert } from "@/lib/rules/growthAlerts";
 import type { IndicatorSummary } from "@/lib/rules/growthView";
 import { ICON_PATHS } from "@/lib/ui/icons";
 import { GrowthAlertCard } from "./GrowthAlertCard";
+import { GrowthChartCard } from "./GrowthChartCard";
 import { GrowthVerdict } from "./GrowthVerdict";
 import { PositionBar, ZONE_NORMAL, ZONE_OFF } from "./PositionBar";
 
@@ -195,5 +196,52 @@ describe("GrowthAlertCard", () => {
     expect(why.props.children).toBe("Vì sao có cảnh báo này?");
     (why.props.onClick as () => void)();
     expect(onWhy).toHaveBeenCalledOnce();
+  });
+});
+
+// Spec 2026-11-25 §5.4: what surrounds the lazily loaded chart.
+describe("GrowthChartCard", () => {
+  const render = (alertTone: "warn" | "danger" | null, shifted = false) =>
+    renderToStaticMarkup(
+      <GrowthChartCard
+        title="Cân nặng theo tháng tuổi"
+        babyName="Bun"
+        alertTone={alertTone}
+        shifted={shifted}
+      >
+        <div data-chart="" />
+      </GrowthChartCard>,
+    );
+
+  it("a glass card: the title, the chart, the legend, the source line", () => {
+    const html = render(null);
+    const order = [
+      ">Cân nặng theo tháng tuổi</h2>",
+      "data-chart",
+      ">Bun</span>",
+      ">Vùng bình thường</span>",
+      ">Mức giữa</span>",
+      "95 trong 100 bé khỏe mạnh nằm trong vùng xanh. Nguồn: WHO Child Growth Standards.",
+    ].map((mark) => html.indexOf(mark));
+    expect(order.every((i) => i >= 0)).toBe(true);
+    expect([...order].sort((a, b) => a - b)).toEqual(order);
+    expect(html).toContain("glass");
+    expect(html).not.toContain("Lần đo có cảnh báo");
+    expect(html).not.toContain("hướng đi");
+  });
+
+  it("with an alert the legend names the coloured dot", () => {
+    expect(render("warn")).toContain(
+      '<span class="size-2.5 rounded-full bg-warn"></span>Lần đo có cảnh báo',
+    );
+    expect(render("danger")).toContain(
+      '<span class="size-2.5 rounded-full bg-danger"></span>Lần đo có cảnh báo',
+    );
+  });
+
+  it("a falling or rising alert adds the sentence about direction", () => {
+    expect(render("warn", true)).toContain(
+      "Nguồn: WHO Child Growth Standards. App cảnh báo theo hướng đi của bé, không chỉ theo vị trí.</p>",
+    );
   });
 });
