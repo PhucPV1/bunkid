@@ -88,7 +88,7 @@ describe("TriageScreen", () => {
       TRIAGE.questions,
       ageDays(baby.dob, new Date()),
     );
-    expect(html).toContain('href="/kham-pha"');
+    expect(html).toContain('href="/suc-khoe"');
     expect(html.match(/role="switch"/g)).toHaveLength(visible.length);
     expect(html).not.toContain('type="checkbox"');
     expect(html).toContain('inputMode="decimal"');

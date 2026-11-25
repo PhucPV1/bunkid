@@ -21,7 +21,7 @@ const wrap = (node: ReactNode) =>
 describe("PhotosScreen", () => {
   it("a header, a usage bar on the line colour, a glass upload card and skeletons while loading", () => {
     const html = wrap(<PhotosScreen baby={baby} userId="u1" isOwner />);
-    expect(html).toContain('href="/kham-pha"');
+    expect(html).toContain('href="/tien-ich"');
     expect(html).toContain(">Ảnh của bé</h1>");
     expect(html).toContain("bg-line");
     expect(html).not.toContain("bg-soft");

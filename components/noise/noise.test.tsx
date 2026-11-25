@@ -6,7 +6,7 @@ import { NoiseScreen } from "./NoiseScreen";
 describe("NoiseScreen", () => {
   it("segmented sound and timer pickers, a glass volume card and a 64 px play button", () => {
     const html = renderToStaticMarkup(<NoiseScreen />);
-    expect(html).toContain('href="/kham-pha"');
+    expect(html).toContain('href="/tien-ich"');
     expect(html).toContain('aria-label="Loại âm"');
     expect(html).toMatch(/aria-pressed="true"[^>]*>Trắng<\/button>/);
     expect(html).toContain('aria-label="Hẹn giờ tắt"');

@@ -54,7 +54,7 @@ export function VaccineScreen({
   const header = (
     <PageHeader
       title="Tiêm chủng"
-      back={{ href: "/kham-pha", label: "Khám phá" }}
+      back={{ href: "/suc-khoe", label: "Sức khỏe" }}
     />
   );
 

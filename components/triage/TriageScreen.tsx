@@ -142,7 +142,7 @@ export function TriageScreen({ baby }: { baby: Baby }) {
     <main className="mx-auto flex max-w-md flex-col gap-[18px] px-4 pt-2 pb-4">
       <PageHeader
         title={TRIAGE.title}
-        back={{ href: "/kham-pha", label: "Khám phá" }}
+        back={{ href: "/suc-khoe", label: "Sức khỏe" }}
       />
       <p className="px-1 text-[13px] text-muted">{TRIAGE.disclaimer}</p>
       {!outcome && <Call115Button label="Gọi cấp cứu 115" />}

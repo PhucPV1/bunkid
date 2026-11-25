@@ -5,9 +5,9 @@ import { ICON_PATHS } from "@/lib/ui/icons";
 import { ConditionsScreen } from "./ConditionsScreen";
 
 describe("ConditionsScreen", () => {
-  it("a header back to Khám phá, triage and 115 buttons, and one glass article per condition", () => {
+  it("a header back to Sức khỏe, triage and 115 buttons, and one glass article per condition", () => {
     const html = renderToStaticMarkup(<ConditionsScreen />);
-    expect(html).toContain('href="/kham-pha"');
+    expect(html).toContain('href="/suc-khoe"');
     expect(html).toContain(`>${CONDITIONS.title}</h1>`);
     expect(html).toContain('href="/trieu-chung"');
     expect(html).toContain('href="tel:115"');

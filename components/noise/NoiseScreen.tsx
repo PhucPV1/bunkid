@@ -131,7 +131,7 @@ export function NoiseScreen() {
     <main className="mx-auto flex max-w-md flex-col gap-[18px] px-4 pt-2 pb-4">
       <PageHeader
         title="Tiếng ồn trắng"
-        back={{ href: "/kham-pha", label: "Khám phá" }}
+        back={{ href: "/tien-ich", label: "Tiện ích" }}
       />
       <Glass as="section" className="flex flex-col gap-4 p-4">
         <div className="flex flex-col gap-2">

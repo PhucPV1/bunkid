@@ -8,7 +8,7 @@ describe("HoldingScreen", () => {
   it("a stage picker, one glass card per position, Xem video with a play icon", () => {
     const html = renderToStaticMarkup(<HoldingScreen ageDays={30} />);
     const stage = HOLDING.stages.find((s) => s.code === "0_3")!;
-    expect(html).toContain('href="/kham-pha"');
+    expect(html).toContain('href="/tien-ich"');
     expect(html).toContain('aria-label="Giai đoạn"');
     const name = stage.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     expect(html).toMatch(

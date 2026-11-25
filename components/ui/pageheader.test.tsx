@@ -6,10 +6,10 @@ import { COMPACT_AFTER_PX, PageHeader, PageHeaderView } from "./PageHeader";
 describe("PageHeaderView", () => {
   it("shows a 34 pt large title and hides the compact bar at the top", () => {
     const html = renderToStaticMarkup(
-      <PageHeaderView title="Khám phá" compact={false} />,
+      <PageHeaderView title="Sức khỏe" compact={false} />,
     );
     expect(html).toContain(
-      '<h1 class="text-[34px] leading-[41px] font-bold text-ink">Khám phá</h1>',
+      '<h1 class="text-[34px] leading-[41px] font-bold text-ink">Sức khỏe</h1>',
     );
     expect(html).toContain("pointer-events-none opacity-0");
     expect(html).toContain('aria-hidden="true"');
@@ -18,12 +18,12 @@ describe("PageHeaderView", () => {
 
   it("shows the compact glass bar once scrolled", () => {
     const html = renderToStaticMarkup(
-      <PageHeaderView title="Khám phá" compact />,
+      <PageHeaderView title="Sức khỏe" compact />,
     );
     expect(html).toContain("glass-strong");
     expect(html).toContain("opacity-100");
     expect(html).toContain("h-[calc(env(safe-area-inset-top)+44px)]");
-    expect(html).toContain(">Khám phá</span>");
+    expect(html).toContain(">Sức khỏe</span>");
     expect(html).toContain("duration-[160ms]");
   });
 
@@ -44,7 +44,7 @@ describe("PageHeaderView", () => {
   });
   it("keeps the compact bar below the old z-20 sheets", () => {
     const html = renderToStaticMarkup(
-      <PageHeaderView title="Khám phá" compact />,
+      <PageHeaderView title="Sức khỏe" compact />,
     );
     expect(html).toContain(" z-10 ");
     expect(html).not.toContain("z-30");
@@ -54,7 +54,7 @@ describe("PageHeaderView", () => {
 describe("PageHeader", () => {
   it("starts expanded and compacts after 40 px", () => {
     expect(COMPACT_AFTER_PX).toBe(40);
-    expect(renderToStaticMarkup(<PageHeader title="Khám phá" />)).toContain(
+    expect(renderToStaticMarkup(<PageHeader title="Sức khỏe" />)).toContain(
       "opacity-0",
     );
   });

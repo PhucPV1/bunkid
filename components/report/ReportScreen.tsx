@@ -90,7 +90,7 @@ export function ReportScreen({ baby }: { baby: Baby }) {
       <div className="flex flex-col gap-[18px] print:hidden">
         <PageHeader
           title="Báo cáo cho bác sĩ"
-          back={{ href: "/kham-pha", label: "Khám phá" }}
+          back={{ href: "/suc-khoe", label: "Sức khỏe" }}
         />
         <Segmented
           label="Khoảng thời gian"

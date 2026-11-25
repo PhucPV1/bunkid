@@ -15,7 +15,7 @@ export function ConditionsScreen() {
     <main className="mx-auto flex max-w-md flex-col gap-[18px] px-4 pt-2 pb-4">
       <PageHeader
         title={CONDITIONS.title}
-        back={{ href: "/kham-pha", label: "Khám phá" }}
+        back={{ href: "/suc-khoe", label: "Sức khỏe" }}
       />
       <p className="px-1 text-base text-ink">{CONDITIONS.intro}</p>
       <div className="flex flex-col gap-2.5">
@@ -31,7 +31,11 @@ export function ConditionsScreen() {
         </Link>
         <a
           href="tel:115"
-          className={buttonClass({ variant: "danger", size: "md", block: true })}
+          className={buttonClass({
+            variant: "danger",
+            size: "md",
+            block: true,
+          })}
         >
           <Icon name="phone" size={18} />
           Gọi 115

@@ -77,7 +77,7 @@ export function MusicScreen({
     <main className="mx-auto flex max-w-md flex-col gap-[18px] px-4 pt-2 pb-4">
       <PageHeader
         title="Nhạc cho bé"
-        back={{ href: "/kham-pha", label: "Khám phá" }}
+        back={{ href: "/tien-ich", label: "Tiện ích" }}
       />
       <Segmented
         label="Loại nhạc"

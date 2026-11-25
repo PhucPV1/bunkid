@@ -72,7 +72,7 @@ export function MilestonesScreen({
     <main className="mx-auto flex max-w-md flex-col gap-[18px] px-4 pt-2 pb-4">
       <PageHeader
         title={MILESTONES.title}
-        back={{ href: "/kham-pha", label: "Khám phá" }}
+        back={{ href: "/suc-khoe", label: "Sức khỏe" }}
       />
       <p className="px-1 text-[15px] text-muted">{MILESTONES.intro}</p>
       {marks.isError && !marks.data && (

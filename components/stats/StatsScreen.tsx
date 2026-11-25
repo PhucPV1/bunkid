@@ -119,7 +119,7 @@ export function StatsScreen({ baby }: { baby: Baby }) {
     <main className="mx-auto flex max-w-md flex-col gap-[18px] px-4 pt-2 pb-4">
       <PageHeader
         title="Thống kê"
-        back={{ href: "/kham-pha", label: "Khám phá" }}
+        back={{ href: "/suc-khoe", label: "Sức khỏe" }}
         action={
           <Segmented
             label="Khoảng thời gian"

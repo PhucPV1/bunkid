@@ -7,13 +7,13 @@ import { MusicScreen } from "./MusicScreen";
 import { YouTubeModePicker } from "./YouTubeModePicker";
 
 describe("MusicScreen", () => {
-  it("a header back to Khám phá, two segmented pickers, a glass list with play icons and the add form", () => {
+  it("a header back to Tiện ích, two segmented pickers, a glass list with play icons and the add form", () => {
     const html = renderToStaticMarkup(
       <QueryClientProvider client={new QueryClient()}>
         <MusicScreen familyId="f1" userId="u1" isOwner />
       </QueryClientProvider>,
     );
-    expect(html).toContain('href="/kham-pha"');
+    expect(html).toContain('href="/tien-ich"');
     expect(html).toContain(">Nhạc cho bé</h1>");
     expect(html).toContain('aria-label="Loại nhạc"');
     expect(html).toMatch(

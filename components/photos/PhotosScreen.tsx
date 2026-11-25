@@ -61,7 +61,7 @@ export function PhotosScreen({
     <main className="mx-auto flex max-w-md flex-col gap-[18px] px-4 pt-2 pb-4">
       <PageHeader
         title="Ảnh của bé"
-        back={{ href: "/kham-pha", label: "Khám phá" }}
+        back={{ href: "/tien-ich", label: "Tiện ích" }}
       />
       <section className="flex flex-col gap-1.5 px-1">
         <div className="h-2 overflow-hidden rounded-full bg-line">
