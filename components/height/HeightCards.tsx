@@ -1,7 +1,9 @@
+import Link from "next/link";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/Button";
+import { Icon } from "@/components/ui/Icon";
 import { StatusChip } from "@/components/ui/StatusChip";
-import type { HeightView } from "@/lib/rules/heightView";
+import type { GoalLink, HeightView } from "@/lib/rules/heightView";
 
 const CARD = "glass flex flex-col rounded-[26px] p-4";
 const LABEL =
@@ -205,5 +207,34 @@ export function VelocityCard({
         <p className={MUTED}>Cần hai lần đo chiều dài cách nhau từ 14 ngày.</p>
       )}
     </section>
+  );
+}
+
+// Spec 2026-11-25 §6.4: the card on the Tăng trưởng page that opens Chiều cao.
+export function HeightGoalLink({ link }: { link: GoalLink }) {
+  return (
+    <Link
+      href="/tang-truong/chieu-cao"
+      className="glass flex min-h-[64px] items-center gap-3 rounded-[26px] p-3 text-ink"
+    >
+      <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-accent-tint text-accent-text">
+        <Icon name="flag" size={20} strokeWidth={2.2} />
+      </span>
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span className="text-base font-bold">{link.title}</span>
+        {link.detail && (
+          <span
+            className={
+              link.onTrack
+                ? "text-[13px] leading-[18px] font-semibold text-good"
+                : MUTED
+            }
+          >
+            {link.detail}
+          </span>
+        )}
+      </span>
+      <Icon name="chevronRight" size={18} className="text-muted" />
+    </Link>
   );
 }

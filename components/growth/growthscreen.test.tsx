@@ -84,6 +84,9 @@ const baby = {
   name: "Bun",
   dob: "2026-09-14",
   sex: "male",
+  father_height_cm: null,
+  mother_height_cm: null,
+  target_height_cm: null,
 } as unknown as Baby;
 
 function render(
@@ -226,9 +229,7 @@ describe("GrowthScreen", () => {
     expect(html).not.toContain(">Cân nặng thấp hơn chuẩn</h2>");
     // The weight block of the verdict card is not there yet.
     expect(html).not.toContain(" kg, giữa ");
-    expect(html.match(/role="img" aria-label="[^"]*Chuẩn từ/g)).toHaveLength(
-      1,
-    );
+    expect(html.match(/role="img" aria-label="[^"]*Chuẩn từ/g)).toHaveLength(1);
   });
 
   it("no table yet: no verdict card and no alert", () => {
@@ -237,7 +238,7 @@ describe("GrowthScreen", () => {
     expect(html).not.toContain(ICON_PATHS.alert);
   });
 
-  it("no measurement: only the header and the empty state", () => {
+  it("no measurement: the header and the empty state; no verdict, picker or chart", () => {
     const html = render([]);
     expect(html).toContain("Chưa có lần đo nào.");
     expect(html).not.toContain("Đo gần nhất");
@@ -295,6 +296,24 @@ describe("GrowthScreen", () => {
     ]);
     const list = html.slice(html.indexOf(">Các lần đo</h2>"));
     expect(list).toContain('bg-warn-soft text-warn-ink">Thấp</span>');
+  });
+
+  // Spec 2026-11-25 §5.3 item 4 and §6.4.
+  it("the height goal card links to Chiều cao, between the verdict and the picker", () => {
+    const html = render([measure("2026-11-15", 5500)]);
+    const card = html.indexOf('href="/tang-truong/chieu-cao"');
+    expect(card).toBeGreaterThan(html.indexOf(">Đo gần nhất 15/11"));
+    expect(card).toBeLessThan(html.indexOf('aria-label="Chỉ số"'));
+    expect(html).toContain(">Mục tiêu chiều cao</span>");
+    expect(html).toContain(
+      ">Nhập chiều cao bố mẹ để xem khoảng dự kiến</span>",
+    );
+  });
+
+  it("the height goal card is there with no measurement too", () => {
+    const html = render([]);
+    expect(html).toContain('href="/tang-truong/chieu-cao"');
+    expect(html).toContain(">Chưa có lần đo nào.</p>");
   });
 
   it("the why popup is closed until asked for", () => {

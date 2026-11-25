@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { LmsRow } from "@/lib/content/who";
 import { addDays } from "./days";
 import type { GrowthMeasure } from "./growthAlerts";
-import { goalPreview, heightView, rangeBar } from "./heightView";
+import { goalLink, goalPreview, heightView, rangeBar } from "./heightView";
 
 const DOB = "2026-01-01";
 // The baby is 76 days old "today".
@@ -289,5 +289,82 @@ describe("goalPreview", () => {
       { father: "175", mother: "x", target: "" },
     ])
       expect(goalPreview(raw, "boys"), JSON.stringify(raw)).toBeNull();
+  });
+});
+
+// Spec 2026-11-25 §6.4: the card on the Tăng trưởng page that opens Chiều cao.
+describe("goalLink", () => {
+  const link = (
+    over: Partial<Parameters<typeof heightView>[0]["baby"]> = {},
+    rows: GrowthMeasure[] = [length(76, 17.5)],
+  ) => goalLink({ baby: baby(over), rows, table: FLAT });
+
+  it("with a target, on track: the target in the title, the status in good", () => {
+    expect(link()).toEqual({
+      title: "Mục tiêu chiều cao 180 cm",
+      detail: "Sát đường mục tiêu",
+      onTrack: true,
+    });
+    expect(link({}, [length(76, 19)])).toEqual({
+      title: "Mục tiêu chiều cao 180 cm",
+      detail: "Trên đường mục tiêu 2,1 cm",
+      onTrack: true,
+    });
+  });
+
+  it("with a target, below the line or not measured: the status, not in good", () => {
+    expect(link({}, [length(76, 15)])).toEqual({
+      title: "Mục tiêu chiều cao 180 cm",
+      detail: "Dưới đường mục tiêu 1,9 cm",
+      onTrack: false,
+    });
+    expect(link({}, [])).toEqual({
+      title: "Mục tiêu chiều cao 180 cm",
+      detail: "Chưa có lần đo chiều dài",
+      onTrack: false,
+    });
+  });
+
+  it("with a target, while the measurements or the table load: the title alone", () => {
+    // Called directly: an `undefined` argument would take the helper's default.
+    for (const waiting of [
+      goalLink({ baby: baby(), rows: undefined, table: FLAT }),
+      goalLink({ baby: baby(), rows: [], table: undefined }),
+    ])
+      expect(waiting).toEqual({
+        title: "Mục tiêu chiều cao 180 cm",
+        detail: null,
+        onTrack: false,
+      });
+  });
+
+  it("no target and no parents' heights: asks for the heights", () => {
+    expect(
+      link({
+        target_height_cm: null,
+        father_height_cm: null,
+        mother_height_cm: null,
+      }),
+    ).toEqual({
+      title: "Mục tiêu chiều cao",
+      detail: "Nhập chiều cao bố mẹ để xem khoảng dự kiến",
+      onTrack: false,
+    });
+  });
+
+  it("no target, parents' heights entered: the expected range", () => {
+    expect(link({ target_height_cm: null })).toEqual({
+      title: "Mục tiêu chiều cao",
+      detail: "Chưa đặt mục tiêu · khoảng dự kiến 166–183 cm",
+      onTrack: false,
+    });
+    // It needs neither the measurements nor the table.
+    expect(
+      goalLink({
+        baby: baby({ target_height_cm: null }),
+        rows: undefined,
+        table: undefined,
+      }).detail,
+    ).toBe("Chưa đặt mục tiêu · khoảng dự kiến 166–183 cm");
   });
 });

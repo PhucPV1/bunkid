@@ -211,3 +211,54 @@ export function goalPreview(
     target: target === null ? null : targetVsRange(target, range),
   };
 }
+
+// Spec 2026-11-25 §6.4: the card on the Tăng trưởng page that opens Chiều cao.
+export type GoalLink = {
+  title: string;
+  // Null while the status cannot be worked out yet.
+  detail: string | null;
+  // The detail is written in good: the baby is on the target line or above it.
+  onTrack: boolean;
+};
+
+export function goalLink(input: {
+  baby: Parameters<typeof heightView>[0]["baby"];
+  // Undefined while they load.
+  rows: GrowthMeasure[] | undefined;
+  table: LmsRow[] | undefined;
+}): GoalLink {
+  const { baby, rows, table } = input;
+  const target = baby.target_height_cm;
+  if (target !== null) {
+    const title = `Mục tiêu chiều cao ${formatCm(target)} cm`;
+    if (!rows || !table) return { title, detail: null, onTrack: false };
+    const [reading] = readings(rows, table, baby.dob, "lhfa");
+    const status = goalStatus({
+      reading: reading ?? null,
+      z: targetZ(target, baby.sex),
+      table,
+    });
+    return {
+      title,
+      detail: status.text,
+      onTrack: status.chip?.tone === "good",
+    };
+  }
+  const title = "Mục tiêu chiều cao";
+  if (baby.father_height_cm === null || baby.mother_height_cm === null)
+    return {
+      title,
+      detail: "Nhập chiều cao bố mẹ để xem khoảng dự kiến",
+      onTrack: false,
+    };
+  const range = midParental(
+    baby.father_height_cm,
+    baby.mother_height_cm,
+    baby.sex,
+  );
+  return {
+    title,
+    detail: `Chưa đặt mục tiêu · khoảng dự kiến ${range.low}–${range.high} cm`,
+    onTrack: false,
+  };
+}

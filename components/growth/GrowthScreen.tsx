@@ -32,6 +32,7 @@ import {
   listRows,
   verdictHead,
 } from "@/lib/rules/growthView";
+import { goalLink } from "@/lib/rules/heightView";
 import { ageDays, formatAgeVi } from "@/lib/rules/time";
 import type { Baby, GrowthRow } from "@/lib/supabase/rows";
 import { GrowthAlertCard } from "./GrowthAlertCard";
@@ -39,6 +40,7 @@ import { GrowthChartCard } from "./GrowthChartCard";
 import { GrowthList } from "./GrowthList";
 import { GrowthSheet } from "./GrowthSheet";
 import { GrowthVerdict } from "./GrowthVerdict";
+import { HeightGoalLink } from "@/components/height/HeightCards";
 
 function ChartUnavailable() {
   return <p className="h-72 text-muted">Biểu đồ cần mạng để tải lần đầu.</p>;
@@ -129,6 +131,21 @@ export function GrowthScreen({
           summaries={summaries}
         />
       )}
+      {/* Spec 2026-11-25 §5.3 item 4: also shown with no measurement yet. */}
+      <HeightGoalLink
+        link={goalLink({
+          baby: {
+            name: baby.name,
+            dob: baby.dob,
+            sex,
+            father_height_cm: baby.father_height_cm,
+            mother_height_cm: baby.mother_height_cm,
+            target_height_cm: baby.target_height_cm,
+          },
+          rows: growth.data,
+          table: tables.lhfa,
+        })}
+      />
       {!empty && (
         <>
           <Segmented

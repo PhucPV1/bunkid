@@ -2,8 +2,10 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { findElements } from "@/components/ui/testTree";
 import { rangeBar, type HeightView } from "@/lib/rules/heightView";
+import { ICON_PATHS } from "@/lib/ui/icons";
 import {
   HeightGoalCard,
+  HeightGoalLink,
   ParentalRangeCard,
   TargetPathCard,
   VelocityCard,
@@ -254,5 +256,62 @@ describe("VelocityCard", () => {
       ">Cần hai lần đo chiều dài cách nhau từ 14 ngày.</p>",
     );
     expect(html).not.toContain(CHIP);
+  });
+});
+
+// Spec 2026-11-25 §6.4.
+describe("HeightGoalLink", () => {
+  const render = (link: Parameters<typeof HeightGoalLink>[0]["link"]) =>
+    renderToStaticMarkup(<HeightGoalLink link={link} />);
+
+  it("is one link to the Chiều cao page: a flag in an accent-tinted circle, the title, an arrow", () => {
+    const html = render({
+      title: "Mục tiêu chiều cao 180 cm",
+      detail: "Sát đường mục tiêu",
+      onTrack: true,
+    });
+    expect(html).toMatch(/^<a [^>]*href="\/tang-truong\/chieu-cao"/);
+    expect(html.match(/<a /g)).toHaveLength(1);
+    expect(html).toContain("glass");
+    expect(html).toContain("rounded-[26px]");
+    expect(html).toContain("size-10");
+    expect(html).toContain("bg-accent-tint");
+    expect(html).toContain(`d="${ICON_PATHS.flag}"`);
+    expect(html).toContain(">Mục tiêu chiều cao 180 cm</span>");
+    expect(html).toContain(`d="${ICON_PATHS.chevronRight}"`);
+  });
+
+  it("on track: the status in good, semibold", () => {
+    expect(
+      render({
+        title: "Mục tiêu chiều cao 180 cm",
+        detail: "Sát đường mục tiêu",
+        onTrack: true,
+      }),
+    ).toContain(
+      '<span class="text-[13px] leading-[18px] font-semibold text-good">Sát đường mục tiêu</span>',
+    );
+  });
+
+  it("otherwise the line under the title is muted", () => {
+    expect(
+      render({
+        title: "Mục tiêu chiều cao",
+        detail: "Nhập chiều cao bố mẹ để xem khoảng dự kiến",
+        onTrack: false,
+      }),
+    ).toContain(
+      '<span class="text-[13px] leading-[18px] text-muted">Nhập chiều cao bố mẹ để xem khoảng dự kiến</span>',
+    );
+  });
+
+  it("no line under the title while the status is not known yet", () => {
+    const html = render({
+      title: "Mục tiêu chiều cao 180 cm",
+      detail: null,
+      onTrack: false,
+    });
+    expect(html).toContain(">Mục tiêu chiều cao 180 cm</span>");
+    expect(html).not.toContain("text-[13px]");
   });
 });
