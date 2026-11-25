@@ -1222,7 +1222,30 @@ Xem lại trong khung Browser, 375×812, trên trang tạm dựng lại (thêm 8
 - Theme: `dark` đủ các trường hợp; `night` và `rose` xem `?c=6`, `?c=0`; `light` xem `?c=0` và trường hợp "11,9 kg · Cao". Viền chữ theo màu thẻ ở cả bốn theme, không lộ thành khối. `peach`, `lavender`, `sea`: chưa kiểm.
 - Trang thật `/tang-truong` (`dark`): nhãn "5,7 kg" bắt đầu tại tâm chấm, phía trên, có viền; không cuộn ngang; console không lỗi.
 
-**Còn lại, chưa sửa:** bé từ khoảng 6 tháng trở lên (chấm ở nửa phải) mà có cảnh báo dạng đi lên (Cao, Rất cao, Tăng nhanh) thì nhãn vẫn nằm trên đường của bé và có thể che chữ "Bình thường". Muốn hết hẳn phải đổi chỗ đặt nhãn so với spec §5.4 (ví dụ cho nhãn lên trên chấm, hoặc dời chữ "Bình thường"), đó là quyết định về hình của người dùng.
+**Còn lại sau lần sửa này (đã xử lý ở mục "Sửa nốt nửa phải" bên dưới):** bé từ khoảng 6 tháng trở lên (chấm ở nửa phải) mà có cảnh báo dạng đi lên (Cao, Rất cao, Tăng nhanh) thì nhãn vẫn nằm trên đường của bé và có thể che chữ "Bình thường". Muốn hết hẳn phải đổi chỗ đặt nhãn so với spec §5.4 (ví dụ cho nhãn lên trên chấm, hoặc dời chữ "Bình thường"), đó là quyết định về hình của người dùng.
+
+**Sửa nốt nửa phải (2026-11-25, sau khi M2d đã lên `main` @ `c876de0`; người dùng: "sửa nốt sau khi đẩy", rồi chọn "Gói đề xuất" trên question card sau khi xem ba cặp ảnh hiện tại / đề xuất; nhánh `fix/kim-bun-chart-label-right`).**
+
+Ba thay đổi, đều khác spec §5.4 ở chỗ đã nêu cho người dùng (file spec chưa sửa):
+
+1. **Phía của nhãn ở nửa phải.** Luật mới `chartLabelPlace({ day, to, alert, change })` trong `lib/rules/growthView.ts` (5 test). Nửa trái giữ như cũ (trên chấm khi bình thường, dưới chấm khi có cảnh báo). Ở nửa phải nhãn chạy sang trái, đúng chỗ đường của bé đi qua, nên nhãn nằm phía đường không đi tới: lần đo mới cao hơn lần trước thì nhãn ở trên chấm (kể cả nhãn cảnh báo), thấp hơn thì ở dưới; bằng nhau hoặc chỉ có một lần đo thì giữ như spec. Biểu đồ có thêm 20 px trống phía trên vùng vẽ (lề trên 28 px thay cho 8 px) để nhãn nằm trên một chấm ở sát đỉnh trục không bị cắt (thẻ `svg` của biểu đồ cắt phần tràn).
+2. **Chữ "Bình thường" trong vùng tô** ẩn khi chấm mới nhất nằm ở 30% bên phải của trục ngang (`day > 0,7 × to`); chú giải dưới biểu đồ vẫn có "Vùng bình thường".
+3. **Chữ "Cao hơn chuẩn"** ẩn khi nhãn cảnh báo nằm trên chấm và chạy sang trái. Chữ này nay nằm ở `top-8`, ngay trong mép trên của vùng vẽ.
+
+Sau bản sửa: `tsc --noEmit` sạch; `Test Files  172 passed (172)`, `Tests  1321 passed (1321)`; `bun run build` lần hai mã 0. Hai patch của plan M2e vẫn qua `git apply --check`; số test trong plan M2e nay thấp hơn thực tế 7 (baseline 1321).
+
+Xem lại trong khung Browser, 375×812, trang tạm 19 trường hợp (đã xóa) và trang thật, cùng script đo như lần trước, thêm kiểm chấm mới nhất có nằm trên chữ nền nào không:
+
+- **Cả 19 trường hợp và 3 biểu đồ cm (chiều dài, vòng đầu của bé lớn tháng): đạt.** Nhãn nằm trong khung, không bị đường của bé đi qua, không chồng chữ nào; chấm mới nhất không nằm trên chữ nền nào; không cuộn ngang.
+- Ba trường hợp trước chưa đạt nay đạt: bé 10 tháng "11,9 kg · Cao" và "47,7 cm · Tăng nhanh", bé 56 tháng "26 kg · Cao": nhãn ở trên chấm.
+- Bé 10 tháng và 56 tháng bình thường ở nửa trên của vùng tô ("10,3 kg", "20 kg", "51,3 cm"): chữ "Bình thường" đã ẩn, nhãn không còn nằm trên nó.
+- "7,6 kg · Tăng chậm" (lần đo mới cao hơn 0,1 kg) và "98,5 cm · Thấp": nhãn cảnh báo ở trên chấm, chữ "Cao hơn chuẩn" ẩn theo luật 3 dù chấm ở giữa biểu đồ.
+- Bé dưới 6 tháng (`?c=0` đến `?c=7`) và lần đo lúc sinh: như lần sửa trước, đủ ba chữ nền.
+- Theme: `dark` đủ; `night`, `rose`, `light` xem trường hợp "11,9 kg · Cao". `peach`, `lavender`, `sea`: chưa kiểm.
+- Trang thật `/tang-truong` (`dark`): nhãn "5,7 kg" như trước, đủ ba chữ nền, vùng vẽ thấp hơn 20 px; không cuộn ngang. Console chỉ có lỗi WebSocket `_next/hmr` của dev từ lúc server tạm dừng giữa hai lần kiểm, không có lỗi của app.
+
+Chưa kiểm: bề ngang khác 375 px; nhãn dài hơn nửa vùng vẽ (chưa có chip nào dài hơn "Tăng nhanh"); iPhone thật.
+
 
 - [x] **Step 5: Xóa trang fixture, commit phần ghi kết quả rồi dừng lại hỏi người dùng**
 
