@@ -7,14 +7,14 @@ export type Database = {
           Tables: {
             "babies": {
                   Row: {
-                    "allergies": string | null,"birth_head_cm": number | null,"birth_length_cm": number | null,"birth_weight_g": number | null,"blood_type": string | null,"created_at": string,"dob": string,"family_id": string,"feed_interval_min": number,"id": string,"name": string,"notes": string | null,"sex": string,"updated_at": string,"vaccine_choices": NonNullable<Json>
+                    "allergies": string | null,"birth_head_cm": number | null,"birth_length_cm": number | null,"birth_weight_g": number | null,"blood_type": string | null,"created_at": string,"dob": string,"family_id": string,"father_height_cm": number | null,"feed_interval_min": number,"id": string,"mother_height_cm": number | null,"name": string,"notes": string | null,"sex": string,"target_height_cm": number | null,"updated_at": string,"vaccine_choices": NonNullable<Json>
                   }
                   ComputedFields: never
                   Insert: {
-                    "allergies"?: string | null,"birth_head_cm"?: number | null,"birth_length_cm"?: number | null,"birth_weight_g"?: number | null,"blood_type"?: string | null,"created_at"?: string,"dob": string,"family_id": string,"feed_interval_min"?: number,"id"?: string,"name": string,"notes"?: string | null,"sex": string,"updated_at"?: string,"vaccine_choices"?: NonNullable<Json>
+                    "allergies"?: string | null,"birth_head_cm"?: number | null,"birth_length_cm"?: number | null,"birth_weight_g"?: number | null,"blood_type"?: string | null,"created_at"?: string,"dob": string,"family_id": string,"father_height_cm"?: number | null,"feed_interval_min"?: number,"id"?: string,"mother_height_cm"?: number | null,"name": string,"notes"?: string | null,"sex": string,"target_height_cm"?: number | null,"updated_at"?: string,"vaccine_choices"?: NonNullable<Json>
                   }
                   Update: {
-                    "allergies"?: string | null,"birth_head_cm"?: number | null,"birth_length_cm"?: number | null,"birth_weight_g"?: number | null,"blood_type"?: string | null,"created_at"?: string,"dob"?: string,"family_id"?: string,"feed_interval_min"?: number,"id"?: string,"name"?: string,"notes"?: string | null,"sex"?: string,"updated_at"?: string,"vaccine_choices"?: NonNullable<Json>
+                    "allergies"?: string | null,"birth_head_cm"?: number | null,"birth_length_cm"?: number | null,"birth_weight_g"?: number | null,"blood_type"?: string | null,"created_at"?: string,"dob"?: string,"family_id"?: string,"father_height_cm"?: number | null,"feed_interval_min"?: number,"id"?: string,"mother_height_cm"?: number | null,"name"?: string,"notes"?: string | null,"sex"?: string,"target_height_cm"?: number | null,"updated_at"?: string,"vaccine_choices"?: NonNullable<Json>
                   }
                   Relationships: [
                     {

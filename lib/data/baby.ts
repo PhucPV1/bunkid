@@ -23,6 +23,10 @@ export async function updateBaby(
     vaccine_choices?: Record<string, string>;
     blood_type?: string | null;
     allergies?: string | null;
+    // Spec 2026-11-25 §6.1.
+    father_height_cm?: number | null;
+    mother_height_cm?: number | null;
+    target_height_cm?: number | null;
   },
 ): Promise<void> {
   const { data, error } = await supabase()
