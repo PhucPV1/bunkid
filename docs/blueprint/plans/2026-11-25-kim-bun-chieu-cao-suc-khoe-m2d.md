@@ -1206,6 +1206,24 @@ Chưa kiểm: thẻ cảnh báo, chấm đổi màu và hộp thoại trên tran
 
 `bun run dev` đã dừng; `.claude/launch.json` tạm đã xóa.
 
+**Sửa nhãn sau khi kiểm (2026-11-25, người dùng: "Sửa nhãn trước"; commit `db09280`, ngoài hai patch của plan).**
+
+Thay đổi: nhãn của chấm mới nhất không còn canh giữa theo chấm. Luật mới `chartLabelAnchor(day, to)` trong `lib/rules/growthView.ts` (2 test): chấm ở nửa trái của trục ngang thì nhãn bắt đầu tại tâm chấm và chạy sang phải; ở nửa phải thì nhãn kết thúc tại tâm chấm và chạy sang trái. Trên, dưới giữ như spec §5.4 (trên chấm khi bình thường, dưới chấm khi có cảnh báo). Chữ của nhãn có viền 4 px màu `glass-solid` (`paint-order: stroke`) để vẫn đọc được ở chỗ còn chạm đường, vùng tô hay lưới. Không thêm token, không thêm gói. Spec §5.4 chưa ghi hai chi tiết này (chưa sửa file spec).
+
+Sau bản sửa: `tsc --noEmit` sạch; `Test Files  172 passed (172)`, `Tests  1316 passed (1316)`; `bun run build` lần hai mã 0. Hai patch của plan M2e vẫn áp được lên cây này (`git apply --check`, lệch dòng), nhưng số test ghi trong plan M2e thấp hơn thực tế 2 (baseline nay là 1316).
+
+Xem lại trong khung Browser, 375×812, trên trang tạm dựng lại (thêm 8 trường hợp cho bé lớn tháng; đã xóa lại) và trang thật. Có đo bằng script: nhãn có nằm trong vùng vẽ không, đoạn đường của bé có đi qua khung chữ của nhãn không, nhãn có chồng lên chữ nào khác không.
+
+- **Nửa trái (bé dưới 6 tháng), `?c=0` đến `?c=7`: đạt cả 8.** Nhãn nằm trọn trong vùng vẽ, không chạm trục dọc, không bị đường của bé đi qua, không chồng chữ nào. `?c=6` "41,8 cm · Tăng nhanh" nay ở x 122–258.
+- **Chỉ có lần đo lúc sinh (chấm nằm trên trục dọc), cân nặng và chiều dài: đạt.** Nhãn bắt đầu đúng tại trục (x = 65), không lấn sang số của trục.
+- **Nửa phải, bé 10 tháng:** bình thường "9,2 kg": đạt; "7,6 kg · Tăng chậm" (đường đi ngang): đạt. **Chưa đạt:** "11,9 kg · Cao" và "47,7 cm · Tăng nhanh" (đường đi lên tới chấm): nhãn nằm dưới chấm, chạy sang trái nên nằm đè lên đường của bé, và che một phần chữ "Bình thường" của vùng tô. Chữ của nhãn vẫn đọc được nhờ viền.
+- **Sát mép phải, bé 56 tháng:** bình thường "17,8 kg": đạt, nằm sát dưới chữ "Bình thường", không chồng; "98,5 cm · Thấp": đạt. **Chưa đạt:** "26 kg · Cao": nhãn đè lên đường của bé.
+- Không trường hợp nào tràn khung biểu đồ hay cuộn ngang. Trước bản sửa, nhãn canh giữa ở các trường hợp nửa phải này còn lấn ra ngoài mép phải; chuyện đó chưa lộ ra ở lần kiểm đầu vì trang tạm của plan chỉ có bé 76 ngày tuổi.
+- Theme: `dark` đủ các trường hợp; `night` và `rose` xem `?c=6`, `?c=0`; `light` xem `?c=0` và trường hợp "11,9 kg · Cao". Viền chữ theo màu thẻ ở cả bốn theme, không lộ thành khối. `peach`, `lavender`, `sea`: chưa kiểm.
+- Trang thật `/tang-truong` (`dark`): nhãn "5,7 kg" bắt đầu tại tâm chấm, phía trên, có viền; không cuộn ngang; console không lỗi.
+
+**Còn lại, chưa sửa:** bé từ khoảng 6 tháng trở lên (chấm ở nửa phải) mà có cảnh báo dạng đi lên (Cao, Rất cao, Tăng nhanh) thì nhãn vẫn nằm trên đường của bé và có thể che chữ "Bình thường". Muốn hết hẳn phải đổi chỗ đặt nhãn so với spec §5.4 (ví dụ cho nhãn lên trên chấm, hoặc dời chữ "Bình thường"), đó là quyết định về hình của người dùng.
+
 - [x] **Step 5: Xóa trang fixture, commit phần ghi kết quả rồi dừng lại hỏi người dùng**
 
 ```bash
