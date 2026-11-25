@@ -1,0 +1,65 @@
+{
+  "reviewedAt": "2026-11-25",
+  "sources": [
+    {
+      "name": "WHO – Infant and young child feeding",
+      "url": "https://www.who.int/news-room/fact-sheets/detail/infant-and-young-child-feeding"
+    },
+    {
+      "name": "WHO – Guideline for complementary feeding 6–23 months (2023)",
+      "url": "https://www.who.int/publications/i/item/9789240081864"
+    },
+    {
+      "name": "Viện Dinh dưỡng Quốc gia",
+      "url": "https://viendinhduong.vn/"
+    }
+  ],
+  "stages": [
+    {
+      "id": "0-6m",
+      "fromDay": 0,
+      "toDay": 182,
+      "title": "0–6 tháng",
+      "items": [
+        "Bú mẹ hoàn toàn nếu có thể, bú theo nhu cầu của bé; nếu không, dùng sữa công thức.",
+        "Vitamin D mỗi ngày theo chỉ định của bác sĩ.",
+        "Chưa ăn dặm, chưa cần uống thêm nước."
+      ]
+    },
+    {
+      "id": "6-12m",
+      "fromDay": 183,
+      "toDay": 364,
+      "title": "6–12 tháng",
+      "items": [
+        "Bắt đầu ăn dặm từ khoảng 6 tháng, vẫn bú mẹ hoặc sữa công thức.",
+        "Mỗi ngày có thức ăn giàu đạm và sắt: thịt, cá, trứng, đậu.",
+        "Tăng dần độ đặc và số bữa: 2–3 bữa lúc 6–8 tháng, 3–4 bữa lúc 9–11 tháng.",
+        "Không thêm muối, đường; không dùng mật ong trước 1 tuổi."
+      ]
+    },
+    {
+      "id": "1-2y",
+      "fromDay": 365,
+      "toDay": 729,
+      "title": "1–2 tuổi",
+      "items": [
+        "Ăn 3–4 bữa chính và 1–2 bữa phụ mỗi ngày.",
+        "Mỗi ngày đủ bốn nhóm: tinh bột, đạm, chất béo, rau quả.",
+        "Tiếp tục bú mẹ nếu có thể.",
+        "Hạn chế đồ ngọt và nước ngọt."
+      ]
+    },
+    {
+      "id": "2-5y",
+      "fromDay": 730,
+      "toDay": 1856,
+      "title": "2–5 tuổi",
+      "items": [
+        "Ăn cùng bữa với gia đình, mỗi ngày đủ đạm, rau quả, sữa.",
+        "Hạn chế đồ ngọt, nước ngọt, đồ chiên rán và thức ăn nhanh.",
+        "Khám và đo chiều cao định kỳ."
+      ]
+    }
+  ]
+}
