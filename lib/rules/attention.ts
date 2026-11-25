@@ -72,6 +72,26 @@ export function growthAttention(alerts: GrowthAlert[] | null): AttentionItem[] {
   }));
 }
 
+// Row 4 of the table: `measure` is what nextMeasureDue worked out and the day
+// of the last measurement. null: the measurements have not loaded yet.
+export function measureAttention(
+  measure: { measureDue: boolean; lastMeasuredOn: string | null } | null,
+): AttentionItem | null {
+  if (measure === null || !measure.measureDue) return null;
+  return {
+    key: "measure",
+    icon: "ruler",
+    color: "cat-tummy",
+    title: "Đến kỳ đo",
+    detail:
+      measure.lastMeasuredOn === null
+        ? "Chưa có lần đo nào"
+        : `Lần đo gần nhất ${formatDayShort(measure.lastMeasuredOn)}`,
+    tone: "normal",
+    href: "/tang-truong",
+  };
+}
+
 // Rows 5 and 6 of the table: `habits` is what habitStats worked out, the
 // detail of each row or null. null: the logs have not loaded yet.
 export function habitAttention(
@@ -107,12 +127,14 @@ export function habitAttention(
 export function attentionItems(input: {
   growth: GrowthAlert[] | null;
   vaccine: ScheduleItem | null;
+  measure: { measureDue: boolean; lastMeasuredOn: string | null } | null;
   habits: HabitStats["attention"] | null;
   today: string;
 }): AttentionItem[] {
   const rows = [
     ...growthAttention(input.growth),
     vaccineAttention(input.vaccine, input.today),
+    measureAttention(input.measure),
     ...habitAttention(input.habits),
   ];
   return rows

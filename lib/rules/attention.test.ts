@@ -4,6 +4,7 @@ import {
   attentionItems,
   growthAttention,
   habitAttention,
+  measureAttention,
   vaccineAttention,
   type AttentionItem,
 } from "./attention";
@@ -89,6 +90,7 @@ describe("attentionItems", () => {
       attentionItems({
         growth: null,
         vaccine: null,
+        measure: null,
         habits: null,
         today: TODAY,
       }),
@@ -97,6 +99,7 @@ describe("attentionItems", () => {
       attentionItems({
         growth: [],
         vaccine: dose("later", "2027-06-14"),
+        measure: null,
         habits: null,
         today: TODAY,
       }),
@@ -107,6 +110,7 @@ describe("attentionItems", () => {
     const items = attentionItems({
       growth: null,
       vaccine: dose("overdue", "2026-11-10"),
+      measure: null,
       habits: null,
       today: TODAY,
     });
@@ -123,6 +127,7 @@ describe("attentionItems", () => {
     const items = attentionItems({
       growth: five,
       vaccine: dose("overdue", "2026-11-10"),
+      measure: null,
       habits: null,
       today: TODAY,
     });
@@ -167,6 +172,7 @@ describe("growthAttention", () => {
     const items = attentionItems({
       growth: [alert("wfa", "yellow")],
       vaccine: dose("overdue", "2026-11-10"),
+      measure: null,
       habits: null,
       today: TODAY,
     });
@@ -222,6 +228,7 @@ describe("habitAttention", () => {
     const items = attentionItems({
       growth: [alert("wfa", "yellow")],
       vaccine: dose("overdue", "2026-11-10"),
+      measure: null,
       habits: { sleep: SLEEP, tummy: TUMMY },
       today: TODAY,
     });
@@ -237,6 +244,7 @@ describe("habitAttention", () => {
     const items = attentionItems({
       growth: [alert("wfa", "red"), alert("lhfa", "yellow")],
       vaccine: dose("overdue", "2026-11-10"),
+      measure: null,
       habits: { sleep: SLEEP, tummy: TUMMY },
       today: TODAY,
     });
@@ -244,6 +252,55 @@ describe("habitAttention", () => {
       "growth-wfa",
       "growth-lhfa",
       "vaccine",
+      "sleep",
+    ]);
+  });
+});
+
+// Spec 2026-11-25 §4, row 4.
+describe("measureAttention", () => {
+  it("not worked out yet, or not due: no row", () => {
+    expect(measureAttention(null)).toBeNull();
+    expect(
+      measureAttention({ measureDue: false, lastMeasuredOn: "2026-11-20" }),
+    ).toBeNull();
+  });
+
+  it("due: Đến kỳ đo with the day of the last measurement, opens Tăng trưởng", () => {
+    expect(
+      measureAttention({ measureDue: true, lastMeasuredOn: "2026-10-16" }),
+    ).toEqual({
+      key: "measure",
+      icon: "ruler",
+      color: "cat-tummy",
+      title: "Đến kỳ đo",
+      detail: "Lần đo gần nhất 16/10",
+      tone: "normal",
+      href: "/tang-truong",
+    });
+  });
+
+  it("due and never measured: says so", () => {
+    expect(
+      measureAttention({ measureDue: true, lastMeasuredOn: null })?.detail,
+    ).toBe("Chưa có lần đo nào");
+  });
+
+  it("comes after the vaccine row and before the habit rows; the cut at four drops the last one", () => {
+    const items = attentionItems({
+      growth: [alert("wfa", "yellow")],
+      vaccine: dose("overdue", "2026-11-10"),
+      measure: { measureDue: true, lastMeasuredOn: "2026-10-16" },
+      habits: {
+        sleep: "13,5 giờ mỗi ngày · nên 14–17 giờ",
+        tummy: "15 phút mỗi ngày · nên từ 30 phút",
+      },
+      today: TODAY,
+    });
+    expect(items.map((item) => item.key)).toEqual([
+      "growth-wfa",
+      "vaccine",
+      "measure",
       "sleep",
     ]);
   });

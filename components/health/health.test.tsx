@@ -389,12 +389,66 @@ describe("HealthScreen: habits in Cần chú ý", () => {
   });
 });
 
+// Spec 2026-11-25 §4, row 4. The baby was born on 14/09 and today is 20/11:
+// under one year, so a measurement is due 30 days after the last one.
+describe("HealthScreen: Đến kỳ đo in Cần chú ý", () => {
+  it("the last measurement is 30 days old or more: a plain row that opens Tăng trưởng", () => {
+    const page = render({ growth: loaded([measure("2026-10-21", 5500)]) });
+    expect(page.indexOf(">Cần chú ý<")).toBeLessThan(
+      page.indexOf(">Theo dõi<"),
+    );
+    const row = link(page, "/tang-truong");
+    expect(row).toContain(">Đến kỳ đo</span>");
+    expect(row).toContain(
+      '<span class="text-[13px] text-muted">Lần đo gần nhất 21/10</span>',
+    );
+    expect(row).toContain(`d="${ICON_PATHS.ruler}"`);
+  });
+
+  it("measured less than 30 days ago: no row", () => {
+    const page = render({ growth: loaded([measure("2026-10-22", 5500)]) });
+    expect(page).not.toContain("Đến kỳ đo");
+  });
+
+  it("never measured, 30 days after birth: says so", () => {
+    const page = render({ growth: loaded([]) });
+    expect(link(page, "/tang-truong")).toContain(
+      '<span class="text-[13px] text-muted">Chưa có lần đo nào</span>',
+    );
+    expect(render({ growth: loaded([]) }, "2026-10-22")).not.toContain(
+      "Đến kỳ đo",
+    );
+  });
+
+  it.each([
+    ["loading", LOADING],
+    ["offline", OFFLINE],
+    ["after an error", FAILED],
+  ])("measurements %s: no row", (_, q) => {
+    expect(render({ growth: q })).not.toContain("Đến kỳ đo");
+  });
+
+  it("comes after the vaccine row", () => {
+    const page = render({
+      doses: loaded([]),
+      growth: loaded([measure("2026-10-21", 5500)]),
+    });
+    const order = [">Quá hạn: Lao (BCG)<", ">Đến kỳ đo<", ">Theo dõi<"].map(
+      (text) => page.indexOf(text),
+    );
+    expect(order.every((i) => i >= 0)).toBe(true);
+    expect([...order].sort((a, b) => a - b)).toEqual(order);
+  });
+});
+
 describe("HealthScreen: the Tăng trưởng card", () => {
   it.each([
     ["loading", LOADING],
     ["no measurement", loaded([])],
   ])("%s: the static description and no values", (_, q) => {
-    const card = link(render({ growth: q }), HEALTH_GROWTH.href);
+    // Born 25 days ago: no measurement is due yet, so the card is the first
+    // link to Tăng trưởng on the page.
+    const card = link(render({ growth: q }, "2026-10-26"), HEALTH_GROWTH.href);
     expect(card).toContain(`>${HEALTH_GROWTH.detail}</span>`);
     expect(card).not.toContain("Cân nặng</span>");
     expect(card).not.toContain("Đo gần nhất");
@@ -423,8 +477,11 @@ describe("HealthScreen: the Tăng trưởng card", () => {
   });
 
   // Spec 2026-11-25 §3.4 and §6.4: the line at the foot of the card.
-  const goalCard = (growth: unknown, target: number | null, tables = true) =>
-    link(render({ growth, tables }, "2026-09-14", target), HEALTH_GROWTH.href);
+  const goalCard = (growth: unknown, target: number | null, tables = true) => {
+    const page = render({ growth, tables }, "2026-09-14", target);
+    // The card itself, not a row of "Cần chú ý" that also opens Tăng trưởng.
+    return link(page.slice(page.indexOf(">Theo dõi<")), HEALTH_GROWTH.href);
+  };
 
   it("no target: no goal line", () => {
     expect(goalCard(loaded([measure("2026-11-15", 5500)]), null)).not.toContain(

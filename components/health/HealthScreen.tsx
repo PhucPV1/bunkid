@@ -35,6 +35,7 @@ import {
 import { indicatorSummaries } from "@/lib/rules/growthView";
 import { habitStats } from "@/lib/rules/habits";
 import { goalLine } from "@/lib/rules/heightView";
+import { latestDay, nextMeasureDue } from "@/lib/rules/measureSchedule";
 import { vnDateString } from "@/lib/rules/time";
 import { parseChoices, toDoseRecords } from "@/lib/rules/vaccineForm";
 import { buildSchedule, nextDose } from "@/lib/rules/vaccines";
@@ -232,9 +233,21 @@ export function HealthScreen({ baby }: { baby: Baby }) {
         table: measured.tables.lhfa,
       })
     : null;
+  // Spec §4, row 4: until the measurements have loaded there is no row.
+  const lastMeasuredOn = latestDay(
+    (growth.data ?? []).map((row) => row.measured_on),
+  );
+  const measure = growth.data
+    ? {
+        measureDue: nextMeasureDue({ dob: baby.dob, lastMeasuredOn, today })
+          .measureDue,
+        lastMeasuredOn,
+      }
+    : null;
   const attention = attentionItems({
     growth: alerts,
     vaccine: next,
+    measure,
     habits,
     today,
   });
