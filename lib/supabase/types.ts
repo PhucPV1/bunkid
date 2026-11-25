@@ -201,14 +201,14 @@ isOneToOne: false
                   ]
                 },"notification_prefs": {
                   Row: {
-                    "feed_reminder": boolean,"hold_feed_while_asleep": boolean,"medicine": boolean,"quiet_enabled": boolean,"quiet_end_min": number,"quiet_start_min": number,"snooze_until": string | null,"timer_alert": boolean,"updated_at": string,"user_id": string,"vaccine": boolean,"wake_window": boolean
+                    "feed_reminder": boolean,"growth_alert": boolean,"growth_measure": boolean,"hold_feed_while_asleep": boolean,"medicine": boolean,"quiet_enabled": boolean,"quiet_end_min": number,"quiet_start_min": number,"snooze_until": string | null,"timer_alert": boolean,"updated_at": string,"user_id": string,"vaccine": boolean,"wake_window": boolean
                   }
                   ComputedFields: never
                   Insert: {
-                    "feed_reminder"?: boolean,"hold_feed_while_asleep"?: boolean,"medicine"?: boolean,"quiet_enabled"?: boolean,"quiet_end_min"?: number,"quiet_start_min"?: number,"snooze_until"?: string | null,"timer_alert"?: boolean,"updated_at"?: string,"user_id": string,"vaccine"?: boolean,"wake_window"?: boolean
+                    "feed_reminder"?: boolean,"growth_alert"?: boolean,"growth_measure"?: boolean,"hold_feed_while_asleep"?: boolean,"medicine"?: boolean,"quiet_enabled"?: boolean,"quiet_end_min"?: number,"quiet_start_min"?: number,"snooze_until"?: string | null,"timer_alert"?: boolean,"updated_at"?: string,"user_id": string,"vaccine"?: boolean,"wake_window"?: boolean
                   }
                   Update: {
-                    "feed_reminder"?: boolean,"hold_feed_while_asleep"?: boolean,"medicine"?: boolean,"quiet_enabled"?: boolean,"quiet_end_min"?: number,"quiet_start_min"?: number,"snooze_until"?: string | null,"timer_alert"?: boolean,"updated_at"?: string,"user_id"?: string,"vaccine"?: boolean,"wake_window"?: boolean
+                    "feed_reminder"?: boolean,"growth_alert"?: boolean,"growth_measure"?: boolean,"hold_feed_while_asleep"?: boolean,"medicine"?: boolean,"quiet_enabled"?: boolean,"quiet_end_min"?: number,"quiet_start_min"?: number,"snooze_until"?: string | null,"timer_alert"?: boolean,"updated_at"?: string,"user_id"?: string,"vaccine"?: boolean,"wake_window"?: boolean
                   }
                   Relationships: [
                     
