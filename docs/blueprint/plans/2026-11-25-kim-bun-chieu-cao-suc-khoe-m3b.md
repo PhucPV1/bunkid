@@ -98,7 +98,8 @@ Plan này đứng sau M3a (đã ở `main` @ `f2b5bcd`). M3c ghép mọi thứ d
 - `components/height/HeightCards.tsx`: `HeightGoalCard({ goal: HeightView["goal"]; isOwner: boolean; onSet?: () => void })`, `ParentalRangeCard({ parents: HeightView["parents"] })`, `TargetPathCard({ title: string; babyName: string; note: string; children: ReactNode })`, `VelocityCard({ velocity: HeightView["velocity"] })`.
 - `components/growth/GrowthChart.tsx`: prop tùy chọn `target?: { day: number; value: number }[]`; các prop khác không đổi.
 - `lib/rules/growthView.ts`: `ChartLabelPlace` có thêm `targetCaption: boolean` (`day <= 0,6 × to`).
-- **Vitest sau M3b:** 1471 test, 176 file.
+- Thêm sau bước kiểm trình duyệt (xem "Sửa chỗ A" ở Task 3): `ChartLabelPlace.away: number` (số px nhãn lùi xa chấm thêm; 0 khi không có đường mục tiêu), `LabelSurroundings = { value; label; points; target; band }`, và `chartLabelPlace` nhận thêm `around?: LabelSurroundings`. `GrowthChart` tự truyền `around` khi có `target`; M3c không phải làm gì thêm.
+- **Vitest sau M3b:** 1484 test, 176 file (1471 trước khi sửa chỗ A).
 - **Ghi chú cho M3c:** phải truyền `onSet` cho chủ gia đình, không thì nút "Đặt mục tiêu" của §6.3 mục 2 không bao giờ hiện; `heightView` cần bảng `lhfa` đã tải, nên trang của M3c lo trạng thái đang tải, chờ mạng và lỗi; `GrowthChart` phải tải lười bằng `dynamic(...)` như `GrowthScreen` đang làm.
 
 ---
@@ -1515,6 +1516,20 @@ Dừng `bun run dev` khi xong. Ghi kết quả từng mục ngay dưới bước
 - **B. Nhãn "MỤC TIÊU LÚC TRƯỞNG THÀNH" xuống hai dòng** ở 375 px mỗi khi thẻ có chip (mọi trường hợp trừ `?c=7`). Không bị cắt "…".
 
 **Chưa kiểm:** theme `peach`, `lavender`, `sea`; bé trên 1 tuổi (trục 2 năm và 5 năm) và bé chỉ có lần đo lúc sinh (trang tạm của plan không có các trường hợp này); bề ngang 440 px; nút "Đặt mục tiêu" (chưa nối vào đâu); trình đọc màn hình; iPhone thật và PWA.
+
+**Sửa chỗ A (2026-11-25).** Người dùng xem ảnh và chọn "Sửa trước" (sửa rồi mới tính chuyện lên `main`). Việc này nằm ngoài bốn patch của plan, làm theo đúng thứ tự test trước, code sau.
+
+- **Luật mới** (`lib/rules/growthView.ts`, `chartLabelPlace` nhận thêm `around`): trên biểu đồ có đường mục tiêu, nhãn của chấm mới nhất lấy chỗ đầu tiên trong bốn chỗ quanh chấm (chỗ thường lệ, phía bên kia của chấm, rồi hai chỗ đó chạy theo hướng ngược lại) mà nằm trọn trong khung vẽ và không bị đường mục tiêu, đường của bé hay chữ "Đường mục tiêu" đi qua (tính cả 3 px quanh chữ). Cả bốn vướng thì thử lại, mỗi lần xa chấm thêm 4 px, tới 24 px (`away`). Vẫn không có thì giữ chỗ thường lệ. Luật tính trên mô hình khung vẽ 273×222 px của màn 375 px; trục giá trị ước lượng từ số nhỏ nhất và lớn nhất mà biểu đồ vẽ. Biểu đồ không có đường mục tiêu (màn Tăng trưởng) không đổi gì.
+- **`GrowthChart`:** truyền `around` khi có `target`; khoảng cách nhãn là `5 + away`.
+- **Test:** 13 test mới trong `lib/rules/growthView.test.ts` (đỏ trước: lần đầu `7 failed | 1474 passed (1481)`, hai lần thêm test sau đó cũng đỏ rồi mới xanh). Cuối: `Test Files  176 passed (176)`, `Tests  1484 passed (1484)`; `tsc --noEmit` sạch; `bun run build` lần đầu dừng vì cảnh báo bảo mật của Next.js 16.4.3, lần hai mã 0, 39/39 trang.
+- **Spec:** §6.3 mục 4 đã thêm luật này (file spec vẫn untracked).
+- **Kiểm lại trong trình duyệt** (khung Browser trong app, trang tạm của plan thêm 9 trường hợp `?c=11` đến `?c=19`: bé lớn dưới đường, bé gần 5 tuổi sát và dưới đường, bé chỉ có lần đo lúc sinh, bé 20 ngày, bé cao hơn đường nhiều và ít, bé 11 tháng dưới đường, bé 4 tháng sát đường). Đo bằng script (1200 điểm lấy mẫu trên đường mục tiêu, 400 trên đường của bé):
+  - **375×812, 16 trường hợp có nhãn** (`?c=0`, 1, 2, 5, 6, 9, 10 và `?c=11` đến `?c=19`; `?c=4` cùng số đo với `?c=1` nên không đo lại): không điểm nào của hai đường nằm trong khung nhãn, kể cả khi nới khung 2 px; nhãn nằm trọn trong khung vẽ; không chữ nào chồng nhau; không nhãn nào nằm trên chấm khác. Bảy trường hợp đầu được đo trước khi thêm bước lùi xa chấm; cả bảy đều có chỗ ngay cạnh chấm nên bước đó không đổi kết quả của chúng (`?c=0`, 1, 2 có ảnh chụp sau cùng).
+  - **440×956, 7 trường hợp** (`?c=0`, 1, 2, 10, 11, 16, 17), đo sau thay đổi cuối: cùng kết quả.
+  - Nhãn nằm ở đâu: `?c=0`, `?c=1`, `?c=5`, `?c=6` xuống dưới chấm, chạy sang phải; `?c=2` lên trên, chạy sang trái; `?c=9`, `?c=10` như cũ; `?c=11` (bé 10 tháng dưới đường 2,4 cm, chấm ở 82% bề ngang) nhãn lên trên đường mục tiêu, xa chấm thêm 12 px, đường nằm giữa chấm và nhãn; `?c=19` (gần 5 tuổi, dưới đường) tương tự với 8 px.
+  - Ảnh sau sửa: `m3b-screens/SUA-*` trong thư mục ghi chú chung.
+- **Chưa kiểm sau khi sửa:** theme `night`, `rose`, `light` (ảnh sau sửa chỉ chụp ở `dark`; luật không đụng tới màu); trang thật `/tang-truong` (đường đi của code khi không có `target` không đổi, các test cũ của `chartLabelPlace` vẫn xanh); iPhone thật.
+- **Chỗ B** (nhãn "MỤC TIÊU LÚC TRƯỞNG THÀNH" xuống hai dòng khi có chip) chưa sửa, người dùng chưa quyết.
 
 - [x] **Step 5: Xóa trang fixture, commit phần ghi kết quả rồi dừng lại hỏi người dùng**
 
