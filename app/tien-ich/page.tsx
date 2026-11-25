@@ -1,8 +1,8 @@
 "use client";
 
-import { RedirectTo } from "@/components/nav/RedirectTo";
+import { AuthGate } from "@/components/AuthGate";
+import { ToolsScreen } from "@/components/tools/ToolsScreen";
 
-// Spec §6.2: Cẩm nang and Tiện ích are now sections of Khám phá.
 export default function Page() {
-  return <RedirectTo href="/kham-pha" />;
+  return <AuthGate need="baby">{() => <ToolsScreen />}</AuthGate>;
 }
