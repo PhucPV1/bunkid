@@ -1,7 +1,8 @@
 import { Icon } from "@/components/ui/Icon";
 import { StatusChip } from "@/components/ui/StatusChip";
 import type { IndicatorSummary } from "@/lib/rules/growthView";
-import { PositionBar } from "./PositionBar";
+import { cx } from "@/lib/ui/cx";
+import { PositionBar, ZONE_NORMAL, ZONE_OFF } from "./PositionBar";
 
 const SUB = "text-[13px] leading-[18px] text-muted";
 
@@ -58,11 +59,11 @@ export function GrowthVerdict({
       ))}
       <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1 border-t border-line pt-3 text-xs text-muted">
         <span className="flex items-center gap-1.5">
-          <span className="h-2 w-3.5 rounded-full bg-good/35" />
+          <span className={cx("w-3.5 rounded-full", ZONE_NORMAL)} />
           Bình thường
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-2 w-3.5 rounded-full bg-warn/35" />
+          <span className={cx("w-3.5 rounded-full", ZONE_OFF)} />
           Thấp hoặc cao hơn chuẩn
         </span>
       </div>

@@ -6,7 +6,7 @@ import type { IndicatorSummary } from "@/lib/rules/growthView";
 import { ICON_PATHS } from "@/lib/ui/icons";
 import { GrowthAlertCard } from "./GrowthAlertCard";
 import { GrowthVerdict } from "./GrowthVerdict";
-import { PositionBar } from "./PositionBar";
+import { PositionBar, ZONE_NORMAL, ZONE_OFF } from "./PositionBar";
 
 const summary = (over: Partial<IndicatorSummary> = {}): IndicatorSummary => ({
   indicator: "wfa",
@@ -46,14 +46,25 @@ describe("PositionBar", () => {
     );
   });
 
-  it("has a yellow sixth at each end and green between", () => {
+  it("has a thin warn sixth at each end and a taller normal range between", () => {
+    expect(html).toContain("flex h-2.5 items-center");
     expect(html).toContain(
-      '<span class="w-[16.7%] rounded-l-full bg-warn/35"></span>',
+      '<span class="w-[16.7%] rounded-l-full h-1.5 bg-warn/35"></span>',
     );
-    expect(html).toContain('<span class="flex-1 bg-good/35"></span>');
     expect(html).toContain(
-      '<span class="w-[16.7%] rounded-r-full bg-warn/35"></span>',
+      '<span class="flex-1 rounded-full h-2.5 bg-good/45"></span>',
     );
+    expect(html).toContain(
+      '<span class="w-[16.7%] rounded-r-full h-1.5 bg-warn/35"></span>',
+    );
+  });
+
+  // The Ban đêm theme gives good and warn the same colour, so the two kinds
+  // of zone must also differ in shape: the normal range is the taller one.
+  it("the zones differ in height, not only in colour", () => {
+    const height = (zone: string) => Number(/\bh-([\d.]+)/.exec(zone)?.[1]);
+    expect(height(ZONE_NORMAL)).toBe(2.5);
+    expect(height(ZONE_OFF)).toBe(1.5);
   });
 
   it("puts the 20 px dot at the position", () => {
@@ -125,12 +136,18 @@ describe("GrowthVerdict", () => {
     );
   });
 
-  it("ends with the legend of the two bar colours", () => {
+  it("ends with the legend of the two bar zones, drawn as the bar draws them", () => {
     const html = render(true);
     expect(html.indexOf("Thấp hoặc cao hơn chuẩn")).toBeGreaterThan(
       html.indexOf("+1,5 kg sau 46 ngày"),
     );
     expect(html).toContain("border-t border-line");
+    expect(html).toContain(
+      `<span class="w-3.5 rounded-full ${ZONE_NORMAL}"></span>Bình thường`,
+    );
+    expect(html).toContain(
+      `<span class="w-3.5 rounded-full ${ZONE_OFF}"></span>Thấp hoặc cao hơn chuẩn`,
+    );
   });
 });
 
