@@ -199,7 +199,12 @@ export function HealthScreen({ baby }: { baby: Baby }) {
         table: measured.tables.lhfa,
       })
     : null;
-  const attention = attentionItems({ growth: alerts, vaccine: next, today });
+  const attention = attentionItems({
+    growth: alerts,
+    vaccine: next,
+    habits: null,
+    today,
+  });
   const live: Partial<Record<string, LiveLine>> = {
     "/tiem-chung": {
       text: vaccineCardText(next),

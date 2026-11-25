@@ -2,6 +2,7 @@ import type { CategoryToken } from "@/lib/ui/categories";
 import type { IconName } from "@/lib/ui/icons";
 import { formatDayShort, vnDayStartMs } from "./days";
 import { alertTone, type GrowthAlert } from "./growthAlerts";
+import type { HabitStats } from "./habits";
 import type { ScheduleItem } from "./vaccines";
 
 export type AttentionTone = "normal" | "warn" | "danger";
@@ -71,16 +72,48 @@ export function growthAttention(alerts: GrowthAlert[] | null): AttentionItem[] {
   }));
 }
 
+// Rows 5 and 6 of the table: `habits` is what habitStats worked out, the
+// detail of each row or null. null: the logs have not loaded yet.
+export function habitAttention(
+  habits: HabitStats["attention"] | null,
+): AttentionItem[] {
+  if (habits === null) return [];
+  const rows: AttentionItem[] = [];
+  if (habits.sleep !== null)
+    rows.push({
+      key: "sleep",
+      icon: "moon",
+      color: "cat-sleep",
+      title: "Ngủ ít hơn chuẩn",
+      detail: habits.sleep,
+      tone: "warn",
+      href: "/thong-ke",
+    });
+  if (habits.tummy !== null)
+    rows.push({
+      key: "tummy",
+      icon: "smile",
+      color: "cat-tummy",
+      title: "Nằm sấp còn ít",
+      detail: habits.tummy,
+      tone: "warn",
+      href: "/tang-truong/chieu-cao",
+    });
+  return rows;
+}
+
 // The rows in priority order, at most ATTENTION_MAX. A source whose data has
 // not loaded is passed as null and gives no row.
 export function attentionItems(input: {
   growth: GrowthAlert[] | null;
   vaccine: ScheduleItem | null;
+  habits: HabitStats["attention"] | null;
   today: string;
 }): AttentionItem[] {
   const rows = [
     ...growthAttention(input.growth),
     vaccineAttention(input.vaccine, input.today),
+    ...habitAttention(input.habits),
   ];
   return rows
     .filter((row): row is AttentionItem => row !== null)

@@ -3,6 +3,7 @@ import {
   ATTENTION_MAX,
   attentionItems,
   growthAttention,
+  habitAttention,
   vaccineAttention,
   type AttentionItem,
 } from "./attention";
@@ -85,12 +86,18 @@ describe("vaccineAttention", () => {
 describe("attentionItems", () => {
   it("is empty when nothing needs attention", () => {
     expect(
-      attentionItems({ growth: null, vaccine: null, today: TODAY }),
+      attentionItems({
+        growth: null,
+        vaccine: null,
+        habits: null,
+        today: TODAY,
+      }),
     ).toEqual([]);
     expect(
       attentionItems({
         growth: [],
         vaccine: dose("later", "2027-06-14"),
+        habits: null,
         today: TODAY,
       }),
     ).toEqual([]);
@@ -100,6 +107,7 @@ describe("attentionItems", () => {
     const items = attentionItems({
       growth: null,
       vaccine: dose("overdue", "2026-11-10"),
+      habits: null,
       today: TODAY,
     });
     expect(items.map((item: AttentionItem) => item.title)).toEqual([
@@ -115,6 +123,7 @@ describe("attentionItems", () => {
     const items = attentionItems({
       growth: five,
       vaccine: dose("overdue", "2026-11-10"),
+      habits: null,
       today: TODAY,
     });
     expect(items).toHaveLength(4);
@@ -158,8 +167,84 @@ describe("growthAttention", () => {
     const items = attentionItems({
       growth: [alert("wfa", "yellow")],
       vaccine: dose("overdue", "2026-11-10"),
+      habits: null,
       today: TODAY,
     });
     expect(items.map((item) => item.key)).toEqual(["growth-wfa", "vaccine"]);
+  });
+});
+
+// Spec 2026-11-25 §4, rows 5 and 6.
+describe("habitAttention", () => {
+  const SLEEP = "13,5 giờ mỗi ngày · nên 14–17 giờ";
+  const TUMMY = "15 phút mỗi ngày · nên từ 30 phút";
+
+  it("habits not worked out yet, or nothing short: no row", () => {
+    expect(habitAttention(null)).toEqual([]);
+    expect(habitAttention({ sleep: null, tummy: null })).toEqual([]);
+  });
+
+  it("sleep under the norm: Ngủ ít hơn chuẩn, in warn, opens Thống kê", () => {
+    expect(habitAttention({ sleep: SLEEP, tummy: null })).toEqual([
+      {
+        key: "sleep",
+        icon: "moon",
+        color: "cat-sleep",
+        title: "Ngủ ít hơn chuẩn",
+        detail: SLEEP,
+        tone: "warn",
+        href: "/thong-ke",
+      },
+    ]);
+  });
+
+  it("tummy time short: Nằm sấp còn ít, in warn, opens the Chiều cao page", () => {
+    expect(habitAttention({ sleep: null, tummy: TUMMY })).toEqual([
+      {
+        key: "tummy",
+        icon: "smile",
+        color: "cat-tummy",
+        title: "Nằm sấp còn ít",
+        detail: TUMMY,
+        tone: "warn",
+        href: "/tang-truong/chieu-cao",
+      },
+    ]);
+  });
+
+  it("both short: sleep first", () => {
+    expect(
+      habitAttention({ sleep: SLEEP, tummy: TUMMY }).map((item) => item.key),
+    ).toEqual(["sleep", "tummy"]);
+  });
+
+  it("habit rows come after the growth rows and the vaccine row", () => {
+    const items = attentionItems({
+      growth: [alert("wfa", "yellow")],
+      vaccine: dose("overdue", "2026-11-10"),
+      habits: { sleep: SLEEP, tummy: TUMMY },
+      today: TODAY,
+    });
+    expect(items.map((item) => item.key)).toEqual([
+      "growth-wfa",
+      "vaccine",
+      "sleep",
+      "tummy",
+    ]);
+  });
+
+  it("the cut at four rows drops the habit rows first", () => {
+    const items = attentionItems({
+      growth: [alert("wfa", "red"), alert("lhfa", "yellow")],
+      vaccine: dose("overdue", "2026-11-10"),
+      habits: { sleep: SLEEP, tummy: TUMMY },
+      today: TODAY,
+    });
+    expect(items.map((item) => item.key)).toEqual([
+      "growth-wfa",
+      "growth-lhfa",
+      "vaccine",
+      "sleep",
+    ]);
   });
 });
