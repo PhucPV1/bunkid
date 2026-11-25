@@ -6,6 +6,7 @@ import {
   type GrowthMeasure,
   type GrowthTables,
   growthAlerts,
+  growthStatus,
   positionKind,
   readings,
 } from "./growthAlerts";
@@ -344,5 +345,26 @@ describe("growthAlerts: what the screens need besides the text", () => {
     const [low] = run([length(40, 11)]);
     expect(low.measuredOn).toBe(day(40));
     expect(low.previousPercentile).toBeNull();
+  });
+});
+
+// Spec 2026-11-25 §3.4: the chip on the growth card of the Sức khỏe page.
+describe("growthStatus", () => {
+  it("no alert: Lớn đều", () => {
+    expect(growthStatus([])).toEqual({ text: "Lớn đều", tone: "good" });
+  });
+
+  it("only yellow alerts: Cần chú ý", () => {
+    expect(growthStatus(run([length(40, 11)]))).toEqual({
+      text: "Cần chú ý",
+      tone: "warn",
+    });
+  });
+
+  it("any red alert: Nên đi khám", () => {
+    expect(growthStatus(run([length(40, 11), weight(40, 9)]))).toEqual({
+      text: "Nên đi khám",
+      tone: "danger",
+    });
   });
 });

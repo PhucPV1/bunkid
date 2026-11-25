@@ -2,10 +2,28 @@ import { describe, expect, it } from "vitest";
 import {
   ATTENTION_MAX,
   attentionItems,
+  growthAttention,
   vaccineAttention,
   type AttentionItem,
 } from "./attention";
+import type { GrowthAlert } from "./growthAlerts";
 import type { DoseState, ScheduleItem } from "./vaccines";
+
+const alert = (
+  indicator: GrowthAlert["indicator"],
+  level: GrowthAlert["level"],
+): GrowthAlert => ({
+  indicator,
+  kind: level === "red" ? "veryLow" : "low",
+  level,
+  title: `Tiêu đề ${indicator}`,
+  body: "Nội dung",
+  advice:
+    level === "red" ? "Nên cho bé đi khám." : "Nên hỏi bác sĩ ở lần khám tới.",
+  chip: level === "red" ? "Rất thấp" : "Thấp",
+  measuredOn: "2026-11-20",
+  previousPercentile: null,
+});
 
 const TODAY = "2026-11-25";
 
@@ -67,14 +85,21 @@ describe("vaccineAttention", () => {
 
 describe("attentionItems", () => {
   it("is empty when nothing needs attention", () => {
-    expect(attentionItems({ vaccine: null, today: TODAY })).toEqual([]);
     expect(
-      attentionItems({ vaccine: dose("later", "2027-06-14"), today: TODAY }),
+      attentionItems({ growth: null, vaccine: null, today: TODAY }),
+    ).toEqual([]);
+    expect(
+      attentionItems({
+        growth: [],
+        vaccine: dose("later", "2027-06-14"),
+        today: TODAY,
+      }),
     ).toEqual([]);
   });
 
   it("lists the vaccine row", () => {
     const items = attentionItems({
+      growth: null,
       vaccine: dose("overdue", "2026-11-10"),
       today: TODAY,
     });
@@ -85,5 +110,57 @@ describe("attentionItems", () => {
 
   it("never returns more than four rows", () => {
     expect(ATTENTION_MAX).toBe(4);
+    const five = (["wfa", "lhfa", "hcfa", "wfa", "lhfa"] as const).map(
+      (indicator, index) => alert(indicator, index === 4 ? "red" : "yellow"),
+    );
+    const items = attentionItems({
+      growth: five,
+      vaccine: dose("overdue", "2026-11-10"),
+      today: TODAY,
+    });
+    expect(items).toHaveLength(4);
+    expect(items.every((item) => item.href === "/tang-truong")).toBe(true);
+  });
+});
+
+// Spec 2026-11-25 §4, row 1.
+describe("growthAttention", () => {
+  it("no alerts, or alerts not worked out yet: no row", () => {
+    expect(growthAttention(null)).toEqual([]);
+    expect(growthAttention([])).toEqual([]);
+  });
+
+  it("one row per alert, in the order given: the title, the advice, the tone", () => {
+    expect(
+      growthAttention([alert("lhfa", "red"), alert("wfa", "yellow")]),
+    ).toEqual([
+      {
+        key: "growth-lhfa",
+        icon: "ruler",
+        color: "cat-tummy",
+        title: "Tiêu đề lhfa",
+        detail: "Nên cho bé đi khám.",
+        tone: "danger",
+        href: "/tang-truong",
+      },
+      {
+        key: "growth-wfa",
+        icon: "ruler",
+        color: "cat-tummy",
+        title: "Tiêu đề wfa",
+        detail: "Nên hỏi bác sĩ ở lần khám tới.",
+        tone: "warn",
+        href: "/tang-truong",
+      },
+    ]);
+  });
+
+  it("growth rows come before the vaccine row", () => {
+    const items = attentionItems({
+      growth: [alert("wfa", "yellow")],
+      vaccine: dose("overdue", "2026-11-10"),
+      today: TODAY,
+    });
+    expect(items.map((item) => item.key)).toEqual(["growth-wfa", "vaccine"]);
   });
 });

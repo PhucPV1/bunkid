@@ -5,8 +5,10 @@ import { Icon } from "@/components/ui/Icon";
 import { ListGroup, ListRow } from "@/components/ui/ListGroup";
 import { type LiveLine, NavCard } from "@/components/ui/NavCard";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { StatusChip } from "@/components/ui/StatusChip";
 import { VACCINES } from "@/lib/content/vaccines";
-import { useGrowth } from "@/lib/data/growth";
+import { type LmsRow, whoSex } from "@/lib/content/who";
+import { useGrowth, useWhoTable } from "@/lib/data/growth";
 import { useVaccineDoses } from "@/lib/data/vaccines";
 import {
   HEALTH_CARDS,
@@ -17,6 +19,11 @@ import {
 } from "@/lib/nav";
 import { attentionItems } from "@/lib/rules/attention";
 import { formatDayShort } from "@/lib/rules/days";
+import {
+  growthAlerts,
+  growthStatus,
+  type GrowthTone,
+} from "@/lib/rules/growthAlerts";
 import { vaccineCardText } from "@/lib/rules/exploreCards";
 import {
   formatGrowthValue,
@@ -57,7 +64,14 @@ function growthCells(latest: LatestGrowth): [title: string, value: string][] {
   ];
 }
 
-function GrowthCard({ latest }: { latest: LatestGrowth | null }) {
+function GrowthCard({
+  latest,
+  status,
+}: {
+  latest: LatestGrowth | null;
+  // null: the alerts are not worked out yet, so there is no chip.
+  status: { text: string; tone: GrowthTone } | null;
+}) {
   return (
     <Link
       href={HEALTH_GROWTH.href}
@@ -80,6 +94,9 @@ function GrowthCard({ latest }: { latest: LatestGrowth | null }) {
               : HEALTH_GROWTH.detail}
           </span>
         </span>
+        {latest && status && (
+          <StatusChip tone={status.tone}>{status.text}</StatusChip>
+        )}
         <Icon name="chevronRight" size={18} className="text-muted" />
       </span>
       {latest && (
@@ -114,7 +131,27 @@ export function HealthScreen({ baby }: { baby: Baby }) {
         }),
       )
     : null;
-  const attention = attentionItems({ vaccine: next, today });
+  const sex = whoSex(baby.sex);
+  const wfa = useWhoTable("wfa", sex);
+  const lhfa = useWhoTable("lhfa", sex);
+  const hcfa = useWhoTable("hcfa", sex);
+  // Spec 2026-11-25 §3.4: the alerts wait for the measurements and all three
+  // tables, so the chip never shows a verdict that a late table would change.
+  const alerts =
+    growth.data && wfa.data && lhfa.data && hcfa.data
+      ? growthAlerts({
+          rows: growth.data,
+          tables: {
+            wfa: wfa.data.rows as LmsRow[],
+            lhfa: lhfa.data.rows as LmsRow[],
+            hcfa: hcfa.data.rows as LmsRow[],
+          },
+          dob: baby.dob,
+          sex,
+          babyName: baby.name,
+        })
+      : null;
+  const attention = attentionItems({ growth: alerts, vaccine: next, today });
   const live: Partial<Record<string, LiveLine>> = {
     "/tiem-chung": {
       text: vaccineCardText(next),
@@ -147,7 +184,10 @@ export function HealthScreen({ baby }: { baby: Baby }) {
 
       <section className="flex flex-col gap-2.5">
         <SectionTitle>Theo dõi</SectionTitle>
-        <GrowthCard latest={growth.data ? latestGrowth(growth.data) : null} />
+        <GrowthCard
+          latest={growth.data ? latestGrowth(growth.data) : null}
+          status={alerts ? growthStatus(alerts) : null}
+        />
         <div className="grid grid-cols-2 gap-2.5">
           {HEALTH_CARDS.map((item) => (
             <NavCard key={item.href} item={item} live={live[item.href]} short />

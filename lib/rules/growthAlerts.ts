@@ -261,3 +261,19 @@ export function growthAlerts(input: {
     ...alerts.filter((alert) => alert.level === "yellow"),
   ];
 }
+
+export type GrowthTone = "good" | "warn" | "danger";
+
+export const alertTone = (level: GrowthAlertLevel): "warn" | "danger" =>
+  level === "red" ? "danger" : "warn";
+
+// Spec 2026-11-25 §3.4: the chip on the growth card of the Sức khỏe page.
+export function growthStatus(alerts: GrowthAlert[]): {
+  text: string;
+  tone: GrowthTone;
+} {
+  if (alerts.some((alert) => alert.level === "red"))
+    return { text: "Nên đi khám", tone: "danger" };
+  if (alerts.length > 0) return { text: "Cần chú ý", tone: "warn" };
+  return { text: "Lớn đều", tone: "good" };
+}

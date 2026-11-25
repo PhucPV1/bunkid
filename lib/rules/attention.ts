@@ -1,6 +1,7 @@
 import type { CategoryToken } from "@/lib/ui/categories";
 import type { IconName } from "@/lib/ui/icons";
 import { formatDayShort, vnDayStartMs } from "./days";
+import { alertTone, type GrowthAlert } from "./growthAlerts";
 import type { ScheduleItem } from "./vaccines";
 
 export type AttentionTone = "normal" | "warn" | "danger";
@@ -56,13 +57,31 @@ export function vaccineAttention(
   };
 }
 
+// Row 1 of the table: one row per growth alert, in the order growthAlerts
+// returned them (red first). null: the alerts are not worked out yet.
+export function growthAttention(alerts: GrowthAlert[] | null): AttentionItem[] {
+  return (alerts ?? []).map((alert) => ({
+    key: `growth-${alert.indicator}`,
+    icon: "ruler",
+    color: "cat-tummy",
+    title: alert.title,
+    detail: alert.advice,
+    tone: alertTone(alert.level),
+    href: "/tang-truong",
+  }));
+}
+
 // The rows in priority order, at most ATTENTION_MAX. A source whose data has
 // not loaded is passed as null and gives no row.
 export function attentionItems(input: {
+  growth: GrowthAlert[] | null;
   vaccine: ScheduleItem | null;
   today: string;
 }): AttentionItem[] {
-  const rows = [vaccineAttention(input.vaccine, input.today)];
+  const rows = [
+    ...growthAttention(input.growth),
+    vaccineAttention(input.vaccine, input.today),
+  ];
   return rows
     .filter((row): row is AttentionItem => row !== null)
     .slice(0, ATTENTION_MAX);

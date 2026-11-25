@@ -15,8 +15,10 @@ import { HealthScreen } from "./HealthScreen";
 const state = vi.hoisted(() => ({
   growth: {} as Record<string, unknown>,
   doses: {} as Record<string, unknown>,
+  tables: {} as Record<string, unknown>,
 }));
 const useGrowth = vi.hoisted(() => vi.fn());
+const useWhoTable = vi.hoisted(() => vi.fn());
 const useVaccineDoses = vi.hoisted(() => vi.fn());
 // Four doses: one at birth, two at two months (one of them in a group), one late.
 const content = vi.hoisted(() => {
@@ -83,7 +85,7 @@ const content = vi.hoisted(() => {
 });
 
 vi.mock("@/lib/content/vaccines", () => ({ VACCINES: content }));
-vi.mock("@/lib/data/growth", () => ({ useGrowth }));
+vi.mock("@/lib/data/growth", () => ({ useGrowth, useWhoTable }));
 vi.mock("@/lib/data/vaccines", () => ({ useVaccineDoses }));
 
 const LOADING = {
@@ -108,6 +110,19 @@ const loaded = (data: unknown[]) => ({
   error: null,
   fetchStatus: "idle",
 });
+
+// WHO tables whose median never changes, so z = (value / median − 1) × 8:
+// 5,5 kg and 58,5 cm sit exactly on the median.
+const flat = (median: number) => ({
+  data: {
+    rows: Array.from({ length: 1857 }, (_, day) => [day, 1, median, 0.125]),
+  },
+  isPending: false,
+  isError: false,
+  error: null,
+  fetchStatus: "idle",
+});
+const TABLES = { wfa: flat(5.5), lhfa: flat(58.5), hcfa: flat(38) };
 
 const CHOSEN = { dtp_combo: "6in1" };
 const [VACCINE, MILESTONES] = HEALTH_CARDS;
@@ -139,11 +154,12 @@ const done = (code: string) =>
   }) as VaccineDoseRow;
 
 function render(
-  query: { growth?: unknown; doses?: unknown } = {},
+  query: { growth?: unknown; doses?: unknown; tables?: boolean } = {},
   dob = "2026-09-14",
 ) {
   state.growth = (query.growth ?? LOADING) as Record<string, unknown>;
   state.doses = (query.doses ?? LOADING) as Record<string, unknown>;
+  state.tables = query.tables ? TABLES : {};
   const baby = {
     id: "b1",
     family_id: "f1",
@@ -163,6 +179,9 @@ function link(html: string, href: string) {
 
 beforeAll(() => {
   useGrowth.mockImplementation(() => state.growth);
+  useWhoTable.mockImplementation(
+    (indicator: string) => state.tables[indicator] ?? LOADING,
+  );
   useVaccineDoses.mockImplementation(() => state.doses);
   vi.useFakeTimers({ toFake: ["Date"] });
   vi.setSystemTime(new Date("2026-11-20T05:00:00Z")); // 12:00 giờ VN
@@ -302,13 +321,97 @@ describe("HealthScreen: the Tăng trưởng card", () => {
       );
   });
 
-  it("has no status chip and no goal line yet", () => {
+  it("has no goal line yet", () => {
     const card = link(
-      render({ growth: loaded([measure("2026-11-15", 5500)]) }),
+      render({ growth: loaded([measure("2026-11-15", 5500)]), tables: true }),
       HEALTH_GROWTH.href,
     );
-    expect(card).not.toContain("Lớn đều");
     expect(card).not.toContain("Mục tiêu");
+  });
+});
+
+// Spec 2026-11-25 §3.4 and §4 row 1.
+describe("HealthScreen: growth alerts", () => {
+  const CHIP = "font-semibold whitespace-nowrap";
+  // The card sits below "Theo dõi"; an alert row above it links to the same page.
+  const growthCard = (page: string) =>
+    link(page.slice(page.indexOf(">Theo dõi<")), HEALTH_GROWTH.href);
+  const growthRow = (page: string) => {
+    const attention = page.slice(
+      page.indexOf(">Cần chú ý<"),
+      page.indexOf(">Theo dõi<"),
+    );
+    return attention.includes('href="/tang-truong"')
+      ? link(attention, "/tang-truong")
+      : null;
+  };
+
+  it("reads the three WHO tables of the baby's sex", () => {
+    useWhoTable.mockClear();
+    render({ growth: loaded([measure("2026-11-15", 5500)]) });
+    expect(useWhoTable.mock.calls).toEqual([
+      ["wfa", "boys"],
+      ["lhfa", "boys"],
+      ["hcfa", "boys"],
+    ]);
+  });
+
+  it("no chip until the measurements and all three tables have loaded", () => {
+    for (const page of [
+      render({ growth: loaded([measure("2026-11-15", 5500)]) }),
+      render({ tables: true }),
+      render({ growth: loaded([]), tables: true }),
+    ])
+      expect(growthCard(page)).not.toContain(CHIP);
+  });
+
+  it("on the norm: the chip Lớn đều and no growth row", () => {
+    const page = render({
+      growth: loaded([measure("2026-11-15", 5500)]),
+      doses: loaded([]),
+      tables: true,
+    });
+    expect(growthCard(page)).toContain(
+      `${CHIP} bg-good-soft text-good-ink">Lớn đều</span>`,
+    );
+    expect(growthRow(page)).toBeNull();
+  });
+
+  it("a yellow alert: the chip Cần chú ý and a warn row above the vaccine row", () => {
+    // 4 kg against a 5,5 kg median is z −2,18.
+    const page = render({
+      growth: loaded([measure("2026-11-15", 4000)]),
+      doses: loaded([]),
+      tables: true,
+    });
+    expect(growthCard(page)).toContain(
+      `${CHIP} bg-warn-soft text-warn-ink">Cần chú ý</span>`,
+    );
+    const row = growthRow(page);
+    expect(row).toContain(">Cân nặng thấp hơn chuẩn</span>");
+    expect(row).toContain(
+      '<span class="text-[13px] font-semibold text-warn">Nên hỏi bác sĩ ở lần khám tới.</span>',
+    );
+    expect(row).toContain(`d="${ICON_PATHS.ruler}"`);
+    expect(page.indexOf(">Cân nặng thấp hơn chuẩn<")).toBeLessThan(
+      page.indexOf(">Quá hạn: Lao (BCG)<"),
+    );
+  });
+
+  it("a red alert: the chip Nên đi khám and a danger row", () => {
+    // 3 kg against a 5,5 kg median is z −3,6.
+    const page = render({
+      growth: loaded([measure("2026-11-15", 3000)]),
+      tables: true,
+    });
+    expect(growthCard(page)).toContain(
+      `${CHIP} bg-danger-soft text-danger-ink">Nên đi khám</span>`,
+    );
+    const row = growthRow(page);
+    expect(row).toContain(">Cân nặng thấp hơn chuẩn nhiều</span>");
+    expect(row).toContain(
+      '<span class="text-[13px] font-semibold text-danger">Nên cho bé đi khám.</span>',
+    );
   });
 });
 
