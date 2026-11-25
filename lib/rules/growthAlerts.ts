@@ -126,6 +126,21 @@ export function positionKind(
   return null;
 }
 
+// Spec 2026-11-25 §5.6: inside the norm, but among the lowest or the highest
+// 16 of 100 babies of that age and sex. Not an alert.
+export type NearKind = "nearLow" | "nearHigh";
+
+export const NEAR_CHIP: Record<NearKind, string> = {
+  nearLow: "Gần mức thấp",
+  nearHigh: "Gần mức cao",
+};
+
+export function nearKind(z: number): NearKind | null {
+  if (z >= -2 && z < -1) return "nearLow";
+  if (z > 1 && z <= 2) return "nearHigh";
+  return null;
+}
+
 type Found = { kind: GrowthAlertKind; compared: Reading | null };
 
 function findAlert(indicator: WhoIndicator, list: Reading[]): Found | null {
@@ -274,13 +289,23 @@ export const alertTone = (level: GrowthAlertLevel): "warn" | "danger" =>
   level === "red" ? "danger" : "warn";
 
 // Spec 2026-11-25 §3.4: the chip on the growth card of the Sức khỏe page.
-export function growthStatus(alerts: GrowthAlert[]): {
+export function growthStatus(
+  alerts: GrowthAlert[],
+  // §5.6: one entry per indicator on the card, null where it is not near the
+  // edge of the norm. Only read when there is no alert.
+  near: (NearKind | null)[] = [],
+): {
   text: string;
   tone: GrowthTone;
 } {
   if (alerts.some((alert) => alert.level === "red"))
     return { text: "Nên đi khám", tone: "danger" };
   if (alerts.length > 0) return { text: "Cần chú ý", tone: "warn" };
+  const low = near.includes("nearLow");
+  const high = near.includes("nearHigh");
+  if (low && high) return { text: "Gần ranh chuẩn", tone: "warn" };
+  if (low || high)
+    return { text: NEAR_CHIP[low ? "nearLow" : "nearHigh"], tone: "warn" };
   return { text: "Lớn đều", tone: "good" };
 }
 

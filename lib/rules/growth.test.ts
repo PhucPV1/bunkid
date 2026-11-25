@@ -13,6 +13,7 @@ import {
   normalCdf,
   percentile,
   rateZ,
+  standardRange,
   valueAtZ,
   zScore,
   type LmsRow,
@@ -165,5 +166,26 @@ describe("curve", () => {
       { label: "high", z: 2 },
     ]);
     expect(Object.keys(growth)).not.toContain("PERCENTILE_LINES");
+  });
+});
+
+// Spec 2026-11-25 §5.6: the norm in numbers.
+describe("standardRange", () => {
+  it("is the value at z −2, the median, and the value at z +2", () => {
+    expect(standardRange({ l: 1, m: 16, s: 0.125 })).toEqual({
+      low: 12,
+      mid: 16,
+      high: 20,
+    });
+  });
+
+  it("follows a skewed table: the two ends are not the same distance from the median", () => {
+    // WHO weight-for-age, boys, at birth.
+    const lms = { l: 0.3487, m: 3.3464, s: 0.14602 };
+    const range = standardRange(lms);
+    expect(range.mid).toBe(lms.m);
+    expect(zScore(lms, range.low)).toBeCloseTo(-2, 9);
+    expect(zScore(lms, range.high)).toBeCloseTo(2, 9);
+    expect(range.high - range.mid).toBeGreaterThan(range.mid - range.low);
   });
 });

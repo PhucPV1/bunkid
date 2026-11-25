@@ -8,6 +8,8 @@ import {
   type GrowthTables,
   growthAlerts,
   growthStatus,
+  NEAR_CHIP,
+  nearKind,
   positionKind,
   readings,
 } from "./growthAlerts";
@@ -366,6 +368,79 @@ describe("growthStatus", () => {
     expect(growthStatus(run([length(40, 11), weight(40, 9)]))).toEqual({
       text: "Nên đi khám",
       tone: "danger",
+    });
+  });
+
+  // Spec 2026-11-25 §5.6: with no alert, the indicators near the edge speak.
+  it("no alert, near the low edge only: Gần mức thấp", () => {
+    expect(growthStatus([], ["nearLow", null, "nearLow"])).toEqual({
+      text: "Gần mức thấp",
+      tone: "warn",
+    });
+  });
+
+  it("no alert, near the high edge only: Gần mức cao", () => {
+    expect(growthStatus([], [null, "nearHigh"])).toEqual({
+      text: "Gần mức cao",
+      tone: "warn",
+    });
+  });
+
+  it("no alert, one near each edge: Gần ranh chuẩn", () => {
+    expect(growthStatus([], ["nearHigh", "nearLow", null])).toEqual({
+      text: "Gần ranh chuẩn",
+      tone: "warn",
+    });
+  });
+
+  it("nothing near: still Lớn đều", () => {
+    expect(growthStatus([], [null, null, null])).toEqual({
+      text: "Lớn đều",
+      tone: "good",
+    });
+  });
+
+  it("an alert always wins over an indicator near the edge", () => {
+    expect(growthStatus(run([length(40, 11)]), ["nearLow"])).toEqual({
+      text: "Cần chú ý",
+      tone: "warn",
+    });
+    expect(growthStatus(run([weight(40, 9)]), ["nearHigh"])).toEqual({
+      text: "Nên đi khám",
+      tone: "danger",
+    });
+  });
+});
+
+// Spec 2026-11-25 §5.6: inside the norm, but close to its edge.
+describe("nearKind", () => {
+  it("is near the low edge from −2 up to, but not at, −1", () => {
+    expect([-2, -1.5, -1.01].map(nearKind)).toEqual([
+      "nearLow",
+      "nearLow",
+      "nearLow",
+    ]);
+    expect(nearKind(-1)).toBeNull();
+  });
+
+  it("is near the high edge above +1, up to and at +2", () => {
+    expect(nearKind(1)).toBeNull();
+    expect([1.01, 1.5, 2].map(nearKind)).toEqual([
+      "nearHigh",
+      "nearHigh",
+      "nearHigh",
+    ]);
+  });
+
+  it("is null in the middle of the norm and outside it", () => {
+    for (const z of [-3.01, -3, -2.01, -0.99, 0, 0.99, 2.01, 3, 3.01])
+      expect(nearKind(z), String(z)).toBeNull();
+  });
+
+  it("each kind has its chip", () => {
+    expect(NEAR_CHIP).toEqual({
+      nearLow: "Gần mức thấp",
+      nearHigh: "Gần mức cao",
     });
   });
 });

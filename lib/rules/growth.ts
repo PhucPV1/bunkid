@@ -32,6 +32,16 @@ export function valueAtZ(lms: Lms, z: number): number {
   return lms.m * (1 + lms.l * lms.s * z) ** (1 / lms.l);
 }
 
+// Spec 2026-11-25 §5.6: the norm in numbers, on one day of age: the two edges
+// of the normal band and its median.
+export function standardRange(lms: Lms): {
+  low: number;
+  mid: number;
+  high: number;
+} {
+  return { low: valueAtZ(lms, -2), mid: lms.m, high: valueAtZ(lms, 2) };
+}
+
 // Standard normal CDF via erf (Abramowitz & Stegun 7.1.26, error < 1.5e-7).
 export function normalCdf(z: number): number {
   const x = Math.abs(z) / Math.SQRT2;
