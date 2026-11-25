@@ -1048,6 +1048,15 @@ Ghi nhận khác (không thuộc plan này): trên trang thật, chiều dài c�
 
 Sau khi xóa `app/fixture-growth/`, `bun run typecheck` đỏ vì `.next/dev/types/validator.ts` còn trỏ tới trang tạm; đã xóa thư mục sinh tự động `.next/dev/types` (git-ignored), typecheck sạch lại, vitest vẫn 172 file / 1341 test. `.claude/launch.json` tạm (để khung Browser chạy `bun run dev`) đã xóa.
 
+**Sửa sau lần kiểm, 2026-11-25** (người dùng chọn "A" sau khi xem mục 2 ở trên; không thuộc hai patch của plan)
+
+- Đổi: trong `GrowthList`, chip (hoặc chữ "Ngoài bảng WHO") chỉ đứng cạnh dòng tiêu đề; dòng số đo và dòng chênh dùng hết bề ngang của hàng (309 px ở 375 px). Chỉ đổi `components/growth/GrowthList.tsx` và `components/growth/growthlist.test.tsx` (+2 test, viết trước, đỏ `2 failed | 1341 passed (1343)` rồi xanh). Luật `listRows` không đổi. Khác spec §5.5 ở chỗ "chip bên phải" nay là bên phải của dòng 1; **file spec chưa sửa**.
+- `tsc --noEmit` sạch; `Test Files  172 passed (172)`, `Tests  1343 passed (1343)` (số test sau M2e nay là **1343**, không phải 1341 như mục Contracts ghi); `bun run build` lần hai mã 0.
+- Kiểm lại (khung Browser trong app, 375×812, cùng lựa chọn trình duyệt của người dùng ở trên): trang tạm `?c=0` đến `?c=7`, dòng số đo của cả 24 hàng nằm một dòng; chip vẫn đúng 8 loại, mép phải x=342, ngang hàng với tiêu đề; dòng chênh xuống dòng ở một từ ("… so với lần / trước"), không còn tách số khỏi đơn vị; không chữ nào bị cắt, không cuộn ngang. Xem `dark` cả 8, `rose` và `night` ở `?c=7`. Thêm một trang tạm tự dựng (hàng viết tay, không đọc dữ liệu nào): số đo dài nhất thử "18,25 kg · 110,5 cm · vòng đầu 50,9 cm" rộng 276 px, vẫn một dòng; "Ngoài bảng WHO" và hàng không chip đúng chỗ.
+- Trang thật `/tang-truong` (`dark`): hai hàng như trước khi sửa, mỗi dòng một dòng, không còn "z"/"P". Không mở sheet lần này.
+- **Còn lại, chưa sửa (có từ `d00eaa6`, cách A không làm nặng thêm cũng không chữa):** dấu "Chờ đồng bộ" (đồng hồ 14 px) đứng sau tiêu đề, mà tiêu đề chia chỗ với chip. Ở 375 px, với chip "Bình thường" tiêu đề còn 200,4 px: tiêu đề kiểu "25/11 · 2 tháng 15 ngày" (181,8 px) cộng dấu vừa khít, dư 0,2 px; tiêu đề có cả số tháng và số ngày hai chữ số ("25/11 · 11 tháng 29 ngày", 192 px) thì dấu rớt xuống một dòng riêng (với chip "Bình thường", "Tăng nhanh", "Tăng chậm"). Chỉ xảy ra trong lúc hàng đang chờ đồng bộ. Trước M2e tiêu đề dùng hết bề ngang nên không gặp. Chỉ thấy trên trang tạm tự dựng. Chip của M2f dài hơn nên plan M2f phải tính lại chỗ của dấu này.
+- Hai trang tạm, `.claude/launch.json` tạm và `.next/dev/types` đã xóa; `bun run dev` đã dừng.
+
 - [x] **Step 5: Xóa trang fixture, commit phần ghi kết quả rồi dừng lại hỏi người dùng**
 
 ```bash
