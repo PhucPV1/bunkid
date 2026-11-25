@@ -114,6 +114,48 @@ export function chartLabelAnchor(day: number, to: number): "start" | "end" {
   return day * 2 <= to ? "start" : "end";
 }
 
+// Where the label of the newest point goes, and which fixed captions of the
+// chart make way for it.
+export type ChartLabelPlace = {
+  anchor: "start" | "end";
+  side: "top" | "bottom";
+  // "Bình thường" inside the band, at its right end.
+  normalCaption: boolean;
+  // "Cao hơn chuẩn" in the top left corner.
+  highCaption: boolean;
+};
+
+export function chartLabelPlace(input: {
+  day: number;
+  to: number;
+  // The newest point carries an alert.
+  alert: boolean;
+  // The newest value minus the one before it; null with a single measurement.
+  change: number | null;
+}): ChartLabelPlace {
+  const { day, to, alert, change } = input;
+  const anchor = chartLabelAnchor(day, to);
+  // Spec §5.4: above the point, or below it with an alert.
+  const usual = alert ? "bottom" : "top";
+  // Running left the label lies over the stretch the line comes through, so
+  // it takes the side the line does not come from.
+  const side =
+    anchor === "end" && change !== null && change !== 0
+      ? change > 0
+        ? "top"
+        : "bottom"
+      : usual;
+  return {
+    anchor,
+    side,
+    // The caption sits in the right quarter of the plot: a point there, or
+    // its label, would lie on it.
+    normalCaption: day <= 0.7 * to,
+    // An alert label is long enough to reach the corner caption.
+    highCaption: !(alert && anchor === "end" && side === "top"),
+  };
+}
+
 // Spec 2026-11-25 §5.4: what the chart of one indicator draws besides the band.
 export type ChartView = {
   title: string;

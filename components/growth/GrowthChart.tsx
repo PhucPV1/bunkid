@@ -11,10 +11,13 @@ import {
   YAxis,
 } from "recharts";
 import type { CurvePoint } from "@/lib/rules/growth";
-import { chartLabelAnchor, type ChartView } from "@/lib/rules/growthView";
+import { chartLabelPlace, type ChartView } from "@/lib/rules/growthView";
 
 const DAYS_PER_MONTH = 30.4375;
 const number = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 1 });
+
+// Room above the plot for a label that sits over a point at the very top.
+const HEADROOM = 28;
 
 const TONE = {
   accent: "var(--color-accent)",
@@ -50,13 +53,22 @@ export function GrowthChart({
     mid: point.mid,
   }));
   const end = band.at(-1);
-  const anchor = last ? chartLabelAnchor(last.day, to) : "start";
+  // `points` is oldest first, so the one before the newest is second to last.
+  const before = points.at(-2);
+  const place = last
+    ? chartLabelPlace({
+        day: last.day,
+        to,
+        alert: last.tone !== "accent",
+        change: before ? last.value - before.value : null,
+      })
+    : null;
   return (
     <div role="img" aria-label={label} className="relative h-72 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart
           data={data}
-          margin={{ top: 8, right: 8, bottom: 8, left: 0 }}
+          margin={{ top: HEADROOM, right: 8, bottom: 8, left: 0 }}
         >
           <CartesianGrid
             strokeDasharray="3 3"
@@ -122,7 +134,7 @@ export function GrowthChart({
             strokeWidth={2.5}
             dot={{ r: 4.5, fill: TONE.accent, strokeWidth: 0 }}
           />
-          {end && (
+          {end && place?.normalCaption !== false && (
             <ReferenceDot
               x={end.day}
               y={(end.mid + end.high) / 2}
@@ -136,7 +148,7 @@ export function GrowthChart({
               }}
             />
           )}
-          {last && (
+          {last && place && (
             <ReferenceDot
               x={last.day}
               y={last.value}
@@ -146,11 +158,10 @@ export function GrowthChart({
               strokeWidth={2.5}
               label={{
                 value: last.label,
-                // An alert label sits under the dot, clear of the band above.
-                position: last.tone === "accent" ? "top" : "bottom",
                 // It starts (or ends) at the middle of the dot instead of
-                // being centred on it: see chartLabelAnchor.
-                textAnchor: anchor,
+                // being centred on it, above or below: see chartLabelPlace.
+                position: place.side,
+                textAnchor: place.anchor,
                 fontSize: 13,
                 fontWeight: 700,
                 fill: "var(--color-ink)",
@@ -165,9 +176,12 @@ export function GrowthChart({
           )}
         </ComposedChart>
       </ResponsiveContainer>
-      <span className="pointer-events-none absolute top-3 left-11 text-[11px] leading-none text-muted">
-        Cao hơn chuẩn
-      </span>
+      {place?.highCaption !== false && (
+        // top-8 is just inside the plot, which starts HEADROOM px down.
+        <span className="pointer-events-none absolute top-8 left-11 text-[11px] leading-none text-muted">
+          Cao hơn chuẩn
+        </span>
+      )}
       <span className="pointer-events-none absolute right-3 bottom-11 text-[11px] leading-none text-muted">
         Thấp hơn chuẩn
       </span>

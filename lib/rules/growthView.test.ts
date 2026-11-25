@@ -9,6 +9,7 @@ import {
 import {
   alertDots,
   chartLabelAnchor,
+  chartLabelPlace,
   chartView,
   defaultIndicator,
   formatChange,
@@ -185,6 +186,69 @@ describe("chartLabelAnchor", () => {
     expect(chartLabelAnchor(183, 365)).toBe("end");
     expect(chartLabelAnchor(1000, 1080)).toBe("end");
     expect(chartLabelAnchor(1857, 1856)).toBe("end");
+  });
+});
+
+// Spec 2026-11-25 §5.4: where the label of the newest point goes, and which
+// fixed captions of the chart make way for it.
+describe("chartLabelPlace", () => {
+  const place = (
+    day: number,
+    alert: boolean,
+    change: number | null,
+    to = 365,
+  ) => chartLabelPlace({ day, to, alert, change });
+
+  it("in the left half the label runs right: above the point, or below it with an alert", () => {
+    expect(place(76, false, 1.5)).toMatchObject({
+      anchor: "start",
+      side: "top",
+    });
+    expect(place(76, true, 3.3)).toMatchObject({
+      anchor: "start",
+      side: "bottom",
+    });
+    expect(place(76, true, -0.2)).toMatchObject({
+      anchor: "start",
+      side: "bottom",
+    });
+  });
+
+  it("in the right half it runs left, on the side the line does not come from", () => {
+    expect(place(300, true, 4.4)).toMatchObject({ anchor: "end", side: "top" });
+    expect(place(300, false, 1.7)).toMatchObject({
+      anchor: "end",
+      side: "top",
+    });
+    expect(place(300, true, -0.4)).toMatchObject({
+      anchor: "end",
+      side: "bottom",
+    });
+    expect(place(300, false, -0.4)).toMatchObject({
+      anchor: "end",
+      side: "bottom",
+    });
+  });
+
+  it("a level line or a single measurement keeps the usual side", () => {
+    expect(place(300, true, 0).side).toBe("bottom");
+    expect(place(300, false, 0).side).toBe("top");
+    expect(place(300, true, null).side).toBe("bottom");
+    expect(place(300, false, null).side).toBe("top");
+  });
+
+  it("the caption inside the band makes way once the point is in the right 30%", () => {
+    expect(place(255, false, 1).normalCaption).toBe(true);
+    expect(place(256, false, 1).normalCaption).toBe(false);
+    expect(place(1700, false, 1, 1770).normalCaption).toBe(false);
+    expect(place(76, true, 1).normalCaption).toBe(true);
+  });
+
+  it("the caption above the band makes way for an alert label that runs left above its point", () => {
+    expect(place(300, true, 4.4).highCaption).toBe(false);
+    expect(place(300, false, 1.7).highCaption).toBe(true);
+    expect(place(300, true, -0.4).highCaption).toBe(true);
+    expect(place(76, true, 3.3).highCaption).toBe(true);
   });
 });
 
