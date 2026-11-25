@@ -457,6 +457,164 @@ describe("chartLabelPlace", () => {
   });
 });
 
+// Spec 2026-11-25 §6.3, item 4: on the chart of the Chiều cao page the label
+// of the newest point also keeps clear of the target line.
+describe("chartLabelPlace: around a target line", () => {
+  // The model of the plot is 273 px wide and 222 px high: with 273 days on
+  // the axis and values from 0 to 222, a day is a pixel and so is a unit.
+  const band = [
+    { day: 0, low: 0, mid: 111, high: 222 },
+    { day: 273, low: 0, mid: 111, high: 222 },
+  ];
+  // A line through (day, value) that climbs `slope` units a day, kept inside
+  // the band so that the band alone sets the scale.
+  const through = (day: number, value: number, slope: number) =>
+    Array.from({ length: 40 }, (_, i) => ({
+      day: i * 7,
+      value: Math.min(222, Math.max(0, value + slope * (i * 7 - day))),
+    }));
+  // The baby grew 15 units in the 30 days before the newest measurement.
+  const place = (
+    day: number,
+    value: number,
+    target: { day: number; value: number }[],
+    points = [
+      { day: day - 30, value: value - 15 },
+      { day, value },
+    ],
+  ) =>
+    chartLabelPlace({
+      day,
+      to: 273,
+      alert: false,
+      change: points.length > 1 ? 15 : null,
+      around: { value, label: "61,5 cm", points, target, band },
+    });
+
+  it("a target line well clear of the label changes nothing", () => {
+    expect(place(57, 100, through(57, 160, 0.5))).toMatchObject({
+      anchor: "start",
+      side: "top",
+    });
+    expect(place(200, 100, through(200, 40, 0.25))).toMatchObject({
+      anchor: "end",
+      side: "top",
+    });
+  });
+
+  it("a point on the line: the line climbs through the place above it, so the label goes below", () => {
+    expect(place(57, 100, through(57, 100, 0.5))).toMatchObject({
+      anchor: "start",
+      side: "bottom",
+    });
+  });
+
+  it("a steep line just under the point passes through the point, not the label below it", () => {
+    // The label starts at the middle of the point: what the line does to the
+    // left of that is under the point itself.
+    expect(place(57, 100, through(57, 96.5, 0.9))).toMatchObject({
+      anchor: "start",
+      side: "bottom",
+    });
+  });
+
+  it("a line that only brushes the label's edge still moves it", () => {
+    // 25 above the point the line passes 1 px over the top of the label.
+    expect(place(57, 100, through(57, 125, 0.5))).toMatchObject({
+      anchor: "start",
+      side: "bottom",
+    });
+  });
+
+  it("a point a little above the line: the line crosses both places on the right, so the label runs left", () => {
+    expect(place(57, 100, through(57, 88, 0.5))).toMatchObject({
+      anchor: "end",
+      side: "top",
+    });
+  });
+
+  it("with no room on the left either, the label moves a little further from the point", () => {
+    // 8 px lower the line passes between the point and its label.
+    expect(place(40, 100, through(40, 88, 0.5))).toMatchObject({
+      anchor: "start",
+      side: "bottom",
+      away: 8,
+    });
+  });
+
+  it("in the right half, under the line: not on the line, not on the baby's own line", () => {
+    // Above left the target line passes; below left the baby's line arrives.
+    expect(place(200, 100, through(200, 115, 0.25))).toMatchObject({
+      anchor: "start",
+      side: "bottom",
+    });
+  });
+
+  it("a single measurement has no line of its own to avoid", () => {
+    expect(
+      place(200, 100, through(200, 115, 0.25), [{ day: 200, value: 100 }]),
+    ).toMatchObject({ anchor: "end", side: "bottom" });
+  });
+
+  it("the label does not go below a point that sits on the bottom of the plot", () => {
+    expect(
+      place(57, 10, through(57, 10, 0.5), [
+        { day: 27, value: 0 },
+        { day: 57, value: 10 },
+      ]),
+    ).toMatchObject({ anchor: "end", side: "top" });
+  });
+
+  it("the label does not run over the right edge", () => {
+    // Under the line at 90% of the axis the two places on the right are out,
+    // and on the left the two lines pass: the label goes up over the target
+    // line, 12 px further from the point.
+    expect(place(246, 100, through(246, 115, 0.25))).toMatchObject({
+      anchor: "end",
+      side: "top",
+      away: 12,
+    });
+  });
+
+  it("the label stays next to its point wherever one of the four places is free", () => {
+    expect(place(57, 100, through(57, 100, 0.5)).away).toBe(0);
+    expect(place(57, 100, through(57, 88, 0.5)).away).toBe(0);
+    expect(place(200, 100, through(200, 115, 0.25)).away).toBe(0);
+    // And always on the chart without a target line.
+    expect(
+      chartLabelPlace({ day: 300, to: 365, alert: true, change: 4.4 }).away,
+    ).toBe(0);
+  });
+
+  it("boxed in on every side within 24 px, it keeps its usual place", () => {
+    // Two target lines cannot be: a zigzag stands in for a plot with no room.
+    const zigzag = Array.from({ length: 274 }, (_, day) => ({
+      day,
+      value: day % 2 ? 222 : 0,
+    }));
+    expect(place(57, 100, zigzag)).toMatchObject({
+      anchor: "start",
+      side: "top",
+      away: 0,
+    });
+  });
+
+  it("it keeps off the caption of the target line while that caption is shown", () => {
+    // The line ends at 180: its caption sits just above, in the right third.
+    const target = through(273, 180, 0.4);
+    expect(place(130, 165, target)).toMatchObject({
+      anchor: "end",
+      side: "top",
+      targetCaption: true,
+    });
+    // Further down the label is nowhere near the caption.
+    expect(place(130, 60, target)).toMatchObject({
+      anchor: "start",
+      side: "top",
+    });
+  });
+});
+
 // Spec 2026-11-25 §5.4.
 describe("chartView", () => {
   const chart = (

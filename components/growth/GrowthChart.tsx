@@ -68,6 +68,14 @@ export function GrowthChart({
         to,
         alert: last.tone !== "accent",
         change: before ? last.value - before.value : null,
+        // With a target line the label also keeps clear of that line.
+        around: target && {
+          value: last.value,
+          label: last.label,
+          points,
+          target,
+          band,
+        },
       })
     : null;
   return (
@@ -202,6 +210,8 @@ export function GrowthChart({
                 // being centred on it, above or below: see chartLabelPlace.
                 position: place.side,
                 textAnchor: place.anchor,
+                // 5 is the chart's own distance from the point.
+                offset: 5 + place.away,
                 fontSize: 13,
                 fontWeight: 700,
                 fill: "var(--color-ink)",

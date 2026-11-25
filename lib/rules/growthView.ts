@@ -1,6 +1,13 @@
 import type { WhoIndicator } from "@/lib/content/who";
 import { formatDayShort } from "./days";
-import { ageOnDay, type Lms, lmsAt, standardRange, zScore } from "./growth";
+import {
+  ageOnDay,
+  type CurvePoint,
+  type Lms,
+  lmsAt,
+  standardRange,
+  zScore,
+} from "./growth";
 import {
   ALERT_CHIP,
   alertTone,
@@ -238,6 +245,9 @@ export function chartLabelAnchor(day: number, to: number): "start" | "end" {
 export type ChartLabelPlace = {
   anchor: "start" | "end";
   side: "top" | "bottom";
+  // Extra px between the point and its label. 0, except round a target line
+  // that leaves no room next to the point (§6.3, item 4).
+  away: number;
   // "Bình thường" inside the band, at its right end.
   normalCaption: boolean;
   // "Cao hơn chuẩn" in the top left corner.
@@ -246,6 +256,144 @@ export type ChartLabelPlace = {
   targetCaption: boolean;
 };
 
+// Spec 2026-11-25 §6.3, item 4: what the label of the newest point keeps clear
+// of on the chart of the Chiều cao page, where a second line crosses the plot.
+export type LabelSurroundings = {
+  // The newest value, and its label as written.
+  value: number;
+  label: string;
+  // The baby's measurements, oldest first.
+  points: { day: number; value: number }[];
+  // The target line and the normal band, as drawn.
+  target: { day: number; value: number }[];
+  band: CurvePoint[];
+};
+
+// The plot as it is on the narrowest screen, 375 px: there a label takes the
+// largest share of the axis. Its height is the same on every screen.
+const PLOT = { width: 273, height: 222, headroom: 28 };
+// The label is 13 px bold, about 8 px a character. It starts 9 px from the
+// middle of its point and ends 24 px from it.
+const LABEL = { char: 8, near: 9, far: 24 };
+// "Đường mục tiêu": 87 px by 13 px, ending 6 px from the right edge of the
+// plot and 2,5 px above the end of the line.
+const CAPTION = { width: 87, height: 13, right: 6, above: 2.5 };
+// How far a line stays from the text: the halo round it and half the line.
+const CLEAR = 3;
+// How much further from its point the label may go to find room.
+const AWAY = [0, 4, 8, 12, 16, 20, 24];
+
+type Spot = { x: number; y: number };
+// Pixels from the top left corner of the plot.
+type Box = { left: number; right: number; top: number; bottom: number };
+
+// Whether the stretch from a to b passes through the box.
+function crosses(a: Spot, b: Spot, box: Box): boolean {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  let from = 0;
+  let until = 1;
+  for (const [step, room] of [
+    [-dx, a.x - box.left],
+    [dx, box.right - a.x],
+    [-dy, a.y - box.top],
+    [dy, box.bottom - a.y],
+  ]) {
+    if (step === 0) {
+      if (room < 0) return false;
+    } else if (step < 0) from = Math.max(from, room / step);
+    else until = Math.min(until, room / step);
+  }
+  return from <= until;
+}
+
+// The first of the four places round the point that lies inside the plot and
+// that neither line nor the caption of the target line passes through: the
+// usual place, the other side of the point, then the same two running the
+// other way. With none free the same four are tried a little further from the
+// point, up to 24 px. With no such place at all the label keeps the usual
+// one; its halo keeps it readable there.
+function clearPlace(input: {
+  day: number;
+  to: number;
+  anchor: "start" | "end";
+  side: "top" | "bottom";
+  caption: boolean;
+  around: LabelSurroundings;
+}): Pick<ChartLabelPlace, "anchor" | "side" | "away"> {
+  const { day, to, anchor, side } = input;
+  const { value, label, points, target, band } = input.around;
+  // The chart scales its value axis to everything it draws.
+  const values = [
+    ...band.flatMap((point) => [point.low, point.high]),
+    ...points.map((point) => point.value),
+    ...target.map((point) => point.value),
+  ];
+  const high = Math.max(...values);
+  const span = high - Math.min(...values) || 1;
+  const at = (point: { day: number; value: number }): Spot => ({
+    x: (point.day / to) * PLOT.width,
+    y: ((high - point.value) / span) * PLOT.height,
+  });
+  const dot = at({ day, value });
+  const width = label.length * LABEL.char;
+  const line = points.map(at);
+  const goal = target.map(at);
+  const end = goal.at(-1);
+  const caption: Box | null =
+    input.caption && end
+      ? {
+          left: PLOT.width - CAPTION.right - CAPTION.width,
+          right: PLOT.width - CAPTION.right,
+          top: end.y - CAPTION.above - CAPTION.height,
+          bottom: end.y - CAPTION.above,
+        }
+      : null;
+  const passes = (path: Spot[], box: Box) =>
+    path.some((spot, i) => i > 0 && crosses(path[i - 1], spot, box));
+  const free = (runs: "start" | "end", on: "top" | "bottom", away: number) => {
+    const left = runs === "start" ? dot.x : dot.x - width;
+    const top =
+      on === "top" ? dot.y - LABEL.far - away : dot.y + LABEL.near + away;
+    const bottom = top + LABEL.far - LABEL.near;
+    if (
+      left < 0 ||
+      left + width > PLOT.width ||
+      top < -PLOT.headroom ||
+      bottom > PLOT.height
+    )
+      return false;
+    // No margin on the side where the label starts: that is the middle of the
+    // point, and a line there is under the point itself.
+    const box: Box = {
+      left: runs === "start" ? left : left - CLEAR,
+      right: runs === "start" ? left + width + CLEAR : left + width,
+      top: top - CLEAR,
+      bottom: bottom + CLEAR,
+    };
+    if (
+      caption &&
+      box.left < caption.right &&
+      caption.left < box.right &&
+      box.top < caption.bottom &&
+      caption.top < box.bottom
+    )
+      return false;
+    return !passes(goal, box) && !passes(line, box);
+  };
+  const flip = anchor === "start" ? "end" : "start";
+  const other = side === "top" ? "bottom" : "top";
+  for (const away of AWAY)
+    for (const [runs, on] of [
+      [anchor, side],
+      [anchor, other],
+      [flip, side],
+      [flip, other],
+    ] as const)
+      if (free(runs, on, away)) return { anchor: runs, side: on, away };
+  return { anchor, side, away: 0 };
+}
+
 export function chartLabelPlace(input: {
   day: number;
   to: number;
@@ -253,6 +401,8 @@ export function chartLabelPlace(input: {
   alert: boolean;
   // The newest value minus the one before it; null with a single measurement.
   change: number | null;
+  // Only on the chart with a target line.
+  around?: LabelSurroundings;
 }): ChartLabelPlace {
   const { day, to, alert, change } = input;
   const anchor = chartLabelAnchor(day, to);
@@ -266,18 +416,28 @@ export function chartLabelPlace(input: {
         ? "top"
         : "bottom"
       : usual;
+  // The caption ends at the right edge and is about 85 px wide: past 60% of
+  // the axis the newest point, or its label, would lie under it. The legend
+  // below the chart still names the line.
+  const targetCaption = day <= 0.6 * to;
+  const place: Pick<ChartLabelPlace, "anchor" | "side" | "away"> = input.around
+    ? clearPlace({
+        day,
+        to,
+        anchor,
+        side,
+        caption: targetCaption,
+        around: input.around,
+      })
+    : { anchor, side, away: 0 };
   return {
-    anchor,
-    side,
+    ...place,
     // The caption sits in the right quarter of the plot: a point there, or
     // its label, would lie on it.
     normalCaption: day <= 0.7 * to,
     // An alert label is long enough to reach the corner caption.
-    highCaption: !(alert && anchor === "end" && side === "top"),
-    // The caption ends at the right edge and is about 85 px wide: past 60% of
-    // the axis the newest point, or its label, would lie under it. The legend
-    // below the chart still names the line.
-    targetCaption: day <= 0.6 * to,
+    highCaption: !(alert && place.anchor === "end" && place.side === "top"),
+    targetCaption,
   };
 }
 
