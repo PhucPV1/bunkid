@@ -8,6 +8,9 @@ import {
   HEALTH_STATS,
   TOOLS,
 } from "@/lib/nav";
+import { statsFetchSince } from "@/lib/rules/dailyStats";
+import { addDays, vnDayRange } from "@/lib/rules/days";
+import type { LogLike } from "@/lib/rules/describeLog";
 import type { Baby, GrowthRow, VaccineDoseRow } from "@/lib/supabase/rows";
 import { ICON_PATHS } from "@/lib/ui/icons";
 import { HealthScreen } from "./HealthScreen";
@@ -16,10 +19,12 @@ const state = vi.hoisted(() => ({
   growth: {} as Record<string, unknown>,
   doses: {} as Record<string, unknown>,
   tables: {} as Record<string, unknown>,
+  logs: {} as Record<string, unknown>,
 }));
 const useGrowth = vi.hoisted(() => vi.fn());
 const useWhoTable = vi.hoisted(() => vi.fn());
 const useVaccineDoses = vi.hoisted(() => vi.fn());
+const useStatsLogs = vi.hoisted(() => vi.fn());
 // Four doses: one at birth, two at two months (one of them in a group), one late.
 const content = vi.hoisted(() => {
   const base = {
@@ -87,6 +92,7 @@ const content = vi.hoisted(() => {
 vi.mock("@/lib/content/vaccines", () => ({ VACCINES: content }));
 vi.mock("@/lib/data/growth", () => ({ useGrowth, useWhoTable }));
 vi.mock("@/lib/data/vaccines", () => ({ useVaccineDoses }));
+vi.mock("@/lib/data/logs", () => ({ useStatsLogs }));
 
 const LOADING = {
   data: undefined,
@@ -154,13 +160,19 @@ const done = (code: string) =>
   }) as VaccineDoseRow;
 
 function render(
-  query: { growth?: unknown; doses?: unknown; tables?: boolean } = {},
+  query: {
+    growth?: unknown;
+    doses?: unknown;
+    tables?: boolean;
+    logs?: unknown;
+  } = {},
   dob = "2026-09-14",
   target: number | null = null,
 ) {
   state.growth = (query.growth ?? LOADING) as Record<string, unknown>;
   state.doses = (query.doses ?? LOADING) as Record<string, unknown>;
   state.tables = query.tables ? TABLES : {};
+  state.logs = (query.logs ?? LOADING) as Record<string, unknown>;
   const baby = {
     id: "b1",
     family_id: "f1",
@@ -187,6 +199,7 @@ beforeAll(() => {
     (indicator: string) => state.tables[indicator] ?? LOADING,
   );
   useVaccineDoses.mockImplementation(() => state.doses);
+  useStatsLogs.mockImplementation(() => state.logs);
   vi.useFakeTimers({ toFake: ["Date"] });
   vi.setSystemTime(new Date("2026-11-20T05:00:00Z")); // 12:00 giờ VN
 });
@@ -289,6 +302,90 @@ describe("HealthScreen: Cần chú ý", () => {
       doses: loaded([done("bcg"), done("hexa"), done("pcv")]),
     });
     expect(page).not.toContain("Cần chú ý");
+  });
+});
+
+// Spec 2026-11-25 §4, rows 5 and 6. "Now" is noon on 20/11 in Việt Nam, so
+// the habits read 13/11 to 19/11; the baby is 67 days old (sleep 14–17 hours).
+describe("HealthScreen: habits in Cần chú ý", () => {
+  // One log a day over the seven days, from 02:00 Việt Nam time.
+  const everyDay = (type: "sleep" | "tummy", minutes: number): LogLike[] =>
+    Array.from({ length: 7 }, (_, i) => {
+      const start = Date.parse(
+        `${addDays("2026-11-20", i - 7)}T02:00:00+07:00`,
+      );
+      return {
+        type,
+        started_at: new Date(start).toISOString(),
+        ended_at: new Date(start + minutes * 60_000).toISOString(),
+        details: {},
+      };
+    });
+  const SHORT = [...everyDay("sleep", 13 * 60 + 30), ...everyDay("tummy", 15)];
+
+  it("reads the logs of the last 14 days, the query the Thống kê page already uses", () => {
+    useStatsLogs.mockClear();
+    render();
+    expect(useStatsLogs).toHaveBeenCalledExactlyOnceWith(
+      "b1",
+      statsFetchSince(vnDayRange(new Date("2026-11-20T05:00:00Z"), 14)),
+    );
+  });
+
+  it.each([
+    ["loading", LOADING],
+    ["offline", OFFLINE],
+    ["after an error", FAILED],
+    ["nothing logged", loaded([])],
+  ])("logs %s: no habit row", (_, q) => {
+    expect(render({ logs: q })).not.toContain("Cần chú ý");
+  });
+
+  it("sleep under the norm: a warn row that opens Thống kê", () => {
+    const page = render({ logs: loaded(everyDay("sleep", 13 * 60 + 30)) });
+    expect(page.indexOf(">Cần chú ý<")).toBeLessThan(
+      page.indexOf(">Theo dõi<"),
+    );
+    const row = link(page, "/thong-ke");
+    expect(row).toContain(">Ngủ ít hơn chuẩn</span>");
+    expect(row).toContain(
+      '<span class="text-[13px] font-semibold text-warn">13,5 giờ mỗi ngày · nên 14–17 giờ</span>',
+    );
+    expect(row).toContain(`d="${ICON_PATHS.moon}"`);
+    expect(page).not.toContain("Nằm sấp còn ít");
+  });
+
+  it("tummy time short: a warn row that opens the Chiều cao page", () => {
+    const page = render({ logs: loaded(everyDay("tummy", 15)) });
+    const row = link(page, "/tang-truong/chieu-cao");
+    expect(row).toContain(">Nằm sấp còn ít</span>");
+    expect(row).toContain(
+      '<span class="text-[13px] font-semibold text-warn">15 phút mỗi ngày · nên từ 30 phút</span>',
+    );
+    expect(row).toContain(`d="${ICON_PATHS.smile}"`);
+    expect(page).not.toContain("Ngủ ít hơn chuẩn");
+  });
+
+  it("enough sleep and tummy time: no row", () => {
+    const logs = [...everyDay("sleep", 15 * 60), ...everyDay("tummy", 40)];
+    expect(render({ logs: loaded(logs) })).not.toContain("Cần chú ý");
+  });
+
+  it("the habit rows come after the vaccine row, sleep before tummy time", () => {
+    const page = render({ doses: loaded([]), logs: loaded(SHORT) });
+    const order = [
+      ">Quá hạn: Lao (BCG)<",
+      ">Ngủ ít hơn chuẩn<",
+      ">Nằm sấp còn ít<",
+      ">Theo dõi<",
+    ].map((text) => page.indexOf(text));
+    expect(order.every((i) => i >= 0)).toBe(true);
+    expect([...order].sort((a, b) => a - b)).toEqual(order);
+  });
+
+  it("a child of one year or more has no tummy row", () => {
+    const page = render({ logs: loaded(SHORT) }, "2025-11-20");
+    expect(page).not.toContain("Nằm sấp còn ít");
   });
 });
 

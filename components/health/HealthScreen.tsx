@@ -9,6 +9,7 @@ import { StatusChip } from "@/components/ui/StatusChip";
 import { VACCINES } from "@/lib/content/vaccines";
 import { type LmsRow, whoSex } from "@/lib/content/who";
 import { useGrowth, useWhoTable } from "@/lib/data/growth";
+import { useStatsLogs } from "@/lib/data/logs";
 import { useVaccineDoses } from "@/lib/data/vaccines";
 import {
   HEALTH_CARDS,
@@ -17,8 +18,9 @@ import {
   HEALTH_SICK,
   HEALTH_STATS,
 } from "@/lib/nav";
-import { attentionItems } from "@/lib/rules/attention";
-import { formatDayShort } from "@/lib/rules/days";
+import { type AttentionItem, attentionItems } from "@/lib/rules/attention";
+import { statsFetchSince } from "@/lib/rules/dailyStats";
+import { formatDayShort, vnDayRange } from "@/lib/rules/days";
 import {
   growthAlerts,
   growthStatus,
@@ -31,6 +33,7 @@ import {
   latestGrowth,
 } from "@/lib/rules/growthForm";
 import { indicatorSummaries } from "@/lib/rules/growthView";
+import { habitStats } from "@/lib/rules/habits";
 import { goalLine } from "@/lib/rules/heightView";
 import { vnDateString } from "@/lib/rules/time";
 import { parseChoices, toDoseRecords } from "@/lib/rules/vaccineForm";
@@ -138,10 +141,40 @@ export function GrowthCard({
   );
 }
 
+// Spec 2026-11-25 §4. Exported for the temporary fixture pages of the browser
+// checks.
+export function AttentionList({ items }: { items: AttentionItem[] }) {
+  return (
+    <section className="flex flex-col gap-2.5">
+      <SectionTitle>Cần chú ý</SectionTitle>
+      <ListGroup>
+        {items.map((item) => (
+          <ListRow
+            key={item.key}
+            label={item.title}
+            detail={item.detail}
+            detailTone={item.tone === "normal" ? "muted" : item.tone}
+            icon={item.icon}
+            iconColor={item.color}
+            href={item.href}
+          />
+        ))}
+      </ListGroup>
+    </section>
+  );
+}
+
 export function HealthScreen({ baby }: { baby: Baby }) {
   const growth = useGrowth(baby.id);
   const doses = useVaccineDoses(baby.id);
-  const today = vnDateString(new Date());
+  const now = new Date();
+  const today = vnDateString(now);
+  // Spec §7.2: the 14-day query of the Thống kê page, shared through its
+  // cache. Until it has loaded there is no habit row.
+  const logs = useStatsLogs(baby.id, statsFetchSince(vnDayRange(now, 14)));
+  const habits = logs.data
+    ? habitStats(logs.data, baby.dob, now).attention
+    : null;
   // No data yet (loading, offline, error): no row and the static description.
   const next = doses.data
     ? nextDose(
@@ -202,7 +235,7 @@ export function HealthScreen({ baby }: { baby: Baby }) {
   const attention = attentionItems({
     growth: alerts,
     vaccine: next,
-    habits: null,
+    habits,
     today,
   });
   const live: Partial<Record<string, LiveLine>> = {
@@ -216,24 +249,7 @@ export function HealthScreen({ baby }: { baby: Baby }) {
     <main className="mx-auto flex max-w-md flex-col gap-[22px] px-4 pt-2">
       <PageHeader title="Sức khỏe" />
 
-      {attention.length > 0 && (
-        <section className="flex flex-col gap-2.5">
-          <SectionTitle>Cần chú ý</SectionTitle>
-          <ListGroup>
-            {attention.map((item) => (
-              <ListRow
-                key={item.key}
-                label={item.title}
-                detail={item.detail}
-                detailTone={item.tone === "normal" ? "muted" : item.tone}
-                icon={item.icon}
-                iconColor={item.color}
-                href={item.href}
-              />
-            ))}
-          </ListGroup>
-        </section>
-      )}
+      {attention.length > 0 && <AttentionList items={attention} />}
 
       <section className="flex flex-col gap-2.5">
         <SectionTitle>Theo dõi</SectionTitle>
