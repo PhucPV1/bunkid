@@ -30,6 +30,7 @@ import {
   type LatestGrowth,
   latestGrowth,
 } from "@/lib/rules/growthForm";
+import { indicatorSummaries } from "@/lib/rules/growthView";
 import { vnDateString } from "@/lib/rules/time";
 import { parseChoices, toDoseRecords } from "@/lib/rules/vaccineForm";
 import { buildSchedule, nextDose } from "@/lib/rules/vaccines";
@@ -64,7 +65,8 @@ function growthCells(latest: LatestGrowth): [title: string, value: string][] {
   ];
 }
 
-function GrowthCard({
+// Exported for the temporary fixture pages of the browser checks.
+export function GrowthCard({
   latest,
   status,
 }: {
@@ -94,10 +96,13 @@ function GrowthCard({
               : HEALTH_GROWTH.detail}
           </span>
         </span>
-        {latest && status && (
+        {/* The chip takes the place of the arrow: at 375 px "Gần ranh chuẩn"
+            and the arrow together leave the name less room than it needs. */}
+        {latest && status ? (
           <StatusChip tone={status.tone}>{status.text}</StatusChip>
+        ) : (
+          <Icon name="chevronRight" size={18} className="text-muted" />
         )}
-        <Icon name="chevronRight" size={18} className="text-muted" />
       </span>
       {latest && (
         <span className="grid grid-cols-3 gap-2">
@@ -137,9 +142,9 @@ export function HealthScreen({ baby }: { baby: Baby }) {
   const hcfa = useWhoTable("hcfa", sex);
   // Spec 2026-11-25 §3.4: the alerts wait for the measurements and all three
   // tables, so the chip never shows a verdict that a late table would change.
-  const alerts =
+  const measured =
     growth.data && wfa.data && lhfa.data && hcfa.data
-      ? growthAlerts({
+      ? {
           rows: growth.data,
           tables: {
             wfa: wfa.data.rows as LmsRow[],
@@ -148,8 +153,19 @@ export function HealthScreen({ baby }: { baby: Baby }) {
           },
           dob: baby.dob,
           sex,
-          babyName: baby.name,
-        })
+        }
+      : null;
+  const alerts = measured
+    ? growthAlerts({ ...measured, babyName: baby.name })
+    : null;
+  // Spec §5.6: with no alert, the chip says when the newest value of an
+  // indicator is near the edge of the norm.
+  const status =
+    measured && alerts
+      ? growthStatus(
+          alerts,
+          indicatorSummaries({ ...measured, alerts }).map((item) => item.near),
+        )
       : null;
   const attention = attentionItems({ growth: alerts, vaccine: next, today });
   const live: Partial<Record<string, LiveLine>> = {
@@ -186,7 +202,7 @@ export function HealthScreen({ baby }: { baby: Baby }) {
         <SectionTitle>Theo dõi</SectionTitle>
         <GrowthCard
           latest={growth.data ? latestGrowth(growth.data) : null}
-          status={alerts ? growthStatus(alerts) : null}
+          status={status}
         />
         <div className="grid grid-cols-2 gap-2.5">
           {HEALTH_CARDS.map((item) => (

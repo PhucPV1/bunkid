@@ -413,6 +413,78 @@ describe("HealthScreen: growth alerts", () => {
       '<span class="text-[13px] font-semibold text-danger">Nên cho bé đi khám.</span>',
     );
   });
+
+  // Spec 2026-11-25 §5.6: near the edge of the norm is said on the chip, and
+  // never in "Cần chú ý".
+  it("near the low edge: the chip Gần mức thấp and no growth row", () => {
+    // 4,6 kg against a 5,5 kg median is z −1,31.
+    const page = render({
+      growth: loaded([measure("2026-11-15", 4600)]),
+      doses: loaded([]),
+      tables: true,
+    });
+    expect(growthCard(page)).toContain(
+      `${CHIP} bg-warn-soft text-warn-ink">Gần mức thấp</span>`,
+    );
+    expect(growthRow(page)).toBeNull();
+  });
+
+  it("near the high edge: the chip Gần mức cao", () => {
+    // 6,5 kg is z +1,45.
+    const page = render({
+      growth: loaded([measure("2026-11-15", 6500)]),
+      tables: true,
+    });
+    expect(growthCard(page)).toContain(
+      `${CHIP} bg-warn-soft text-warn-ink">Gần mức cao</span>`,
+    );
+  });
+
+  it("one indicator near each edge: the chip Gần ranh chuẩn", () => {
+    // 50 cm against a 58,5 cm median is z −1,16.
+    const page = render({
+      growth: loaded([measure("2026-11-15", 6500, 50)]),
+      tables: true,
+    });
+    expect(growthCard(page)).toContain(
+      `${CHIP} bg-warn-soft text-warn-ink">Gần ranh chuẩn</span>`,
+    );
+  });
+
+  it("an alert on another indicator wins over near the edge", () => {
+    const page = render({
+      growth: loaded([measure("2026-11-15", 4000, 50)]),
+      tables: true,
+    });
+    expect(growthCard(page)).toContain(">Cần chú ý</span>");
+    expect(growthCard(page)).not.toContain("Gần");
+  });
+
+  it("only the newest measurement of an indicator can be near the edge", () => {
+    const page = render({
+      growth: loaded([
+        measure("2026-11-15", 5500),
+        measure("2026-10-14", 4600),
+      ]),
+      tables: true,
+    });
+    expect(growthCard(page)).toContain(">Lớn đều</span>");
+  });
+
+  // At 375 px "Gần ranh chuẩn" and the arrow together leave the name of the
+  // card less room than it needs.
+  it("the chip takes the place of the arrow; a card with no chip keeps the arrow", () => {
+    const withChip = growthCard(
+      render({ growth: loaded([measure("2026-11-15", 5500)]), tables: true }),
+    );
+    expect(withChip).toContain(">Lớn đều</span>");
+    expect(withChip).not.toContain(ICON_PATHS.chevronRight);
+    for (const page of [
+      render({ growth: loaded([measure("2026-11-15", 5500)]) }),
+      render({ growth: loaded([]), tables: true }),
+    ])
+      expect(growthCard(page)).toContain(`d="${ICON_PATHS.chevronRight}"`);
+  });
 });
 
 describe("HealthScreen: the Tiêm chủng and Phát triển cards", () => {
