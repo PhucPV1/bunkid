@@ -262,3 +262,22 @@ export function goalLink(input: {
     onTrack: false,
   };
 }
+
+// Spec 2026-11-25 §3.4: the line at the foot of the growth card on the Sức
+// khỏe page. Null without a target.
+export function goalLine(input: {
+  baby: Parameters<typeof heightView>[0]["baby"];
+  rows: GrowthMeasure[];
+  table: LmsRow[];
+}): string | null {
+  const { baby, rows, table } = input;
+  const target = baby.target_height_cm;
+  if (target === null) return null;
+  const [reading] = readings(rows, table, baby.dob, "lhfa");
+  const status = goalStatus({
+    reading: reading ?? null,
+    z: targetZ(target, baby.sex),
+    table,
+  });
+  return `Mục tiêu ${formatCm(target)} cm: ${status.short}`;
+}

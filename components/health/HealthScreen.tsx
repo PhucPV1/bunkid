@@ -31,6 +31,7 @@ import {
   latestGrowth,
 } from "@/lib/rules/growthForm";
 import { indicatorSummaries } from "@/lib/rules/growthView";
+import { goalLine } from "@/lib/rules/heightView";
 import { vnDateString } from "@/lib/rules/time";
 import { parseChoices, toDoseRecords } from "@/lib/rules/vaccineForm";
 import { buildSchedule, nextDose } from "@/lib/rules/vaccines";
@@ -69,10 +70,14 @@ function growthCells(latest: LatestGrowth): [title: string, value: string][] {
 export function GrowthCard({
   latest,
   status,
+  goal = null,
 }: {
   latest: LatestGrowth | null;
   // null: the alerts are not worked out yet, so there is no chip.
   status: { text: string; tone: GrowthTone } | null;
+  // Spec §3.4: "Mục tiêu {t} cm: {trạng thái}"; null without a target, and
+  // until the status can be worked out.
+  goal?: string | null;
 }) {
   return (
     <Link
@@ -114,6 +119,19 @@ export function GrowthCard({
               </span>
             </span>
           ))}
+        </span>
+      )}
+      {latest && goal && (
+        <span className="flex items-start gap-2 border-t border-line pt-3 text-[13px] leading-[18px] text-ink">
+          <Icon
+            name="flag"
+            size={16}
+            strokeWidth={2.2}
+            // 16 px in an 18 px line: level with the first line when the
+            // text wraps onto two.
+            className="mt-px shrink-0 text-accent"
+          />
+          <span>{goal}</span>
         </span>
       )}
     </Link>
@@ -167,6 +185,20 @@ export function HealthScreen({ baby }: { baby: Baby }) {
           indicatorSummaries({ ...measured, alerts }).map((item) => item.near),
         )
       : null;
+  const goal = measured
+    ? goalLine({
+        baby: {
+          name: baby.name,
+          dob: baby.dob,
+          sex,
+          father_height_cm: baby.father_height_cm,
+          mother_height_cm: baby.mother_height_cm,
+          target_height_cm: baby.target_height_cm,
+        },
+        rows: measured.rows,
+        table: measured.tables.lhfa,
+      })
+    : null;
   const attention = attentionItems({ growth: alerts, vaccine: next, today });
   const live: Partial<Record<string, LiveLine>> = {
     "/tiem-chung": {
@@ -203,6 +235,7 @@ export function HealthScreen({ baby }: { baby: Baby }) {
         <GrowthCard
           latest={growth.data ? latestGrowth(growth.data) : null}
           status={status}
+          goal={goal}
         />
         <div className="grid grid-cols-2 gap-2.5">
           {HEALTH_CARDS.map((item) => (

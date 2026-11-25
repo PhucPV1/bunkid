@@ -2,7 +2,13 @@ import { describe, expect, it } from "vitest";
 import type { LmsRow } from "@/lib/content/who";
 import { addDays } from "./days";
 import type { GrowthMeasure } from "./growthAlerts";
-import { goalLink, goalPreview, heightView, rangeBar } from "./heightView";
+import {
+  goalLine,
+  goalLink,
+  goalPreview,
+  heightView,
+  rangeBar,
+} from "./heightView";
 
 const DOB = "2026-01-01";
 // The baby is 76 days old "today".
@@ -366,5 +372,35 @@ describe("goalLink", () => {
         table: undefined,
       }).detail,
     ).toBe("Chưa đặt mục tiêu · khoảng dự kiến 166–183 cm");
+  });
+});
+
+// Spec 2026-11-25 §3.4: the line at the foot of the growth card on Sức khỏe.
+describe("goalLine", () => {
+  const line = (
+    over: Partial<Parameters<typeof heightView>[0]["baby"]> = {},
+    rows: GrowthMeasure[] = [length(76, 17.5)],
+  ) => goalLine({ baby: baby(over), rows, table: FLAT });
+
+  it("the target and, in lower case, where the baby stands", () => {
+    expect(line()).toBe("Mục tiêu 180 cm: đang đúng hướng");
+    expect(line({}, [length(76, 19)])).toBe("Mục tiêu 180 cm: đang đúng hướng");
+    expect(line({}, [length(76, 15)])).toBe(
+      "Mục tiêu 180 cm: dưới đường mục tiêu 1,9 cm",
+    );
+  });
+
+  it("no length inside the WHO table yet: says so", () => {
+    expect(line({}, [])).toBe("Mục tiêu 180 cm: chưa có lần đo chiều dài");
+  });
+
+  it("a target with a decimal keeps it", () => {
+    expect(line({ target_height_cm: 165.5 }, [])).toBe(
+      "Mục tiêu 165,5 cm: chưa có lần đo chiều dài",
+    );
+  });
+
+  it("no target: no line, whatever the parents' heights", () => {
+    expect(line({ target_height_cm: null })).toBeNull();
   });
 });

@@ -156,6 +156,7 @@ const done = (code: string) =>
 function render(
   query: { growth?: unknown; doses?: unknown; tables?: boolean } = {},
   dob = "2026-09-14",
+  target: number | null = null,
 ) {
   state.growth = (query.growth ?? LOADING) as Record<string, unknown>;
   state.doses = (query.doses ?? LOADING) as Record<string, unknown>;
@@ -166,6 +167,9 @@ function render(
     name: "Bun",
     dob,
     vaccine_choices: CHOSEN,
+    father_height_cm: null,
+    mother_height_cm: null,
+    target_height_cm: target,
   } as unknown as Baby;
   return renderToStaticMarkup(<HealthScreen baby={baby} />);
 }
@@ -321,12 +325,53 @@ describe("HealthScreen: the Tăng trưởng card", () => {
       );
   });
 
-  it("has no goal line yet", () => {
-    const card = link(
-      render({ growth: loaded([measure("2026-11-15", 5500)]), tables: true }),
-      HEALTH_GROWTH.href,
+  // Spec 2026-11-25 §3.4 and §6.4: the line at the foot of the card.
+  const goalCard = (growth: unknown, target: number | null, tables = true) =>
+    link(render({ growth, tables }, "2026-09-14", target), HEALTH_GROWTH.href);
+
+  it("no target: no goal line", () => {
+    expect(goalCard(loaded([measure("2026-11-15", 5500)]), null)).not.toContain(
+      "Mục tiêu",
     );
-    expect(card).not.toContain("Mục tiêu");
+  });
+
+  it("a target: a flag, the target and where the baby stands against its line", () => {
+    // 180 cm is z +0,47 for a man: the line is at 61,96 cm. 58,5 cm is 3,5 under.
+    const card = goalCard(loaded([measure("2026-11-15", 5500)]), 180);
+    expect(card).toContain(`d="${ICON_PATHS.flag}"`);
+    expect(card).toContain(
+      ">Mục tiêu 180 cm: dưới đường mục tiêu 3,5 cm</span>",
+    );
+    // A long line wraps onto two: the flag stays level with the first.
+    expect(card).toContain(
+      '<span class="flex items-start gap-2 border-t border-line pt-3 text-[13px] leading-[18px] text-ink">',
+    );
+    expect(card).toContain("mt-px shrink-0 text-accent");
+    // It is the last thing in the card, under the three values.
+    expect(card.indexOf("Mục tiêu 180 cm")).toBeGreaterThan(
+      card.indexOf(">Vòng đầu</span>"),
+    );
+  });
+
+  it("a target, on the line: says on track", () => {
+    expect(goalCard(loaded([measure("2026-11-15", 5500, 62)]), 180)).toContain(
+      ">Mục tiêu 180 cm: đang đúng hướng</span>",
+    );
+  });
+
+  it("a target, no length measured yet: says so", () => {
+    expect(
+      goalCard(loaded([measure("2026-11-15", 5500, null)]), 180),
+    ).toContain(">Mục tiêu 180 cm: chưa có lần đo chiều dài</span>");
+  });
+
+  it("no goal line until the measurements and the tables have loaded, or with no measurement", () => {
+    for (const card of [
+      goalCard(loaded([measure("2026-11-15", 5500)]), 180, false),
+      goalCard(LOADING, 180),
+      goalCard(loaded([]), 180),
+    ])
+      expect(card).not.toContain("Mục tiêu 180");
   });
 });
 
