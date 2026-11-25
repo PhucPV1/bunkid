@@ -942,6 +942,14 @@ Chỗ chưa đẹp, chưa sửa:
 
 Chưa kiểm: trạng thái "đã có mục tiêu" trên trang thật (mục 7); lúc đang tải, mất mạng; phía thành viên; bé quá 5 tuổi; ảnh chụp `peach`, `lavender`, `sea`; 440 px; trình đọc màn hình; iPhone thật, PWA.
 
+**Đã sửa chỗ A (2026-11-25, người dùng chọn "Sửa trước").** Không nằm trong bốn patch của plan:
+
+- Test trước: trong `components/health/health.test.tsx`, dòng `toContain("mt-px shrink-0 text-accent")` đổi thành `toContain('class="mt-px shrink-0 text-accent-text"')` (dòng cũ xanh với cả hai tên lớp). Đỏ: `Test Files  1 failed | 177 passed (178)`, `Tests  1 failed | 1539 passed (1540)`.
+- Code: lá cờ trong `GrowthCard` (`components/health/HealthScreen.tsx`) đổi từ `text-accent` sang `text-accent-text`. Xanh: 178 file, 1540 test; `tsc` sạch; build lần hai mã 0, 40/40 trang. Trong `components/` và `app/` không còn chỗ nào dùng `text-accent` trần.
+- Spec §3.4 đã sửa thành "màu `accent-text`", có ghi lý do (file spec vẫn untracked).
+- Kiểm lại trên trang tạm ở 375×812 (dựng lại rồi đã xóa): ở `night` lá cờ là `rgb(244, 160, 112)`, tương phản với nền thẻ khoảng 9:1 (trước là 1,65:1); `dark` là `rgb(255, 158, 191)`; năm theme sáng giữ nguyên màu. Số dòng và vị trí lá cờ không đổi ở cả 7 theme (lệch −0,5 px so với mép trên chữ dòng đầu).
+- Chỗ B giữ nguyên.
+
 - [x] **Step 5: Xóa trang fixture, commit phần ghi kết quả rồi dừng lại hỏi người dùng**
 
 ```bash
