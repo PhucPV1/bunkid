@@ -23,6 +23,9 @@ export const DEFAULT_PREFS: NotificationPrefs = {
   // Spec 2026-11-17 §4.1: the column defaults.
   medicine: true,
   timer_alert: true,
+  // Spec 2026-11-25 §8.1: the column defaults.
+  growth_alert: true,
+  growth_measure: true,
   ...DEFAULT_QUIET,
   hold_feed_while_asleep: false,
   snooze_until: null,
@@ -34,7 +37,7 @@ export async function fetchPrefs(userId: string): Promise<NotificationPrefs> {
   const { data, error } = await supabase()
     .from("notification_prefs")
     .select(
-      "feed_reminder, wake_window, vaccine, snooze_until, medicine, timer_alert, quiet_enabled, quiet_start_min, quiet_end_min, hold_feed_while_asleep",
+      "feed_reminder, wake_window, vaccine, snooze_until, medicine, timer_alert, growth_alert, growth_measure, quiet_enabled, quiet_start_min, quiet_end_min, hold_feed_while_asleep",
     )
     .eq("user_id", userId)
     .maybeSingle();

@@ -119,14 +119,17 @@ describe("quiet hours (spec 2026-11-17 §4.3)", () => {
   });
 });
 
-describe("PREF_OPTIONS (spec 2026-11-17 §4.4)", () => {
-  it("lists five switches, the two new ones last", () => {
+describe("PREF_OPTIONS (spec 2026-11-17 §4.4, spec 2026-11-25 §8.1)", () => {
+  it("lists seven switches, the two growth ones last", () => {
     expect(PREF_OPTIONS.map((o) => [o.key, o.label])).toEqual([
       ["feed_reminder", "Nhắc cữ bú"],
       ["wake_window", "Nhắc khi bé thức quá lâu"],
       ["vaccine", "Nhắc lịch tiêm"],
       ["medicine", "Nhắc thuốc"],
       ["timer_alert", "Nhắc timer chạy quá lâu"],
+      ["growth_alert", "Cảnh báo tăng trưởng"],
+      ["growth_measure", "Nhắc đo định kỳ"],
     ]);
+    expect(PREF_OPTIONS.every((o) => o.note === null)).toBe(true);
   });
 });

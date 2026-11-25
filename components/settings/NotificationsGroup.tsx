@@ -36,6 +36,8 @@ const PREF_ICON: Record<PrefKey, IconName> = {
   vaccine: "syringe",
   medicine: "pill",
   timer_alert: "clock",
+  growth_alert: "alert",
+  growth_measure: "ruler",
 };
 
 export const SNOOZE_HINT =

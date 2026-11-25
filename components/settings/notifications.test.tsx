@@ -15,6 +15,8 @@ const prefs = {
   vaccine: true,
   medicine: true,
   timer_alert: false,
+  growth_alert: true,
+  growth_measure: false,
 };
 const view = (
   overrides: Partial<Parameters<typeof NotificationsGroupView>[0]> = {},
@@ -34,15 +36,17 @@ const view = (
 });
 
 describe("NotificationsGroupView", () => {
-  it("lists the device control, six switches, quiet hours and the snooze row", () => {
+  it("lists the device control, eight switches, quiet hours and the snooze row", () => {
     const html = renderToStaticMarkup(<NotificationsGroupView {...view()} />);
     expect(html).toContain(">Thông báo</h2>");
     expect(html).toContain("<p>Thiết bị</p>");
-    expect(html.match(/role="switch"/g)).toHaveLength(6);
+    expect(html.match(/role="switch"/g)).toHaveLength(8);
     expect(html.match(/aria-checked="(true|false)"/g)).toEqual([
       'aria-checked="true"',
       'aria-checked="false"',
       'aria-checked="true"',
+      'aria-checked="true"',
+      'aria-checked="false"',
       'aria-checked="true"',
       'aria-checked="false"',
       'aria-checked="false"',
@@ -53,6 +57,8 @@ describe("NotificationsGroupView", () => {
       "Nhắc lịch tiêm",
       "Nhắc thuốc",
       "Nhắc timer chạy quá lâu",
+      "Cảnh báo tăng trưởng",
+      "Nhắc đo định kỳ",
       "Không nhắc bú khi bé đang ngủ",
       "Giờ yên lặng",
       "Tạm tắt nhắc",
@@ -70,9 +76,14 @@ describe("NotificationsGroupView", () => {
       NotificationsGroupView(view({ onToggle })),
       (el) => el.props.checked !== undefined,
     );
-    expect(switches).toHaveLength(6);
+    expect(switches).toHaveLength(8);
     (switches[1].props.onChange as (v: boolean) => void)(true);
     expect(onToggle).toHaveBeenCalledWith("wake_window", true);
+    // Spec 2026-11-25 §8.1: the two growth switches save their own keys.
+    (switches[5].props.onChange as (v: boolean) => void)(false);
+    expect(onToggle).toHaveBeenLastCalledWith("growth_alert", false);
+    (switches[6].props.onChange as (v: boolean) => void)(true);
+    expect(onToggle).toHaveBeenLastCalledWith("growth_measure", true);
   });
 
   it("opens the snooze sheet from its row, unless disabled", () => {
@@ -100,6 +111,8 @@ describe("NotificationsGroupView — spec 2026-11-17 §4.4", () => {
       "Nhắc lịch tiêm",
       "Nhắc thuốc",
       "Nhắc timer chạy quá lâu",
+      "Cảnh báo tăng trưởng",
+      "Nhắc đo định kỳ",
       "Không nhắc bú khi bé đang ngủ",
       "Giờ yên lặng",
       "Lịch nhắc thuốc",
@@ -109,6 +122,8 @@ describe("NotificationsGroupView — spec 2026-11-17 §4.4", () => {
     expect([...order].sort((a, b) => a - b)).toEqual(order);
     expect(html).toContain(`d="${ICON_PATHS.pill}"`);
     expect(html).toContain(`d="${ICON_PATHS.clock}"`);
+    expect(html).toContain(`d="${ICON_PATHS.alert}"`);
+    expect(html).toContain(`d="${ICON_PATHS.ruler}"`);
     expect(html).toContain(`d="${ICON_PATHS.bottle}"`);
     expect(html).toContain(`d="${ICON_PATHS.moon}"`);
   });
@@ -124,8 +139,8 @@ describe("NotificationsGroupView — spec 2026-11-17 §4.4", () => {
       NotificationsGroupView(view({ onToggleHold, onToggle })),
       (el) => el.props.checked !== undefined,
     );
-    expect(switches[5].props.label).toBe("Không nhắc bú khi bé đang ngủ");
-    (switches[5].props.onChange as (v: boolean) => void)(true);
+    expect(switches[7].props.label).toBe("Không nhắc bú khi bé đang ngủ");
+    (switches[7].props.onChange as (v: boolean) => void)(true);
     expect(onToggleHold).toHaveBeenCalledWith(true);
     expect(onToggle).not.toHaveBeenCalled();
     (switches[3].props.onChange as (v: boolean) => void)(false);
