@@ -278,9 +278,7 @@ describe("indicatorSummaries: near the edge of the norm", () => {
       mid: "giữa 16,0",
       high: "20,0 kg",
     });
-    expect(weight.barLabel).toBe(
-      "Thấp. Chuẩn từ 12,0 đến 20,0 kg, giữa 16,0.",
-    );
+    expect(weight.barLabel).toBe("Thấp. Chuẩn từ 12,0 đến 20,0 kg, giữa 16,0.");
   });
 
   it("the norm is read on the day of the newest measurement of that indicator", () => {
@@ -439,6 +437,16 @@ describe("chartLabelPlace", () => {
     expect(place(256, false, 1).normalCaption).toBe(false);
     expect(place(1700, false, 1, 1770).normalCaption).toBe(false);
     expect(place(76, true, 1).normalCaption).toBe(true);
+  });
+
+  // Spec 2026-11-25 §6.3, item 4: the chart of the Chiều cao page.
+  it("the caption of the target line makes way once the point is past 60% of the axis", () => {
+    // The caption ends at the right edge and is about 85 px wide; the newest
+    // point of an older baby sits right under it.
+    expect(place(219, false, 1).targetCaption).toBe(true);
+    expect(place(220, false, 1).targetCaption).toBe(false);
+    expect(place(76, false, 1).targetCaption).toBe(true);
+    expect(place(1700, false, 1, 1770).targetCaption).toBe(false);
   });
 
   it("the caption above the band makes way for an alert label that runs left above its point", () => {

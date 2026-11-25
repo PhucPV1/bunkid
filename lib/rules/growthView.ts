@@ -242,6 +242,8 @@ export type ChartLabelPlace = {
   normalCaption: boolean;
   // "Cao hơn chuẩn" in the top left corner.
   highCaption: boolean;
+  // "Đường mục tiêu" at the right end of the target line (§6.3, item 4).
+  targetCaption: boolean;
 };
 
 export function chartLabelPlace(input: {
@@ -272,6 +274,10 @@ export function chartLabelPlace(input: {
     normalCaption: day <= 0.7 * to,
     // An alert label is long enough to reach the corner caption.
     highCaption: !(alert && anchor === "end" && side === "top"),
+    // The caption ends at the right edge and is about 85 px wide: past 60% of
+    // the axis the newest point, or its label, would lie under it. The legend
+    // below the chart still names the line.
+    targetCaption: day <= 0.6 * to,
   };
 }
 

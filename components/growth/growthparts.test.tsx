@@ -5,6 +5,7 @@ import type { GrowthAlert } from "@/lib/rules/growthAlerts";
 import type { IndicatorSummary, VerdictHead } from "@/lib/rules/growthView";
 import { ICON_PATHS } from "@/lib/ui/icons";
 import { GrowthAlertCard } from "./GrowthAlertCard";
+import { GrowthChart } from "./GrowthChart";
 import { GrowthChartCard } from "./GrowthChartCard";
 import { GrowthVerdict } from "./GrowthVerdict";
 import {
@@ -308,6 +309,39 @@ describe("GrowthVerdict", () => {
     expect(html).toContain(
       `<span class="w-3.5 rounded-full ${ZONE_OFF}"></span>Thấp hoặc cao hơn chuẩn`,
     );
+  });
+});
+
+// The plot itself is not drawn in a static render; the two captions outside
+// it are, and they tell the two uses of the chart apart.
+describe("GrowthChart", () => {
+  const chart = (target?: { day: number; value: number }[]) =>
+    renderToStaticMarkup(
+      <GrowthChart
+        band={[{ day: 0, low: 46, mid: 50, high: 54 }]}
+        points={[]}
+        last={null}
+        to={365}
+        unit="cm"
+        label="Chiều dài theo tháng tuổi. Chưa có lần đo."
+        target={target}
+      />,
+    );
+
+  it("on the growth page: named for a screen reader, with the captions of the zones", () => {
+    const html = chart();
+    expect(html).toContain(
+      'role="img" aria-label="Chiều dài theo tháng tuổi. Chưa có lần đo."',
+    );
+    expect(html).toContain("Cao hơn chuẩn");
+    expect(html).toContain("Thấp hơn chuẩn");
+  });
+
+  // Spec 2026-11-25 §6.3, item 4.
+  it("with a target line: the captions of the zones are gone", () => {
+    const html = chart([{ day: 0, value: 51 }]);
+    expect(html).not.toContain("Cao hơn chuẩn");
+    expect(html).not.toContain("Thấp hơn chuẩn");
   });
 });
 

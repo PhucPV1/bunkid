@@ -27,6 +27,9 @@ const TONE = {
 
 // Spec 2026-11-25 §5.4: the normal band (z −2 to +2) by sex, its median, and
 // the baby's measurements joined by a line.
+//
+// With `target` (§6.3, item 4) it is the chart of the Chiều cao page: the
+// median and the three zone captions give way to the target line.
 export function GrowthChart({
   band,
   points,
@@ -34,6 +37,7 @@ export function GrowthChart({
   to,
   unit,
   label,
+  target,
 }: {
   band: CurvePoint[];
   points: ChartView["points"];
@@ -41,6 +45,8 @@ export function GrowthChart({
   to: number;
   unit: string;
   label: string;
+  // The length on each day of a child who will reach the family's target.
+  target?: { day: number; value: number }[];
 }) {
   const months = Math.round(to / DAYS_PER_MONTH);
   const every = months > 24 ? 6 : months > 12 ? 3 : 1;
@@ -53,6 +59,7 @@ export function GrowthChart({
     mid: point.mid,
   }));
   const end = band.at(-1);
+  const targetEnd = target?.at(-1);
   // `points` is oldest first, so the one before the newest is second to last.
   const before = points.at(-2);
   const place = last
@@ -116,15 +123,29 @@ export function GrowthChart({
             activeDot={false}
             isAnimationActive={false}
           />
-          <Line
-            dataKey="mid"
-            dot={false}
-            activeDot={false}
-            isAnimationActive={false}
-            stroke="var(--color-good-ink)"
-            strokeWidth={1.5}
-            strokeDasharray="4 4"
-          />
+          {!target && (
+            <Line
+              dataKey="mid"
+              dot={false}
+              activeDot={false}
+              isAnimationActive={false}
+              stroke="var(--color-good-ink)"
+              strokeWidth={1.5}
+              strokeDasharray="4 4"
+            />
+          )}
+          {target && (
+            <Line
+              data={target}
+              dataKey="value"
+              dot={false}
+              activeDot={false}
+              isAnimationActive={false}
+              stroke="var(--color-cat-sleep)"
+              strokeWidth={2}
+              strokeDasharray="6 4"
+            />
+          )}
           <Line
             data={points}
             dataKey="value"
@@ -134,7 +155,26 @@ export function GrowthChart({
             strokeWidth={2.5}
             dot={{ r: 4.5, fill: TONE.accent, strokeWidth: 0 }}
           />
-          {end && place?.normalCaption !== false && (
+          {targetEnd && place?.targetCaption !== false && (
+            <ReferenceDot
+              x={targetEnd.day}
+              y={targetEnd.value}
+              r={0}
+              label={{
+                value: "Đường mục tiêu",
+                // It ends at the right edge, just above the end of the line.
+                position: "insideBottomRight",
+                fontSize: 11,
+                fontWeight: 600,
+                fill: "var(--color-cat-sleep)",
+                stroke: "var(--color-glass-solid)",
+                strokeWidth: 4,
+                strokeLinejoin: "round",
+                paintOrder: "stroke",
+              }}
+            />
+          )}
+          {!target && end && place?.normalCaption !== false && (
             <ReferenceDot
               x={end.day}
               y={(end.mid + end.high) / 2}
@@ -176,15 +216,17 @@ export function GrowthChart({
           )}
         </ComposedChart>
       </ResponsiveContainer>
-      {place?.highCaption !== false && (
+      {!target && place?.highCaption !== false && (
         // top-8 is just inside the plot, which starts HEADROOM px down.
         <span className="pointer-events-none absolute top-8 left-11 text-[11px] leading-none text-muted">
           Cao hơn chuẩn
         </span>
       )}
-      <span className="pointer-events-none absolute right-3 bottom-11 text-[11px] leading-none text-muted">
-        Thấp hơn chuẩn
-      </span>
+      {!target && (
+        <span className="pointer-events-none absolute right-3 bottom-11 text-[11px] leading-none text-muted">
+          Thấp hơn chuẩn
+        </span>
+      )}
     </div>
   );
 }
