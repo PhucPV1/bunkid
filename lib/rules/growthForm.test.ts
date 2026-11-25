@@ -3,12 +3,12 @@ import {
   chartRange,
   formatGrowthValue,
   formatPercentile,
-  formatZ,
   growthToRaw,
   indicatorValue,
   latestWeightG,
   parseGrowthForm,
 } from "./growthForm";
+import * as growthForm from "./growthForm";
 
 const ctx = { dob: "2026-09-14", today: "2026-11-14" };
 const raw = {
@@ -83,12 +83,9 @@ describe("display helpers", () => {
     });
   });
 
-  it("formats values, z and percentiles the Vietnamese way", () => {
+  it("formats values and percentiles the Vietnamese way", () => {
     expect(formatGrowthValue("wfa", 5.125)).toBe("5,13 kg");
     expect(formatGrowthValue("hcfa", 39)).toBe("39 cm");
-    expect(formatZ(0.456)).toBe("+0,5");
-    expect(formatZ(-2.04)).toBe("-2,0");
-    expect(formatZ(0)).toBe("0,0");
     expect(formatPercentile(67.04)).toBe("P67");
     expect(formatPercentile(2.27)).toBe("P2,3");
     expect(formatPercentile(0.05)).toBe("dưới P0,1");
@@ -117,5 +114,12 @@ describe("display helpers", () => {
     expect(chartRange(400)).toEqual({ to: 480, step: 7 });
     expect(chartRange(1000)).toEqual({ to: 1080, step: 30 });
     expect(chartRange(1850)).toEqual({ to: 1856, step: 30 });
+  });
+});
+
+// Spec 2026-11-25 §5.2: the screens no longer print z-scores.
+describe("formatZ", () => {
+  it("is gone", () => {
+    expect(Object.keys(growthForm)).not.toContain("formatZ");
   });
 });

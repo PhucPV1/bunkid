@@ -96,14 +96,6 @@ export function formatGrowthValue(
     : `${decimals(1).format(value)} cm`;
 }
 
-export function formatZ(z: number): string {
-  return new Intl.NumberFormat("vi-VN", {
-    minimumFractionDigits: 1,
-    maximumFractionDigits: 1,
-    signDisplay: "exceptZero",
-  }).format(z);
-}
-
 export function formatPercentile(p: number): string {
   if (p < 0.1) return "dưới P0,1";
   if (p > 99.9) return "trên P99,9";

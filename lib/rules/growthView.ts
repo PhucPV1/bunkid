@@ -1,12 +1,15 @@
 import type { WhoIndicator, WhoSex } from "@/lib/content/who";
-import { ageOnDay, percentile } from "./growth";
+import { formatDayShort } from "./days";
+import { ageOnDay, lmsAt, percentile, zScore } from "./growth";
 import {
+  ALERT_CHIP,
   alertTone,
   type GrowthAlert,
   type GrowthMeasure,
   type GrowthTables,
   type GrowthTone,
   newestFirst,
+  positionKind,
   readings,
 } from "./growthAlerts";
 import {
@@ -16,6 +19,7 @@ import {
   indicatorValue,
   outOf100,
 } from "./growthForm";
+import { formatAgeVi } from "./time";
 
 // Spec 2026-11-25 §5.3: one block of the verdict card.
 export type IndicatorSummary = {
@@ -224,4 +228,91 @@ export function chartView(input: {
     alertTone: tone,
     shifted: alert?.kind === "falling" || alert?.kind === "rising",
   };
+}
+
+// Spec 2026-11-25 §5.5: one row of "Các lần đo".
+export type GrowthListItem<T> = {
+  row: T;
+  title: string;
+  values: string;
+  delta: string | null;
+  // null: not assessed, either outside the WHO table or its tables not loaded.
+  chip: { text: string; tone: GrowthTone } | null;
+  outside: boolean;
+};
+
+const withName = (indicator: WhoIndicator, text: string) =>
+  indicator === "hcfa" ? `vòng đầu ${text}` : text;
+
+export function listRows<T extends GrowthMeasure>(input: {
+  rows: T[];
+  tables: GrowthTables;
+  dob: string;
+  alerts: GrowthAlert[];
+}): GrowthListItem<T>[] {
+  const sorted = newestFirst(input.rows);
+  // The row an alert is about: the first one, newest first, of its day that
+  // has the indicator. A row with two alerts keeps the one listed first.
+  const alertOf = new Map<T, GrowthAlert>();
+  for (const alert of input.alerts) {
+    const row = sorted.find(
+      (item) =>
+        item.measured_on === alert.measuredOn &&
+        indicatorValue(item, alert.indicator) !== null,
+    );
+    if (row && !alertOf.has(row)) alertOf.set(row, alert);
+  }
+
+  return sorted.map((row, index): GrowthListItem<T> => {
+    const below = sorted[index + 1];
+    const age = ageOnDay(input.dob, row.measured_on);
+    const values: string[] = [];
+    const changes: string[] = [];
+    let red: string | null = null;
+    let yellow: string | null = null;
+    let assessed = 0;
+    let outside = false;
+    for (const { key } of INDICATORS) {
+      const value = indicatorValue(row, key);
+      if (value === null) continue;
+      values.push(withName(key, formatGrowthValue(key, value)));
+      const before = below ? indicatorValue(below, key) : null;
+      if (before !== null && before !== undefined)
+        changes.push(withName(key, formatChange(key, value - before)));
+      const table = input.tables[key];
+      if (!table) continue;
+      const lms = lmsAt(table, age);
+      if (!lms) {
+        outside = true;
+        continue;
+      }
+      assessed += 1;
+      const kind = positionKind(zScore(lms, value));
+      if (kind === "veryLow" || kind === "veryHigh") red ??= ALERT_CHIP[kind];
+      else if (kind) yellow ??= ALERT_CHIP[kind];
+    }
+    const alert = alertOf.get(row);
+    const chip: GrowthListItem<T>["chip"] = alert
+      ? { text: alert.chip, tone: alertTone(alert.level) }
+      : red
+        ? { text: red, tone: "danger" }
+        : yellow
+          ? { text: yellow, tone: "warn" }
+          : assessed > 0
+            ? { text: "Bình thường", tone: "good" }
+            : null;
+    return {
+      row,
+      title: `${formatDayShort(row.measured_on)} · ${
+        row.measured_on === input.dob
+          ? "lúc sinh"
+          : formatAgeVi(input.dob, new Date(`${row.measured_on}T05:00:00Z`))
+      }`,
+      values: values.join(" · "),
+      delta:
+        changes.length > 0 ? `${changes.join(" · ")} so với lần trước` : null,
+      chip,
+      outside: chip === null && outside,
+    };
+  });
 }

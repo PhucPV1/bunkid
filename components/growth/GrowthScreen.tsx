@@ -29,6 +29,7 @@ import {
   chartView,
   defaultIndicator,
   indicatorSummaries,
+  listRows,
 } from "@/lib/rules/growthView";
 import { ageDays, formatAgeVi } from "@/lib/rules/time";
 import type { Baby, GrowthRow } from "@/lib/supabase/rows";
@@ -91,7 +92,6 @@ export function GrowthScreen({
   const table = queries[indicator];
   const lms = tables[indicator];
   const range = chartRange(ageDays(baby.dob, new Date()));
-  const current = INDICATORS.find((i) => i.key === indicator)!;
   const chart = chartView({
     indicator,
     rows,
@@ -187,21 +187,12 @@ export function GrowthScreen({
           }}
         />
       ) : (
-        <>
-          <GrowthList
-            rows={rows}
-            lms={lms}
-            indicator={indicator}
-            dob={baby.dob}
-            pending={pending}
-            canEdit={canEdit}
-            onOpen={(row) => setSheet({ row })}
-          />
-          <p className="px-1 text-[13px] text-muted">
-            z-score và phân vị là của chỉ số đang chọn (
-            {current.title.toLowerCase()}).
-          </p>
-        </>
+        <GrowthList
+          items={listRows({ rows, tables, dob: baby.dob, alerts })}
+          pending={pending}
+          canEdit={canEdit}
+          onOpen={(row) => setSheet({ row })}
+        />
       )}
       {why && (
         <Popup title="Vì sao có cảnh báo này?" onClose={() => setWhy(null)}>

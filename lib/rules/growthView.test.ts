@@ -15,6 +15,7 @@ import {
   formatChange,
   gaugePosition,
   indicatorSummaries,
+  listRows,
 } from "./growthView";
 
 const DOB = "2026-01-01";
@@ -346,5 +347,123 @@ describe("chartView", () => {
       label: "9 kg",
       tone: "accent",
     });
+  });
+});
+
+// Spec 2026-11-25 §5.5.
+describe("listRows", () => {
+  const list = (rows: GrowthMeasure[], tables: GrowthTables = TABLES) =>
+    listRows({
+      rows,
+      tables,
+      dob: DOB,
+      alerts: growthAlerts({
+        rows,
+        tables,
+        dob: DOB,
+        sex: "boys",
+        babyName: "Bun",
+      }),
+    });
+
+  it("lists every measurement newest first and keeps the row it came from", () => {
+    const old = measure(10, 15);
+    const recent = measure(40, 16);
+    const items = list([old, recent]);
+    expect(items.map((item) => item.row)).toEqual([recent, old]);
+  });
+
+  it("titles a row with its day and the age, and the birth day with lúc sinh", () => {
+    const items = list([measure(40, 16), measure(0, 16)]);
+    expect(items.map((item) => item.title)).toEqual([
+      "10/02 · 1 tháng 9 ngày",
+      "01/01 · lúc sinh",
+    ]);
+  });
+
+  it("writes the values that were measured, the head with its name", () => {
+    expect(list([measure(40, 16, 16.5, 17)])[0].values).toBe(
+      "16 kg · 16,5 cm · vòng đầu 17 cm",
+    );
+    expect(list([measure(40, null, 16.5)])[0].values).toBe("16,5 cm");
+    expect(list([measure(40, null, null, 17)])[0].values).toBe(
+      "vòng đầu 17 cm",
+    );
+  });
+
+  it("the change is against the row just below, for the indicators both rows have", () => {
+    const items = list([
+      measure(86, 17.5, 16.3, 17),
+      measure(40, 16, 16, 16),
+      measure(10, null, 15.5),
+    ]);
+    expect(items.map((item) => item.delta)).toEqual([
+      "+1,5 kg · +0,3 cm · vòng đầu +1 cm so với lần trước",
+      "+0,5 cm so với lần trước",
+      null,
+    ]);
+  });
+
+  it("no indicator in common with the row below: no change line", () => {
+    expect(list([measure(40, 16), measure(10, null, 16)])[0].delta).toBeNull();
+  });
+
+  it("a drop is written with a minus sign", () => {
+    expect(list([measure(40, 15.85), measure(10, 16)])[0].delta).toBe(
+      "−0,15 kg so với lần trước",
+    );
+  });
+
+  it("chips an older row by where its values sit: normal, low or high, very low or very high", () => {
+    const items = list([
+      // Far enough from the others that it is compared with none of them.
+      measure(300, 16, 16),
+      measure(50, 16, 21),
+      measure(40, 9.5, 21),
+      measure(30, 16, 16),
+    ]);
+    expect(items.map((item) => item.chip)).toEqual([
+      { text: "Bình thường", tone: "good" },
+      { text: "Cao", tone: "warn" },
+      { text: "Rất thấp", tone: "danger" },
+      { text: "Bình thường", tone: "good" },
+    ]);
+  });
+
+  it("the newest row of an indicator with an alert takes the alert's chip", () => {
+    const items = list([measure(54, null, 13.34), measure(40, null, 16)]);
+    expect(items.map((item) => item.chip)).toEqual([
+      { text: "Tăng chậm", tone: "warn" },
+      { text: "Bình thường", tone: "good" },
+    ]);
+  });
+
+  it("two alerts on one row: the chip of the one growthAlerts lists first", () => {
+    // Weight is low (yellow), length very high (red): red comes first.
+    expect(list([measure(40, 11, 23)])[0].chip).toEqual({
+      text: "Rất cao",
+      tone: "danger",
+    });
+  });
+
+  it("two rows on one day are chipped each by its own values, the newer one first", () => {
+    const newer = { ...measure(40, 16), created_at: "2026-02-10T02:00:00Z" };
+    const older = { ...measure(40, 11), created_at: "2026-02-10T01:00:00Z" };
+    expect(list([older, newer]).map((item) => item.chip?.text)).toEqual([
+      "Bình thường",
+      "Thấp",
+    ]);
+  });
+
+  it("a row outside the WHO table has no chip and says so", () => {
+    const [late] = list([measure(1857, 20), measure(40, 16)]);
+    expect(late.chip).toBeNull();
+    expect(late.outside).toBe(true);
+  });
+
+  it("while a table is loading the row has no chip and is not called outside", () => {
+    const [row] = list([measure(40, 16)], {});
+    expect(row.chip).toBeNull();
+    expect(row.outside).toBe(false);
   });
 });

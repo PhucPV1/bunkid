@@ -233,6 +233,29 @@ describe("GrowthScreen", () => {
     expect(html).toContain("Lần đo có cảnh báo");
   });
 
+  it("the list: one row per measurement with the change and a chip, no z-score note", () => {
+    const html = render([
+      measure("2026-11-15", 5500),
+      measure("2026-10-14", 4400, 55),
+    ]);
+    const list = html.slice(html.indexOf(">Các lần đo</h2>"));
+    expect(list).toContain("15/11 · 2 tháng 1 ngày");
+    expect(list).toContain(">5,5 kg · 58,5 cm</span>");
+    expect(list).toContain(">+1,1 kg · +3,5 cm so với lần trước</span>");
+    expect(list.match(/>Bình thường<\/span>/g)).toHaveLength(2);
+    expect(html).not.toContain("z-score");
+  });
+
+  it("the list chips the row an alert is about", () => {
+    const html = render([
+      measure("2026-11-15", 4000),
+      // Lighter a month before, so the newest row is low, not a weight loss.
+      measure("2026-10-14", 3900, 55),
+    ]);
+    const list = html.slice(html.indexOf(">Các lần đo</h2>"));
+    expect(list).toContain('bg-warn-soft text-warn-ink">Thấp</span>');
+  });
+
   it("the why popup is closed until asked for", () => {
     expect(render([measure("2026-11-15", 4000)])).not.toContain("<dialog");
   });
