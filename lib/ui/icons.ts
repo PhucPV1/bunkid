@@ -54,6 +54,12 @@ export const ICON_PATHS = {
     "M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z",
   stop: "M7 7h10v10H7z",
   play: "M7 4v16l13-8z",
+  // Spec 2026-11-25 §3.6.
+  pulse: "M3 12h4l2.5-6 4 12 2.5-6h5",
+  grid: "M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z",
+  flag: "M5 21V4M5 4h11l-2 4 2 4H5",
+  alert: "M12 3 2 20h20zM12 10v4M12 17h.01",
+  pencil: "M4 20h4L20 8l-4-4L4 16z",
 } as const;
 
 export type IconName = keyof typeof ICON_PATHS;

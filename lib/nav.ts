@@ -10,35 +10,32 @@ export const TABS: Tab[] = [
   { key: "explore", href: "/kham-pha", label: "Khám phá", icon: "explore" },
 ];
 
-export type ExploreItem = {
+export type NavItem = {
   label: string;
   href: string;
   icon: IconName;
   color: CategoryToken;
   detail?: string;
 };
+// The old name, until the Khám phá page is gone.
+export type ExploreItem = NavItem;
 
-export const EXPLORE_EMERGENCY = {
+// Spec 2026-11-25 §3.4: the Sức khỏe page.
+export const HEALTH_EMERGENCY = {
   label: "Khẩn cấp",
   href: "/khan-cap",
   detail: "Gọi 115, bác sĩ, hồ sơ nhóm máu và dị ứng",
 };
 
-export const EXPLORE_TRACK: ExploreItem[] = [
-  {
-    label: "Thống kê",
-    href: "/thong-ke",
-    icon: "chart",
-    color: "cat-sleep",
-    detail: "Biểu đồ ngủ, bú, tã 7 và 14 ngày",
-  },
-  {
-    label: "Tăng trưởng",
-    href: "/tang-truong",
-    icon: "ruler",
-    color: "cat-tummy",
-    detail: "Cân nặng, chiều dài theo chuẩn WHO",
-  },
+export const HEALTH_GROWTH: NavItem = {
+  label: "Tăng trưởng",
+  href: "/tang-truong",
+  icon: "ruler",
+  color: "cat-tummy",
+  detail: "Cân nặng, chiều dài theo chuẩn WHO",
+};
+
+export const HEALTH_CARDS: NavItem[] = [
   {
     label: "Tiêm chủng",
     href: "/tiem-chung",
@@ -55,7 +52,15 @@ export const EXPLORE_TRACK: ExploreItem[] = [
   },
 ];
 
-export const EXPLORE_GUIDES: ExploreItem[] = [
+export const HEALTH_STATS: NavItem = {
+  label: "Thống kê",
+  href: "/thong-ke",
+  icon: "chart",
+  color: "cat-sleep",
+  detail: "Biểu đồ ngủ, bú, tã 7 và 14 ngày",
+};
+
+export const HEALTH_SICK: NavItem[] = [
   {
     label: "Triệu chứng",
     href: "/trieu-chung",
@@ -71,6 +76,38 @@ export const EXPLORE_GUIDES: ExploreItem[] = [
     detail: "10 bài theo NHS",
   },
   {
+    label: "Báo cáo cho bác sĩ",
+    href: "/bao-cao",
+    icon: "doc",
+    color: "cat-temp",
+    detail: "In A4 tóm tắt 14 ngày gần nhất",
+  },
+];
+
+// Spec 2026-11-25 §3.5: the Tiện ích page.
+export const TOOLS: NavItem[] = [
+  {
+    label: "Ồn trắng",
+    href: "/on-trang",
+    icon: "wave",
+    color: "cat-sleep",
+    detail: "Tiếng ồn đều giúp bé dễ ngủ",
+  },
+  {
+    label: "Nhạc",
+    href: "/nhac",
+    icon: "music",
+    color: "cat-feed",
+    detail: "Danh sách nhạc cho bé",
+  },
+  {
+    label: "Ảnh",
+    href: "/anh",
+    icon: "image",
+    color: "cat-diaper",
+    detail: "Ảnh của bé",
+  },
+  {
     label: "Bồng bế",
     href: "/bong-be",
     icon: "hands",
@@ -79,23 +116,25 @@ export const EXPLORE_GUIDES: ExploreItem[] = [
   },
 ];
 
-export const EXPLORE_SOOTHE: ExploreItem[] = [
-  { label: "Ồn trắng", href: "/on-trang", icon: "wave", color: "cat-sleep" },
-  { label: "Nhạc", href: "/nhac", icon: "music", color: "cat-feed" },
-  { label: "Ảnh", href: "/anh", icon: "image", color: "cat-diaper" },
+// The Khám phá page reads the same items under its own grouping.
+export const EXPLORE_EMERGENCY = HEALTH_EMERGENCY;
+export const EXPLORE_TRACK: NavItem[] = [
+  HEALTH_STATS,
+  HEALTH_GROWTH,
+  ...HEALTH_CARDS,
 ];
-
-export const EXPLORE_REPORT: ExploreItem = {
-  label: "Báo cáo cho bác sĩ",
-  href: "/bao-cao",
-  icon: "doc",
-  color: "cat-temp",
-  detail: "In A4 tóm tắt 14 ngày gần nhất",
-};
+export const EXPLORE_GUIDES: NavItem[] = [
+  HEALTH_SICK[0],
+  HEALTH_SICK[1],
+  TOOLS[3],
+];
+export const EXPLORE_SOOTHE: NavItem[] = TOOLS.slice(0, 3);
+export const EXPLORE_REPORT: NavItem = HEALTH_SICK[2];
 
 // Pages that light up the Khám phá tab; /cam-nang and /tien-ich now redirect there.
 const EXPLORE_PREFIXES = [
   "/kham-pha",
+  "/suc-khoe",
   "/cam-nang",
   "/tien-ich",
   EXPLORE_EMERGENCY.href,
