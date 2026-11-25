@@ -7,6 +7,7 @@ import { ErrorCard } from "@/components/ui/ErrorCard";
 import { Glass } from "@/components/ui/Glass";
 import { IconButton } from "@/components/ui/IconButton";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { Popup } from "@/components/ui/Popup";
 import { Segmented } from "@/components/ui/Segmented";
 import { NeedsNetwork, waitingForNetwork } from "@/components/ui/NeedsNetwork";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -15,12 +16,31 @@ import { toVietnameseError } from "@/lib/data/errors";
 import { useGrowth, useWhoTable } from "@/lib/data/growth";
 import { entriesFor, pendingRowIds } from "@/lib/data/outboxCore";
 import { useOutboxEntries } from "@/lib/hooks/useOutboxEntries";
+import { formatDayShort } from "@/lib/rules/days";
 import { curve } from "@/lib/rules/growth";
-import { chartRange, indicatorValue, INDICATORS } from "@/lib/rules/growthForm";
-import { ageDays } from "@/lib/rules/time";
+import {
+  alertReason,
+  type GrowthAlertKind,
+  growthAlerts,
+  type GrowthTables,
+} from "@/lib/rules/growthAlerts";
+import {
+  chartRange,
+  indicatorValue,
+  INDICATORS,
+  latestGrowth,
+} from "@/lib/rules/growthForm";
+import {
+  alertDots,
+  defaultIndicator,
+  indicatorSummaries,
+} from "@/lib/rules/growthView";
+import { ageDays, formatAgeVi } from "@/lib/rules/time";
 import type { Baby, GrowthRow } from "@/lib/supabase/rows";
+import { GrowthAlertCard } from "./GrowthAlertCard";
 import { GrowthList } from "./GrowthList";
 import { GrowthSheet } from "./GrowthSheet";
+import { GrowthVerdict } from "./GrowthVerdict";
 
 function ChartUnavailable() {
   return <p className="h-72 text-muted">Biểu đồ cần mạng để tải lần đầu.</p>;
@@ -34,11 +54,6 @@ const GrowthChart = dynamic(
   { ssr: false, loading: () => <div className="h-72" /> },
 );
 
-const INDICATOR_OPTIONS = INDICATORS.map((item) => ({
-  value: item.key,
-  label: item.title,
-}));
-
 export function GrowthScreen({
   baby,
   userId,
@@ -50,13 +65,35 @@ export function GrowthScreen({
 }) {
   const growth = useGrowth(baby.id);
   const sex = whoSex(baby.sex);
-  const [indicator, setIndicator] = useState<WhoIndicator>("wfa");
-  const table = useWhoTable(indicator, sex);
+  const wfa = useWhoTable("wfa", sex);
+  const lhfa = useWhoTable("lhfa", sex);
+  const hcfa = useWhoTable("hcfa", sex);
+  const queries = { wfa, lhfa, hcfa };
+  // Spec 2026-11-25 §5.1: a table that has not loaded is left out, so its
+  // indicator has no block in the verdict card and raises no alert yet.
+  const tables: GrowthTables = {};
+  for (const item of INDICATORS) {
+    const data = queries[item.key].data;
+    if (data) tables[item.key] = data.rows as LmsRow[];
+  }
   const pending = pendingRowIds(entriesFor(useOutboxEntries(userId), "growth"));
   const [sheet, setSheet] = useState<{ row: GrowthRow | null } | null>(null);
 
   const rows = growth.data ?? [];
-  const lms = table.data?.rows as LmsRow[] | undefined;
+  // Spec 2026-11-25 §5.3: with no measurement at all the page is only its
+  // header and the empty state. While they load, the picker and chart stay.
+  const empty = growth.data !== undefined && rows.length === 0;
+  const base = { rows, tables, dob: baby.dob, sex };
+  const alerts = growthAlerts({ ...base, babyName: baby.name });
+  const summaries = indicatorSummaries({ ...base, alerts });
+  const latest = latestGrowth(rows);
+  // Until the user picks one, the page shows the first indicator with an alert.
+  const [picked, setPicked] = useState<WhoIndicator | null>(null);
+  const indicator = picked ?? defaultIndicator(alerts);
+  const [why, setWhy] = useState<GrowthAlertKind | null>(null);
+  const dots = alertDots(alerts);
+  const table = queries[indicator];
+  const lms = tables[indicator];
   const range = chartRange(ageDays(baby.dob, new Date()));
   const current = INDICATORS.find((i) => i.key === indicator)!;
   const points = rows.flatMap((row) => {
@@ -81,31 +118,54 @@ export function GrowthScreen({
           />
         }
       />
-      <Segmented
-        label="Chỉ số"
-        options={INDICATOR_OPTIONS}
-        value={indicator}
-        onChange={setIndicator}
-      />
-      <Glass className="p-3">
-        {lms ? (
-          <GrowthChart
-            curve={curve(lms, 0, range.to, range.step)}
-            points={points}
-            to={range.to}
-            unit={indicator === "wfa" ? "kg" : "cm"}
+      {alerts.map((alert) => (
+        <GrowthAlertCard
+          key={alert.indicator}
+          alert={alert}
+          onWhy={() => setWhy(alert.kind)}
+        />
+      ))}
+      {latest && summaries.length > 0 && (
+        <GrowthVerdict
+          babyName={baby.name}
+          measured={`Đo gần nhất ${formatDayShort(latest.measuredOn)} · ${formatAgeVi(baby.dob, new Date(`${latest.measuredOn}T05:00:00Z`))}`}
+          calm={alerts.length === 0}
+          summaries={summaries}
+        />
+      )}
+      {!empty && (
+        <>
+          <Segmented
+            label="Chỉ số"
+            options={INDICATORS.map((item) => ({
+              value: item.key,
+              label: item.title,
+              dot: dots[item.key],
+            }))}
+            value={indicator}
+            onChange={setPicked}
           />
-        ) : table.isError ? (
-          <ChartUnavailable />
-        ) : (
-          <Skeleton className="h-72" />
-        )}
-      </Glass>
-      <p className="px-1 text-[13px] text-muted">
-        Đường WHO P3, P15, P50 (đậm), P85, P97 cho{" "}
-        {sex === "girls" ? "bé gái" : "bé trai"}; chấm là các lần đo của bé.
-        Nguồn: WHO Child Growth Standards.
-      </p>
+          <Glass className="p-3">
+            {lms ? (
+              <GrowthChart
+                curve={curve(lms, 0, range.to, range.step)}
+                points={points}
+                to={range.to}
+                unit={indicator === "wfa" ? "kg" : "cm"}
+              />
+            ) : table.isError ? (
+              <ChartUnavailable />
+            ) : (
+              <Skeleton className="h-72" />
+            )}
+          </Glass>
+          <p className="px-1 text-[13px] text-muted">
+            Đường WHO P3, P15, P50 (đậm), P85, P97 cho{" "}
+            {sex === "girls" ? "bé gái" : "bé trai"}; chấm là các lần đo của bé.
+            Nguồn: WHO Child Growth Standards.
+          </p>
+        </>
+      )}
       {waitingForNetwork(growth) ? (
         <NeedsNetwork what="các lần đo" />
       ) : growth.isPending ? (
@@ -144,6 +204,11 @@ export function GrowthScreen({
             {current.title.toLowerCase()}).
           </p>
         </>
+      )}
+      {why && (
+        <Popup title="Vì sao có cảnh báo này?" onClose={() => setWhy(null)}>
+          {alertReason(why)}
+        </Popup>
       )}
       {sheet && (
         <GrowthSheet
