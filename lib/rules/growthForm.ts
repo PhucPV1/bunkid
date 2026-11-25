@@ -1,4 +1,4 @@
-import type { WhoIndicator } from "@/lib/content/who";
+import type { WhoIndicator, WhoSex } from "@/lib/content/who";
 
 export type GrowthFormRaw = {
   measuredOn: string;
@@ -108,6 +108,29 @@ export function formatPercentile(p: number): string {
   if (p < 0.1) return "dưới P0,1";
   if (p > 99.9) return "trên P99,9";
   return `P${decimals(1).format(p)}`;
+}
+
+export const sexLabel = (sex: WhoSex) =>
+  sex === "girls" ? "bé gái" : "bé trai";
+
+// Spec 2026-11-25 §5.2: a percentile in plain words. The number stays within
+// 1–99 so it never reads "hơn 0" or "hơn 100".
+export function comparePhrase(
+  indicator: WhoIndicator,
+  percentile: number,
+  sex: WhoSex,
+  ageDays: number,
+): string {
+  const n = Math.min(99, Math.max(1, Math.round(percentile)));
+  const word =
+    indicator === "wfa"
+      ? "Nặng hơn"
+      : indicator === "hcfa"
+        ? "Lớn hơn"
+        : ageDays < 730
+          ? "Dài hơn"
+          : "Cao hơn";
+  return `${word} ${n} trong 100 ${sexLabel(sex)} cùng tuổi`;
 }
 
 export const INDICATORS: {
