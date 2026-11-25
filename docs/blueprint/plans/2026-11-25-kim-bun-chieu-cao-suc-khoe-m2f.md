@@ -1649,7 +1649,17 @@ Trang thật (`dark`, chỉ xem):
 
 Không thấy lỗi nào của plan này. Chưa kiểm: bề ngang 440 px; theme `peach`, `lavender`, `sea`; hàng danh sách đang chờ đồng bộ đứng cạnh chip "Gần mức thấp/cao" (trang tạm để `pending` rỗng; phần của M2g); VoiceOver đọc `aria-label` của thanh; iPhone thật, PWA.
 
-**Phản hồi của người dùng trong lúc kiểm (chưa làm, ngoài plan này):** câu "Nặng hơn/Dài hơn {n} trong 100 bé … cùng tuổi" là quá nhiều thông tin, gây rối; chỉ cần ghi cảnh báo khi bé nằm trong nhóm thiếu cân hoặc thấp hơn chuẩn. Câu đó là chữ của spec §5.2 (`comparePhrase`), có từ M2c, đang dùng ở thẻ kết luận (§5.3), thẻ cảnh báo và `aria-label` của thanh (§5.6). Bỏ hay đổi nó là sửa spec, cần người dùng chốt phạm vi trước.
+**Phản hồi của người dùng trong lúc kiểm, và phần sửa theo đó (2026-11-25, ngoài 6 patch của plan này).** Người dùng viết: "không cần nặng hơn ... trong 100 hoặc dài hơn, quá nhiều thông tin gây rối, chỉ cần ghi cảnh báo nằm trong nhóm thiếu cân, thấp hơn so với tiêu chuẩn". Hỏi lại bằng question card, người dùng chọn **bỏ cả 4 chỗ**; cùng lúc chọn **giữ M2f trên nhánh**, chưa lên `main`.
+
+Commit `163040c` (sau commit ghi kết quả `6819891`):
+
+- Thẻ kết luận: dưới hàng nhãn (và dòng "Cách mức…" nếu có) chỉ còn dòng chênh, "+1,9 cm sau 10 ngày"; không có lần đo trước thì không có dòng nào. Chỉ số đang có cảnh báo `falling` hoặc `rising` cũng ghi dòng chênh thường, không còn "trước đó là {n} trong 100".
+- Thẻ cảnh báo `low`, `high`: nội dung chỉ còn "{giá trị} lúc {tuổi}." Tiêu đề, lời khuyên và các loại cảnh báo khác không đổi; không thêm chữ "thiếu cân".
+- `aria-label` của thanh: "{chip}. Chuẩn từ {low} đến {high} {đơn vị}, giữa {mid}."
+- Xóa `comparePhrase`, `outOf100` (`lib/rules/growthForm.ts`) và `lib/rules/comparePhrase.test.ts`; bỏ `GrowthAlert.previousPercentile`, `IndicatorSummary.compare`; `indicatorSummaries` không còn nhận `sex` (bảng đã theo giới). Giữ hai câu nói về chuẩn: "95 trong 100 bé khỏe mạnh nằm trong vùng xanh." dưới biểu đồ và câu trong popup "Vì sao có cảnh báo này?".
+- Spec đã sửa cho khớp (§2, §5.1, §5.2, §5.3, §5.6, §9.2); file spec vẫn chưa commit.
+- **Các số của plan này đổi sau commit đó:** vitest nay là `Test Files  171 passed (171)`, `Tests  1381 passed (1381)` (không còn là 1383 test, 172 file ghi ở Contracts); đỏ trước khi sửa code: 12 test, 5 file. `tsc --noEmit` sạch; `bun run build` lần hai mã 0. Plan M2g không đụng file nào trong commit này, nhưng số test kỳ vọng của nó phải tính lại từ 1381 test, 171 file.
+- Xem lại ở 375×812 (khung Browser, `dark`, trang tạm dựng lại rồi xóa): `?c=0` ba khối chỉ còn dòng chênh; `?c=3` thẻ cảnh báo "Cân nặng thấp hơn chuẩn" với "4,4 kg lúc 2 tháng 15 ngày."; `?c=7` (thêm tạm: chiều dài tăng chậm) khối Chiều dài chip "Tăng chậm", dòng "+2 cm sau 46 ngày"; trang thật `/tang-truong`: Cân nặng "+0,2 kg sau 10 ngày", Chiều dài "Cách mức thấp nhất của chuẩn 0,9 cm" rồi "+1,9 cm sau 10 ngày". Nhãn vẫn lệch 0,0 px, `scrollWidth` 375, không còn chữ "trong 100 bé" nào trên màn. Ảnh `m2f-screens/bo-cau-*.jpg`. Chưa xem lại ở theme khác `dark` và `/suc-khoe` (commit này không đụng trang đó).
 
 - [x] **Step 5: Xóa trang fixture, commit phần ghi kết quả rồi dừng lại hỏi người dùng**
 
