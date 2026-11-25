@@ -1,12 +1,8 @@
 "use client";
 
-import { AuthGate } from "@/components/AuthGate";
-import { ExploreScreen } from "@/components/explore/ExploreScreen";
+import { RedirectTo } from "@/components/nav/RedirectTo";
 
+// Spec 2026-11-25 §3.1: Khám phá and Cẩm nang are now the Sức khỏe tab.
 export default function Page() {
-  return (
-    <AuthGate need="baby">
-      {({ ctx }) => (ctx?.baby ? <ExploreScreen baby={ctx.baby} /> : null)}
-    </AuthGate>
-  );
+  return <RedirectTo href="/suc-khoe" />;
 }
