@@ -29,10 +29,12 @@ export function GrowthList({
           >
             {/* The chip shares a line with the title only: beside the whole
                 row it left the values too narrow at 375 px and they broke
-                between a number and its unit. */}
-            <span className="flex items-start gap-3">
-              <span className="min-w-0 flex-1 text-base font-semibold text-ink tabular-nums">
-                {title} <PendingMark pending={pending.has(row.id)} />
+                between a number and its unit. The title is never broken: a
+                chip too long to share its line ("Gần mức thấp" beside
+                "25/11 · 11 tháng 29 ngày") drops under it. */}
+            <span className="flex flex-wrap items-start gap-x-3 gap-y-1">
+              <span className="flex-1 text-base font-semibold whitespace-nowrap text-ink tabular-nums">
+                {title}
               </span>
               {chip ? (
                 <StatusChip tone={chip.tone}>{chip.text}</StatusChip>
@@ -44,7 +46,17 @@ export function GrowthList({
                 )
               )}
             </span>
-            <span className="text-[15px] text-ink tabular-nums">{values}</span>
+            {/* The waiting-to-sync mark follows the values: that line has the
+                full width, so the mark never pushes the chip or the title. */}
+            <span className="text-[15px] text-ink tabular-nums">
+              {values}
+              {pending.has(row.id) && (
+                <>
+                  {" "}
+                  <PendingMark pending />
+                </>
+              )}
+            </span>
             {delta && (
               <span className="text-[13px] leading-[18px] text-muted">
                 {delta}

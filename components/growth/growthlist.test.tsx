@@ -72,10 +72,61 @@ describe("GrowthList", () => {
     const [head, values, delta] = Children.toArray(
       button.props.children,
     ) as ReactElement<TreeProps>[];
-    expect(head.props.className).toBe("flex items-start gap-3");
+    expect(head.props.className).toContain("flex ");
     expect(findElements(head, (el) => el.type === StatusChip)).toHaveLength(1);
-    expect(values.props.children).toBe("5,2 kg · 58,5 cm");
+    expect(renderToStaticMarkup(values)).toContain(">5,2 kg · 58,5 cm");
     expect(delta.props.children).toBe("+0,8 kg · +3,5 cm so với lần trước");
+  });
+
+  // Spec 2026-11-25 §5.5. At 375 px "Gần mức thấp" leaves the title 188 px,
+  // and "25/11 · 11 tháng 29 ngày" needs 189.
+  it("the title is never broken: a chip too long to share its line drops under it", () => {
+    const [button] = findElements(
+      GrowthList(
+        props({
+          items: [
+            item("g1", "u1", {
+              title: "25/11 · 11 tháng 29 ngày",
+              chip: { text: "Gần mức thấp", tone: "warn" },
+            }),
+          ],
+        }),
+      ),
+      (el) => el.type === "button",
+    );
+    const [head] = Children.toArray(
+      button.props.children,
+    ) as ReactElement<TreeProps>[];
+    expect(head.props.className).toBe(
+      "flex flex-wrap items-start gap-x-3 gap-y-1",
+    );
+    const [title] = Children.toArray(
+      head.props.children,
+    ) as ReactElement<TreeProps>[];
+    expect(title.props.className).toContain("whitespace-nowrap");
+    expect(title.props.className).toContain("flex-1");
+    expect(title.props.className).not.toContain("min-w-0");
+    expect(title.props.children).toBe("25/11 · 11 tháng 29 ngày");
+  });
+
+  // Beside the title the mark took the room the chip needs and dropped to a
+  // line of its own; the values line has the full width.
+  it("the waiting-to-sync mark follows the values, not the title", () => {
+    const [button] = findElements(
+      GrowthList(props()),
+      (el) => el.type === "button",
+    );
+    const [head, values] = Children.toArray(
+      button.props.children,
+    ) as ReactElement<TreeProps>[];
+    expect(renderToStaticMarkup(head)).not.toContain("Chờ đồng bộ");
+    expect(renderToStaticMarkup(values)).toContain(
+      '>5,2 kg · 58,5 cm <span role="img" aria-label="Chờ đồng bộ"',
+    );
+    // A row that is not waiting keeps its values line as it was.
+    expect(renderToStaticMarkup(<GrowthList {...props()} />)).toContain(
+      '<span class="text-[15px] text-ink tabular-nums">5,2 kg · 58,5 cm</span>',
+    );
   });
 
   it("the words Ngoài bảng WHO sit beside the title too", () => {
