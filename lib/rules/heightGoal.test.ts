@@ -1,8 +1,13 @@
 import { describe, expect, it } from "vitest";
 import type { LmsRow } from "@/lib/content/who";
+import { addDays } from "./days";
+import type { GrowthMeasure } from "./growthAlerts";
 import {
   goalStatus,
+  heightGoalRaw,
+  lengthVelocity,
   midParental,
+  parseHeightGoal,
   targetCurve,
   targetVsRange,
   targetZ,
@@ -195,5 +200,162 @@ describe("targetVsRange", () => {
   it("the two ends of the range are inside it", () => {
     expect(targetVsRange(183, range)).toContain("nằm trong khoảng");
     expect(targetVsRange(166, range)).toContain("nằm trong khoảng");
+  });
+});
+
+describe("lengthVelocity", () => {
+  const DOB = "2026-01-01";
+  // The median grows 1/8 cm a day from 50: 3,8 cm a month.
+  const GROWING: LmsRow[] = Array.from({ length: 1857 }, (_, d) => [
+    d,
+    1,
+    50 + d / 8,
+    0.1,
+  ]);
+  const length = (age: number, cm: number | null): GrowthMeasure => ({
+    measured_on: addDays(DOB, age),
+    weight_g: 5000,
+    length_cm: cm,
+    head_cm: null,
+  });
+  const run = (rows: GrowthMeasure[]) => lengthVelocity(rows, GROWING, DOB);
+
+  it("cm a month between the newest length and the nearest one at least 14 days before", () => {
+    // 2 cm in 16 days is 3,8 cm a month, exactly what is usual.
+    expect(run([length(56, 59), length(40, 57), length(10, 52)])).toEqual({
+      rate: "3,8",
+      expected: "3,8",
+      from: addDays(DOB, 40),
+      to: addDays(DOB, 56),
+      chip: { text: "Tăng tốt", tone: "good" },
+    });
+  });
+
+  it("a length less than 14 days before is skipped for an older one", () => {
+    const speed = run([length(56, 59), length(43, 58.5), length(40, 57)]);
+    expect(speed?.from).toBe(addDays(DOB, 40));
+    expect(run([length(56, 59), length(42, 58)])?.from).toBe(addDays(DOB, 42));
+  });
+
+  it("at three quarters of the usual speed it is still good; just under, slower than usual", () => {
+    // Usual over 16 days: 2 cm. Three quarters of that: 1,5 cm.
+    expect(run([length(56, 58.5), length(40, 57)])?.chip).toEqual({
+      text: "Tăng tốt",
+      tone: "good",
+    });
+    expect(run([length(56, 58.4), length(40, 57)])).toMatchObject({
+      rate: "2,7",
+      expected: "3,8",
+      chip: { text: "Chậm hơn thường gặp", tone: "neutral" },
+    });
+  });
+
+  it("a length that barely moved reads 0,0, never minus zero", () => {
+    expect(run([length(56, 56.98), length(40, 57)])).toMatchObject({
+      rate: "0,0",
+      chip: { text: "Chậm hơn thường gặp", tone: "neutral" },
+    });
+  });
+
+  it("rows without a length are not measurements of length", () => {
+    expect(
+      run([length(56, null), length(50, 59), length(30, 56)]),
+    ).toMatchObject({ from: addDays(DOB, 30), to: addDays(DOB, 50) });
+  });
+
+  it("is null without two lengths at least 14 days apart", () => {
+    expect(run([])).toBeNull();
+    expect(run([length(56, 59)])).toBeNull();
+    expect(run([length(56, 59), length(43, 58)])).toBeNull();
+  });
+
+  it("a length outside the WHO table is left out", () => {
+    expect(run([length(1857, 110), length(1800, 108)])).toBeNull();
+  });
+});
+
+describe("parseHeightGoal", () => {
+  const RANGE = "Chiều cao từ 120 đến 220 cm.";
+
+  it("three heights, with a comma or a point", () => {
+    expect(
+      parseHeightGoal({ father: "175", mother: "160,5", target: "180.0" }),
+    ).toEqual({
+      ok: true,
+      value: {
+        father_height_cm: 175,
+        mother_height_cm: 160.5,
+        target_height_cm: 180,
+      },
+    });
+  });
+
+  it("all three empty is valid: it clears the goal", () => {
+    expect(parseHeightGoal({ father: " ", mother: "", target: "" })).toEqual({
+      ok: true,
+      value: {
+        father_height_cm: null,
+        mother_height_cm: null,
+        target_height_cm: null,
+      },
+    });
+  });
+
+  it("the target may be set or left empty on its own", () => {
+    expect(
+      parseHeightGoal({ father: "", mother: "", target: "180" }),
+    ).toMatchObject({ ok: true, value: { target_height_cm: 180 } });
+    expect(
+      parseHeightGoal({ father: "175", mother: "160", target: "" }),
+    ).toMatchObject({ ok: true, value: { target_height_cm: null } });
+  });
+
+  it("father and mother go together: the empty one carries the error", () => {
+    expect(parseHeightGoal({ father: "175", mother: "", target: "" })).toEqual({
+      ok: false,
+      errors: { mother: "Nhập cả bố và mẹ." },
+    });
+    expect(
+      parseHeightGoal({ father: "", mother: "160", target: "180" }),
+    ).toEqual({ ok: false, errors: { father: "Nhập cả bố và mẹ." } });
+  });
+
+  it("each height stays within 120–220 cm", () => {
+    expect(
+      parseHeightGoal({ father: "119,9", mother: "220,1", target: "abc" }),
+    ).toEqual({
+      ok: false,
+      errors: { father: RANGE, mother: RANGE, target: RANGE },
+    });
+    expect(
+      parseHeightGoal({ father: "120", mother: "220", target: "120" }).ok,
+    ).toBe(true);
+  });
+
+  it("a height out of range is not also asked for its partner", () => {
+    expect(parseHeightGoal({ father: "300", mother: "", target: "" })).toEqual({
+      ok: false,
+      errors: { father: RANGE },
+    });
+  });
+
+  it("rounds to one decimal", () => {
+    expect(
+      parseHeightGoal({ father: "175,25", mother: "160,04", target: "" }),
+    ).toMatchObject({
+      value: { father_height_cm: 175.3, mother_height_cm: 160 },
+    });
+  });
+});
+
+describe("heightGoalRaw", () => {
+  it("fills the form from the profile, with a comma, empty where nothing is stored", () => {
+    expect(
+      heightGoalRaw({
+        father_height_cm: 175,
+        mother_height_cm: 160.5,
+        target_height_cm: null,
+      }),
+    ).toEqual({ father: "175", mother: "160,5", target: "" });
   });
 });

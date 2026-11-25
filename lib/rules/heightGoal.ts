@@ -1,6 +1,7 @@
 import { ADULT_HEIGHT } from "@/lib/content/adultHeight";
 import type { LmsRow, WhoSex } from "@/lib/content/who";
 import { lmsAt, valueAtZ, zScore } from "./growth";
+import { type GrowthMeasure, readings } from "./growthAlerts";
 
 // Spec 2026-11-25 §6.2. Every function here is pure.
 
@@ -112,4 +113,111 @@ export function targetVsRange(target: number, range: ParentalRange): string {
     return `Mục tiêu ${t} cm cao hơn khoảng dự kiến. App vẫn theo dõi, nhưng mục tiêu này khó đạt.`;
   if (target < range.low) return `Mục tiêu ${t} cm thấp hơn khoảng dự kiến.`;
   return `Mục tiêu ${t} cm nằm trong khoảng, ở nửa ${target >= range.mid ? "trên" : "dưới"}.`;
+}
+
+const DAYS_PER_MONTH = 30.4375;
+const VELOCITY_MIN_DAYS = 14;
+// Below three quarters of what is usual the chip says so, in a neutral tone.
+const VELOCITY_GOOD_SHARE = 0.75;
+
+export type LengthVelocity = {
+  // cm a month, to one decimal: the baby, and the WHO median over the same days.
+  rate: string;
+  expected: string;
+  // measured_on of the two lengths compared.
+  from: string;
+  to: string;
+  chip: { text: string; tone: "good" | "neutral" };
+};
+
+// The newest length against the nearest one at least 14 days before it. Null
+// without two such lengths inside the WHO table.
+export function lengthVelocity(
+  rows: GrowthMeasure[],
+  table: LmsRow[],
+  dob: string,
+): LengthVelocity | null {
+  const [latest, ...older] = readings(rows, table, dob, "lhfa");
+  const before = older.find(
+    (reading) => latest.ageDays - reading.ageDays >= VELOCITY_MIN_DAYS,
+  );
+  if (!latest || !before) return null;
+  const days = latest.ageDays - before.ageDays;
+  const rate = ((latest.value - before.value) / days) * DAYS_PER_MONTH;
+  const expected = ((latest.median - before.median) / days) * DAYS_PER_MONTH;
+  return {
+    rate: oneDecimal.format(tenth(rate)),
+    expected: oneDecimal.format(tenth(expected)),
+    from: before.day,
+    to: latest.day,
+    // Compared before rounding.
+    chip:
+      rate >= VELOCITY_GOOD_SHARE * expected
+        ? { text: "Tăng tốt", tone: "good" }
+        : { text: "Chậm hơn thường gặp", tone: "neutral" },
+  };
+}
+
+// Spec §6.5: the sheet "Mục tiêu và chiều cao bố mẹ".
+export type HeightGoalRaw = { father: string; mother: string; target: string };
+
+export type HeightGoalInput = {
+  father_height_cm: number | null;
+  mother_height_cm: number | null;
+  target_height_cm: number | null;
+};
+
+export type HeightGoalErrors = Partial<Record<keyof HeightGoalRaw, string>>;
+
+const HEIGHT_MIN = 120;
+const HEIGHT_MAX = 220;
+const HEIGHT_RANGE = "Chiều cao từ 120 đến 220 cm.";
+const BOTH_PARENTS = "Nhập cả bố và mẹ.";
+
+// Vietnamese keyboards type "175,5"; both "," and "." are accepted.
+function height(raw: string): number | null | "bad" {
+  const text = raw.trim().replace(",", ".");
+  if (text === "") return null;
+  if (!/^\d+(\.\d+)?$/.test(text)) return "bad";
+  const value = Number(text);
+  return value < HEIGHT_MIN || value > HEIGHT_MAX ? "bad" : tenth(value);
+}
+
+export function parseHeightGoal(
+  raw: HeightGoalRaw,
+):
+  | { ok: true; value: HeightGoalInput }
+  | { ok: false; errors: HeightGoalErrors } {
+  const father = height(raw.father);
+  const mother = height(raw.mother);
+  const target = height(raw.target);
+  const errors: HeightGoalErrors = {};
+  if (father === "bad") errors.father = HEIGHT_RANGE;
+  if (mother === "bad") errors.mother = HEIGHT_RANGE;
+  if (target === "bad") errors.target = HEIGHT_RANGE;
+  // Father and mother are entered together or not at all.
+  if (typeof father === "number" && mother === null)
+    errors.mother = BOTH_PARENTS;
+  if (typeof mother === "number" && father === null)
+    errors.father = BOTH_PARENTS;
+  if (father === "bad" || mother === "bad" || target === "bad")
+    return { ok: false, errors };
+  if (Object.keys(errors).length > 0) return { ok: false, errors };
+  return {
+    ok: true,
+    value: {
+      father_height_cm: father,
+      mother_height_cm: mother,
+      target_height_cm: target,
+    },
+  };
+}
+
+export function heightGoalRaw(baby: HeightGoalInput): HeightGoalRaw {
+  const text = (cm: number | null) => (cm === null ? "" : formatCm(cm));
+  return {
+    father: text(baby.father_height_cm),
+    mother: text(baby.mother_height_cm),
+    target: text(baby.target_height_cm),
+  };
 }
