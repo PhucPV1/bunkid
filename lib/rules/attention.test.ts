@@ -22,7 +22,6 @@ const alert = (
     level === "red" ? "Nên cho bé đi khám." : "Nên hỏi bác sĩ ở lần khám tới.",
   chip: level === "red" ? "Rất thấp" : "Thấp",
   measuredOn: "2026-11-20",
-  previousPercentile: null,
 });
 
 const TODAY = "2026-11-25";

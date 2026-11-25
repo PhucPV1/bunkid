@@ -70,9 +70,7 @@ export function GrowthVerdict({
               {item.nearLine}
             </span>
           )}
-          <span className={SUB}>
-            {item.change ? `${item.compare} · ${item.change}` : item.compare}
-          </span>
+          {item.change && <span className={SUB}>{item.change}</span>}
         </div>
       ))}
       <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1 border-t border-line pt-3 text-xs text-muted">

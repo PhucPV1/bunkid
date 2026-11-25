@@ -7,6 +7,7 @@ import {
   indicatorValue,
   latestWeightG,
   parseGrowthForm,
+  sexLabel,
 } from "./growthForm";
 import * as growthForm from "./growthForm";
 
@@ -121,5 +122,21 @@ describe("display helpers", () => {
 describe("formatZ", () => {
   it("is gone", () => {
     expect(Object.keys(growthForm)).not.toContain("formatZ");
+  });
+});
+
+// Changed 2026-11-25 (spec §5.2): the screens no longer say "Nặng hơn {n} trong
+// 100 bé … cùng tuổi".
+describe("comparePhrase", () => {
+  it("is gone, and outOf100 with it", () => {
+    expect(Object.keys(growthForm)).not.toContain("comparePhrase");
+    expect(Object.keys(growthForm)).not.toContain("outOf100");
+  });
+});
+
+describe("sexLabel", () => {
+  it("names the sex as the alerts write it", () => {
+    expect(sexLabel("boys")).toBe("bé trai");
+    expect(sexLabel("girls")).toBe("bé gái");
   });
 });

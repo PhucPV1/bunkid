@@ -1,13 +1,6 @@
-import type { WhoIndicator, WhoSex } from "@/lib/content/who";
+import type { WhoIndicator } from "@/lib/content/who";
 import { formatDayShort } from "./days";
-import {
-  ageOnDay,
-  type Lms,
-  lmsAt,
-  percentile,
-  standardRange,
-  zScore,
-} from "./growth";
+import { ageOnDay, type Lms, lmsAt, standardRange, zScore } from "./growth";
 import {
   ALERT_CHIP,
   alertTone,
@@ -22,13 +15,7 @@ import {
   positionKind,
   readings,
 } from "./growthAlerts";
-import {
-  comparePhrase,
-  formatGrowthValue,
-  INDICATORS,
-  indicatorValue,
-  outOf100,
-} from "./growthForm";
+import { formatGrowthValue, INDICATORS, indicatorValue } from "./growthForm";
 import { formatAgeVi } from "./time";
 
 // Spec 2026-11-25 §5.3: one block of the verdict card.
@@ -39,9 +26,7 @@ export type IndicatorSummary = {
   chip: { text: string; tone: GrowthTone };
   // 0–100: where the dot sits on the position bar.
   position: number;
-  compare: string;
-  // "+1,5 kg sau 46 ngày", "trước đó là 45 trong 100", or null when there is
-  // no earlier measurement.
+  // "+1,5 kg sau 46 ngày", or null when there is no earlier measurement.
   change: string | null;
   measuredOn: string;
   ageDays: number;
@@ -119,11 +104,11 @@ export function formatChange(indicator: WhoIndicator, delta: number): string {
   return `${delta < 0 ? "−" : "+"}${formatGrowthValue(indicator, Math.abs(delta))}`;
 }
 
+// The tables are already those of the baby's sex, so the sex is not asked for.
 export function indicatorSummaries(input: {
   rows: GrowthMeasure[];
   tables: GrowthTables;
   dob: string;
-  sex: WhoSex;
   alerts: GrowthAlert[];
 }): IndicatorSummary[] {
   return INDICATORS.flatMap(({ key, title }): IndicatorSummary[] => {
@@ -141,12 +126,6 @@ export function indicatorSummaries(input: {
       : near
         ? { text: NEAR_CHIP[near], tone: "warn" }
         : { text: "Bình thường", tone: "good" };
-    const compare = comparePhrase(
-      key,
-      percentile(latest.z),
-      input.sex,
-      latest.ageDays,
-    );
     const { standard, spoken, nearLine } = standardText(
       key,
       lms,
@@ -154,10 +133,6 @@ export function indicatorSummaries(input: {
       near,
     );
     const before = older.find((reading) => reading.day < latest.day);
-    const shifted =
-      alert && alert.previousPercentile !== null
-        ? `trước đó là ${outOf100(alert.previousPercentile)} trong 100`
-        : null;
     return [
       {
         indicator: key,
@@ -165,17 +140,14 @@ export function indicatorSummaries(input: {
         value: formatGrowthValue(key, latest.value),
         chip,
         position: gaugePosition(latest.z),
-        compare,
-        change:
-          shifted ??
-          (before
-            ? `${formatChange(key, latest.value - before.value)} sau ${latest.ageDays - before.ageDays} ngày`
-            : null),
+        change: before
+          ? `${formatChange(key, latest.value - before.value)} sau ${latest.ageDays - before.ageDays} ngày`
+          : null,
         measuredOn: latest.day,
         ageDays: latest.ageDays,
         near,
         standard,
-        barLabel: `${chip.text}. ${compare}. ${spoken}`,
+        barLabel: `${chip.text}. ${spoken}`,
         nearLine,
       },
     ];

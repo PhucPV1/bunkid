@@ -1,8 +1,7 @@
 import type { LmsRow, WhoIndicator, WhoSex } from "@/lib/content/who";
 import { formatDayShort } from "./days";
-import { ageOnDay, lmsAt, percentile, zScore } from "./growth";
+import { ageOnDay, lmsAt, zScore } from "./growth";
 import {
-  comparePhrase,
   formatGrowthValue,
   type GrowthInput,
   INDICATORS,
@@ -26,8 +25,6 @@ export type GrowthAlert = {
   chip: string;
   // measured_on of the measurement the alert is about.
   measuredOn: string;
-  // falling and rising: the percentile of the measurement it is compared with.
-  previousPercentile: number | null;
 };
 
 // A table that has not loaded is left out: its indicator gives no alert.
@@ -207,7 +204,7 @@ function describe(
   if (kind === "low" || kind === "high")
     return {
       title: `${name} ${kind === "low" ? "thấp" : "cao"} hơn chuẩn`,
-      body: `${plain} ${comparePhrase(indicator, percentile(latest.z), ctx.sex, latest.ageDays)}.`,
+      body: plain,
       advice: ASK,
     };
   if (kind === "loss" && compared)
@@ -269,11 +266,6 @@ export function growthAlerts(input: {
         ...describe(key, found, latest, input),
         chip: ALERT_CHIP[found.kind],
         measuredOn: latest.day,
-        previousPercentile:
-          (found.kind === "falling" || found.kind === "rising") &&
-          found.compared
-            ? percentile(found.compared.z)
-            : null,
       },
     ];
   });

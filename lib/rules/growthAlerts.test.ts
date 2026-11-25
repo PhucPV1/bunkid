@@ -168,8 +168,8 @@ describe("growthAlerts: falling and rising", () => {
 
   it("compares with the highest reading in the window, not the nearest", () => {
     const [alert] = run([length(10, 16), length(40, 14), length(60, 13.34)]);
+    // 13,34 after 14 is no fall; only against the 16 of day 10 is it one.
     expect(alert.kind).toBe("falling");
-    expect(alert.previousPercentile).toBeCloseTo(50, 5);
   });
 
   it("weight falls the same way while it still goes up", () => {
@@ -264,16 +264,17 @@ describe("growthAlerts: wording", () => {
     });
   });
 
-  it("low and high carry the plain-words percentile", () => {
+  // Spec §5.1 as changed on 2026-11-25: no "… trong 100 bé" sentence.
+  it("low and high say the value and the age, nothing more", () => {
     expect(text([head(40, 11)])).toEqual({
       title: "Vòng đầu thấp hơn chuẩn",
-      body: "11 cm lúc 1 tháng 9 ngày. Lớn hơn 1 trong 100 bé trai cùng tuổi.",
+      body: "11 cm lúc 1 tháng 9 ngày.",
       advice: "Nên hỏi bác sĩ ở lần khám tới.",
       chip: "Thấp",
     });
     expect(text([length(40, 21)])).toEqual({
       title: "Chiều dài cao hơn chuẩn",
-      body: "21 cm lúc 1 tháng 9 ngày. Dài hơn 99 trong 100 bé trai cùng tuổi.",
+      body: "21 cm lúc 1 tháng 9 ngày.",
       advice: "Nên hỏi bác sĩ ở lần khám tới.",
       chip: "Cao",
     });
@@ -341,13 +342,12 @@ describe("growthAlerts: wording", () => {
 });
 
 describe("growthAlerts: what the screens need besides the text", () => {
-  it("names the day of the measurement and, for a shift, the earlier percentile", () => {
+  it("names the day of the measurement, and nothing about a percentile", () => {
     const [falling] = run([length(40, 16), length(54, 13.34)]);
     expect(falling.measuredOn).toBe(day(54));
-    expect(falling.previousPercentile).toBeCloseTo(50, 5);
+    expect(falling).not.toHaveProperty("previousPercentile");
     const [low] = run([length(40, 11)]);
     expect(low.measuredOn).toBe(day(40));
-    expect(low.previousPercentile).toBeNull();
   });
 });
 

@@ -91,7 +91,7 @@ describe("indicatorSummaries", () => {
     ]);
   });
 
-  it("on the norm: Bình thường, the dot in the middle, the plain-words percentile", () => {
+  it("on the norm: Bình thường, the dot in the middle, the norm in numbers", () => {
     const [weight] = view([measure(40, 16)]).summaries;
     expect(weight).toEqual({
       indicator: "wfa",
@@ -99,14 +99,12 @@ describe("indicatorSummaries", () => {
       value: "16 kg",
       chip: { text: "Bình thường", tone: "good" },
       position: 50,
-      compare: "Nặng hơn 50 trong 100 bé trai cùng tuổi",
       change: null,
       measuredOn: day(40),
       ageDays: 40,
       near: null,
       standard: { low: "12,0 kg", mid: "giữa 16,0", high: "20,0 kg" },
-      barLabel:
-        "Bình thường. Nặng hơn 50 trong 100 bé trai cùng tuổi. Chuẩn từ 12,0 đến 20,0 kg, giữa 16,0.",
+      barLabel: "Bình thường. Chuẩn từ 12,0 đến 20,0 kg, giữa 16,0.",
       nearLine: null,
     });
   });
@@ -143,14 +141,15 @@ describe("indicatorSummaries", () => {
     });
   });
 
-  it("falling and rising say where the baby stood before instead of the change", () => {
+  // Spec §5.3 as changed on 2026-11-25: no "trước đó là … trong 100".
+  it("falling and rising keep the plain change since the measurement before", () => {
     const [length] = view([
       measure(54, null, 13.34),
       measure(40, null, 16),
     ]).summaries;
     expect(length.chip).toEqual({ text: "Tăng chậm", tone: "warn" });
-    expect(length.change).toBe("trước đó là 50 trong 100");
-    expect(length.compare).toBe("Dài hơn 9 trong 100 bé trai cùng tuổi");
+    expect(length.change).toBe("−2,7 cm sau 14 ngày");
+    expect(length).not.toHaveProperty("compare");
   });
 
   it("an indicator whose table has not loaded is left out", () => {
@@ -181,7 +180,7 @@ describe("indicatorSummaries: near the edge of the norm", () => {
     });
     expect(length.nearLine).toBe("Cách mức thấp nhất của chuẩn 0,9 cm");
     expect(length.barLabel).toBe(
-      "Gần mức thấp. Dài hơn 6 trong 100 bé trai cùng tuổi. Chuẩn từ 12,0 đến 20,0 cm, giữa 16,0.",
+      "Gần mức thấp. Chuẩn từ 12,0 đến 20,0 cm, giữa 16,0.",
     );
   });
 
@@ -280,7 +279,7 @@ describe("indicatorSummaries: near the edge of the norm", () => {
       high: "20,0 kg",
     });
     expect(weight.barLabel).toBe(
-      "Thấp. Nặng hơn 1 trong 100 bé trai cùng tuổi. Chuẩn từ 12,0 đến 20,0 kg, giữa 16,0.",
+      "Thấp. Chuẩn từ 12,0 đến 20,0 kg, giữa 16,0.",
     );
   });
 

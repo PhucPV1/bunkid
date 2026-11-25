@@ -20,14 +20,12 @@ const summary = (over: Partial<IndicatorSummary> = {}): IndicatorSummary => ({
   value: "6,1 kg",
   chip: { text: "Bình thường", tone: "good" },
   position: 52,
-  compare: "Nặng hơn 55 trong 100 bé trai cùng tuổi",
   change: "+1,5 kg sau 46 ngày",
   measuredOn: "2026-11-25",
   ageDays: 76,
   near: null,
   standard: { low: "4,7 kg", mid: "giữa 6,0", high: "7,6 kg" },
-  barLabel:
-    "Bình thường. Nặng hơn 55 trong 100 bé trai cùng tuổi. Chuẩn từ 4,7 đến 7,6 kg, giữa 6,0.",
+  barLabel: "Bình thường. Chuẩn từ 4,7 đến 7,6 kg, giữa 6,0.",
   nearLine: null,
   ...over,
 });
@@ -41,19 +39,18 @@ const alert = (over: Partial<GrowthAlert> = {}): GrowthAlert => ({
   advice: "Nên hỏi bác sĩ ở lần khám tới.",
   chip: "Tăng chậm",
   measuredOn: "2026-11-25",
-  previousPercentile: 45,
   ...over,
 });
 
 // Spec 2026-11-25 §5.3.
 describe("PositionBar", () => {
   const html = renderToStaticMarkup(
-    <PositionBar position={52} label="Bình thường. Nặng hơn 55 trong 100" />,
+    <PositionBar position={52} label="Bình thường. Chuẩn từ 4,7 đến 7,6 kg" />,
   );
 
-  it("is an image named by the chip and the comparison", () => {
+  it("is an image named by the label it is given", () => {
     expect(html).toContain(
-      'role="img" aria-label="Bình thường. Nặng hơn 55 trong 100"',
+      'role="img" aria-label="Bình thường. Chuẩn từ 4,7 đến 7,6 kg"',
     );
   });
 
@@ -147,12 +144,10 @@ describe("GrowthVerdict", () => {
     value: "56,9 cm",
     chip: { text: "Gần mức thấp", tone: "warn" },
     position: 24.5,
-    compare: "Dài hơn 6 trong 100 bé trai cùng tuổi",
     change: "+1,9 cm sau 10 ngày",
     near: "nearLow",
     standard: { low: "56,0 cm", mid: "giữa 60,0", high: "64,0 cm" },
-    barLabel:
-      "Gần mức thấp. Dài hơn 6 trong 100 bé trai cùng tuổi. Chuẩn từ 56,0 đến 64,0 cm, giữa 60,0.",
+    barLabel: "Gần mức thấp. Chuẩn từ 56,0 đến 64,0 cm, giữa 60,0.",
     nearLine: "Cách mức thấp nhất của chuẩn 0,9 cm",
   });
 
@@ -171,7 +166,8 @@ describe("GrowthVerdict", () => {
     expect(html).toContain(">Đo gần nhất 25/11 · 2 tháng 15 ngày</span>");
   });
 
-  it("each indicator: its name, value, chip, bar and the comparison with the change", () => {
+  // Spec §5.3 as changed on 2026-11-25: no "… trong 100 bé" sentence.
+  it("each indicator: its name, value, chip, bar and the change since the measurement before", () => {
     const html = render(CALM, [
       summary(),
       summary({
@@ -180,33 +176,35 @@ describe("GrowthVerdict", () => {
         value: "61,5 cm",
         chip: { text: "Tăng chậm", tone: "warn" },
         position: 28,
-        compare: "Dài hơn 9 trong 100 bé trai cùng tuổi",
-        change: "trước đó là 45 trong 100",
-        barLabel:
-          "Tăng chậm. Dài hơn 9 trong 100 bé trai cùng tuổi. Chuẩn từ 56,0 đến 64,0 cm, giữa 60,0.",
+        change: "+0,5 cm sau 14 ngày",
+        barLabel: "Tăng chậm. Chuẩn từ 56,0 đến 64,0 cm, giữa 60,0.",
       }),
     ]);
     expect(html).toContain(">Cân nặng</span>");
     expect(html).toContain(">6,1 kg</span>");
     expect(html).toContain('bg-good-soft text-good-ink">Bình thường</span>');
     expect(html).toContain(
-      ">Nặng hơn 55 trong 100 bé trai cùng tuổi · +1,5 kg sau 46 ngày</span>",
+      '<span class="text-[13px] leading-[18px] text-muted">+1,5 kg sau 46 ngày</span>',
     );
     expect(html).toContain('bg-warn-soft text-warn-ink">Tăng chậm</span>');
     expect(html).toContain(
-      'aria-label="Tăng chậm. Dài hơn 9 trong 100 bé trai cùng tuổi. Chuẩn từ 56,0 đến 64,0 cm, giữa 60,0."',
+      'aria-label="Tăng chậm. Chuẩn từ 56,0 đến 64,0 cm, giữa 60,0."',
     );
     expect(html).toContain('style="left:28%"');
     expect(html).toContain(
-      ">Dài hơn 9 trong 100 bé trai cùng tuổi · trước đó là 45 trong 100</span>",
+      '<span class="text-[13px] leading-[18px] text-muted">+0,5 cm sau 14 ngày</span>',
     );
     expect(html.match(/role="img"/g)).toHaveLength(2);
+    expect(html).not.toContain("trong 100");
   });
 
-  it("without an earlier measurement the comparison stands alone", () => {
-    expect(render(CALM, [summary({ change: null })])).toContain(
-      ">Nặng hơn 55 trong 100 bé trai cùng tuổi</span>",
-    );
+  it("without an earlier measurement there is no line under the labels", () => {
+    const html = render(CALM, [summary({ change: null })]);
+    expect(html).not.toContain("sau 46 ngày");
+    // Only the day line under the heading is left in that style.
+    expect(
+      html.match(/<span class="text-\[13px\] leading-\[18px\] text-muted">/g),
+    ).toHaveLength(1);
   });
 
   // Spec 2026-11-25 §5.6.
@@ -222,11 +220,11 @@ describe("GrowthVerdict", () => {
       html.indexOf('style="left:52%"'),
     );
     expect(html.indexOf(">4,7 kg<")).toBeLessThan(
-      html.indexOf(">Nặng hơn 55 trong 100"),
+      html.indexOf(">+1,5 kg sau 46 ngày<"),
     );
   });
 
-  it("an indicator near the edge: its edge label in bold, and the distance between the labels and the comparison", () => {
+  it("an indicator near the edge: its edge label in bold, and the distance between the labels and the change", () => {
     const html = render(CALM, [summary(), nearLength]);
     expect(html).toContain('font-bold text-warn">56,0 cm</span>');
     const line =
@@ -234,9 +232,7 @@ describe("GrowthVerdict", () => {
     expect(html).toContain(line);
     expect(html.indexOf(line)).toBeGreaterThan(html.indexOf(">64,0 cm<"));
     expect(html.indexOf(line)).toBeLessThan(
-      html.indexOf(
-        ">Dài hơn 6 trong 100 bé trai cùng tuổi · +1,9 cm sau 10 ngày<",
-      ),
+      html.indexOf(">+1,9 cm sau 10 ngày<"),
     );
     // The indicator that is not near has no such line.
     expect(html.match(/font-semibold text-warn"/g)).toHaveLength(1);

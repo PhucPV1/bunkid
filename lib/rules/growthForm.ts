@@ -105,30 +105,6 @@ export function formatPercentile(p: number): string {
 export const sexLabel = (sex: WhoSex) =>
   sex === "girls" ? "bé gái" : "bé trai";
 
-// "n trong 100": a whole number that never reads 0 or 100.
-export const outOf100 = (percentile: number) =>
-  Math.min(99, Math.max(1, Math.round(percentile)));
-
-// Spec 2026-11-25 §5.2: a percentile in plain words. The number stays within
-// 1–99 so it never reads "hơn 0" or "hơn 100".
-export function comparePhrase(
-  indicator: WhoIndicator,
-  percentile: number,
-  sex: WhoSex,
-  ageDays: number,
-): string {
-  const n = outOf100(percentile);
-  const word =
-    indicator === "wfa"
-      ? "Nặng hơn"
-      : indicator === "hcfa"
-        ? "Lớn hơn"
-        : ageDays < 730
-          ? "Dài hơn"
-          : "Cao hơn";
-  return `${word} ${n} trong 100 ${sexLabel(sex)} cùng tuổi`;
-}
-
 export const INDICATORS: {
   key: WhoIndicator;
   title: string;

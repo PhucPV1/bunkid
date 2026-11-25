@@ -153,8 +153,10 @@ describe("GrowthScreen", () => {
     expect(html).toContain(">73,1 cm</span>");
     expect(html).toContain(">Cách mức thấp nhất của chuẩn 4,1 cm</span>");
     expect(html).toContain(
-      'aria-label="Gần mức thấp. Dài hơn 8 trong 100 bé trai cùng tuổi. Chuẩn từ 43,9 đến 73,1 cm, giữa 58,5."',
+      'aria-label="Gần mức thấp. Chuẩn từ 43,9 đến 73,1 cm, giữa 58,5."',
     );
+    // Spec §5.2 as changed on 2026-11-25: no "… trong 100 bé" sentence.
+    expect(html).not.toContain("cùng tuổi");
     // Weight sits on the median: its labels are there, none of them in bold.
     // Its norm runs from 4,125 to 6,875 kg; the edges are rounded inwards.
     expect(html).toContain(">4,2 kg</span>");
@@ -223,8 +225,8 @@ describe("GrowthScreen", () => {
     expect(html).toContain(">Chiều dài thấp hơn chuẩn nhiều</h2>");
     expect(html).not.toContain(">Cân nặng thấp hơn chuẩn</h2>");
     // The weight block of the verdict card is not there yet.
-    expect(html).not.toContain('aria-label="Thấp. Nặng hơn');
-    expect(html.match(/role="img" aria-label="[^"]*trong 100/g)).toHaveLength(
+    expect(html).not.toContain(" kg, giữa ");
+    expect(html.match(/role="img" aria-label="[^"]*Chuẩn từ/g)).toHaveLength(
       1,
     );
   });
