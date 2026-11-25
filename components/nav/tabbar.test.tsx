@@ -32,7 +32,7 @@ beforeEach(() => {
 });
 
 describe("TabBarView", () => {
-  it("is a floating glass pill with three icon tabs", () => {
+  it("is a floating glass pill with four icon tabs", () => {
     const html = renderToStaticMarkup(<TabBarView current="history" />);
     expect(html).toContain('aria-label="Điều hướng chính"');
     expect(html).toContain("glass-strong");
@@ -41,11 +41,13 @@ describe("TabBarView", () => {
       "bottom-[max(calc(env(safe-area-inset-bottom)+10px),26px)]",
     );
     expect(html).toContain("print:hidden");
-    expect(html.match(/<a /g)).toHaveLength(3);
-    for (const name of ["home", "list", "explore"] as const)
+    expect(html.match(/<a /g)).toHaveLength(4);
+    for (const name of ["home", "list", "pulse", "grid"] as const)
       expect(html).toContain(`d="${ICON_PATHS[name]}"`);
     expect(html).toContain(">Hôm nay</a>");
-    expect(html).toContain(">Khám phá</a>");
+    expect(html).toContain(">Sức khỏe</a>");
+    expect(html).toContain(">Tiện ích</a>");
+    expect(html).not.toContain("Khám phá");
   });
 
   it("marks only the current tab", () => {
@@ -55,6 +57,7 @@ describe("TabBarView", () => {
     expect(anchors.map((a) => a.includes('aria-current="page"'))).toEqual([
       false,
       true,
+      false,
       false,
     ]);
     expect(anchors[1]).toContain("bg-accent-tint text-accent-text");
@@ -110,12 +113,13 @@ describe("TabBarView timer tile", () => {
   const itemsOf = (html: string) =>
     [...html.matchAll(/<li class="([^"]*)">/g)].map((m) => m[1]);
 
-  it("without a timer the three tabs share the bar equally and nothing ticks", () => {
+  it("without a timer the four tabs share the bar equally and nothing ticks", () => {
     for (const html of [
       renderToStaticMarkup(<TabBarView current="history" />),
       renderToStaticMarkup(<TabBarView current="history" timer={null} />),
     ]) {
       expect(itemsOf(html)).toEqual([
+        "flex flex-1",
         "flex flex-1",
         "flex flex-1",
         "flex flex-1",
@@ -134,13 +138,15 @@ describe("TabBarView timer tile", () => {
         timer={{ log: row({}), more: 0 }}
       />,
     );
+    // Spec 2026-11-25 §3.3: with four tabs the tile takes 2.2 shares.
     expect(itemsOf(html)).toEqual([
-      "flex flex-[1.7]",
+      "flex flex-[2.2]",
+      "flex flex-1",
       "flex flex-1",
       "flex flex-1",
     ]);
     const anchors = anchorsOf(html);
-    expect(anchors).toHaveLength(3);
+    expect(anchors).toHaveLength(4);
     const [home, history] = anchors;
     // Still a link to Hôm nay, where the timer can be stopped.
     expect(home).toContain('href="/"');
@@ -160,11 +166,12 @@ describe("TabBarView timer tile", () => {
     expect(home).toContain(
       '<span class="text-[10px] leading-3 font-semibold whitespace-nowrap text-ink">Hôm nay</span>',
     );
-    // The other two tabs are drawn as before.
+    // The other three tabs are drawn as before.
     expect(history).toContain('aria-current="page"');
     expect(history).toContain("bg-accent-tint text-accent-text");
     expect(history).toContain(">Nhật ký</a>");
-    expect(html).toContain(">Khám phá</a>");
+    expect(html).toContain(">Sức khỏe</a>");
+    expect(html).toContain(">Tiện ích</a>");
     // Nothing stops the timer from here: the only button is "+".
     expect(html).not.toContain("Dừng");
     expect(html.match(/<button/g)).toHaveLength(1);
@@ -180,7 +187,7 @@ describe("TabBarView timer tile", () => {
   it("shows hours and minutes past one hour and counts the other timers", () => {
     const html = renderToStaticMarkup(
       <TabBarView
-        current="explore"
+        current="health"
         timer={{
           log: row({
             type: "sleep",
@@ -192,12 +199,13 @@ describe("TabBarView timer tile", () => {
       />,
     );
     const [home] = anchorsOf(html);
-    // A screen reader hears the count that sighted users read as "· +2".
+    // A screen reader hears the count that sighted users read as "+2".
     expect(home).toContain(
       'aria-label="Hôm nay, Ngủ đã chạy 1:30:05, còn 2 timer khác đang chạy"',
     );
     expect(home).toContain(">1g 30p</span>");
-    expect(home).toContain(">Hôm nay · +2</span>");
+    expect(home).toContain(">Hôm nay +2</span>");
+    expect(home).not.toContain(" · ");
     expect(home).toContain("bg-cat-sleep/15");
     expect(home).toContain("rounded-full bg-cat-sleep text-bg");
     expect(home).toContain(`d="${ICON_PATHS.moon}"`);
@@ -230,11 +238,11 @@ describe("TabBarView timer tile", () => {
       true,
       false,
       false,
+      false,
     ]);
     expect(anchors[0]).toContain("bg-cat-feed/15");
     expect(anchors.join("")).not.toContain("bg-accent-tint");
   });
-
 });
 
 // Spec 2026-11-19 §4: the floating pill is gone, and so is the room it took.

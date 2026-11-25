@@ -120,7 +120,7 @@ describe("ActionChrome with a running timer", () => {
       'aria-label="Hôm nay, Ngủ đã chạy 12:34, còn 1 timer khác đang chạy"',
     );
     expect(home).toContain(">12:34</span>");
-    expect(home).toContain(">Hôm nay · +1</span>");
+    expect(home).toContain(">Hôm nay +1</span>");
     expect(home).not.toContain("aria-current");
   });
 
@@ -137,7 +137,7 @@ describe("ActionChrome with a running timer", () => {
     const html = render(TIMERS);
     expect(html).toContain(">Hôm nay</a>");
     expect(html).not.toContain("đã chạy");
-    expect(html).not.toContain("flex-[1.7]");
+    expect(html).not.toContain("flex-[2.2]");
     expect(homeTab(html)).toContain("bg-accent-tint text-accent-text");
   });
 

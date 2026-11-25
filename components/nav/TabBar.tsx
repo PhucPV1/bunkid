@@ -35,7 +35,7 @@ function TimerTab({
   const category = categoryOf(log.type);
   const ms = now.getTime() - Date.parse(log.started_at);
   // The name a screen reader says; it also carries the count that the small
-  // line shows as "· +n".
+  // line shows as "+n".
   const name = `${tab.label}, ${timerLabel(log)} đã chạy ${formatClock(ms)}`;
   return (
     <Link
@@ -61,7 +61,7 @@ function TimerTab({
         </span>
         {/* text-ink: text-muted is too faint on the tint in Ban đêm. */}
         <span className="text-[10px] leading-3 font-semibold whitespace-nowrap text-ink">
-          {more > 0 ? `${tab.label} · +${more}` : tab.label}
+          {more > 0 ? `${tab.label} +${more}` : tab.label}
         </span>
       </span>
     </Link>
@@ -97,7 +97,7 @@ export function TabBarView({
           return (
             <li
               key={tab.key}
-              className={cx("flex", tile ? "flex-[1.7]" : "flex-1")}
+              className={cx("flex", tile ? "flex-[2.2]" : "flex-1")}
             >
               {tile ? (
                 <TimerTab tab={tab} timer={tile} current={active} />

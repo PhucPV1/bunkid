@@ -1,13 +1,14 @@
 import type { CategoryToken } from "@/lib/ui/categories";
 import type { IconName } from "@/lib/ui/icons";
 
-export type TabKey = "home" | "history" | "explore";
+export type TabKey = "home" | "history" | "health" | "tools";
 export type Tab = { key: TabKey; href: string; label: string; icon: IconName };
 
 export const TABS: Tab[] = [
   { key: "home", href: "/", label: "Hôm nay", icon: "home" },
   { key: "history", href: "/nhat-ky", label: "Nhật ký", icon: "list" },
-  { key: "explore", href: "/kham-pha", label: "Khám phá", icon: "explore" },
+  { key: "health", href: "/suc-khoe", label: "Sức khỏe", icon: "pulse" },
+  { key: "tools", href: "/tien-ich", label: "Tiện ích", icon: "grid" },
 ];
 
 export type NavItem = {
@@ -17,8 +18,6 @@ export type NavItem = {
   color: CategoryToken;
   detail?: string;
 };
-// The old name, until the Khám phá page is gone.
-export type ExploreItem = NavItem;
 
 // Spec 2026-11-25 §3.4: the Sức khỏe page.
 export const HEALTH_EMERGENCY = {
@@ -116,35 +115,19 @@ export const TOOLS: NavItem[] = [
   },
 ];
 
-// The Khám phá page reads the same items under its own grouping.
-export const EXPLORE_EMERGENCY = HEALTH_EMERGENCY;
-export const EXPLORE_TRACK: NavItem[] = [
-  HEALTH_STATS,
-  HEALTH_GROWTH,
-  ...HEALTH_CARDS,
-];
-export const EXPLORE_GUIDES: NavItem[] = [
-  HEALTH_SICK[0],
-  HEALTH_SICK[1],
-  TOOLS[3],
-];
-export const EXPLORE_SOOTHE: NavItem[] = TOOLS.slice(0, 3);
-export const EXPLORE_REPORT: NavItem = HEALTH_SICK[2];
-
-// Pages that light up the Khám phá tab; /cam-nang and /tien-ich now redirect there.
-const EXPLORE_PREFIXES = [
-  "/kham-pha",
+// Spec 2026-11-25 §3.1: the pages that light up the Sức khỏe tab. /kham-pha
+// and /cam-nang redirect to it.
+const HEALTH_PREFIXES = [
   "/suc-khoe",
+  "/kham-pha",
   "/cam-nang",
-  "/tien-ich",
-  EXPLORE_EMERGENCY.href,
-  ...[
-    ...EXPLORE_TRACK,
-    ...EXPLORE_GUIDES,
-    ...EXPLORE_SOOTHE,
-    EXPLORE_REPORT,
-  ].map((item) => item.href),
+  HEALTH_EMERGENCY.href,
+  HEALTH_GROWTH.href,
+  HEALTH_STATS.href,
+  ...[...HEALTH_CARDS, ...HEALTH_SICK].map((item) => item.href),
 ];
+
+const TOOLS_PREFIXES = ["/tien-ich", ...TOOLS.map((item) => item.href)];
 
 function under(pathname: string, prefix: string): boolean {
   return pathname === prefix || pathname.startsWith(`${prefix}/`);
@@ -153,8 +136,9 @@ function under(pathname: string, prefix: string): boolean {
 export function activeTab(pathname: string): TabKey | null {
   if (pathname === "/" || under(pathname, "/cai-dat")) return "home";
   if (under(pathname, "/nhat-ky")) return "history";
-  if (EXPLORE_PREFIXES.some((prefix) => under(pathname, prefix)))
-    return "explore";
+  if (HEALTH_PREFIXES.some((prefix) => under(pathname, prefix)))
+    return "health";
+  if (TOOLS_PREFIXES.some((prefix) => under(pathname, prefix))) return "tools";
   return null;
 }
 

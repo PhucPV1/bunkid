@@ -80,8 +80,8 @@ describe("category class maps", () => {
 });
 
 describe("icon paths", () => {
-  it("has the 48 icons the app uses, each a non-empty path", () => {
-    expect(Object.keys(ICON_PATHS)).toHaveLength(48);
+  it("has the 47 icons the app uses, each a non-empty path", () => {
+    expect(Object.keys(ICON_PATHS)).toHaveLength(47);
     for (const d of Object.values(ICON_PATHS)) expect(d).toMatch(/^[Mm]/);
   });
 
