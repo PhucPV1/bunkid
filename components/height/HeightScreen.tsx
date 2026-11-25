@@ -16,7 +16,7 @@ import { vnDayRange } from "@/lib/rules/days";
 import { habitStats } from "@/lib/rules/habits";
 import { heightView } from "@/lib/rules/heightView";
 import { latestDay, measureReminder } from "@/lib/rules/measureSchedule";
-import { vnDateString } from "@/lib/rules/time";
+import { ageDays, vnDateString } from "@/lib/rules/time";
 import type { Baby } from "@/lib/supabase/rows";
 import {
   HeightGoalCard,
@@ -27,6 +27,7 @@ import {
 import { HabitsCard } from "./HabitsCard";
 import { HeightGoalSheet } from "./HeightGoalSheet";
 import { MeasureReminderRow } from "./MeasureReminderRow";
+import { NutritionCard } from "./NutritionCard";
 
 const NOTE = "px-1 text-[13px] leading-[18px] text-muted";
 
@@ -134,6 +135,7 @@ export function HeightScreen({
             </>
           )}
           {habits && <HabitsCard rows={habits.rows} />}
+          <NutritionCard ageDays={ageDays(baby.dob, now)} />
           {reminder && (
             <MeasureReminderRow userId={userId} reminder={reminder} />
           )}

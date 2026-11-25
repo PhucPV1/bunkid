@@ -222,6 +222,32 @@ describe("HeightScreen", () => {
     }
   });
 
+  // Spec 2026-11-25 §7.3 and §6.3 item 7. The baby is 67 days old.
+  it("the nutrition of the baby's stage: after the habits, before the measure reminder", () => {
+    const html = render();
+    const order = [
+      ">Thói quen 7 ngày qua</h2>",
+      ">Dinh dưỡng 0–6 tháng</h2>",
+      ">Chưa ăn dặm, chưa cần uống thêm nước.</span>",
+      ">Giai đoạn kế: 6–12 tháng</span>",
+      ">Nguồn: WHO – Infant and young child feeding,",
+      ">Nhắc đo mỗi tháng</span>",
+      "Chiều cao lúc lớn phần lớn do di truyền.",
+    ].map((text) => html.indexOf(text));
+    expect(order.every((i) => i >= 0)).toBe(true);
+    expect([...order].sort((a, b) => a - b)).toEqual(order);
+  });
+
+  it("the nutrition follows the age: a child of two has the last stage and no next row", () => {
+    const html = render({}, baby({ dob: "2024-11-20" }));
+    expect(html).toContain(">Dinh dưỡng 2–5 tuổi</h2>");
+    expect(html).not.toContain("Giai đoạn kế");
+  });
+
+  it("the nutrition does not wait for the logs", () => {
+    expect(render({ logs: LOADING })).toContain(">Dinh dưỡng 0–6 tháng</h2>");
+  });
+
   // Spec 2026-11-25 §8.3. The newest measurement is of 15/11 and the baby is
   // under one year: the next one is due on 15/12.
   it("the measure reminder: after the habits, before the closing note, with the viewer's switch", () => {
@@ -312,6 +338,8 @@ describe("HeightScreen", () => {
     expect(html).not.toContain("Nằm sấp");
     expect(html).not.toContain("Vitamin D");
     expect(html).toContain(">Chuẩn giấc ngủ như trang Thống kê.</p>");
+    // Past the last stage there is no nutrition block either.
+    expect(html).not.toContain("Dinh dưỡng");
     // Past the WHO table nothing is due, so there is no reminder row.
     expect(html).not.toContain("Nhắc đo");
     expect(html).toContain(">Di truyền dự kiến</h2>");
