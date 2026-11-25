@@ -8,7 +8,11 @@ export default function Page() {
     <AuthGate need="baby">
       {({ session, ctx }) =>
         ctx?.baby && session ? (
-          <HeightScreen baby={ctx.baby} isOwner={ctx.member.role === "owner"} />
+          <HeightScreen
+            baby={ctx.baby}
+            isOwner={ctx.member.role === "owner"}
+            userId={session.user.id}
+          />
         ) : null
       }
     </AuthGate>

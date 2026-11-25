@@ -15,6 +15,8 @@ import { statsFetchSince } from "@/lib/rules/dailyStats";
 import { vnDayRange } from "@/lib/rules/days";
 import { habitStats } from "@/lib/rules/habits";
 import { heightView } from "@/lib/rules/heightView";
+import { latestDay, measureReminder } from "@/lib/rules/measureSchedule";
+import { vnDateString } from "@/lib/rules/time";
 import type { Baby } from "@/lib/supabase/rows";
 import {
   HeightGoalCard,
@@ -24,6 +26,7 @@ import {
 } from "./HeightCards";
 import { HabitsCard } from "./HabitsCard";
 import { HeightGoalSheet } from "./HeightGoalSheet";
+import { MeasureReminderRow } from "./MeasureReminderRow";
 
 const NOTE = "px-1 text-[13px] leading-[18px] text-muted";
 
@@ -44,9 +47,12 @@ const GrowthChart = dynamic(
 export function HeightScreen({
   baby,
   isOwner,
+  userId,
 }: {
   baby: Baby;
   isOwner: boolean;
+  // Spec §8.3: whose "Nhắc đo định kỳ" switch the reminder row shows.
+  userId: string;
 }) {
   const growth = useGrowth(baby.id);
   // Spec §6.5: only the owner of the family may open the sheet.
@@ -59,6 +65,14 @@ export function HeightScreen({
   const now = new Date();
   const logs = useStatsLogs(baby.id, statsFetchSince(vnDayRange(now, 14)));
   const habits = logs.data ? habitStats(logs.data, baby.dob, now) : null;
+  // Spec §8.3: counted from the newest measurement of any indicator.
+  const reminder = growth.data
+    ? measureReminder({
+        dob: baby.dob,
+        lastMeasuredOn: latestDay(growth.data.map((row) => row.measured_on)),
+        today: vnDateString(now),
+      })
+    : null;
   const view =
     growth.data && table.data
       ? heightView({
@@ -120,6 +134,9 @@ export function HeightScreen({
             </>
           )}
           {habits && <HabitsCard rows={habits.rows} />}
+          {reminder && (
+            <MeasureReminderRow userId={userId} reminder={reminder} />
+          )}
           <p className={NOTE}>
             Chiều cao lúc lớn phần lớn do di truyền. Kim Bun giúp theo dõi và
             nhắc việc, không thay lời khuyên của bác sĩ.

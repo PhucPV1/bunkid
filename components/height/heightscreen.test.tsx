@@ -13,9 +13,15 @@ const state = vi.hoisted(() => ({
 const useGrowth = vi.hoisted(() => vi.fn());
 const useWhoTable = vi.hoisted(() => vi.fn());
 const useStatsLogs = vi.hoisted(() => vi.fn());
+const useNotificationPrefs = vi.hoisted(() => vi.fn());
 
 vi.mock("@/lib/data/growth", () => ({ useGrowth, useWhoTable }));
 vi.mock("@/lib/data/logs", () => ({ useStatsLogs }));
+vi.mock("@/lib/data/notificationPrefs", () => ({
+  DEFAULT_PREFS: { growth_measure: true },
+  useNotificationPrefs,
+  useSavePrefs: () => ({ mutate: () => {}, isPending: false, isError: false }),
+}));
 // The chart is loaded lazily; a stand-in shows what it was given.
 vi.mock("next/dynamic", () => ({
   default:
@@ -100,13 +106,19 @@ function render(
   state.growth = (query.growth ?? loaded(ROWS)) as Record<string, unknown>;
   state.table = (query.table ?? TABLE) as Record<string, unknown>;
   state.logs = (query.logs ?? loaded([])) as Record<string, unknown>;
-  return renderToStaticMarkup(<HeightScreen baby={who} isOwner={isOwner} />);
+  return renderToStaticMarkup(
+    <HeightScreen baby={who} isOwner={isOwner} userId="u1" />,
+  );
 }
 
 beforeAll(() => {
   useGrowth.mockImplementation(() => state.growth);
   useWhoTable.mockImplementation(() => state.table);
   useStatsLogs.mockImplementation(() => state.logs);
+  useNotificationPrefs.mockImplementation(() => ({
+    data: { growth_measure: false },
+    isSuccess: true,
+  }));
   vi.useFakeTimers({ toFake: ["Date"] });
   vi.setSystemTime(new Date("2026-11-20T05:00:00Z")); // 12:00 giờ VN
 });
@@ -210,6 +222,30 @@ describe("HeightScreen", () => {
     }
   });
 
+  // Spec 2026-11-25 §8.3. The newest measurement is of 15/11 and the baby is
+  // under one year: the next one is due on 15/12.
+  it("the measure reminder: after the habits, before the closing note, with the viewer's switch", () => {
+    useNotificationPrefs.mockClear();
+    const html = render();
+    const order = [
+      ">Thói quen 7 ngày qua</h2>",
+      ">Nhắc đo mỗi tháng</span>",
+      ">Lần tới 15/12 · 08:00</span>",
+      "Chiều cao lúc lớn phần lớn do di truyền.",
+    ].map((text) => html.indexOf(text));
+    expect(order.every((i) => i >= 0)).toBe(true);
+    expect([...order].sort((a, b) => a - b)).toEqual(order);
+    expect(useNotificationPrefs).toHaveBeenCalledWith("u1");
+    expect(html).toContain('aria-label="Nhắc đo định kỳ"');
+    expect(html).toContain('aria-checked="false"');
+  });
+
+  it("the measure reminder says when a measurement is due", () => {
+    const html = render({ growth: loaded([measure("2026-10-14", 58.5)]) });
+    expect(html).toContain(">Đã đến kỳ đo</span>");
+    expect(html).not.toContain("Lần tới");
+  });
+
   it("no target: the goal card says so, there is no path, the rest stays", () => {
     const html = render({}, baby({ target_height_cm: null }));
     expect(html).toContain(">Chưa có mục tiêu chiều cao</p>");
@@ -276,6 +312,8 @@ describe("HeightScreen", () => {
     expect(html).not.toContain("Nằm sấp");
     expect(html).not.toContain("Vitamin D");
     expect(html).toContain(">Chuẩn giấc ngủ như trang Thống kê.</p>");
+    // Past the WHO table nothing is due, so there is no reminder row.
+    expect(html).not.toContain("Nhắc đo");
     expect(html).toContain(">Di truyền dự kiến</h2>");
     expect(html).toContain("Chiều cao lúc lớn phần lớn do di truyền.");
   });

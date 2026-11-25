@@ -1,5 +1,5 @@
 import { WHO_LAST_DAY } from "@/lib/content/who";
-import { addDays, vnDayStartMs } from "./days";
+import { addDays, formatDayShort, vnDayStartMs } from "./days";
 
 const DAY_MS = 86_400_000;
 
@@ -38,5 +38,24 @@ export function nextMeasureDue(input: {
     interval,
     due,
     measureDue: input.today >= due && age <= WHO_LAST_DAY,
+  };
+}
+
+export type MeasureReminder = { title: string; detail: string };
+
+// Spec 2026-11-25 §8.3: the reminder row on the Chiều cao page. null past the
+// last day of the WHO tables, when nothing is due any more.
+export function measureReminder(input: {
+  dob: string;
+  lastMeasuredOn: string | null;
+  today: string;
+}): MeasureReminder | null {
+  if (daysBetween(input.dob, input.today) > WHO_LAST_DAY) return null;
+  const { interval, due, measureDue } = nextMeasureDue(input);
+  return {
+    title: interval === 30 ? "Nhắc đo mỗi tháng" : "Nhắc đo ba tháng một lần",
+    detail: measureDue
+      ? "Đã đến kỳ đo"
+      : `Lần tới ${formatDayShort(due)} · 08:00`,
   };
 }
