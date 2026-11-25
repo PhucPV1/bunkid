@@ -30,6 +30,7 @@ import {
   defaultIndicator,
   indicatorSummaries,
   listRows,
+  verdictHead,
 } from "@/lib/rules/growthView";
 import { ageDays, formatAgeVi } from "@/lib/rules/time";
 import type { Baby, GrowthRow } from "@/lib/supabase/rows";
@@ -123,9 +124,8 @@ export function GrowthScreen({
       ))}
       {latest && summaries.length > 0 && (
         <GrowthVerdict
-          babyName={baby.name}
+          head={verdictHead({ babyName: baby.name, alerts, summaries })}
           measured={`Đo gần nhất ${formatDayShort(latest.measuredOn)} · ${formatAgeVi(baby.dob, new Date(`${latest.measuredOn}T05:00:00Z`))}`}
-          calm={alerts.length === 0}
           summaries={summaries}
         />
       )}

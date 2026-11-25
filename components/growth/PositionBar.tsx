@@ -1,3 +1,5 @@
+import type { NearKind } from "@/lib/rules/growthAlerts";
+import type { IndicatorSummary } from "@/lib/rules/growthView";
 import { cx } from "@/lib/ui/cx";
 
 // Spec 2026-11-25 §5.3: where a measurement sits between z −3 and z +3. The
@@ -31,6 +33,47 @@ export function PositionBar({
         className="absolute top-1/2 size-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-glass-solid bg-ink"
         style={{ left: `${position}%` }}
       />
+    </span>
+  );
+}
+
+const LABEL = "absolute -translate-x-1/2 whitespace-nowrap";
+
+// Spec 2026-11-25 §5.6: the norm in numbers, right under the bar. Each label
+// is centred on its point of the bar: the two edges of the normal range and
+// its middle. The edge the value is near is written in bold. Screen readers
+// get the same numbers from the bar's own label.
+export function StandardLabels({
+  standard,
+  near,
+}: {
+  standard: IndicatorSummary["standard"];
+  near: NearKind | null;
+}) {
+  return (
+    <span
+      aria-hidden
+      className="relative block h-4 text-xs leading-4 text-muted tabular-nums"
+    >
+      <span
+        className={cx(
+          LABEL,
+          "left-[16.7%]",
+          near === "nearLow" && "font-bold text-warn",
+        )}
+      >
+        {standard.low}
+      </span>
+      <span className={cx(LABEL, "left-1/2")}>{standard.mid}</span>
+      <span
+        className={cx(
+          LABEL,
+          "left-[83.3%]",
+          near === "nearHigh" && "font-bold text-warn",
+        )}
+      >
+        {standard.high}
+      </span>
     </span>
   );
 }

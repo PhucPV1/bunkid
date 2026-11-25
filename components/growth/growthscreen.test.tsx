@@ -139,6 +139,43 @@ describe("GrowthScreen", () => {
     expect(html).toContain('data-chart="kg:2"');
   });
 
+  // Spec 2026-11-25 §5.6. 48 cm against a 58,5 cm median is z −1,44: inside
+  // the norm (43,9 to 73,1 cm) but near its low edge.
+  it("near the edge of the norm: a heading that says normal, the note, the norm in numbers, no alert", () => {
+    const html = render([measure("2026-11-15", 5500, 48)]);
+    expect(html).toContain(">Bun phát triển bình thường</h2>");
+    expect(html).toContain(
+      '<strong class="font-bold">Chiều dài đang gần mức thấp của chuẩn.</strong> Bé vẫn trong vùng bình thường; nên theo dõi ở các lần đo tới.</p>',
+    );
+    expect(html).toContain('bg-warn-soft text-warn-ink">Gần mức thấp</span>');
+    expect(html).toContain('font-bold text-warn">43,9 cm</span>');
+    expect(html).toContain(">giữa 58,5</span>");
+    expect(html).toContain(">73,1 cm</span>");
+    expect(html).toContain(">Cách mức thấp nhất của chuẩn 4,1 cm</span>");
+    expect(html).toContain(
+      'aria-label="Gần mức thấp. Dài hơn 8 trong 100 bé trai cùng tuổi. Chuẩn từ 43,9 đến 73,1 cm, giữa 58,5."',
+    );
+    // Weight sits on the median: its labels are there, none of them in bold.
+    // Its norm runs from 4,125 to 6,875 kg; the edges are rounded inwards.
+    expect(html).toContain(">4,2 kg</span>");
+    expect(html).toContain(">6,8 kg</span>");
+    expect(html.match(/font-bold text-warn"/g)).toHaveLength(1);
+    // Near the edge is not an alert: no card, no dot, the picker stays on weight.
+    expect(html).not.toContain(ICON_PATHS.alert);
+    expect(html).not.toContain('aria-label="có cảnh báo"');
+    expect(pressed(html)).toEqual(["Cân nặng"]);
+  });
+
+  it("an alert on one indicator and another near the edge: the alert card, no heading, and the note", () => {
+    const html = render([measure("2026-11-15", 4000, 48)]);
+    expect(html).toContain(">Cân nặng thấp hơn chuẩn</h2>");
+    expect(html).not.toContain("phát triển bình thường");
+    expect(html).not.toContain("đang lớn đều");
+    expect(html).toContain(
+      '<strong class="font-bold">Chiều dài đang gần mức thấp của chuẩn.</strong>',
+    );
+  });
+
   it("blocks come in order: alert cards, verdict, picker, chart, list", () => {
     // 51 cm against a 58,5 cm median is z −1,03 lower than a month before: no
     // alert; 4 kg is z −2,18: low.
