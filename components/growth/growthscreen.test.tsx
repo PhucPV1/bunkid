@@ -242,7 +242,9 @@ describe("GrowthScreen", () => {
     expect(list).toContain("15/11 · 2 tháng 1 ngày");
     expect(list).toContain(">5,5 kg · 58,5 cm</span>");
     expect(list).toContain(">+1,1 kg · +3,5 cm so với lần trước</span>");
-    expect(list.match(/>Bình thường<\/span>/g)).toHaveLength(2);
+    expect(list.match(/>Bình thường<\/span>/g)).toHaveLength(1);
+    // Spec §5.6: 4,4 kg against a 5,5 kg median is z −1,6, near the low edge.
+    expect(list).toContain('bg-warn-soft text-warn-ink">Gần mức thấp</span>');
     expect(html).not.toContain("z-score");
   });
 

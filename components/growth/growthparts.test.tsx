@@ -19,6 +19,11 @@ const summary = (over: Partial<IndicatorSummary> = {}): IndicatorSummary => ({
   change: "+1,5 kg sau 46 ngày",
   measuredOn: "2026-11-25",
   ageDays: 76,
+  near: null,
+  standard: { low: "4,7 kg", mid: "giữa 6,0", high: "7,6 kg" },
+  barLabel:
+    "Bình thường. Nặng hơn 55 trong 100 bé trai cùng tuổi. Chuẩn từ 4,7 đến 7,6 kg, giữa 6,0.",
+  nearLine: null,
   ...over,
 });
 

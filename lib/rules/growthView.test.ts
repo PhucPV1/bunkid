@@ -16,6 +16,7 @@ import {
   gaugePosition,
   indicatorSummaries,
   listRows,
+  verdictHead,
 } from "./growthView";
 
 const DOB = "2026-01-01";
@@ -102,6 +103,11 @@ describe("indicatorSummaries", () => {
       change: null,
       measuredOn: day(40),
       ageDays: 40,
+      near: null,
+      standard: { low: "12,0 kg", mid: "giữa 16,0", high: "20,0 kg" },
+      barLabel:
+        "Bình thường. Nặng hơn 50 trong 100 bé trai cùng tuổi. Chuẩn từ 12,0 đến 20,0 kg, giữa 16,0.",
+      nearLine: null,
     });
   });
 
@@ -158,6 +164,197 @@ describe("indicatorSummaries", () => {
   it("a measurement the table cannot place is not the latest", () => {
     const [weight] = view([measure(1857, 20), measure(40, 16)]).summaries;
     expect(weight.value).toBe("16 kg");
+  });
+});
+
+// Spec 2026-11-25 §5.6. On the flat table the norm runs from 12 to 20, and a
+// value is near an edge from 12 up to 14 and above 18 up to 20.
+describe("indicatorSummaries: near the edge of the norm", () => {
+  it("near the low edge: the chip, the distance to the lowest value of the norm", () => {
+    const [length] = view([measure(40, null, 12.9)]).summaries;
+    expect(length.near).toBe("nearLow");
+    expect(length.chip).toEqual({ text: "Gần mức thấp", tone: "warn" });
+    expect(length.standard).toEqual({
+      low: "12,0 cm",
+      mid: "giữa 16,0",
+      high: "20,0 cm",
+    });
+    expect(length.nearLine).toBe("Cách mức thấp nhất của chuẩn 0,9 cm");
+    expect(length.barLabel).toBe(
+      "Gần mức thấp. Dài hơn 6 trong 100 bé trai cùng tuổi. Chuẩn từ 12,0 đến 20,0 cm, giữa 16,0.",
+    );
+  });
+
+  it("near the high edge: the chip, the distance to the highest value of the norm", () => {
+    const [weight] = view([measure(40, 18.5)]).summaries;
+    expect(weight.near).toBe("nearHigh");
+    expect(weight.chip).toEqual({ text: "Gần mức cao", tone: "warn" });
+    expect(weight.nearLine).toBe("Cách mức cao nhất của chuẩn 1,5 kg");
+  });
+
+  it("the limits: z −2 and +2 are near, z −1 and +1 are not", () => {
+    const near = (kg: number) => view([measure(40, kg)]).summaries[0].near;
+    expect([12, 13.99, 14, 16, 18, 18.01, 20].map(near)).toEqual([
+      "nearLow",
+      "nearLow",
+      null,
+      null,
+      null,
+      "nearHigh",
+      "nearHigh",
+    ]);
+  });
+
+  it("the distance is taken between the two numbers as written, with one decimal", () => {
+    // 12,34 reads 12,3 on the screen: 12,3 − 12,0.
+    expect(view([measure(40, null, 12.34)]).summaries[0].nearLine).toBe(
+      "Cách mức thấp nhất của chuẩn 0,3 cm",
+    );
+    // 19,96 reads 20,0, the same as the edge.
+    expect(view([measure(40, null, 19.96)]).summaries[0].nearLine).toBe(
+      "Sát mức cao nhất của chuẩn",
+    );
+    expect(view([measure(40, 12.04)]).summaries[0].nearLine).toBe(
+      "Sát mức thấp nhất của chuẩn",
+    );
+  });
+
+  // The alert reads the exact edge, the screen a rounded one. Rounded to the
+  // nearest tenth, 12,0975 would read "12,1" for a value of 12,1 (fine) but
+  // 12,04 would read "12,0" while 12,0 is already an alert.
+  it("the edges are rounded inwards: a value the app calls low is always below the lowest number shown", () => {
+    // M = 16,13: the norm runs from 12,0975 to 20,1625.
+    const table: LmsRow[] = Array.from({ length: 1857 }, (_, d) => [
+      d,
+      1,
+      16.13,
+      0.125,
+    ]);
+    const at = (cm: number) =>
+      view([measure(40, null, cm)], { lhfa: table }).summaries[0];
+    expect(at(16).standard).toEqual({
+      low: "12,1 cm",
+      mid: "giữa 16,1",
+      high: "20,1 cm",
+    });
+    expect(at(12).chip.text).toBe("Thấp");
+    expect(at(12.1).chip.text).toBe("Gần mức thấp");
+    expect(at(12.1).nearLine).toBe("Sát mức thấp nhất của chuẩn");
+    expect(at(20.1).nearLine).toBe("Sát mức cao nhất của chuẩn");
+    expect(at(20.2).chip.text).toBe("Cao");
+  });
+
+  it("a weight inside the norm that reads just past the number shown is at the edge, never a distance beyond it", () => {
+    // M = 16,02: the norm runs from 12,015 to 20,025, written 12,1 and 20,0.
+    const table: LmsRow[] = Array.from({ length: 1857 }, (_, d) => [
+      d,
+      1,
+      16.02,
+      0.125,
+    ]);
+    const at = (kg: number) =>
+      view([measure(40, kg)], { wfa: table }).summaries[0];
+    expect(at(12.02).standard.low).toBe("12,1 kg");
+    expect(at(12.02).nearLine).toBe("Sát mức thấp nhất của chuẩn");
+    expect(at(20.02).standard.high).toBe("20,0 kg");
+    expect(at(20.02).nearLine).toBe("Sát mức cao nhất của chuẩn");
+  });
+
+  it("an indicator with an alert is never near the edge", () => {
+    // z −1,33 is in the near range, but the fall from z 0 is an alert.
+    const [length] = view([
+      measure(54, null, 13.34),
+      measure(40, null, 16),
+    ]).summaries;
+    expect(length.chip).toEqual({ text: "Tăng chậm", tone: "warn" });
+    expect(length.near).toBeNull();
+    expect(length.nearLine).toBeNull();
+  });
+
+  it("every indicator carries the norm, with or without an alert", () => {
+    const [weight] = view([measure(40, 11)]).summaries;
+    expect(weight.chip.text).toBe("Thấp");
+    expect(weight.standard).toEqual({
+      low: "12,0 kg",
+      mid: "giữa 16,0",
+      high: "20,0 kg",
+    });
+    expect(weight.barLabel).toBe(
+      "Thấp. Nặng hơn 1 trong 100 bé trai cùng tuổi. Chuẩn từ 12,0 đến 20,0 kg, giữa 16,0.",
+    );
+  });
+
+  it("the norm is read on the day of the newest measurement of that indicator", () => {
+    // The median grows 0,03 a day from 4: 5,2 on day 40, 6,4 on day 80.
+    const growing: LmsRow[] = Array.from({ length: 1857 }, (_, d) => [
+      d,
+      1,
+      4 + 0.03 * d,
+      0.125,
+    ]);
+    const { summaries } = view([measure(80, 6.4), measure(40, null, 5.2)], {
+      wfa: growing,
+      lhfa: growing,
+    });
+    expect(summaries.map((s) => s.standard)).toEqual([
+      { low: "4,8 kg", mid: "giữa 6,4", high: "8,0 kg" },
+      { low: "3,9 cm", mid: "giữa 5,2", high: "6,5 cm" },
+    ]);
+  });
+});
+
+describe("verdictHead", () => {
+  const head = (rows: GrowthMeasure[]) => {
+    const { alerts, summaries } = view(rows);
+    return verdictHead({ babyName: "Bun", alerts, summaries });
+  };
+  const REST = "Bé vẫn trong vùng bình thường; nên theo dõi ở các lần đo tới.";
+
+  it("nothing wrong and nothing near: the calm heading, no note", () => {
+    expect(head([measure(40, 16, 16, 16)])).toEqual({
+      heading: "Bun đang lớn đều",
+      note: null,
+    });
+  });
+
+  it("one indicator near the low edge: a heading that still says normal, and the note", () => {
+    expect(head([measure(40, 16, 12.9, 16)])).toEqual({
+      heading: "Bun phát triển bình thường",
+      note: {
+        strong: ["Chiều dài đang gần mức thấp của chuẩn."],
+        rest: REST,
+      },
+    });
+  });
+
+  it("two and three indicators: listed in screen order, only the first word capitalised", () => {
+    expect(head([measure(40, 13, 12.9, 16)]).note?.strong).toEqual([
+      "Cân nặng và chiều dài đang gần mức thấp của chuẩn.",
+    ]);
+    expect(head([measure(40, 19, 19, 19)]).note?.strong).toEqual([
+      "Cân nặng, chiều dài và vòng đầu đang gần mức cao của chuẩn.",
+    ]);
+  });
+
+  it("some near the low edge and some near the high one: a sentence each, low first", () => {
+    expect(head([measure(40, 19, 13, 19)]).note).toEqual({
+      strong: [
+        "Chiều dài đang gần mức thấp của chuẩn.",
+        "Cân nặng và vòng đầu đang gần mức cao của chuẩn.",
+      ],
+      rest: REST,
+    });
+  });
+
+  it("with an alert there is no heading, but the note about another indicator stays", () => {
+    expect(head([measure(40, 11, 13)])).toEqual({
+      heading: null,
+      note: {
+        strong: ["Chiều dài đang gần mức thấp của chuẩn."],
+        rest: REST,
+      },
+    });
+    expect(head([measure(40, 11, 16)])).toEqual({ heading: null, note: null });
   });
 });
 
@@ -428,6 +625,34 @@ describe("listRows", () => {
       { text: "Rất thấp", tone: "danger" },
       { text: "Bình thường", tone: "good" },
     ]);
+  });
+
+  // Spec 2026-11-25 §5.6: every row is judged by its own values, old ones too.
+  it("a row inside the norm but near its edge says which edge", () => {
+    // More than 183 days apart, and no weight on the newest row, so no row
+    // raises an alert against another.
+    const items = list([
+      measure(700, null, 12.9),
+      measure(400, 18.5, 16),
+      measure(100, 16, 16),
+    ]);
+    expect(items.map((item) => item.chip)).toEqual([
+      { text: "Gần mức thấp", tone: "warn" },
+      { text: "Gần mức cao", tone: "warn" },
+      { text: "Bình thường", tone: "good" },
+    ]);
+  });
+
+  it("near both edges in one row: the first indicator in weight, length, head order", () => {
+    expect(list([measure(40, 19, 13)])[0].chip?.text).toBe("Gần mức cao");
+    expect(list([measure(40, 16, 13, 19)])[0].chip?.text).toBe("Gần mức thấp");
+  });
+
+  it("outside the norm beats near the edge, whichever indicator comes first", () => {
+    // The older row carries no alert: its weight is near the low edge, its
+    // length above the norm.
+    const [, older] = list([measure(700, null, 16), measure(40, 13, 21)]);
+    expect(older.chip).toEqual({ text: "Cao", tone: "warn" });
   });
 
   it("the newest row of an indicator with an alert takes the alert's chip", () => {

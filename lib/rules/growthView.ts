@@ -1,6 +1,13 @@
 import type { WhoIndicator, WhoSex } from "@/lib/content/who";
 import { formatDayShort } from "./days";
-import { ageOnDay, lmsAt, percentile, zScore } from "./growth";
+import {
+  ageOnDay,
+  type Lms,
+  lmsAt,
+  percentile,
+  standardRange,
+  zScore,
+} from "./growth";
 import {
   ALERT_CHIP,
   alertTone,
@@ -8,6 +15,9 @@ import {
   type GrowthMeasure,
   type GrowthTables,
   type GrowthTone,
+  NEAR_CHIP,
+  type NearKind,
+  nearKind,
   newestFirst,
   positionKind,
   readings,
@@ -35,7 +45,69 @@ export type IndicatorSummary = {
   change: string | null;
   measuredOn: string;
   ageDays: number;
+  // Spec §5.6: inside the norm but close to its edge. Null with an alert.
+  near: NearKind | null;
+  // The three labels under the position bar: "56,0 cm", "giữa 60,0", "64,0 cm".
+  standard: { low: string; mid: string; high: string };
+  // What the position bar says to a screen reader.
+  barLabel: string;
+  // "Cách mức thấp nhất của chuẩn 0,9 cm"; null when the value is not near.
+  nearLine: string | null;
 };
+
+// The norm is always written with one decimal, "56,0" too, so the numbers on
+// the screen line up and the reader can subtract them.
+const oneDecimal = new Intl.NumberFormat("vi-VN", {
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+});
+const toTenths = (n: number) => Math.round(n * 10);
+const fromTenths = (n: number) => oneDecimal.format(n / 10);
+// The two edges are rounded inwards, the low one up and the high one down:
+// the alerts read the exact edge, so a value the app calls low is then always
+// below the lowest number on the screen, and one it calls high always above
+// the highest. The margin keeps a product such as 3,9000000000000004 at 3,9.
+const ROUNDING_MARGIN = 1e-6;
+const tenthsUp = (n: number) => Math.ceil(n * 10 - ROUNDING_MARGIN);
+const tenthsDown = (n: number) => Math.floor(n * 10 + ROUNDING_MARGIN);
+
+// Spec 2026-11-25 §5.6: the norm on the day of one measurement, in words.
+function standardText(
+  indicator: WhoIndicator,
+  lms: Lms,
+  value: number,
+  near: NearKind | null,
+): Pick<IndicatorSummary, "standard" | "nearLine"> & { spoken: string } {
+  const range = standardRange(lms);
+  const low = tenthsUp(range.low);
+  const mid = toTenths(range.mid);
+  const high = tenthsDown(range.high);
+  const unit = indicator === "wfa" ? "kg" : "cm";
+  // Between the two numbers as the screen writes them. A value inside the
+  // norm that reads at or just past the number shown is at the edge.
+  const gap = Math.max(
+    0,
+    near === "nearLow"
+      ? toTenths(value) - low
+      : near === "nearHigh"
+        ? high - toTenths(value)
+        : 0,
+  );
+  const edge = near === "nearLow" ? "thấp" : "cao";
+  return {
+    standard: {
+      low: `${fromTenths(low)} ${unit}`,
+      mid: `giữa ${fromTenths(mid)}`,
+      high: `${fromTenths(high)} ${unit}`,
+    },
+    spoken: `Chuẩn từ ${fromTenths(low)} đến ${fromTenths(high)} ${unit}, giữa ${fromTenths(mid)}.`,
+    nearLine: !near
+      ? null
+      : gap === 0
+        ? `Sát mức ${edge} nhất của chuẩn`
+        : `Cách mức ${edge} nhất của chuẩn ${fromTenths(gap)} ${unit}`,
+  };
+}
 
 // z −3…+3 across the bar; anything beyond sits at the end.
 export function gaugePosition(z: number): number {
@@ -59,7 +131,28 @@ export function indicatorSummaries(input: {
     if (!table) return [];
     const [latest, ...older] = readings(input.rows, table, input.dob, key);
     if (!latest) return [];
+    const lms = lmsAt(table, latest.ageDays);
+    if (!lms) return [];
     const alert = input.alerts.find((item) => item.indicator === key);
+    // An alert always wins: an indicator that has one is never "near".
+    const near = alert ? null : nearKind(latest.z);
+    const chip: IndicatorSummary["chip"] = alert
+      ? { text: alert.chip, tone: alertTone(alert.level) }
+      : near
+        ? { text: NEAR_CHIP[near], tone: "warn" }
+        : { text: "Bình thường", tone: "good" };
+    const compare = comparePhrase(
+      key,
+      percentile(latest.z),
+      input.sex,
+      latest.ageDays,
+    );
+    const { standard, spoken, nearLine } = standardText(
+      key,
+      lms,
+      latest.value,
+      near,
+    );
     const before = older.find((reading) => reading.day < latest.day);
     const shifted =
       alert && alert.previousPercentile !== null
@@ -70,16 +163,9 @@ export function indicatorSummaries(input: {
         indicator: key,
         title,
         value: formatGrowthValue(key, latest.value),
-        chip: alert
-          ? { text: alert.chip, tone: alertTone(alert.level) }
-          : { text: "Bình thường", tone: "good" },
+        chip,
         position: gaugePosition(latest.z),
-        compare: comparePhrase(
-          key,
-          percentile(latest.z),
-          input.sex,
-          latest.ageDays,
-        ),
+        compare,
         change:
           shifted ??
           (before
@@ -87,9 +173,66 @@ export function indicatorSummaries(input: {
             : null),
         measuredOn: latest.day,
         ageDays: latest.ageDays,
+        near,
+        standard,
+        barLabel: `${chip.text}. ${compare}. ${spoken}`,
+        nearLine,
       },
     ];
   });
+}
+
+// Spec 2026-11-25 §5.6: how the verdict card opens.
+export type VerdictHead = {
+  // Null with an alert: the alert cards above the verdict already say it.
+  heading: string | null;
+  // The strip about the indicators near the edge of the norm: one sentence in
+  // bold for each edge, then the advice. Null when none is near.
+  note: { strong: string[]; rest: string } | null;
+};
+
+const NEAR_REST =
+  "Bé vẫn trong vùng bình thường; nên theo dõi ở các lần đo tới.";
+
+// "Cân nặng, chiều dài và vòng đầu": only the first name keeps its capital.
+function nameList(titles: string[]): string {
+  const names = titles.map((title, index) =>
+    index === 0 ? title : title.toLocaleLowerCase("vi"),
+  );
+  return names.length === 1
+    ? names[0]
+    : `${names.slice(0, -1).join(", ")} và ${names[names.length - 1]}`;
+}
+
+export function verdictHead(input: {
+  babyName: string;
+  alerts: GrowthAlert[];
+  summaries: IndicatorSummary[];
+}): VerdictHead {
+  const titles = (kind: NearKind) =>
+    input.summaries.filter((item) => item.near === kind).map((s) => s.title);
+  const low = titles("nearLow");
+  const high = titles("nearHigh");
+  const near = low.length + high.length > 0;
+  return {
+    heading:
+      input.alerts.length > 0
+        ? null
+        : `${input.babyName} ${near ? "phát triển bình thường" : "đang lớn đều"}`,
+    note: near
+      ? {
+          strong: [
+            ...(low.length > 0
+              ? [`${nameList(low)} đang gần mức thấp của chuẩn.`]
+              : []),
+            ...(high.length > 0
+              ? [`${nameList(high)} đang gần mức cao của chuẩn.`]
+              : []),
+          ],
+          rest: NEAR_REST,
+        }
+      : null,
+  };
 }
 
 // The indicator the page opens on: the first one, in screen order, with an alert.
@@ -270,6 +413,8 @@ export function listRows<T extends GrowthMeasure>(input: {
     const changes: string[] = [];
     let red: string | null = null;
     let yellow: string | null = null;
+    // Spec §5.6: the first indicator, in screen order, near the edge.
+    let near: NearKind | null = null;
     let assessed = 0;
     let outside = false;
     for (const { key } of INDICATORS) {
@@ -287,9 +432,11 @@ export function listRows<T extends GrowthMeasure>(input: {
         continue;
       }
       assessed += 1;
-      const kind = positionKind(zScore(lms, value));
+      const z = zScore(lms, value);
+      const kind = positionKind(z);
       if (kind === "veryLow" || kind === "veryHigh") red ??= ALERT_CHIP[kind];
       else if (kind) yellow ??= ALERT_CHIP[kind];
+      else near ??= nearKind(z);
     }
     const alert = alertOf.get(row);
     const chip: GrowthListItem<T>["chip"] = alert
@@ -298,9 +445,11 @@ export function listRows<T extends GrowthMeasure>(input: {
         ? { text: red, tone: "danger" }
         : yellow
           ? { text: yellow, tone: "warn" }
-          : assessed > 0
-            ? { text: "Bình thường", tone: "good" }
-            : null;
+          : near
+            ? { text: NEAR_CHIP[near], tone: "warn" }
+            : assessed > 0
+              ? { text: "Bình thường", tone: "good" }
+              : null;
     return {
       row,
       title: `${formatDayShort(row.measured_on)} · ${
