@@ -620,3 +620,26 @@ Kết quả: Chờ người dùng.
 | iPhone 11     |     |         |         |
 | iPhone 16     |     |         |         |
 | iPhone 17 Pro |     |         |         |
+
+## Bước 37 — Sức khỏe, Tăng trưởng, Chiều cao và thông báo tăng trưởng (spec 2026-11-25 §3–§8)
+
+Mục 2 tạo một bản ghi Ngủ thử và mục 6 tạo một lần đo thử; mỗi mục xóa dữ liệu thử của nó ngay. Cần hai máy đã bật thông báo, đăng nhập hai tài khoản khác nhau của cùng gia đình (máy A, máy B).
+
+1. Mở app từ màn hình chính. Kỳ vọng: thanh tab có 4 tab "Hôm nay", "Nhật ký", "Sức khỏe", "Tiện ích"; không chữ nào bị cắt. Tab Sức khỏe có các mục Tăng trưởng, Tiêm chủng, Phát triển, Thống kê và phần "Khi bé ốm"; tab Tiện ích có các trang còn lại.
+2. Ở Hôm nay bấm "Ngủ", rồi sang tab Nhật ký, Sức khỏe, Tiện ích. Kỳ vọng: tab "Hôm nay" thành ô timer rộng hơn ba tab kia, đồng hồ đang chạy và dòng chữ nhỏ bên dưới không bị cắt hay tràn ra ngoài ô. Về Hôm nay, bấm "Dừng" rồi xóa bản ghi Ngủ thử trong Nhật ký.
+3. Sức khỏe → Tăng trưởng. Kỳ vọng: thẻ kết luận ở đầu trang nói bằng chữ bé đang thế nào so với chuẩn; mỗi chỉ số có thanh vị trí với ba số chuẩn bên dưới; thẻ "Mục tiêu chiều cao" mở trang Chiều cao.
+4. Bằng tài khoản chủ gia đình: Tăng trưởng → Mục tiêu chiều cao → nút bút chì. Nhập chiều cao thật của bố, của mẹ và mục tiêu, bấm Lưu. Kỳ vọng: thẻ mục tiêu hiện số vừa nhập và chip trạng thái; thẻ "Di truyền dự kiến" hiện khoảng dự kiến và vạch mục tiêu; biểu đồ "Đường tới … cm" có đường mục tiêu nét đứt. Bằng tài khoản thành viên khác: thấy cùng các số, không có nút bút chì.
+5. Nhập một lần đo thật (cân nặng, chiều dài, vòng đầu) ở Tăng trưởng. Kỳ vọng: thẻ kết luận, thẻ Tăng trưởng ở tab Sức khỏe và trang Chiều cao cùng cập nhật theo lần đo mới; nếu có cảnh báo thì mục "Cần chú ý" ở tab Sức khỏe có dòng của nó.
+6. Trên máy A, nhập một lần đo thử có cân nặng thấp hẳn so với lần trước (ví dụ bằng một nửa), ngày đo hôm nay. Máy B không đang trong "Giờ yên lặng" hay "Tạm tắt nhắc". Kỳ vọng: trong vài phút máy B nhận thông báo "Tăng trưởng của {tên bé} cần chú ý", chạm vào thì mở trang Tăng trưởng; máy A không nhận thông báo này. Xóa lần đo thử ngay sau đó.
+7. Cài đặt → Thông báo. Kỳ vọng: có hai công tắc "Cảnh báo tăng trưởng" và "Nhắc đo định kỳ", đang bật. Tắt "Nhắc đo định kỳ", mở Sức khỏe → Tăng trưởng → Mục tiêu chiều cao: công tắc ở hàng "Nhắc đo mỗi tháng" (bé từ 1 tuổi: "Nhắc đo ba tháng một lần") cũng đang tắt. Bật lại ở đó, quay về Cài đặt: công tắc "Nhắc đo định kỳ" đã bật.
+8. Mục này làm sau, vào ngày hàng nhắc đo ghi "Đã đến kỳ đo" (bé dưới 1 tuổi: 30 ngày sau lần đo gần nhất). Kỳ vọng: 08:00 sáng hôm đó các máy đang bật "Nhắc đo định kỳ" nhận thông báo "Đến kỳ đo cho {tên bé}"; tab Sức khỏe có dòng "Đến kỳ đo" trong "Cần chú ý". Sau khi nhập lần đo mới, dòng đó mất và hàng nhắc đo ghi "Lần tới {ngày/tháng} · 08:00".
+9. Trang Chiều cao, khối "Thói quen 7 ngày qua". Kỳ vọng: số giờ ngủ, số phút nằm sấp và số ngày uống vitamin D khớp với Nhật ký của bảy ngày trước hôm nay; khi giấc ngủ có chip "Ít hơn chuẩn" hoặc nằm sấp có chip "Còn thiếu" thì tab Sức khỏe có dòng tương ứng trong "Cần chú ý".
+10. Bật Ban đêm rồi xem lại tab Sức khỏe, trang Tăng trưởng và trang Chiều cao. Kỳ vọng: chữ, chip và biểu đồ đọc rõ, theo tông hổ phách.
+
+Kết quả: Chờ người dùng.
+
+| Máy           | iOS | Kết quả | Ghi chú |
+| ------------- | --- | ------- | ------- |
+| iPhone 11     |     |         |         |
+| iPhone 16     |     |         |         |
+| iPhone 17 Pro |     |         |         |
