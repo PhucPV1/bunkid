@@ -1,16 +1,21 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { statsFetchSince } from "@/lib/rules/dailyStats";
+import { vnDayRange } from "@/lib/rules/days";
 import type { Baby, GrowthRow } from "@/lib/supabase/rows";
 import { HeightScreen } from "./HeightScreen";
 
 const state = vi.hoisted(() => ({
   growth: {} as Record<string, unknown>,
   table: {} as Record<string, unknown>,
+  logs: {} as Record<string, unknown>,
 }));
 const useGrowth = vi.hoisted(() => vi.fn());
 const useWhoTable = vi.hoisted(() => vi.fn());
+const useStatsLogs = vi.hoisted(() => vi.fn());
 
 vi.mock("@/lib/data/growth", () => ({ useGrowth, useWhoTable }));
+vi.mock("@/lib/data/logs", () => ({ useStatsLogs }));
 // The chart is loaded lazily; a stand-in shows what it was given.
 vi.mock("next/dynamic", () => ({
   default:
@@ -88,18 +93,20 @@ const baby = (over: Partial<Baby> = {}) =>
   }) as unknown as Baby;
 
 function render(
-  query: { growth?: unknown; table?: unknown } = {},
+  query: { growth?: unknown; table?: unknown; logs?: unknown } = {},
   who: Baby = baby(),
   isOwner = true,
 ) {
   state.growth = (query.growth ?? loaded(ROWS)) as Record<string, unknown>;
   state.table = (query.table ?? TABLE) as Record<string, unknown>;
+  state.logs = (query.logs ?? loaded([])) as Record<string, unknown>;
   return renderToStaticMarkup(<HeightScreen baby={who} isOwner={isOwner} />);
 }
 
 beforeAll(() => {
   useGrowth.mockImplementation(() => state.growth);
   useWhoTable.mockImplementation(() => state.table);
+  useStatsLogs.mockImplementation(() => state.logs);
   vi.useFakeTimers({ toFake: ["Date"] });
   vi.setSystemTime(new Date("2026-11-20T05:00:00Z")); // 12:00 giờ VN
 });
@@ -131,6 +138,7 @@ describe("HeightScreen", () => {
       ">Di truyền dự kiến</h2>",
       ">Đường tới 180 cm</h2>",
       ">Tốc độ tăng</span>",
+      ">Thói quen 7 ngày qua</h2>",
       ">Chiều cao lúc lớn phần lớn do di truyền. Kim Bun giúp theo dõi và nhắc việc, không thay lời khuyên của bác sĩ.</p>",
     ].map((mark) => html.indexOf(mark));
     expect(order.every((i) => i >= 0)).toBe(true);
@@ -173,6 +181,33 @@ describe("HeightScreen", () => {
     expect(html).toContain(
       ">Từ 14/10 đến 15/11 · bé cùng tuổi thường tăng khoảng 0,0 cm mỗi tháng</span>",
     );
+  });
+
+  // Spec 2026-11-25 §7.1 and §7.2.
+  it("reads the logs of the last 14 days, the query the Thống kê page already uses", () => {
+    useStatsLogs.mockClear();
+    render();
+    expect(useStatsLogs).toHaveBeenCalledWith(
+      "b1",
+      statsFetchSince(vnDayRange(new Date("2026-11-20T05:00:00Z"), 14)),
+    );
+  });
+
+  it("the habits of the last seven days: one row per habit for the baby's age", () => {
+    // 67 days old and nothing logged: sleep and tummy time are not judged.
+    const html = render();
+    expect(html).toContain(">Giấc ngủ</span>");
+    expect(html).toContain(">Chưa đủ dữ liệu ngủ 7 ngày</span>");
+    expect(html).toContain(">Tuần này chưa ghi nằm sấp</span>");
+    expect(html).toContain(">Đã uống 0 trên 7 ngày</span>");
+  });
+
+  it("the habits wait for the logs: no block while they load or after they fail", () => {
+    for (const html of [render({ logs: LOADING }), render({ logs: FAILED })]) {
+      expect(html).not.toContain("Thói quen 7 ngày qua");
+      expect(html).toContain(">Tốc độ tăng</span>");
+      expect(html).toContain("Chiều cao lúc lớn phần lớn do di truyền.");
+    }
   });
 
   it("no target: the goal card says so, there is no path, the rest stays", () => {
@@ -236,6 +271,11 @@ describe("HeightScreen", () => {
     expect(html).toContain(">Bảng WHO trong app tới 5 tuổi.</p>");
     expect(html).not.toContain("data-chart");
     expect(html).not.toContain("Tốc độ tăng");
+    // Past the first two years only sleep is a habit the page follows.
+    expect(html).toContain(">Thói quen 7 ngày qua</h2>");
+    expect(html).not.toContain("Nằm sấp");
+    expect(html).not.toContain("Vitamin D");
+    expect(html).toContain(">Chuẩn giấc ngủ như trang Thống kê.</p>");
     expect(html).toContain(">Di truyền dự kiến</h2>");
     expect(html).toContain("Chiều cao lúc lớn phần lớn do di truyền.");
   });

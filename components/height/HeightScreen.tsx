@@ -10,6 +10,10 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { whoSex, type LmsRow } from "@/lib/content/who";
 import { toVietnameseError } from "@/lib/data/errors";
 import { useGrowth, useWhoTable } from "@/lib/data/growth";
+import { useStatsLogs } from "@/lib/data/logs";
+import { statsFetchSince } from "@/lib/rules/dailyStats";
+import { vnDayRange } from "@/lib/rules/days";
+import { habitStats } from "@/lib/rules/habits";
 import { heightView } from "@/lib/rules/heightView";
 import type { Baby } from "@/lib/supabase/rows";
 import {
@@ -18,6 +22,7 @@ import {
   TargetPathCard,
   VelocityCard,
 } from "./HeightCards";
+import { HabitsCard } from "./HabitsCard";
 import { HeightGoalSheet } from "./HeightGoalSheet";
 
 const NOTE = "px-1 text-[13px] leading-[18px] text-muted";
@@ -49,6 +54,11 @@ export function HeightScreen({
   const edit = isOwner ? () => setEditing(true) : undefined;
   const sex = whoSex(baby.sex);
   const table = useWhoTable("lhfa", sex);
+  // Spec §7.2: the 14-day query of the Thống kê page, shared through its
+  // cache; the habits read the seven full days before today from it.
+  const now = new Date();
+  const logs = useStatsLogs(baby.id, statsFetchSince(vnDayRange(now, 14)));
+  const habits = logs.data ? habitStats(logs.data, baby.dob, now) : null;
   const view =
     growth.data && table.data
       ? heightView({
@@ -62,7 +72,7 @@ export function HeightScreen({
           },
           rows: growth.data,
           table: table.data.rows as LmsRow[],
-          today: new Date(),
+          today: now,
         })
       : null;
 
@@ -109,6 +119,7 @@ export function HeightScreen({
               <VelocityCard velocity={view.velocity} />
             </>
           )}
+          {habits && <HabitsCard rows={habits.rows} />}
           <p className={NOTE}>
             Chiều cao lúc lớn phần lớn do di truyền. Kim Bun giúp theo dõi và
             nhắc việc, không thay lời khuyên của bác sĩ.
