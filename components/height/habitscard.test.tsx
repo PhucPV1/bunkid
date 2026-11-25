@@ -37,9 +37,8 @@ describe("HabitsCard", () => {
     expect(html).toContain("glass");
     expect(html).toContain("rounded-[26px]");
     expect(html.match(/<li /g)).toHaveLength(3);
-    expect(html).toContain(
-      ">Chuẩn giấc ngủ như trang Thống kê. Nằm sấp: WHO 2019.</p>",
-    );
+    expect(html).toContain("Chuẩn giấc ngủ như trang Thống kê. ");
+    expect(html).toContain("Nằm sấp: WHO 2019.");
     expect(html.indexOf("Giấc ngủ")).toBeLessThan(html.indexOf("Nằm sấp"));
     expect(html.indexOf("Nằm sấp")).toBeLessThan(html.indexOf("Vitamin D"));
   });
@@ -111,6 +110,14 @@ describe("HabitsCard", () => {
     expect(html).toContain(">Chưa đủ dữ liệu ngủ 7 ngày</span>");
     expect(html).not.toContain(CHIP);
     expect(html).not.toContain("h-1.5");
+  });
+
+  // At 375 and 390 px wide the note is a few px too long for one line, and
+  // "2019." used to drop onto a line of its own.
+  it("the source of the tummy-time norm wraps as a whole, never in the middle", () => {
+    expect(render([sleep, tummy, vitaminD])).toContain(
+      '>Chuẩn giấc ngủ như trang Thống kê. <span class="whitespace-nowrap">Nằm sấp: WHO 2019.</span></p>',
+    );
   });
 
   it("an older child has fewer rows, and the note names only the norms that are shown", () => {

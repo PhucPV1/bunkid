@@ -74,10 +74,17 @@ export function HabitsCard({ rows }: { rows: HabitRow[] }) {
         })}
       </ul>
       {/* The source of the tummy-time norm is named only while that row is
-          shown, in the baby's first year. */}
+          shown, in the baby's first year. It wraps as a whole: at 375 and
+          390 px the note is a few px too long for one line, and "2019."
+          would drop onto a line of its own. */}
       <p className="px-1 text-[13px] leading-[18px] text-muted">
         Chuẩn giấc ngủ như trang Thống kê.
-        {rows.some((row) => row.key === "tummy") && " Nằm sấp: WHO 2019."}
+        {rows.some((row) => row.key === "tummy") && (
+          <>
+            {" "}
+            <span className="whitespace-nowrap">Nằm sấp: WHO 2019.</span>
+          </>
+        )}
       </p>
     </section>
   );
