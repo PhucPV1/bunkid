@@ -130,6 +130,30 @@ export function indicatorValue(
   return indicator === "lhfa" ? row.length_cm : row.head_cm;
 }
 
+export type LatestGrowth = {
+  measuredOn: string;
+  weightG: number | null;
+  lengthCm: number | null;
+  headCm: number | null;
+};
+
+// Spec 2026-11-25 §3.4: the day of the newest measurement and, for each
+// indicator, its newest value. On the same day the first row wins.
+export function latestGrowth(rows: GrowthInput[]): LatestGrowth | null {
+  if (rows.length === 0) return null;
+  const sorted = [...rows].sort((a, b) =>
+    b.measured_on.localeCompare(a.measured_on),
+  );
+  const newest = (column: "weight_g" | "length_cm" | "head_cm") =>
+    sorted.find((row) => row[column] !== null)?.[column] ?? null;
+  return {
+    measuredOn: sorted[0].measured_on,
+    weightG: newest("weight_g"),
+    lengthCm: newest("length_cm"),
+    headCm: newest("head_cm"),
+  };
+}
+
 export function latestWeightG(rows: GrowthInput[]): number | null {
   const withWeight = rows.filter((r) => r.weight_g !== null);
   withWeight.sort((a, b) => b.measured_on.localeCompare(a.measured_on));

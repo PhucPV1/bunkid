@@ -43,9 +43,17 @@ export function ListGroup({
   );
 }
 
+// Spec 2026-11-25 §4: a "Cần chú ý" row whose detail is a warning.
+const DETAIL_TONE = {
+  muted: "text-[13px] text-muted",
+  warn: "text-[13px] font-semibold text-warn",
+  danger: "text-[13px] font-semibold text-danger",
+} as const;
+
 export function ListRow({
   label,
   detail,
+  detailTone = "muted",
   value,
   icon,
   iconColor = "muted",
@@ -56,6 +64,7 @@ export function ListRow({
 }: {
   label: string;
   detail?: string;
+  detailTone?: keyof typeof DETAIL_TONE;
   value?: string;
   icon?: IconName;
   iconColor?: ListRowIconColor;
@@ -78,7 +87,7 @@ export function ListRow({
       )}
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="text-base text-ink">{label}</span>
-        {detail && <span className="text-[13px] text-muted">{detail}</span>}
+        {detail && <span className={DETAIL_TONE[detailTone]}>{detail}</span>}
       </span>
       {value && <span className="text-[15px] text-muted">{value}</span>}
       {trailing}

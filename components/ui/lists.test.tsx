@@ -109,3 +109,26 @@ describe("Skeleton", () => {
     expect(html).toContain("h-20");
   });
 });
+
+// Spec 2026-11-25 §4: the detail line of a "Cần chú ý" row.
+describe("ListRow detail tone", () => {
+  const row = (tone?: "warn" | "danger") =>
+    renderToStaticMarkup(
+      <ListRow label="Tiêm" detail="Hẹn 10/11" detailTone={tone} href="/x" />,
+    );
+
+  it("is muted unless a tone is given", () => {
+    expect(row()).toContain(
+      '<span class="text-[13px] text-muted">Hẹn 10/11</span>',
+    );
+  });
+
+  it("warn and danger are semibold in their colour", () => {
+    expect(row("warn")).toContain(
+      '<span class="text-[13px] font-semibold text-warn">Hẹn 10/11</span>',
+    );
+    expect(row("danger")).toContain(
+      '<span class="text-[13px] font-semibold text-danger">Hẹn 10/11</span>',
+    );
+  });
+});
