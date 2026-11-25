@@ -1,0 +1,14 @@
+{
+  "source": "https://www.who.int/tools/growth-reference-data-for-5to19-years/indicators/height-for-age",
+  "reviewedAt": "2026-11-25",
+  "boys": {
+    "l": 1,
+    "m": 176.5432,
+    "s": 0.04134
+  },
+  "girls": {
+    "l": 1,
+    "m": 163.1548,
+    "s": 0.04009
+  }
+}

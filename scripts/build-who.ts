@@ -1,7 +1,8 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import ExcelJS from "exceljs";
-import type { LmsRow } from "@/lib/content/who";
+import type { AdultHeight } from "@/lib/content/adultHeight";
+import type { LmsRow, WhoSex } from "@/lib/content/who";
 
 // Spec §7.3: WHO Child Growth Standards, expanded LMS tables by day of age 0–1856.
 const CDN =
@@ -72,15 +73,88 @@ export async function readLmsRows(path: string): Promise<LmsRow[]> {
   return rows;
 }
 
-// Usage: bun scripts/build-who.ts <folder with the six .xlsx files> <reviewedAt YYYY-MM-DD>
+// Spec 2026-11-25 §6.2: WHO Growth Reference 2007, height-for-age 5–19 years,
+// expanded z-score tables by month of age 61–228.
+const REFERENCE_PAGE =
+  "https://www.who.int/tools/growth-reference-data-for-5to19-years/indicators/height-for-age";
+const REFERENCE_CDN =
+  "https://cdn.who.int/media/docs/default-source/child-growth/growth-reference-5-19-years/height-for-age-(5-19-years)";
+
+export const ADULT_HEIGHT_FILES = [
+  { sex: "boys", url: `${REFERENCE_CDN}/hfa-boys-z-who-2007-exp.xlsx` },
+  { sex: "girls", url: `${REFERENCE_CDN}/hfa-girls-z-who-2007-exp.xlsx` },
+] as const;
+
+// 19 years: the last month of the reference.
+export const ADULT_MONTH = 228;
+// The median the reference is known to end at. A table that gives anything
+// else is the wrong file or a changed one.
+const ADULT_M_RANGE: Record<WhoSex, [min: number, max: number]> = {
+  boys: [176, 177],
+  girls: [162.7, 163.7],
+};
+
+// `rows` are [month, L, M, S]. Throws instead of writing a wrong constant.
+export function adultLms(rows: number[][], sex: WhoSex): AdultHeight[WhoSex] {
+  const row = rows.find(([month]) => month === ADULT_MONTH);
+  if (!row) throw new Error(`${sex}: no row for month ${ADULT_MONTH}`);
+  const [, l, m, s] = row;
+  const [min, max] = ADULT_M_RANGE[sex];
+  if (m < min || m > max)
+    throw new Error(
+      `${sex}: M at ${ADULT_MONTH} months is ${m}, outside ${min}–${max} cm. Stop and tell the user.`,
+    );
+  return { l, m, s };
+}
+
+// Reads the first sheet: header "Month, L, M, S, …", one row per month.
+export async function readMonthRows(path: string): Promise<number[][]> {
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.readFile(path);
+  const sheet = workbook.worksheets[0];
+  const header = (sheet.getRow(1).values as unknown[]).slice(1, 5);
+  if (header.join(",") !== "Month,L,M,S")
+    throw new Error(`${path}: unexpected header ${header.join(",")}`);
+  const rows: number[][] = [];
+  sheet.eachRow((row, index) => {
+    if (index === 1) return;
+    rows.push((row.values as unknown[]).slice(1, 5).map(num));
+  });
+  return rows;
+}
+
+// Usage:
+//   bun scripts/build-who.ts <folder with the six .xlsx files> <reviewedAt YYYY-MM-DD>
+//   bun scripts/build-who.ts adult <folder with the two hfa .xlsx files> <reviewedAt YYYY-MM-DD>
 if (process.argv[1]?.endsWith("build-who.ts")) {
-  const [from, reviewedAt] = process.argv.slice(2);
+  const args = process.argv.slice(2);
+  const adult = args[0] === "adult";
+  const [from, reviewedAt] = adult ? args.slice(1) : args;
   if (!from || !/^\d{4}-\d{2}-\d{2}$/.test(reviewedAt ?? ""))
     throw new Error(
-      "usage: bun scripts/build-who.ts <xlsx folder> <YYYY-MM-DD>",
+      "usage: bun scripts/build-who.ts [adult] <xlsx folder> <YYYY-MM-DD>",
     );
   mkdirSync("content/who", { recursive: true });
-  for (const file of WHO_FILES) {
+  if (adult) {
+    const [boys, girls] = await Promise.all(
+      ADULT_HEIGHT_FILES.map(async (file) =>
+        adultLms(
+          await readMonthRows(join(from, file.url.split("/").pop() as string)),
+          file.sex,
+        ),
+      ),
+    );
+    const out = "content/who/adult_height.json";
+    const table: AdultHeight = {
+      source: REFERENCE_PAGE,
+      reviewedAt,
+      boys,
+      girls,
+    };
+    writeFileSync(out, `${JSON.stringify(table, null, 2)}\n`);
+    console.log(`${out}: boys M ${boys.m}, girls M ${girls.m}`);
+  }
+  for (const file of adult ? [] : WHO_FILES) {
     const rows = await readLmsRows(
       join(from, file.url.split("/").pop() as string),
     );
