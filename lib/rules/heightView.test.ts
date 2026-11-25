@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { LmsRow } from "@/lib/content/who";
 import { addDays } from "./days";
 import type { GrowthMeasure } from "./growthAlerts";
-import { heightView, rangeBar } from "./heightView";
+import { goalPreview, heightView, rangeBar } from "./heightView";
 
 const DOB = "2026-01-01";
 // The baby is 76 days old "today".
@@ -237,5 +237,57 @@ describe("heightView: past the WHO table", () => {
     expect(edge.beyondTable).toBe(false);
     expect(edge.path).not.toBeNull();
     expect(edge.velocity).not.toBeNull();
+  });
+});
+
+// Spec 2026-11-25 §6.5: what the sheet shows while the heights are typed.
+describe("goalPreview", () => {
+  it("both parents valid: the range, and nothing about a target that is not there", () => {
+    expect(
+      goalPreview({ father: "175", mother: "160,5", target: "" }, "boys"),
+    ).toEqual({
+      range: "Khoảng dự kiến 166–183 cm",
+      target: null,
+    });
+  });
+
+  it("with a valid target: where it sits against the range", () => {
+    expect(
+      goalPreview({ father: "175", mother: "160.5", target: "180" }, "boys"),
+    ).toEqual({
+      range: "Khoảng dự kiến 166–183 cm",
+      target: "Mục tiêu 180 cm nằm trong khoảng, ở nửa trên.",
+    });
+    expect(
+      goalPreview({ father: "175", mother: "160,5", target: "190" }, "boys")
+        ?.target,
+    ).toBe(
+      "Mục tiêu 190 cm cao hơn khoảng dự kiến. App vẫn theo dõi, nhưng mục tiêu này khó đạt.",
+    );
+  });
+
+  it("a girl's range sits 13 cm lower", () => {
+    expect(
+      goalPreview({ father: "175", mother: "160,5", target: "" }, "girls")
+        ?.range,
+    ).toBe("Khoảng dự kiến 153–170 cm");
+  });
+
+  it("a target that is not a valid height is left out, the range stays", () => {
+    for (const target of ["abc", "100", "250"])
+      expect(
+        goalPreview({ father: "175", mother: "160,5", target }, "boys"),
+      ).toEqual({ range: "Khoảng dự kiến 166–183 cm", target: null });
+  });
+
+  it("no range until both parents are valid", () => {
+    for (const raw of [
+      { father: "", mother: "", target: "180" },
+      { father: "175", mother: "", target: "180" },
+      { father: "", mother: "160", target: "" },
+      { father: "17", mother: "160", target: "" },
+      { father: "175", mother: "x", target: "" },
+    ])
+      expect(goalPreview(raw, "boys"), JSON.stringify(raw)).toBeNull();
   });
 });

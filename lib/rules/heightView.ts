@@ -8,10 +8,12 @@ import {
   formatCm,
   type GoalStatus,
   goalStatus,
+  type HeightGoalRaw,
   type LengthVelocity,
   lengthVelocity,
   midParental,
   type ParentalRange,
+  parseHeightGoal,
   targetCurve,
   targetVsRange,
   targetZ,
@@ -180,5 +182,32 @@ export function heightView(input: {
       chip: speed.chip,
     },
     beyondTable,
+  };
+}
+
+// Spec 2026-11-25 §6.5: the box the sheet shows while the heights are typed.
+// Null until both parents' heights are valid; a target that is not a valid
+// height is left out.
+export function goalPreview(
+  raw: HeightGoalRaw,
+  sex: WhoSex,
+): { range: string; target: string | null } | null {
+  const parents = parseHeightGoal({ ...raw, target: "" });
+  if (
+    !parents.ok ||
+    parents.value.father_height_cm === null ||
+    parents.value.mother_height_cm === null
+  )
+    return null;
+  const range = midParental(
+    parents.value.father_height_cm,
+    parents.value.mother_height_cm,
+    sex,
+  );
+  const goal = parseHeightGoal({ father: "", mother: "", target: raw.target });
+  const target = goal.ok ? goal.value.target_height_cm : null;
+  return {
+    range: `Khoảng dự kiến ${range.low}–${range.high} cm`,
+    target: target === null ? null : targetVsRange(target, range),
   };
 }
