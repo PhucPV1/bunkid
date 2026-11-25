@@ -1210,3 +1210,132 @@ describe("selectDueNotifications — growth alert (spec 2026-11-25 §8.2)", () =
     expect(kinds).toEqual(["feed", "feed", "timer", "timer", "growth_alert"]);
   });
 });
+
+describe("selectDueNotifications — measure reminder (spec 2026-11-25 §8.3)", () => {
+  // 08:30 on 15/11 in Việt Nam. Born 01/01 and last measured on 16/10: under
+  // one year, so the next measurement is due 30 days later, on 15/11.
+  const DUE = new Date("2026-11-15T01:30:00Z");
+  const later = (days: number) => new Date(DUE.getTime() + days * 86_400_000);
+  const LAST = measured({ measuredOn: "2026-10-16", weightG: 16000 });
+  const due = (
+    at: Date,
+    growth: Partial<GrowthState> = {},
+    recipients: Recipient[] = TWO,
+  ) =>
+    selectDueNotifications(
+      [
+        baby({
+          growth: { dob: "2026-01-01", sex: "male", rows: [LAST], ...growth },
+          recipients,
+        }),
+      ],
+      at,
+      [],
+      TABLES,
+    ).filter((item) => item.kind === "growth_measure");
+
+  it("on the due day, between 08:00 and 08:59, reminds every recipient", () => {
+    expect(due(DUE)).toEqual([
+      {
+        userId: "u1",
+        kind: "growth_measure",
+        refKey: "measure:b1:2026-11-15",
+        title: "Đến kỳ đo cho Bun",
+        body: "Lần đo gần nhất 16/10. Cân, đo chiều dài và vòng đầu rồi ghi vào Tăng trưởng.",
+        url: "/tang-truong",
+        tag: "measure:b1",
+      },
+      expect.objectContaining({
+        userId: "u2",
+        refKey: "measure:b1:2026-11-15",
+      }),
+    ]);
+  });
+
+  it("only in the hour from 08:00", () => {
+    expect(due(new Date("2026-11-15T00:59:00Z"))).toEqual([]);
+    expect(due(new Date("2026-11-15T01:00:00Z"))).toHaveLength(2);
+    expect(due(new Date("2026-11-15T01:59:00Z"))).toHaveLength(2);
+    expect(due(new Date("2026-11-15T02:00:00Z"))).toEqual([]);
+  });
+
+  it("again 7, 14 and 21 days later, with that day in the key, then no more", () => {
+    expect(due(later(-1))).toEqual([]);
+    expect(due(later(1))).toEqual([]);
+    expect(due(later(6))).toEqual([]);
+    expect(due(later(7))[0].refKey).toBe("measure:b1:2026-11-22");
+    expect(due(later(14))[0].refKey).toBe("measure:b1:2026-11-29");
+    expect(due(later(21))[0].refKey).toBe("measure:b1:2026-12-06");
+    expect(due(later(28))).toEqual([]);
+  });
+
+  it("the newest measured day counts, whatever it measured", () => {
+    const rows = [
+      LAST,
+      measured({
+        id: "g2",
+        measuredOn: "2026-11-01",
+        weightG: null,
+        headCm: 16,
+      }),
+    ];
+    expect(due(DUE, { rows })).toEqual([]);
+    // 30 days after 01/11.
+    expect(due(later(16), { rows })[0].body).toBe(
+      "Lần đo gần nhất 01/11. Cân, đo chiều dài và vòng đầu rồi ghi vào Tăng trưởng.",
+    );
+  });
+
+  it("never measured: counts from the day of birth and says so", () => {
+    const [item] = due(DUE, { dob: "2026-10-16", rows: [] });
+    expect(item.body).toBe(
+      "Chưa có lần đo nào. Cân, đo chiều dài và vòng đầu rồi ghi vào Tăng trưởng.",
+    );
+  });
+
+  it("from one year old the reminder comes every 90 days", () => {
+    // 400 days old on 15/11; measured 30 days ago, then 90 days ago.
+    const dob = addDays("2026-11-15", -400);
+    const row = (ago: number) =>
+      measured({ measuredOn: addDays("2026-11-15", -ago), weightG: 16000 });
+    expect(due(DUE, { dob, rows: [row(30)] })).toEqual([]);
+    expect(due(DUE, { dob, rows: [row(90)] })).toHaveLength(2);
+  });
+
+  it("past day 1856 nobody is reminded", () => {
+    const row = measured({ measuredOn: addDays("2026-11-15", -90) });
+    expect(
+      due(DUE, { dob: addDays("2026-11-15", -1856), rows: [row] }),
+    ).toHaveLength(2);
+    expect(
+      due(DUE, { dob: addDays("2026-11-15", -1857), rows: [row] }),
+    ).toEqual([]);
+  });
+
+  it("only the switch counts: snooze and quiet hours do not hold it", () => {
+    const recipients: Recipient[] = [
+      { userId: "off", prefs: { ...ALL_ON, growth_measure: false } },
+      {
+        userId: "snoozed",
+        prefs: { ...ALL_ON, snooze_until: later(1).toISOString() },
+      },
+      {
+        userId: "quiet",
+        prefs: {
+          ...ALL_ON,
+          quiet_enabled: true,
+          quiet_start_min: 0,
+          quiet_end_min: 1439,
+        },
+      },
+      { userId: "on", prefs: { ...ALL_ON, growth_measure: true } },
+      { userId: "never-saved", prefs: null },
+    ];
+    expect(due(DUE, {}, recipients).map((item) => item.userId)).toEqual([
+      "snoozed",
+      "quiet",
+      "on",
+      "never-saved",
+    ]);
+  });
+});

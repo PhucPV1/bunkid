@@ -18,6 +18,9 @@ function sideOf(details: unknown): RunningTimer["side"] {
   return side === "left" || side === "right" ? side : null;
 }
 const VACCINE_TTL_S = 12 * 3600;
+// Selected only 08:00–08:59, so the push service keeps them until the evening
+// for a phone that is offline.
+const MORNING_KINDS = new Set(["vaccine", "growth_measure"]);
 
 async function loadState(now: Date): Promise<BabyDispatchState[]> {
   const db = supabaseServiceRole();
@@ -251,10 +254,8 @@ export function supabaseDispatchDeps(): DispatchDeps {
             url: item.url,
           }),
           {
-            // Vaccine reminders are only selected 08:00–08:59, so the push
-            // service keeps them until the evening for a phone that is offline.
-            TTL: item.kind === "vaccine" ? VACCINE_TTL_S : 3600,
-            urgency: item.kind === "vaccine" ? "normal" : "high",
+            TTL: MORNING_KINDS.has(item.kind) ? VACCINE_TTL_S : 3600,
+            urgency: MORNING_KINDS.has(item.kind) ? "normal" : "high",
             vapidDetails: {
               subject: env.VAPID_SUBJECT,
               publicKey: env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,

@@ -5,6 +5,7 @@ import { WHO_TABLES, type WhoTables } from "@/lib/content/whoTables";
 import { addDays, formatDayShort, vnDayStartMs, WEEKDAYS } from "./days";
 import { growthAlerts } from "./growthAlerts";
 import { detailsSchemas } from "./logDetails";
+import { daysBetween, latestDay, nextMeasureDue } from "./measureSchedule";
 import { sameMedicine } from "./medicineNames";
 import { DEFAULT_QUIET, inQuietHours, vnMinuteOfDay } from "./notifications";
 import { FORGOTTEN_BREAST_MS } from "./ratings";
@@ -547,8 +548,49 @@ function growthAlertNotifications(
     }));
 }
 
+// Like the vaccine reminders, the measure reminders ignore snooze and quiet
+// hours; only the "Nhắc đo định kỳ" switch counts.
+const wantsMeasure = (recipient: Recipient) =>
+  recipient.prefs === null || (recipient.prefs.growth_measure ?? true);
+
+// How many days after the due day the reminder is still repeated, once a week.
+const MEASURE_REPEAT_DAYS = 21;
+
+// Spec 2026-11-25 §8.3: 08:00–08:59 VN time, on the day the next measurement
+// is due and 7, 14 and 21 days after it.
+function growthMeasureNotifications(
+  baby: BabyDispatchState,
+  now: Date,
+): DueNotification[] {
+  if (formatVnTime(now).slice(0, 2) !== "08") return [];
+  const today = vnDateString(now);
+  const last = latestDay(baby.growth.rows.map((row) => row.measuredOn));
+  const { due, measureDue } = nextMeasureDue({
+    dob: baby.growth.dob,
+    lastMeasuredOn: last,
+    today,
+  });
+  if (!measureDue) return [];
+  const late = daysBetween(due, today);
+  if (late % 7 !== 0 || late > MEASURE_REPEAT_DAYS) return [];
+  const lead =
+    last === null
+      ? "Chưa có lần đo nào."
+      : `Lần đo gần nhất ${formatDayShort(last)}.`;
+  return baby.recipients.filter(wantsMeasure).map((recipient) => ({
+    userId: recipient.userId,
+    kind: "growth_measure",
+    refKey: `measure:${baby.babyId}:${today}`,
+    title: `Đến kỳ đo cho ${baby.name}`,
+    body: `${lead} Cân, đo chiều dài và vòng đầu rồi ghi vào Tăng trưởng.`,
+    url: "/tang-truong",
+    tag: `measure:${baby.babyId}`,
+  }));
+}
+
 // Spec §8.3: "feed", "wake" and "vaccine"; spec 2026-11-17 §4.3: "medicine"
-// and "timer"; spec 2026-11-25 §8.2: "growth_alert".
+// and "timer"; spec 2026-11-25 §8.2 and §8.3: "growth_alert" and
+// "growth_measure".
 export function selectDueNotifications(
   babies: BabyDispatchState[],
   now: Date,
@@ -563,5 +605,6 @@ export function selectDueNotifications(
     ...feverReminders(baby, now),
     ...timerReminders(baby, now),
     ...growthAlertNotifications(baby, now, whoTables),
+    ...growthMeasureNotifications(baby, now),
   ]);
 }
