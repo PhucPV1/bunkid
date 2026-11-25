@@ -8,6 +8,7 @@ import {
 } from "./growthAlerts";
 import {
   alertDots,
+  chartLabelAnchor,
   chartView,
   defaultIndicator,
   formatChange,
@@ -169,6 +170,21 @@ describe("defaultIndicator and alertDots", () => {
     expect(alerts.map((a) => a.indicator)).toEqual(["hcfa", "lhfa"]);
     expect(defaultIndicator(alerts)).toBe("lhfa");
     expect(alertDots(alerts)).toEqual({ lhfa: "warn", hcfa: "danger" });
+  });
+});
+
+// Spec 2026-11-25 §5.4: which way the label of the newest point runs.
+describe("chartLabelAnchor", () => {
+  it("in the left half of the plot the label starts at the point and runs right", () => {
+    expect(chartLabelAnchor(0, 365)).toBe("start");
+    expect(chartLabelAnchor(76, 365)).toBe("start");
+    expect(chartLabelAnchor(182, 365)).toBe("start");
+  });
+
+  it("in the right half it ends at the point and runs left", () => {
+    expect(chartLabelAnchor(183, 365)).toBe("end");
+    expect(chartLabelAnchor(1000, 1080)).toBe("end");
+    expect(chartLabelAnchor(1857, 1856)).toBe("end");
   });
 });
 

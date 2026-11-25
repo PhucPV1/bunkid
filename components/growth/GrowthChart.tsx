@@ -11,7 +11,7 @@ import {
   YAxis,
 } from "recharts";
 import type { CurvePoint } from "@/lib/rules/growth";
-import type { ChartView } from "@/lib/rules/growthView";
+import { chartLabelAnchor, type ChartView } from "@/lib/rules/growthView";
 
 const DAYS_PER_MONTH = 30.4375;
 const number = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 1 });
@@ -50,6 +50,7 @@ export function GrowthChart({
     mid: point.mid,
   }));
   const end = band.at(-1);
+  const anchor = last ? chartLabelAnchor(last.day, to) : "start";
   return (
     <div role="img" aria-label={label} className="relative h-72 w-full">
       <ResponsiveContainer width="100%" height="100%">
@@ -147,9 +148,18 @@ export function GrowthChart({
                 value: last.label,
                 // An alert label sits under the dot, clear of the band above.
                 position: last.tone === "accent" ? "top" : "bottom",
+                // It starts (or ends) at the middle of the dot instead of
+                // being centred on it: see chartLabelAnchor.
+                textAnchor: anchor,
                 fontSize: 13,
                 fontWeight: 700,
                 fill: "var(--color-ink)",
+                // A halo in the card's colour keeps the text readable where it
+                // still meets the baby's line, the band or the grid.
+                stroke: "var(--color-glass-solid)",
+                strokeWidth: 4,
+                strokeLinejoin: "round",
+                paintOrder: "stroke",
               }}
             />
           )}

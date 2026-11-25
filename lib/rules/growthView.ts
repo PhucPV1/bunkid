@@ -106,6 +106,14 @@ export function alertDots(
   );
 }
 
+// Spec 2026-11-25 §5.4: which way the label of the newest point runs. It runs
+// towards the wider side of the plot, so it never crosses an axis or the right
+// edge; running right it is also clear of the baby's line, which always
+// arrives from the left.
+export function chartLabelAnchor(day: number, to: number): "start" | "end" {
+  return day * 2 <= to ? "start" : "end";
+}
+
 // Spec 2026-11-25 §5.4: what the chart of one indicator draws besides the band.
 export type ChartView = {
   title: string;
