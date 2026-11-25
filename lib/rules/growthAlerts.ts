@@ -277,3 +277,18 @@ export function growthStatus(alerts: GrowthAlert[]): {
   if (alerts.length > 0) return { text: "Cần chú ý", tone: "warn" };
   return { text: "Lớn đều", tone: "good" };
 }
+
+const REASON_POSITION =
+  "App so số đo của bé với chuẩn tăng trưởng của WHO cho trẻ cùng tuổi, cùng giới. Số đo này nằm ngoài vùng của 95 trong 100 bé khỏe mạnh. Có bé vẫn khỏe dù nằm ngoài vùng này, nên bác sĩ là người kết luận.";
+const REASON_SHIFT =
+  "App so vị trí của bé trên biểu đồ WHO giữa các lần đo trong 6 tháng gần đây. Vị trí đã đổi hai dải trở lên. Đo lệch tay cũng có thể gây ra điều này, nên hãy đo lại rồi hỏi bác sĩ.";
+const REASON_LOSS =
+  "Sau hai tuần đầu, cân nặng của bé thường chỉ tăng. Lần cân này thấp hơn lần trước. Cân khác nhau hoặc cân lúc bé vừa bú cũng có thể gây lệch, nên hãy cân lại rồi hỏi bác sĩ.";
+
+// Spec 2026-11-25 §5.3: the one paragraph of the popup "Vì sao có cảnh báo này?".
+export function alertReason(kind: GrowthAlertKind): string {
+  if (kind === "loss") return REASON_LOSS;
+  return kind === "falling" || kind === "rising"
+    ? REASON_SHIFT
+    : REASON_POSITION;
+}

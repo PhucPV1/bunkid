@@ -3,6 +3,7 @@ import type { LmsRow } from "@/lib/content/who";
 import { addDays } from "./days";
 import {
   ALERT_CHIP,
+  alertReason,
   type GrowthMeasure,
   type GrowthTables,
   growthAlerts,
@@ -366,5 +367,28 @@ describe("growthStatus", () => {
       text: "Nên đi khám",
       tone: "danger",
     });
+  });
+});
+
+// Spec 2026-11-25 §5.3: the popup "Vì sao có cảnh báo này?".
+describe("alertReason", () => {
+  it("position alerts explain the WHO comparison", () => {
+    const text =
+      "App so số đo của bé với chuẩn tăng trưởng của WHO cho trẻ cùng tuổi, cùng giới. Số đo này nằm ngoài vùng của 95 trong 100 bé khỏe mạnh. Có bé vẫn khỏe dù nằm ngoài vùng này, nên bác sĩ là người kết luận.";
+    for (const kind of ["veryLow", "veryHigh", "low", "high"] as const)
+      expect(alertReason(kind)).toBe(text);
+  });
+
+  it("falling and rising explain the shift between measurements", () => {
+    const text =
+      "App so vị trí của bé trên biểu đồ WHO giữa các lần đo trong 6 tháng gần đây. Vị trí đã đổi hai dải trở lên. Đo lệch tay cũng có thể gây ra điều này, nên hãy đo lại rồi hỏi bác sĩ.";
+    expect(alertReason("falling")).toBe(text);
+    expect(alertReason("rising")).toBe(text);
+  });
+
+  it("loss explains that weight should only go up after two weeks", () => {
+    expect(alertReason("loss")).toBe(
+      "Sau hai tuần đầu, cân nặng của bé thường chỉ tăng. Lần cân này thấp hơn lần trước. Cân khác nhau hoặc cân lúc bé vừa bú cũng có thể gây lệch, nên hãy cân lại rồi hỏi bác sĩ.",
+    );
   });
 });

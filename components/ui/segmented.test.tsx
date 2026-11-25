@@ -69,3 +69,34 @@ describe("Segmented label size", () => {
     ).toThrow("Segmented needs 2–6 options, got 7");
   });
 });
+
+// Spec 2026-11-25 §5.3: an indicator with an alert carries a dot.
+describe("Segmented option dot", () => {
+  const html = renderToStaticMarkup(
+    <Segmented
+      label="Chỉ số"
+      options={[
+        { value: "wfa", label: "Cân nặng", dot: "warn" },
+        { value: "lhfa", label: "Chiều dài" },
+        { value: "hcfa", label: "Vòng đầu", dot: "danger" },
+      ]}
+      value="wfa"
+      onChange={noop}
+    />,
+  );
+  const DOT = "ml-1.5 inline-block size-2 rounded-full align-middle";
+
+  it("draws an 8 px dot after the label, named for screen readers", () => {
+    expect(html).toContain(
+      `Cân nặng<span role="img" aria-label="có cảnh báo" class="${DOT} bg-warn"></span></button>`,
+    );
+    expect(html).toContain(
+      `Vòng đầu<span role="img" aria-label="có cảnh báo" class="${DOT} bg-danger"></span></button>`,
+    );
+  });
+
+  it("an option without a dot is drawn as before", () => {
+    expect(html).toContain(">Chiều dài</button>");
+    expect(html.match(/có cảnh báo/g)).toHaveLength(2);
+  });
+});

@@ -1,6 +1,12 @@
 import { cx } from "@/lib/ui/cx";
 
-export type ChoiceOption<T extends string> = { value: T; label: string };
+export type ChoiceOption<T extends string> = {
+  value: T;
+  label: string;
+  // Spec 2026-11-25 §5.3: a small dot after the label, for an option that
+  // has an alert.
+  dot?: "warn" | "danger";
+};
 
 export function Segmented<T extends string>({
   label,
@@ -44,6 +50,16 @@ export function Segmented<T extends string>({
             )}
           >
             {option.label}
+            {option.dot && (
+              <span
+                role="img"
+                aria-label="có cảnh báo"
+                className={cx(
+                  "ml-1.5 inline-block size-2 rounded-full align-middle",
+                  option.dot === "danger" ? "bg-danger" : "bg-warn",
+                )}
+              />
+            )}
           </button>
         );
       })}
