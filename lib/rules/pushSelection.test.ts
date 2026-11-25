@@ -1,11 +1,16 @@
 import { describe, expect, it } from "vitest";
 import type { VaccineDose } from "@/lib/content/vaccineSchema";
+import type { LmsRow } from "@/lib/content/who";
+import { addDays } from "./days";
 import {
   agoText,
   buildMedicineState,
   selectDueNotifications,
   wakeWindowMin,
   type BabyDispatchState,
+  type GrowthState,
+  type Recipient,
+  type WhoTables,
 } from "./pushSelection";
 
 const now = new Date("2026-11-15T03:00:00Z"); // 10:00 on 15/11 in VN
@@ -15,6 +20,7 @@ const minutesAgo = (m: number) =>
 function baby(over: Partial<BabyDispatchState> = {}): BabyDispatchState {
   return {
     babyId: "b1",
+    name: "Bun",
     feedIntervalMin: 180,
     lastFeed: { id: "L1", startedAt: minutesAgo(190) },
     breastRunningSince: null,
@@ -22,6 +28,7 @@ function baby(over: Partial<BabyDispatchState> = {}): BabyDispatchState {
     medicine: { schedules: [], loggedToday: [], lastAntipyretic: null },
     wake: null,
     vaccine: null,
+    growth: { dob: "2026-01-01", sex: "male", rows: [] },
     recipients: [{ userId: "u1", prefs: null }],
     ...over,
   };
@@ -1014,5 +1021,192 @@ describe("buildMedicineState (spec 2026-11-17 §4.3)", () => {
     });
     expect(state.lastAntipyretic).toBeNull();
     expect(state.loggedToday).toEqual(["Paracetamol"]);
+  });
+});
+
+// L = 1, S = 1/8 and the same median on every day: z = (value / median − 1) × 8.
+const flat = (median: number): LmsRow[] =>
+  Array.from({ length: 1857 }, (_, day) => [day, 1, median, 0.125]);
+// Boys: median 16, so 9 is far under the norm (z = −3,5). Girls: median 9.
+const TABLES: WhoTables = {
+  boys: { wfa: flat(16), lhfa: flat(16), hcfa: flat(16) },
+  girls: { wfa: flat(9), lhfa: flat(9), hcfa: flat(9) },
+};
+const ALL_ON = {
+  feed_reminder: true,
+  wake_window: true,
+  vaccine: true,
+  snooze_until: null,
+};
+const measured = (
+  over: Partial<GrowthState["rows"][number]> = {},
+): GrowthState["rows"][number] => ({
+  id: "g1",
+  measuredOn: "2026-11-14",
+  weightG: 9000,
+  lengthCm: null,
+  headCm: null,
+  createdBy: "u1",
+  createdAt: minutesAgo(60),
+  ...over,
+});
+const TWO: Recipient[] = [
+  { userId: "u1", prefs: null },
+  { userId: "u2", prefs: null },
+];
+
+describe("selectDueNotifications — growth alert (spec 2026-11-25 §8.2)", () => {
+  const due = (
+    rows: GrowthState["rows"],
+    recipients: Recipient[] = TWO,
+    sex: GrowthState["sex"] = "male",
+    at: Date = now,
+  ) =>
+    selectDueNotifications(
+      [baby({ growth: { dob: "2026-01-01", sex, rows }, recipients })],
+      at,
+      [],
+      TABLES,
+    ).filter((item) => item.kind === "growth_alert");
+
+  it("tells everyone but the member who entered the measurement", () => {
+    expect(due([measured()])).toEqual([
+      {
+        userId: "u2",
+        kind: "growth_alert",
+        refKey: "growth:g1",
+        title: "Tăng trưởng của Bun cần chú ý",
+        body: "Cân nặng thấp hơn chuẩn nhiều. Nên cho bé đi khám.",
+        url: "/tang-truong",
+        tag: "growth:b1",
+      },
+    ]);
+  });
+
+  it("nothing measured, or the newest measurement has no alert: nothing is sent", () => {
+    expect(due([])).toEqual([]);
+    expect(due([measured({ weightG: 16000 })])).toEqual([]);
+  });
+
+  it("only within 24 hours of entering the measurement", () => {
+    expect(
+      due([measured({ createdAt: minutesAgo(24 * 60 - 1) })]),
+    ).toHaveLength(1);
+    expect(due([measured({ createdAt: minutesAgo(24 * 60) })])).toEqual([]);
+  });
+
+  it("an older day entered late is not the newest measurement: nothing is sent", () => {
+    const rows = [
+      measured({ weightG: 16000, createdAt: minutesAgo(3 * 24 * 60) }),
+      measured({
+        id: "g0",
+        measuredOn: "2026-10-01",
+        createdAt: minutesAgo(5),
+      }),
+    ];
+    expect(due(rows)).toEqual([]);
+  });
+
+  it("two rows on the same day: the one entered last is the newest", () => {
+    const rows = [
+      measured({ id: "g1", weightG: 16000, createdAt: minutesAgo(90) }),
+      measured({ id: "g2", createdBy: "u2", createdAt: minutesAgo(30) }),
+    ];
+    expect(due(rows).map((item) => [item.userId, item.refKey])).toEqual([
+      ["u1", "growth:g2"],
+    ]);
+  });
+
+  it("two alerts or more: the body gives the count", () => {
+    const [item] = due([measured({ lengthCm: 9 })]);
+    expect(item.body).toBe("2 chỉ số cần chú ý. Mở app để xem.");
+  });
+
+  it("counts only the indicators the newest measurement itself holds", () => {
+    // The head was last measured on 01/10, far under the norm; the newest
+    // row holds the weight only.
+    const older = measured({
+      id: "g0",
+      measuredOn: "2026-10-01",
+      weightG: null,
+      headCm: 9,
+      createdAt: minutesAgo(60 * 24 * 40),
+    });
+    expect(due([measured({ weightG: 16000 }), older])).toEqual([]);
+    expect(due([measured(), older])[0].body).toBe(
+      "Cân nặng thấp hơn chuẩn nhiều. Nên cho bé đi khám.",
+    );
+  });
+
+  it("an alert about an older measurement is not sent for a newer one outside the WHO table", () => {
+    // The newest row was measured at 1860 days old, past the table, so the
+    // weight alert comes from the row measured at 1850 days.
+    const dob = addDays("2026-11-14", -1860);
+    const rows = [
+      measured({ weightG: 16000 }),
+      measured({
+        id: "g0",
+        measuredOn: addDays(dob, 1850),
+        createdAt: minutesAgo(60 * 24 * 10),
+      }),
+    ];
+    expect(
+      selectDueNotifications(
+        [baby({ growth: { dob, sex: "male", rows }, recipients: TWO })],
+        now,
+        [],
+        TABLES,
+      ).filter((item) => item.kind === "growth_alert"),
+    ).toEqual([]);
+  });
+
+  it("uses the tables of the baby's sex", () => {
+    expect(due([measured()], TWO, "female")).toEqual([]);
+  });
+
+  it("the switch off, snooze and quiet hours hold it; a missing field means on", () => {
+    const recipients: Recipient[] = [
+      { userId: "off", prefs: { ...ALL_ON, growth_alert: false } },
+      {
+        userId: "snoozed",
+        prefs: { ...ALL_ON, snooze_until: minutesAgo(-30) },
+      },
+      {
+        userId: "quiet",
+        prefs: {
+          ...ALL_ON,
+          quiet_enabled: true,
+          quiet_start_min: 0,
+          quiet_end_min: 1439,
+        },
+      },
+      { userId: "plain", prefs: ALL_ON },
+      { userId: "on", prefs: { ...ALL_ON, growth_alert: true } },
+      { userId: "never-saved", prefs: null },
+    ];
+    expect(due([measured()], recipients).map((item) => item.userId)).toEqual([
+      "plain",
+      "on",
+      "never-saved",
+    ]);
+  });
+
+  it("comes after the timer reminders", () => {
+    const kinds = selectDueNotifications(
+      [
+        baby({
+          growth: { dob: "2026-01-01", sex: "male", rows: [measured()] },
+          // A tummy-time timer left running past its 30 minutes.
+          runningTimers: [
+            { id: "t1", type: "tummy", startedAt: minutesAgo(45), side: null },
+          ],
+          recipients: TWO,
+        }),
+      ],
+      now,
+      [],
+      TABLES,
+    ).map((item) => item.kind);
+    expect(kinds).toEqual(["feed", "feed", "timer", "timer", "growth_alert"]);
   });
 });

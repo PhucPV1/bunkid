@@ -23,7 +23,9 @@ async function loadState(now: Date): Promise<BabyDispatchState[]> {
   const db = supabaseServiceRole();
   const { data: babies, error } = await db
     .from("babies")
-    .select("id, family_id, feed_interval_min, dob, vaccine_choices");
+    .select(
+      "id, family_id, name, sex, feed_interval_min, dob, vaccine_choices",
+    );
   if (error) throw error;
 
   const states: BabyDispatchState[] = [];
@@ -33,52 +35,68 @@ async function loadState(now: Date): Promise<BabyDispatchState[]> {
     const medicineSince = new Date(
       Math.min(vnDayStartMs(vnDateString(now)), now.getTime() - 6 * 3_600_000),
     ).toISOString();
-    const [feeds, sleeps, running, members, doses, schedules, medicineLogs] =
-      await Promise.all([
-        db
-          .from("logs")
-          .select("id, started_at")
-          .eq("baby_id", baby.id)
-          .in("type", ["breast", "bottle"])
-          .gte("started_at", since)
-          .order("started_at", { ascending: false })
-          .limit(1),
-        db
-          .from("logs")
-          .select("id, ended_at")
-          .eq("baby_id", baby.id)
-          .eq("type", "sleep")
-          .gte("ended_at", since)
-          .order("ended_at", { ascending: false })
-          .limit(1),
-        // Running timers: at most one per type (unique index), so four rows at most.
-        db
-          .from("logs")
-          .select("id, type, started_at, details")
-          .eq("baby_id", baby.id)
-          .in("type", ["breast", "sleep", "pump", "tummy"])
-          .is("ended_at", null),
-        db
-          .from("family_members")
-          .select("user_id")
-          .eq("family_id", baby.family_id)
-          .not("user_id", "is", null),
-        db
-          .from("vaccine_doses")
-          .select("vaccine_code, dose_no, status, given_on, due_on_override")
-          .eq("baby_id", baby.id),
-        db
-          .from("medicine_schedules")
-          .select("id, name, remind_at_min, enabled, updated_at")
-          .eq("baby_id", baby.id)
-          .eq("enabled", true),
-        db
-          .from("logs")
-          .select("id, started_at, details")
-          .eq("baby_id", baby.id)
-          .eq("type", "medicine")
-          .gte("started_at", medicineSince),
-      ]);
+    const [
+      feeds,
+      sleeps,
+      running,
+      members,
+      doses,
+      schedules,
+      medicineLogs,
+      growth,
+    ] = await Promise.all([
+      db
+        .from("logs")
+        .select("id, started_at")
+        .eq("baby_id", baby.id)
+        .in("type", ["breast", "bottle"])
+        .gte("started_at", since)
+        .order("started_at", { ascending: false })
+        .limit(1),
+      db
+        .from("logs")
+        .select("id, ended_at")
+        .eq("baby_id", baby.id)
+        .eq("type", "sleep")
+        .gte("ended_at", since)
+        .order("ended_at", { ascending: false })
+        .limit(1),
+      // Running timers: at most one per type (unique index), so four rows at most.
+      db
+        .from("logs")
+        .select("id, type, started_at, details")
+        .eq("baby_id", baby.id)
+        .in("type", ["breast", "sleep", "pump", "tummy"])
+        .is("ended_at", null),
+      db
+        .from("family_members")
+        .select("user_id")
+        .eq("family_id", baby.family_id)
+        .not("user_id", "is", null),
+      db
+        .from("vaccine_doses")
+        .select("vaccine_code, dose_no, status, given_on, due_on_override")
+        .eq("baby_id", baby.id),
+      db
+        .from("medicine_schedules")
+        .select("id, name, remind_at_min, enabled, updated_at")
+        .eq("baby_id", baby.id)
+        .eq("enabled", true),
+      db
+        .from("logs")
+        .select("id, started_at, details")
+        .eq("baby_id", baby.id)
+        .eq("type", "medicine")
+        .gte("started_at", medicineSince),
+      // Spec 2026-11-25 §8.2: every measurement, for the growth alerts and
+      // the measure reminder.
+      db
+        .from("growth")
+        .select(
+          "id, measured_on, weight_g, length_cm, head_cm, created_by, created_at",
+        )
+        .eq("baby_id", baby.id),
+    ]);
     for (const result of [
       feeds,
       sleeps,
@@ -87,6 +105,7 @@ async function loadState(now: Date): Promise<BabyDispatchState[]> {
       doses,
       schedules,
       medicineLogs,
+      growth,
     ])
       if (result.error) throw result.error;
 
@@ -98,7 +117,7 @@ async function loadState(now: Date): Promise<BabyDispatchState[]> {
       db
         .from("notification_prefs")
         .select(
-          "user_id, feed_reminder, wake_window, vaccine, snooze_until, medicine, timer_alert, quiet_enabled, quiet_start_min, quiet_end_min, hold_feed_while_asleep",
+          "user_id, feed_reminder, wake_window, vaccine, snooze_until, medicine, timer_alert, quiet_enabled, quiet_start_min, quiet_end_min, hold_feed_while_asleep, growth_alert, growth_measure",
         )
         .in("user_id", userIds),
     ]);
@@ -112,6 +131,7 @@ async function loadState(now: Date): Promise<BabyDispatchState[]> {
 
     states.push({
       babyId: baby.id,
+      name: baby.name,
       feedIntervalMin: baby.feed_interval_min,
       lastFeed: last ? { id: last.id, startedAt: last.started_at } : null,
       breastRunningSince:
@@ -139,6 +159,19 @@ async function loadState(now: Date): Promise<BabyDispatchState[]> {
         choices: parseChoices(baby.vaccine_choices),
         records: toDoseRecords(doses.data ?? []),
       },
+      growth: {
+        dob: baby.dob,
+        sex: baby.sex === "female" ? "female" : "male",
+        rows: (growth.data ?? []).map((row) => ({
+          id: row.id,
+          measuredOn: row.measured_on,
+          weightG: row.weight_g,
+          lengthCm: row.length_cm,
+          headCm: row.head_cm,
+          createdBy: row.created_by,
+          createdAt: row.created_at,
+        })),
+      },
       recipients: userIds
         .filter((id) => withSubscription.has(id))
         .map((userId) => {
@@ -157,6 +190,8 @@ async function loadState(now: Date): Promise<BabyDispatchState[]> {
                   quiet_start_min: row.quiet_start_min,
                   quiet_end_min: row.quiet_end_min,
                   hold_feed_while_asleep: row.hold_feed_while_asleep,
+                  growth_alert: row.growth_alert,
+                  growth_measure: row.growth_measure,
                 }
               : null,
           };

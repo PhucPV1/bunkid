@@ -1,6 +1,9 @@
 import { VACCINES } from "@/lib/content/vaccines";
 import type { VaccineDose } from "@/lib/content/vaccineSchema";
+import { whoSex, type WhoIndicator } from "@/lib/content/who";
+import { WHO_TABLES, type WhoTables } from "@/lib/content/whoTables";
 import { addDays, formatDayShort, vnDayStartMs, WEEKDAYS } from "./days";
+import { growthAlerts } from "./growthAlerts";
 import { detailsSchemas } from "./logDetails";
 import { sameMedicine } from "./medicineNames";
 import { DEFAULT_QUIET, inQuietHours, vnMinuteOfDay } from "./notifications";
@@ -10,7 +13,15 @@ import { TIMER_LIMIT_MIN } from "./timer";
 import { buildSchedule, type DoseRecord } from "./vaccines";
 
 export type NotificationKind =
-  "feed" | "wake" | "vaccine" | "medicine" | "timer";
+  | "feed"
+  | "wake"
+  | "vaccine"
+  | "medicine"
+  | "timer"
+  | "growth_alert"
+  | "growth_measure";
+
+export type { WhoTables };
 
 export type Recipient = {
   userId: string;
@@ -28,6 +39,9 @@ export type Recipient = {
     quiet_start_min?: number;
     quiet_end_min?: number;
     hold_feed_while_asleep?: boolean;
+    // Spec 2026-11-25 §8.1: missing means on.
+    growth_alert?: boolean;
+    growth_measure?: boolean;
   } | null;
 };
 
@@ -39,8 +53,25 @@ export type RunningTimer = {
   side: "left" | "right" | null;
 };
 
+// Spec 2026-11-25 §8.2: every growth row of the baby; empty when nothing was
+// measured yet.
+export type GrowthState = {
+  dob: string;
+  sex: "male" | "female";
+  rows: {
+    id: string;
+    measuredOn: string;
+    weightG: number | null;
+    lengthCm: number | null;
+    headCm: number | null;
+    createdBy: string;
+    createdAt: string;
+  }[];
+};
+
 export type BabyDispatchState = {
   babyId: string;
+  name: string;
   feedIntervalMin: number;
   // Latest breast/bottle log by started_at, or null when there is none.
   lastFeed: { id: string; startedAt: string } | null;
@@ -65,6 +96,7 @@ export type BabyDispatchState = {
   // the names of the medicine logs since 00:00 VN; `lastAntipyretic` the latest
   // antipyretic dose of the last 6 hours.
   medicine: MedicineState;
+  growth: GrowthState;
   // Members with a user_id and at least one push subscription.
   recipients: Recipient[];
 };
@@ -435,11 +467,93 @@ function timerReminders(baby: BabyDispatchState, now: Date): DueNotification[] {
     );
 }
 
-// Spec §8.3: "feed", "wake" and "vaccine"; spec 2026-11-17 §4.3: "medicine" and "timer".
+const GROWTH_FIELD = {
+  wfa: "weightG",
+  lhfa: "lengthCm",
+  hcfa: "headCm",
+} as const satisfies Record<WhoIndicator, keyof GrowthState["rows"][number]>;
+
+function wantsGrowthAlert(recipient: Recipient, now: Date): boolean {
+  const prefs = recipient.prefs;
+  if (!prefs) return true;
+  return (
+    (prefs.growth_alert ?? true) &&
+    notSnoozed(prefs, now) &&
+    !isQuiet(prefs, now)
+  );
+}
+
+// Spec 2026-11-25 §8.2: within 24 hours of entering the newest measurement,
+// when that measurement itself holds an indicator with an alert. The member
+// who entered it has already seen the alert on the screen.
+function growthAlertNotifications(
+  baby: BabyDispatchState,
+  now: Date,
+  tables: WhoTables,
+): DueNotification[] {
+  const { dob, sex, rows } = baby.growth;
+  const latest = rows.reduce<GrowthState["rows"][number] | null>(
+    (best, row) =>
+      best === null ||
+      row.measuredOn > best.measuredOn ||
+      (row.measuredOn === best.measuredOn &&
+        Date.parse(row.createdAt) > Date.parse(best.createdAt))
+        ? row
+        : best,
+    null,
+  );
+  if (!latest) return [];
+  if (now.getTime() - Date.parse(latest.createdAt) >= 24 * HOUR_MS) return [];
+  const who = whoSex(sex);
+  const alerts = growthAlerts({
+    rows: rows.map((row) => ({
+      measured_on: row.measuredOn,
+      weight_g: row.weightG,
+      length_cm: row.lengthCm,
+      head_cm: row.headCm,
+      created_at: row.createdAt,
+    })),
+    tables: tables[who],
+    dob,
+    sex: who,
+    babyName: baby.name,
+  }).filter(
+    (alert) =>
+      // About the newest measurement itself: growthAlerts leaves out a row
+      // outside the WHO tables, and its alert then comes from an older one.
+      alert.measuredOn === latest.measuredOn &&
+      latest[GROWTH_FIELD[alert.indicator]] !== null,
+  );
+  if (alerts.length === 0) return [];
+  const body =
+    alerts.length === 1
+      ? `${alerts[0].title}. ${alerts[0].advice}`
+      : `${alerts.length} chỉ số cần chú ý. Mở app để xem.`;
+  return baby.recipients
+    .filter(
+      (recipient) =>
+        recipient.userId !== latest.createdBy &&
+        wantsGrowthAlert(recipient, now),
+    )
+    .map((recipient) => ({
+      userId: recipient.userId,
+      kind: "growth_alert",
+      // One per member per measurement: editing the row does not send again.
+      refKey: `growth:${latest.id}`,
+      title: `Tăng trưởng của ${baby.name} cần chú ý`,
+      body,
+      url: "/tang-truong",
+      tag: `growth:${baby.babyId}`,
+    }));
+}
+
+// Spec §8.3: "feed", "wake" and "vaccine"; spec 2026-11-17 §4.3: "medicine"
+// and "timer"; spec 2026-11-25 §8.2: "growth_alert".
 export function selectDueNotifications(
   babies: BabyDispatchState[],
   now: Date,
   vaccineDoses: VaccineDose[] = VACCINES.doses,
+  whoTables: WhoTables = WHO_TABLES,
 ): DueNotification[] {
   return babies.flatMap((baby) => [
     ...feedReminders(baby, now),
@@ -448,5 +562,6 @@ export function selectDueNotifications(
     ...medicineReminders(baby, now),
     ...feverReminders(baby, now),
     ...timerReminders(baby, now),
+    ...growthAlertNotifications(baby, now, whoTables),
   ]);
 }

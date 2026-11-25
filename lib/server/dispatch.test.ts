@@ -12,6 +12,7 @@ const now = new Date("2026-11-15T03:00:00Z");
 
 const dueBaby: BabyDispatchState = {
   babyId: "b1",
+  name: "Bun",
   feedIntervalMin: 180,
   lastFeed: { id: "L1", startedAt: "2026-11-14T23:00:00Z" }, // 4 hours ago
   breastRunningSince: null,
@@ -19,6 +20,7 @@ const dueBaby: BabyDispatchState = {
   medicine: { schedules: [], loggedToday: [], lastAntipyretic: null },
   wake: null,
   vaccine: null,
+  growth: { dob: "2026-01-01", sex: "male", rows: [] },
   recipients: [{ userId: "u1", prefs: null }],
 };
 
