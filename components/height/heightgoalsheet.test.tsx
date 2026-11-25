@@ -63,7 +63,9 @@ describe("HeightGoalSheet", () => {
   it("is titled, says what the heights are for, and names the baby", () => {
     const html = render();
     expect(html).toContain("<dialog");
-    expect(html).toContain(">Mục tiêu và chiều cao bố mẹ</h2>");
+    // The first title, "Mục tiêu và chiều cao bố mẹ", wrapped onto two lines
+    // at 375 px and left "mẹ" alone on the second.
+    expect(html).toContain(">Mục tiêu chiều cao</h2>");
     expect(html).toContain(
       ">Nhập một lần. App dùng để tính khoảng chiều cao dự kiến của Bun.</p>",
     );

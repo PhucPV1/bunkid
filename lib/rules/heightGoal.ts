@@ -158,7 +158,7 @@ export function lengthVelocity(
   };
 }
 
-// Spec §6.5: the sheet "Mục tiêu và chiều cao bố mẹ".
+// Spec §6.5: the sheet "Mục tiêu chiều cao".
 export type HeightGoalRaw = { father: string; mother: string; target: string };
 
 export type HeightGoalInput = {

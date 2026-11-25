@@ -64,7 +64,7 @@ export function HeightGoalSheet({
     <Sheet
       open
       onClose={onClose}
-      title="Mục tiêu và chiều cao bố mẹ"
+      title="Mục tiêu chiều cao"
       dirty={JSON.stringify(raw) !== JSON.stringify(opened)}
       footer={
         <div className="flex flex-col gap-2">
