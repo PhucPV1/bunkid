@@ -643,3 +643,21 @@ Kết quả: Chờ người dùng.
 | iPhone 11     |     |         |         |
 | iPhone 16     |     |         |         |
 | iPhone 17 Pro |     |         |         |
+
+## Bước 38 — Đợt ốm (spec 2026-11-26)
+
+Phần của mốc M1 (bản ghi Triệu chứng, spec §3). Các mốc sau của spec thêm mục của mình vào cuối danh sách này. Mục 2 tạo một bản ghi Triệu chứng thử và mục 4 xóa nó.
+
+1. Mở app từ màn hình chính, bấm "+". Kỳ vọng: nhóm "Khác" có năm ô, ô đầu là "Triệu chứng", không chữ nào bị cắt. Bấm "Triệu chứng". Kỳ vọng: phiếu "Triệu chứng" có dòng "Bấm những gì bé đang có.", các chip dưới nhãn "Hay gặp", nút "Xem tất cả … triệu chứng", ô "Ghi chú (không bắt buộc)", rồi "Lúc nào?"; nút "Lưu" mờ và chưa bấm được.
+2. Bấm "Sổ mũi" và "Ho". Kỳ vọng: hai chip đổi sang nền đậm và có dấu ✓; dòng trên ghi "Đã chọn 2."; nút "Lưu" bấm được. Bấm "Xem tất cả … triệu chứng". Kỳ vọng: các chip còn lại hiện theo nhóm "Hô hấp", "Tiêu hóa", "Da", "Hành vi, ăn bú", "Khác"; nút thành "Thu gọn". Gõ ghi chú "thử", bấm "Lưu". Kỳ vọng: toast "Đã ghi Triệu chứng: Sổ mũi, Ho · thử lúc …" có nút "Hoàn tác".
+3. Tab Nhật ký. Kỳ vọng: có dòng "Triệu chứng: Sổ mũi, Ho · thử"; bộ lọc "Nhiệt độ" vẫn hiện dòng này, bộ lọc "Khác" thì không. Về tab Hôm nay, bấm nút "Khác" của hàng "Ghi nhanh". Kỳ vọng: phiếu chỉ có nhóm "Khác", trong đó có ô "Triệu chứng"; hàng "Ghi nhanh" của Hôm nay vẫn năm nút như trước.
+4. Ở Nhật ký bấm vào dòng đó. Kỳ vọng: phiếu "Bản ghi" có hai chip đang chọn và ô "Ghi chú (không bắt buộc)" chứa "thử"; không có ô "Ghi chú" thứ hai. Bỏ chọn "Ho", bấm "Lưu". Kỳ vọng: dòng thành "Triệu chứng: Sổ mũi · thử". Mở lại dòng đó, bấm "Xóa bản ghi".
+5. Bật Ban đêm, mở lại phiếu "Triệu chứng", chọn một chip. Kỳ vọng: chip đang chọn vẫn phân biệt được với chip chưa chọn nhờ nền đậm và dấu ✓.
+
+Kết quả: Chờ người dùng.
+
+| Máy           | iOS | Kết quả | Ghi chú |
+| ------------- | --- | ------- | ------- |
+| iPhone 11     |     |         |         |
+| iPhone 16     |     |         |         |
+| iPhone 17 Pro |     |         |         |
