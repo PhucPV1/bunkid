@@ -81,12 +81,22 @@ describe("QuickActionGrid", () => {
         /<span class="[^"]*\bwhitespace-nowrap\b[^"]*">[^<]+<\/span><\/button>/g,
       ),
     ).toHaveLength(14);
+    // Spec 2026-11-26 §3.3: tile labels are 11 px, so "Triệu chứng" keeps clear
+    // of the tile's edge at 375 px; the timer row keeps 12 px.
     expect(html).toContain(
-      '<span class="text-center text-xs leading-4 font-semibold whitespace-nowrap">Uống nước</span>',
+      '<span class="text-center text-[11px] leading-4 font-semibold whitespace-nowrap">Uống nước</span>',
     );
     expect(html).toContain(
-      '<span class="text-center text-xs leading-4 font-semibold whitespace-nowrap">Triệu chứng</span>',
+      '<span class="text-center text-[11px] leading-4 font-semibold whitespace-nowrap">Triệu chứng</span>',
     );
+    expect(
+      html.match(
+        /text-center text-\[11px\] leading-4 font-semibold whitespace-nowrap/g,
+      ),
+    ).toHaveLength(9);
+    expect(
+      html.match(/text-xs leading-4 font-medium whitespace-nowrap/g),
+    ).toHaveLength(5);
     for (const action of QUICK_ACTIONS)
       expect(html).toContain(`>${action.label}</span>`);
   });

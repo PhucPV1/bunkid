@@ -26,6 +26,8 @@ import { useQuickActions } from "./QuickActions";
 // Spec 2026-11-19 §5.4: one titled block per group. "Bấm giờ" is a row of five
 // 58 px round buttons like the home page's timer row; the other groups are
 // 84 px tiles, four to a row. Every label stays on one line at 375 px.
+// Spec 2026-11-26 §3.3: tile labels are 11 px, so the longest one, "Triệu chứng",
+// keeps clear of the tile's edge at 375 px; the timer row keeps 12 px.
 export function QuickActionGrid({
   running,
   onPick,
@@ -99,7 +101,7 @@ export function QuickActionGrid({
         >
           <Icon name={category.icon} size={20} />
         </span>
-        <span className="text-center text-xs leading-4 font-semibold whitespace-nowrap">
+        <span className="text-center text-[11px] leading-4 font-semibold whitespace-nowrap">
           {action.label}
         </span>
       </button>
