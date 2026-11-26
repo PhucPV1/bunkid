@@ -1271,7 +1271,9 @@ git commit -m "docs(plan): record the M1b check results" -m "Co-Authored-By: Cla
 
 File plan chưa có trong git thì không commit nó: hỏi người dùng một câu "Commit file spec và hai file plan của Đợt ốm không?" và làm theo câu trả lời.
 
-- [ ] **Step 6: Hỏi rồi đưa lên `main`**
+- [x] **Step 6: Hỏi rồi đưa lên `main`**
+
+Người dùng trả lời "Đẩy lên main" (đêm 2026-11-26), sau khi bản sửa nhãn 11 px đã có test, đã ghi vào plan và Step 1, Step 2 đã chạy lại.
 
 Chỉ khi Step 1, 2 và 4 đều đạt và không còn lỗi đã biết (lỗi tìm thấy ở Step 4 phải được sửa, có test, và ghi vào plan trước). Hỏi người dùng "Đẩy M1b lên `main`?" và chờ câu trả lời. Được đồng ý thì:
 
