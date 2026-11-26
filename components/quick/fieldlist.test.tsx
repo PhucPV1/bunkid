@@ -76,6 +76,29 @@ describe("FieldList", () => {
     expect(med).not.toContain("<select");
   });
 
+  it("spec 2026-11-26 §3.5: a symptoms field is the chip picker, filtered by the baby's age", () => {
+    const symptom = html({
+      fields: LOG_FIELDS.symptom,
+      values: { codes: "runny_nose,cough", note: "Ho về đêm" },
+      onChange: () => {},
+      ageDays: 76,
+    });
+    expect(symptom).toContain(">Hay gặp</span>");
+    expect(symptom).toMatch(/aria-pressed="true"[^>]*>✓ Sổ mũi<\/button>/);
+    expect(symptom).toMatch(/aria-pressed="false"[^>]*>Sốt<\/button>/);
+    expect(symptom).toContain(">Xem tất cả 22 triệu chứng</button>");
+    expect(symptom).toContain(">Ghi chú (không bắt buộc)</span>");
+    expect(symptom).toMatch(/<textarea[^>]*maxLength="200"/);
+    expect(symptom).not.toContain("<input");
+    expect(symptom).not.toContain("Bấm những gì bé đang có.");
+    const anyAge = html({
+      fields: LOG_FIELDS.symptom,
+      values: { codes: "", note: "" },
+      onChange: () => {},
+    });
+    expect(anyAge).toContain(">Xem tất cả 23 triệu chứng</button>");
+  });
+
   it("a textarea field is three lines tall and capped; text fields carry maxLength", () => {
     const note = html({
       fields: LOG_FIELDS.note,

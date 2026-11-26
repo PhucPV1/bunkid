@@ -2,18 +2,23 @@ import { Segmented } from "@/components/ui/Segmented";
 import { Switch } from "@/components/ui/Switch";
 import type { QuickField, QuickValues } from "@/lib/rules/quickEntry";
 import { FIELD_INPUT, FIELD_LABEL } from "./styles";
+import { SymptomPicker } from "./SymptomPicker";
 
 // Spec §8.3: same fields as before, drawn with ui components. A checkbox becomes a
 // Switch, a select with 2–6 options a Segmented, a longer select stays native.
 // A textarea is three lines tall; text fields carry the field's maxLength.
+// Spec 2026-11-26 §3.5: a "symptoms" field is the chip picker; `ageDays` filters
+// its chips (null, the default, shows every symptom).
 export function FieldList({
   fields,
   values,
   onChange,
+  ageDays = null,
 }: {
   fields: QuickField[];
   values: QuickValues;
   onChange: (next: QuickValues) => void;
+  ageDays?: number | null;
 }) {
   return (
     <>
@@ -23,6 +28,16 @@ export function FieldList({
           const value = values[field.key];
           const set = (next: string | boolean) =>
             onChange({ ...values, [field.key]: next });
+
+          if (field.kind === "symptoms")
+            return (
+              <SymptomPicker
+                key={field.key}
+                value={typeof value === "string" ? value : ""}
+                onChange={set}
+                ageDays={ageDays}
+              />
+            );
 
           if (field.kind === "checkbox")
             return (
