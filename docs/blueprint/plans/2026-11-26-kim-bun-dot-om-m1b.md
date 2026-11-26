@@ -1211,6 +1211,14 @@ Trang thật (người dùng tự đăng nhập trong khung Browser; chỉ xem, 
 
 Chưa kiểm: bấm "Lưu" thật (toast "Đã ghi Triệu chứng: …", dòng mới trong Nhật ký, sửa rồi xóa) vì dev nối vào dữ liệu thật: nằm ở Bước 38 của checklist thiết bị. Trên trang thật chỉ xem theme `night`. iPhone thật chưa xem.
 
+**Sửa trong phiên sau bước kiểm (2026-11-26): nhãn ô 84 px của phiếu "+" từ 12 px xuống 11 px.** Người dùng xem số đo của mục 4 và 9 và chọn sửa trước khi đẩy. Bốn phương án được vẽ bằng component thật trên một trang tạm ở 375 px, theme `rose` và `night` (lưới 317 px, ô 73,3 px), hở mỗi bên của nhãn "Triệu chứng": A giữ nguyên 12 px, 1,6 px; B chữ 11 px cho mọi ô vuông, 4,1 px; C 12 px với `tracking-[-0.02em]`, 2,9 px; D riêng ô này xuống hai dòng, 18,1 px. Người dùng chọn B.
+
+- Test trước: `components/actions/actionsheet.test.tsx`, test "keeps every label on one line" đòi `text-[11px]` ở nhãn "Uống nước" và "Triệu chứng", đúng 9 nhãn ô vuông cỡ 11 px và 5 nhãn hàng "Bấm giờ" vẫn `text-xs`. Đỏ: `Test Files  1 failed | 185 passed (186)`, `Tests  1 failed | 1694 passed (1695)`.
+- Code: `components/actions/ActionSheet.tsx`, nhãn của `tile` đổi `text-xs` thành `text-[11px]`. Xanh: `Test Files  186 passed (186)`, `Tests  1695 passed (1695)`; `tsc --noEmit` sạch. Commit `72d6a81`.
+- Spec §3.3 thêm một gạch đầu dòng về cỡ chữ này.
+- Chạy lại Step 1 và Step 2 sau khi sửa: typecheck sạch, 186 file / 1695 test, `bun run build` mã 0 ở lần hai (40 trang tĩnh, không còn trang tạm).
+- Đo lại trên trang thật (`/`, bấm "+", chỉ xem, 375×812, `night`): chín nhãn ô vuông cỡ 11 px, một dòng; "Triệu chứng" 65 px trong ô 73,3 px, hở 4,1 px mỗi bên; "Uống nước" 58,6 px, hở 7,3 px; nhãn hàng "Bấm giờ" vẫn 12 px; không tràn ngang; console không có lỗi. Chưa xem lại ở ba theme sáng trên trang thật (trang tạm phương án B đã xem ở `rose`).
+
 - [x] **Step 5: Xóa trang fixture, thêm Bước 38 vào checklist (Patch 5), commit**
 
 ```bash

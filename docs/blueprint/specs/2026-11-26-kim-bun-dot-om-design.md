@@ -110,6 +110,7 @@ Một unit test khẳng định: đủ 23 mã có `short`, không `short` nào t
 - `describeLog`: `Triệu chứng: {các short, nối bằng ", ", theo thứ tự của nội dung}`; có ghi chú thì thêm ` · {note}`.
 - `FILTER_TYPES.temperature` (`lib/rules/history.ts`) thành `["temperature", "symptom"]`; nhãn "Nhiệt độ" của bộ lọc giữ nguyên.
 - `QUICK_ACTIONS`: thêm `{ key: "symptom", label: "Triệu chứng", kind: "instant", group: "other", category: "symptom", instant: "symptom" }` ngay trước `solids`, tức đứng đầu nhóm "Khác". `InstantType` thêm `"symptom"`. Lưới ghi nhanh và hàng timer trên tab Hôm nay không đổi; "Triệu chứng" mở được từ nút "Khác" của Hôm nay và từ phiếu "+".
+- Nhãn của các ô 84 px trong phiếu "+" (nhóm "Khác" và "Ghi nhanh") là chữ 11/16 đậm 600, một dòng; trước đó là 12/16. Lý do: ở 375 px nhãn "Triệu chứng" cỡ 12 px rộng 70,1 px trong ô 73,3 px, chỉ hở 1,6 px mỗi bên; ở 11 px nó rộng 65 px, hở 4,1 px. Nhãn của hàng "Bấm giờ" giữ 12/16. (Người dùng chọn ngày 2026-11-26, sau bước kiểm trình duyệt của M1b.)
 - `isFeed`, `dailyStats`, ô thống kê 24 giờ, realtime: không đổi.
 
 ### 3.4 Giá trị của phiếu
