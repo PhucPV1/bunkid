@@ -59,6 +59,52 @@ describe("content/triage.vi.json (spec §6.6, §10.2)", () => {
     ]);
   });
 
+  it("spec 2026-11-26 §3.2: every symptom has its own short name; eight are common", () => {
+    expect(
+      Object.fromEntries(TRIAGE.symptoms.map((s) => [s.code, s.short])),
+    ).toEqual({
+      fever: "Sốt",
+      runny_nose: "Sổ mũi",
+      cough: "Ho",
+      barking_cough: "Ho ông ổng",
+      wheeze: "Khò khè",
+      spit_up: "Trớ sữa",
+      vomit: "Nôn",
+      diarrhoea: "Tiêu chảy",
+      hard_stool: "Phân cứng",
+      gassy: "Đầy hơi",
+      diaper_rash: "Đỏ vùng tã",
+      dry_red_skin: "Da khô đỏ",
+      heat_rash: "Nốt đỏ li ti",
+      rash_after_fever: "Ban sau sốt",
+      hand_foot_spots: "Nốt ở tay chân",
+      yellow_skin: "Vàng da",
+      white_mouth: "Mảng trắng miệng",
+      mouth_sores: "Loét miệng",
+      ear_rub: "Dụi tai",
+      sticky_eye: "Mắt đỏ, ghèn",
+      drooling: "Chảy dãi",
+      long_crying: "Khóc nhiều",
+      fussy: "Quấy",
+    });
+    const shorts = TRIAGE.symptoms.map((s) => s.short);
+    expect(new Set(shorts).size).toBe(23);
+    for (const short of shorts)
+      expect(Array.from(short).length, short).toBeLessThanOrEqual(16);
+    expect(
+      TRIAGE.symptoms.filter((s) => s.common === true).map((s) => s.code),
+    ).toEqual([
+      "fever",
+      "runny_nose",
+      "cough",
+      "wheeze",
+      "spit_up",
+      "vomit",
+      "diarrhoea",
+      "fussy",
+    ]);
+  });
+
   it("never names a disease as a finding", () => {
     const text = JSON.stringify(TRIAGE).toLowerCase();
     for (const word of [

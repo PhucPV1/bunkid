@@ -22,6 +22,7 @@ const s = (
 ): TriageSymptom => ({
   code,
   group: "other",
+  short: code,
   text: `${code} text`,
   suggests,
   ...extra,

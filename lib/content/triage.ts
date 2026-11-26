@@ -22,10 +22,14 @@ export const TriageQuestionSchema = z
 const code = z.string().regex(/^[a-z0-9_]+$/);
 
 // Spec 2026-11-17 §4.1: a common symptom and the articles it suggests.
+// Spec 2026-11-26 §3.2: `short` is the chip of a symptom log; `common` puts the
+// chip in the first row of the symptom sheet.
 export const TriageSymptomSchema = z
   .object({
     code,
     group: z.string().min(1),
+    short: z.string().min(1).max(16),
+    common: z.boolean().optional(),
     text: z.string().min(1),
     suggests: z.array(code).min(1),
     minAgeDays: z.number().int().min(0).optional(),
