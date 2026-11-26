@@ -29,6 +29,7 @@ import {
   type QuickActionGroup,
 } from "@/lib/rules/quickActions";
 import type { InstantType, QuickValues } from "@/lib/rules/quickEntry";
+import { ageDays } from "@/lib/rules/time";
 import {
   nextBreastSide,
   type BreastSide,
@@ -182,6 +183,7 @@ export function QuickActionsProvider({
           type={sheet.type}
           initial={sheet.initial}
           recentLogs={rows}
+          ageDays={ageDays(baby.dob, new Date())}
           babyId={baby.id}
           userId={userId}
           onSaved={(saved) => showUndo(instantToast(saved))}

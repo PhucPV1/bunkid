@@ -80,13 +80,40 @@ describe("LogEditSheet", () => {
     expect(html).not.toContain("Xóa bản ghi");
   });
 
+  it("spec 2026-11-26 §3.5: a symptom log edits its chips and its own note, no second Ghi chú", () => {
+    const symptom = {
+      ...diaper,
+      id: "s1",
+      type: "symptom",
+      details: { codes: ["runny_nose", "cough"], note: "Ho về đêm" },
+      note: null,
+    } as LogRow;
+    const html = render({ log: symptom, ageDays: 76 });
+    expect(html).toContain("bg-cat-med/15 text-cat-med");
+    expect(html).toContain(`d="${ICON_PATHS.pulse}"`);
+    expect(html).toContain("11:00 · Triệu chứng: Sổ mũi, Ho · Ho về đêm · Mẹ");
+    expect(html).toMatch(/aria-pressed="true"[^>]*>✓ Sổ mũi<\/button>/);
+    expect(html).toMatch(/aria-pressed="true"[^>]*>✓ Ho<\/button>/);
+    expect(html).toContain(">Xem tất cả 22 triệu chứng</button>");
+    expect(html).toContain(">Ghi chú (không bắt buộc)</span>");
+    expect(html).toContain(">Ho về đêm</textarea>");
+    expect(html).not.toContain(">Ghi chú</span>");
+    expect(html.match(/<textarea/g)).toHaveLength(1);
+    expect(html).not.toContain("Bấm những gì bé đang có.");
+    expect(html).toContain(">Thời điểm</span>");
+  });
+
   it("new log: the type picker also offers the four new types", () => {
     const html = render({});
     expect(html).toContain('<option value="solids">Ăn dặm</option>');
     expect(html).toContain('<option value="water">Uống nước</option>');
     expect(html).toContain('<option value="bath">Tắm</option>');
     expect(html).toContain('<option value="note">Ghi chú</option>');
-    expect(html.match(/<option /g)).toHaveLength(10);
+    expect(html.match(/<option /g)).toHaveLength(11);
+    // Spec 2026-11-26 §3.4: Triệu chứng sits right after Nhiệt độ.
+    expect(html).toContain(
+      '<option value="temperature">Nhiệt độ</option><option value="symptom">Triệu chứng</option>',
+    );
   });
 
   it("a note log: Nội dung only, the sheet's own Ghi chú field is hidden", () => {

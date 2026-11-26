@@ -34,6 +34,7 @@ export function LogEditSheet({
   canModify,
   who,
   recentLogs,
+  ageDays = null,
   onClose,
 }: {
   babyId: string;
@@ -42,6 +43,8 @@ export function LogEditSheet({
   canModify: boolean;
   who: string;
   recentLogs: LogRow[];
+  // Spec 2026-11-26 §3.5: filters the symptom chips; null shows them all.
+  ageDays?: number | null;
   onClose: () => void;
 }) {
   const save = useSaveLog(babyId, userId);
@@ -216,6 +219,7 @@ export function LogEditSheet({
               fields={LOG_FIELDS[type]}
               values={values}
               onChange={setValues}
+              ageDays={ageDays}
             />
             {dateField(timer ? "Bắt đầu" : "Thời điểm", start, setStart)}
             {timer &&

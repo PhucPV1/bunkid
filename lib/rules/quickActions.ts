@@ -135,6 +135,15 @@ export const QUICK_ACTIONS: QuickAction[] = [
     category: "temperature",
     instant: "temperature",
   },
+  // Spec 2026-11-26 §3.3: first of Khác, so the home page's quick row is untouched.
+  {
+    key: "symptom",
+    label: "Triệu chứng",
+    kind: "instant",
+    group: "other",
+    category: "symptom",
+    instant: "symptom",
+  },
   {
     key: "solids",
     label: "Ăn dặm",

@@ -15,6 +15,7 @@ export const MANUAL_TYPES: { value: LogType; label: string }[] = [
   { value: "diaper", label: "Tã" },
   { value: "medicine", label: "Thuốc" },
   { value: "temperature", label: "Nhiệt độ" },
+  { value: "symptom", label: "Triệu chứng" },
   { value: "solids", label: "Ăn dặm" },
   { value: "water", label: "Uống nước" },
   { value: "bath", label: "Tắm" },

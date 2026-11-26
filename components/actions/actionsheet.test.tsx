@@ -20,7 +20,7 @@ describe("QuickActionGrid", () => {
     <QuickActionGrid running={[]} onPick={() => {}} />,
   );
 
-  it("draws three titled groups: Khác and Ghi nhanh as 4-column grids of 84 px tiles", () => {
+  it("draws three titled groups: Khác (5 tiles) and Ghi nhanh (4) as 4-column grids of 84 px tiles", () => {
     const titles = [...html.matchAll(/<h3 class="([^"]*)">([^<]+)<\/h3>/g)];
     // Spec 2026-11-19 §5.4: the most used group sits lowest, near the thumb.
     expect(titles.map((m) => m[2])).toEqual(["Khác", "Ghi nhanh", "Bấm giờ"]);
@@ -28,14 +28,25 @@ describe("QuickActionGrid", () => {
       "text-[13px] leading-[18px] font-semibold text-muted",
     );
     const [other, quick, timers] = sectionsOf(html);
-    for (const part of [other, quick]) {
+    // Spec 2026-11-26 §3.3: Triệu chứng is the fifth tile of Khác, on a second row.
+    for (const [part, count] of [
+      [other, 5],
+      [quick, 4],
+    ] as const) {
       expect(part).toContain('<div class="grid grid-cols-4 gap-2">');
-      expect(part.match(/<button/g)).toHaveLength(4);
-      expect(part.match(/h-\[84px\][^"]*rounded-\[20px\]/g)).toHaveLength(4);
-      expect(part.match(/size-\[38px\]/g)).toHaveLength(4);
-      expect(part.match(/width="20" height="20"/g)).toHaveLength(4);
+      expect(part.match(/<button/g)).toHaveLength(count);
+      expect(part.match(/h-\[84px\][^"]*rounded-\[20px\]/g)).toHaveLength(
+        count,
+      );
+      expect(part.match(/size-\[38px\]/g)).toHaveLength(count);
+      expect(part.match(/width="20" height="20"/g)).toHaveLength(count);
       expect(part).not.toContain("size-[58px]");
     }
+    expect(other).toContain("bg-cat-med/15 text-cat-med");
+    expect(other).toContain(`d="${ICON_PATHS.pulse}"`);
+    expect(other.indexOf(">Triệu chứng</span>")).toBeLessThan(
+      other.indexOf(">Ăn dặm</span>"),
+    );
     expect(timers).not.toContain("h-[84px]");
     expect(html).toContain("bg-cat-diaper/15 text-cat-diaper");
     for (const icon of ["drop", "bowl", "glass", "bath", "doc"] as const)
@@ -69,9 +80,12 @@ describe("QuickActionGrid", () => {
       html.match(
         /<span class="[^"]*\bwhitespace-nowrap\b[^"]*">[^<]+<\/span><\/button>/g,
       ),
-    ).toHaveLength(13);
+    ).toHaveLength(14);
     expect(html).toContain(
       '<span class="text-center text-xs leading-4 font-semibold whitespace-nowrap">Uống nước</span>',
+    );
+    expect(html).toContain(
+      '<span class="text-center text-xs leading-4 font-semibold whitespace-nowrap">Triệu chứng</span>',
     );
     for (const action of QUICK_ACTIONS)
       expect(html).toContain(`>${action.label}</span>`);
@@ -110,17 +124,20 @@ describe("QuickActionGrid", () => {
       QuickActionGrid({ running: [], onPick }),
       "button",
     );
-    expect(buttons).toHaveLength(13);
+    expect(buttons).toHaveLength(14);
     // Buttons follow the sheet's group order; QUICK_ACTIONS keeps its own.
-    (buttons[5].props.onClick as () => void)();
+    (buttons[6].props.onClick as () => void)();
     expect(onPick).toHaveBeenCalledWith(QUICK_ACTIONS[6]);
     expect(QUICK_ACTIONS[6].label).toBe("Thay tã");
-    (buttons[3].props.onClick as () => void)();
-    expect(onPick).toHaveBeenLastCalledWith(QUICK_ACTIONS[12]);
-    expect(QUICK_ACTIONS[12]).toMatchObject({ instant: "note" });
-    (buttons[8].props.onClick as () => void)();
+    (buttons[4].props.onClick as () => void)();
+    expect(onPick).toHaveBeenLastCalledWith(QUICK_ACTIONS[13]);
+    expect(QUICK_ACTIONS[13]).toMatchObject({ instant: "note" });
+    (buttons[9].props.onClick as () => void)();
     expect(onPick).toHaveBeenLastCalledWith(QUICK_ACTIONS[0]);
     expect(QUICK_ACTIONS[0].label).toBe("Bú trái");
+    (buttons[0].props.onClick as () => void)();
+    expect(onPick).toHaveBeenLastCalledWith(QUICK_ACTIONS[9]);
+    expect(QUICK_ACTIONS[9]).toMatchObject({ instant: "symptom" });
   });
 });
 
@@ -131,8 +148,8 @@ describe("QuickActionGrid groups", () => {
       <QuickActionGrid running={[]} onPick={() => {}} groups={["other"]} />,
     );
     expect(titlesOf(html)).toEqual(["Khác"]);
-    expect(html.match(/<button/g)).toHaveLength(4);
-    for (const label of ["Ăn dặm", "Uống nước", "Tắm", "Ghi chú"])
+    expect(html.match(/<button/g)).toHaveLength(5);
+    for (const label of ["Triệu chứng", "Ăn dặm", "Uống nước", "Tắm", "Ghi chú"])
       expect(html).toContain(`>${label}</span>`);
     expect(html).not.toContain("Thay tã");
     expect(html).not.toContain("Bú trái");
@@ -147,7 +164,7 @@ describe("QuickActionGrid groups", () => {
       />,
     );
     expect(titlesOf(html)).toEqual(["Khác", "Bấm giờ"]);
-    expect(html.match(/<button/g)).toHaveLength(9);
+    expect(html.match(/<button/g)).toHaveLength(10);
   });
 
   it("reports a pick from a filtered sheet", () => {
@@ -156,10 +173,10 @@ describe("QuickActionGrid groups", () => {
       QuickActionGrid({ running: [], onPick, groups: ["other"] }),
       "button",
     );
-    expect(buttons).toHaveLength(4);
-    (buttons[1].props.onClick as () => void)();
-    expect(onPick).toHaveBeenCalledWith(QUICK_ACTIONS[10]);
-    expect(QUICK_ACTIONS[10].label).toBe("Uống nước");
+    expect(buttons).toHaveLength(5);
+    (buttons[2].props.onClick as () => void)();
+    expect(onPick).toHaveBeenCalledWith(QUICK_ACTIONS[11]);
+    expect(QUICK_ACTIONS[11].label).toBe("Uống nước");
   });
 });
 
@@ -209,7 +226,7 @@ describe("QuickActionGrid next-side hint (spec 2026-11-17 §5.3)", () => {
     expect(other + quick).not.toContain("Nên bú");
     expect(html).toContain('aria-label="Bú trái, nên bú"');
     expect(html).toContain('aria-label="Bú phải"');
-    expect(html.match(/<button/g)).toHaveLength(13);
+    expect(html.match(/<button/g)).toHaveLength(14);
   });
 
   it("shows no label without a hint", () => {

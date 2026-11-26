@@ -141,10 +141,11 @@ describe("logForm", () => {
     ).toEqual({ ok: false, message: "Nhập số ml từ 1 đến 400" });
   });
 
-  it("MANUAL_TYPES: the six old types, then Ăn dặm, Uống nước, Tắm and Ghi chú", () => {
-    expect(MANUAL_TYPES).toHaveLength(10);
+  it("MANUAL_TYPES: the six old types, Triệu chứng, then Ăn dặm, Uống nước, Tắm and Ghi chú", () => {
+    expect(MANUAL_TYPES).toHaveLength(11);
     expect(MANUAL_TYPES[5].label).toBe("Nhiệt độ");
-    expect(MANUAL_TYPES.slice(6)).toEqual([
+    expect(MANUAL_TYPES[6]).toEqual({ value: "symptom", label: "Triệu chứng" });
+    expect(MANUAL_TYPES.slice(7)).toEqual([
       { value: "solids", label: "Ăn dặm" },
       { value: "water", label: "Uống nước" },
       { value: "bath", label: "Tắm" },

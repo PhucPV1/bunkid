@@ -25,11 +25,11 @@ describe("QUICK_ACTIONS", () => {
   const labelsOf = (group: string) =>
     QUICK_ACTIONS.filter((a) => a.group === group).map((a) => a.label);
 
-  it("lists thirteen actions group by group: timers, quick entries, the rest", () => {
+  it("lists fourteen actions group by group: timers, quick entries, the rest", () => {
     expect(QUICK_ACTIONS.map((a) => a.group)).toEqual([
       ...Array(5).fill("timer"),
       ...Array(4).fill("quick"),
-      ...Array(4).fill("other"),
+      ...Array(5).fill("other"),
     ]);
     expect(labelsOf("timer")).toEqual([
       "Bú trái",
@@ -45,12 +45,27 @@ describe("QUICK_ACTIONS", () => {
       "Nhiệt độ",
     ]);
     expect(labelsOf("other")).toEqual([
+      "Triệu chứng",
       "Ăn dặm",
       "Uống nước",
       "Tắm",
       "Ghi chú",
     ]);
-    expect(new Set(QUICK_ACTIONS.map((a) => a.key)).size).toBe(13);
+    expect(new Set(QUICK_ACTIONS.map((a) => a.key)).size).toBe(14);
+  });
+
+  // Spec 2026-11-26 §3.3: in Khác, so the home page's quick row stays as it is.
+  it("Triệu chứng is an instant entry that opens the Khác group", () => {
+    expect(byKey("symptom")).toEqual({
+      key: "symptom",
+      label: "Triệu chứng",
+      kind: "instant",
+      group: "other",
+      category: "symptom",
+      instant: "symptom",
+    });
+    expect(QUICK_ACTIONS.indexOf(byKey("symptom"))).toBe(9);
+    expect(QUICK_ACTIONS[10].key).toBe("solids");
   });
 
   // Spec 2026-11-19 §5.4: the "+" sheet lists Khác, Ghi nhanh, then Bấm giờ.

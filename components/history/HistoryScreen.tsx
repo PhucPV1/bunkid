@@ -31,6 +31,7 @@ import {
   matchesFilter,
   type HistoryFilter,
 } from "@/lib/rules/history";
+import { ageDays } from "@/lib/rules/time";
 import type { Baby, FamilyMember, LogRow } from "@/lib/supabase/rows";
 import { HistoryList } from "./HistoryList";
 import { LogEditSheet } from "./LogEditSheet";
@@ -191,6 +192,7 @@ export function HistoryScreen({
           }
           who={sheet.log ? nameOf(sheet.log.created_by) : ""}
           recentLogs={rows}
+          ageDays={ageDays(baby.dob, now)}
           onClose={() => setSheet(null)}
         />
       )}
