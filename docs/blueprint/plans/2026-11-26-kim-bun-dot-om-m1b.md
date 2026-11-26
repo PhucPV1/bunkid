@@ -126,7 +126,7 @@ Plan này đứng sau M1a. M2 sẽ dùng `QuickEntrySheet` với `type="symptom"
 - Consumes: `parseCodes`, `pickerLayout`, `toggleCode` (M1a); `TRIAGE`; `QUICK_FIELDS.symptom`; `LOG_FIELDS.symptom`; `FIELD_LABEL`; `cx`.
 - Produces: `SymptomPickerView`, `SymptomPicker`, `SymptomFields`; `FieldList` có `ageDays` và nhánh `"symptoms"` (chữ ký ở mục Contracts).
 
-- [ ] **Step 0: Kiểm M1a đã xong, rồi tạo nhánh**
+- [x] **Step 0: Kiểm M1a đã xong, rồi tạo nhánh**
 
 ```bash
 git checkout main && git pull --ff-only
@@ -139,7 +139,7 @@ Expected: dòng `M1a có trên main`. Không thấy dòng đó thì dừng: M1a 
 git checkout -b feat/kim-bun-dot-om-m1b
 ```
 
-- [ ] **Step 1: Viết test đỏ (Patch 1)**
+- [x] **Step 1: Viết test đỏ (Patch 1)**
 
 ```diff
 diff --git a/components/quick/fieldlist.test.tsx b/components/quick/fieldlist.test.tsx
@@ -336,12 +336,12 @@ index 0000000..1740316
 +});
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run`
 Expected: `Test Files  2 failed | 184 passed (186)`, `Tests  1 failed | 1681 passed (1682)`. `symptoms.test.tsx` không nạp được vì hai component chưa có (10 test của nó chưa được đếm); test mới của `fieldlist.test.tsx` đỏ.
 
-- [ ] **Step 3: Viết bộ chọn chip (Patch 2)**
+- [x] **Step 3: Viết bộ chọn chip (Patch 2)**
 
 ```diff
 diff --git a/components/quick/FieldList.tsx b/components/quick/FieldList.tsx
@@ -530,12 +530,12 @@ index 0000000..9d61fa4
 +}
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run && bun run typecheck`
 Expected: `Test Files  186 passed (186)`, `Tests  1692 passed (1692)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add components/quick/SymptomPicker.tsx components/quick/SymptomFields.tsx components/quick/FieldList.tsx components/quick/symptoms.test.tsx components/quick/fieldlist.test.tsx
@@ -554,7 +554,7 @@ git commit -m "feat(symptom): the chip picker" -m "Co-Authored-By: Claude Fable 
 - Consumes: `SymptomFields`, `FieldList` có `ageDays` (Task 1); `parseCodes` (M1a); `ageDays(dob, now)`.
 - Produces: `QuickEntrySheet` và `LogEditSheet` có `ageDays`; `QUICK_ACTIONS` có `symptom` ở vị trí 9; `MANUAL_TYPES` có `symptom` ở vị trí 6.
 
-- [ ] **Step 1: Viết test đỏ (Patch 3)**
+- [x] **Step 1: Viết test đỏ (Patch 3)**
 
 Các con số đếm ô trong `actionsheet.test.tsx` đổi theo ô mới: 13 thành 14 nút, nhóm "Khác" 4 thành 5, và các chỉ số nút dịch đi một.
 
@@ -843,12 +843,12 @@ index c2d5602..10765d9 100644
    // Spec 2026-11-19 §5.4: the "+" sheet lists Khác, Ghi nhanh, then Bấm giờ.
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run`
 Expected: `Test Files  5 failed | 181 passed (186)`, `Tests  13 failed | 1682 passed (1695)`.
 
-- [ ] **Step 3: Nối bộ chọn vào hai phiếu và thêm đường vào (Patch 4)**
+- [x] **Step 3: Nối bộ chọn vào hai phiếu và thêm đường vào (Patch 4)**
 
 ```diff
 diff --git a/components/actions/QuickActions.tsx b/components/actions/QuickActions.tsx
@@ -1015,12 +1015,12 @@ index efdc607..c4c6ea0 100644
      label: "Ăn dặm",
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run && bun run typecheck`
 Expected: `Test Files  186 passed (186)`, `Tests  1695 passed (1695)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add components/home/QuickEntrySheet.tsx components/home/quickentry.test.tsx components/actions/QuickActions.tsx components/actions/actionsheet.test.tsx components/history/LogEditSheet.tsx components/history/HistoryScreen.tsx components/history/logedit.test.tsx lib/rules/quickActions.ts lib/rules/quickActions.test.ts lib/rules/logForm.ts lib/rules/logForm.test.ts
@@ -1039,17 +1039,17 @@ git commit -m "feat(symptom): the entry sheet, the edit sheet and the + tile" -m
 - Consumes: mọi thứ của các task trước trong plan này.
 - Produces: kết quả kiểm, ghi ngay trong plan; Bước 38 của checklist; `main` có M1b.
 
-- [ ] **Step 1: Chạy cả bộ kiểm**
+- [x] **Step 1: Chạy cả bộ kiểm**
 
 Run: `bun run typecheck && bunx vitest run`
 Expected: `tsc --noEmit` không báo lỗi; `Test Files  186 passed (186)`, `Tests  1695 passed (1695)`.
 
-- [ ] **Step 2: Build**
+- [x] **Step 2: Build**
 
 Run: `bun run build`
 Expected: lần đầu có thể dừng với thông báo bảo mật của Next.js 16.4.3 (bình thường). Chạy lại đúng lệnh đó: `✓ Generating static pages` và thoát mã 0.
 
-- [ ] **Step 3: Tạo trang fixture tạm cho các trạng thái dữ liệu thật không có**
+- [x] **Step 3: Tạo trang fixture tạm cho các trạng thái dữ liệu thật không có**
 
 Trang này không đọc hay ghi dữ liệu của gia đình. Dữ liệu thật chưa có bản ghi triệu chứng nào, nên phiếu sửa, dòng mô tả và chip ngoài tuổi chỉ thấy được ở đây. Tạo `app/fixture-symptom/page.tsx`:
 
@@ -1165,7 +1165,7 @@ export default function Page() {
 }
 ```
 
-- [ ] **Step 4: Kiểm trong trình duyệt (chỉ xem)**
+- [x] **Step 4: Kiểm trong trình duyệt (chỉ xem)**
 
 Hỏi người dùng dùng trình duyệt nào (Diễn giải spec mục 12), cỡ 375×812. Chạy `bun run dev`.
 
@@ -1189,7 +1189,29 @@ Trang thật (dữ liệu thật của gia đình: chỉ xem):
 
 Dừng `bun run dev` khi xong. Ghi kết quả từng mục ngay dưới bước này, kèm số đo. Mục nào không cho thấy được thì ghi "chưa kiểm". Nếu bước này lộ ra lỗi và code phải đổi: sửa (test trước, code sau), rồi chạy lại Step 1 và Step 2 trước khi đi tiếp.
 
-- [ ] **Step 5: Xóa trang fixture, thêm Bước 38 vào checklist (Patch 5), commit**
+**Kết quả kiểm (2026-11-26, khoảng 23:00, khung Browser trong app do người dùng chọn, 375×812, DPR 2).** Số đo lấy bằng `getBoundingClientRect()` và `Range.getClientRects()` trong trang. Mục 1–8 xem trên trang tạm; hai phiếu của mục 5 và 6 là component thật, dữ liệu giả.
+
+1. **Đạt.** "Hay gặp", tám chip đúng thứ tự, nút "Xem tất cả 22 triệu chứng" (216,1 × 44 px). Mọi chip cao 44 px, một dòng, nằm trong thẻ (thẻ 343 px, lòng thẻ 311 px), không có "…". Chip xếp 3 hàng: 4 + 3 + 1.
+2. **Đạt.** "✓ Sổ mũi", "✓ Ho" nền `bg-ink`, chữ đậm 600; chip thứ chín là "✓ Đầy hơi". 3 hàng.
+3. **Đạt.** Nút "Thu gọn" đứng trên nhóm "Hô hấp"; nhóm theo thứ tự Hay gặp (8), Hô hấp (1), Tiêu hóa (2), Da (6), Hành vi, ăn bú (1), Khác (4), tổng 22 chip; có "Chảy dãi", không có "Khóc nhiều"; "Đầy hơi" một lần, trong Tiêu hóa, đang chọn. "Mảng trắng miệng" một dòng, rộng 161,2 px trong lòng thẻ 311 px.
+4. **Đạt theo tiêu chí của plan, nhưng sát mép.** Năm ô, hàng đầu Triệu chứng, Ăn dặm, Uống nước, Tắm; "Ghi chú" ở hàng hai. Trong khối 4 của trang tạm (lưới nằm trong thẻ, hẹp hơn phiếu thật): ô 71,3 px, nhãn "Triệu chứng" 70,1 px, một dòng, nằm trong ô, hở 0,6 px mỗi bên. Vì khối 4 hẹp hơn phiếu thật, trang tạm được thêm hai nút mở chính `ActionSheetView` (phiếu "+" đủ ba nhóm, và phiếu chỉ nhóm "Khác"): ở đó lưới rộng 317 px, ô 73,3 px (lòng ô 63,3 px sau `px-1` và viền), nhãn "Triệu chứng" 70,1 px, một dòng, hở 1,6 px mỗi bên; không chạm ô bên cạnh (khe 8 px). Nhãn lấn vào phần đệm của ô: nhìn sát mép. Để so: "Uống nước" 63,3 px, hở 5 px mỗi bên. Ở 390 px ô rộng 77 px, hở khoảng 3,5 px mỗi bên (tính, không đo). Không sửa trong phiên: đúng tiêu chí "nằm trọn trong ô" của plan; muốn thoáng hơn thì phải đổi chữ hoặc kiểu chữ của nhãn, là việc người dùng quyết. Dòng mô tả đúng chữ, 2 dòng, không có `gone_code`.
+5. **Đạt.** Tiêu đề "Triệu chứng", icon nhịp tim trong ô `bg-cat-med/15 text-cat-med`; "Bấm những gì bé đang có."; tám chip; "Xem tất cả 22 triệu chứng"; "Ghi chú (không bắt buộc)" (`textarea` 3 dòng, tối đa 200); "Lúc nào?". "Lưu" `disabled`, độ mờ 0,5. Bấm "Ho": chip thành "✓ Ho", dòng trên thành "Bấm những gì bé đang có. Đã chọn 1.", "Lưu" hết mờ (độ mờ 1). "Xem tất cả 22 triệu chứng": 22 chip theo năm nhóm, nút thành "Thu gọn", phần thân cuộn được (cao 1069 px trong khung 554 px) tới "Lúc nào?", nút "Lưu" vẫn trong màn hình; "Thu gọn": về tám chip, "✓ Ho" còn chọn. Không bấm "Lưu". Esc mở "Bỏ thay đổi?", bấm "Bỏ thay đổi".
+6. **Đạt.** Dòng đầu "09:00 · Triệu chứng: Sổ mũi, Ho, Chảy dãi · Ho nhiều hơn về đêm, khò khè nhẹ khi nằm · Mẹ" (2 dòng, không cắt); "✓ Sổ mũi", "✓ Ho", và chip thứ chín "✓ Chảy dãi"; "Xem tất cả 23 triệu chứng"; một `textarea` chứa ghi chú mẫu; có "Thời điểm"; không có ô "Ghi chú" thứ hai; không có dòng "Bấm những gì bé đang có.". Không bấm "Lưu" hay "Xóa bản ghi"; đóng bằng Esc.
+7. **Đạt.** `scrollWidth` 375 ≤ `innerWidth` 375, kể cả khi hai phiếu đang mở.
+8. **Đạt.** Mục 1–4 cho cùng số đo ở `rose`, `light`, `dark`, `night` (giữ theme bằng `MutationObserver` vì sau 21:00 app tự đặt lại `night`). Chip đang chọn / chưa chọn: `rose` nền `rgb(43, 27, 34)` chữ sáng / nền kính chữ `rgb(43, 27, 34)`; `night` nền đặc `rgb(217, 137, 92)` chữ `rgb(10, 7, 5)` đậm 600 và dấu ✓ / nền `rgba(217, 137, 92, 0.06)` chữ `rgb(217, 137, 92)` đậm 500. Ở `night` hai trạng thái khác nhau rõ: nền đặc và dấu ✓. Hai phiếu (mục 5, 6) và phiếu "+" chỉ xem ở `night`.
+
+Console của trang tạm: không có lỗi.
+
+Trang thật (người dùng tự đăng nhập trong khung Browser; chỉ xem, theme `night`, bé 2 tháng 16 ngày, lúc đó đang có một đồng hồ ngủ thật chạy, không đụng tới):
+
+9. **Đạt.** Hàng "Ghi nhanh" của Hôm nay vẫn năm nút: Thay tã, Bú bình, Thuốc, Nhiệt độ, Khác. Bấm "Khác": phiếu "Ghi lại cho Bun" chỉ có nhóm "Khác", năm ô, ô đầu "Triệu chứng" (ô 73,3 px, nhãn 70,1 px, hở 1,6 px mỗi bên: đúng số đo của trang tạm ở mục 4). Bấm "Triệu chứng": phiếu như mục 5, nút "Xem tất cả 22 triệu chứng" (bé dưới 90 ngày, khớp), "Lưu" `disabled`, độ mờ 0,5. Không bấm chip, không bấm "Lưu"; đóng bằng Esc.
+10. **Đạt.** Bấm "+": ba nhóm Khác (Triệu chứng, Ăn dặm, Uống nước, Tắm, Ghi chú), Ghi nhanh (4 ô), Bấm giờ (5 nút). Không bấm ô nào của Bấm giờ; đóng bằng Esc.
+11. **Đạt.** Nhật ký, "Ghi bù": danh sách "Loại" có 11 loại, "Triệu chứng" ngay sau "Nhiệt độ". Chọn nó: "Hay gặp" với tám chip, "Xem tất cả 22 triệu chứng", một ô "Ghi chú (không bắt buộc)", "Thời điểm"; không có ô "Ghi chú" thứ hai. Không bấm "Lưu"; Esc rồi "Bỏ thay đổi". Bộ lọc "Nhiệt độ" vẫn chạy: còn một dòng "Nhiệt độ 37.5°C (nách)" và nút "Xem thêm 7 ngày trước"; đã trả về "Tất cả". Dữ liệu thật chưa có bản ghi triệu chứng nào, nên dòng triệu chứng trong Nhật ký và phiếu sửa chỉ thấy trên trang tạm (mục 4 và 6).
+12. **Đạt.** `scrollWidth` 375 ≤ `innerWidth` 375 ở `/` và `/nhat-ky`, cả khi phiếu đang mở. Console của hai trang không có lỗi.
+
+Chưa kiểm: bấm "Lưu" thật (toast "Đã ghi Triệu chứng: …", dòng mới trong Nhật ký, sửa rồi xóa) vì dev nối vào dữ liệu thật: nằm ở Bước 38 của checklist thiết bị. Trên trang thật chỉ xem theme `night`. iPhone thật chưa xem.
+
+- [x] **Step 5: Xóa trang fixture, thêm Bước 38 vào checklist (Patch 5), commit**
 
 ```bash
 rm -r app/fixture-symptom
