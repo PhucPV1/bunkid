@@ -1,9 +1,11 @@
+import { TRIAGE } from "@/lib/content/triage";
 import {
   detailsSchemas,
   LOG_TYPES,
   type LogDetails,
   type LogType,
 } from "./logDetails";
+import { symptomShorts } from "./symptomForm";
 import { formatDuration } from "./time";
 
 export type LogLike = {
@@ -95,6 +97,12 @@ export function describeLog(log: LogLike, now: Date): string {
     case "note": {
       const d = parsed.data as LogDetails["note"];
       return `Ghi chú · ${d.text}`;
+    }
+    // Spec 2026-11-26 §3.3.
+    case "symptom": {
+      const d = parsed.data as LogDetails["symptom"];
+      const names = symptomShorts(d.codes, TRIAGE.symptoms).join(", ");
+      return `Triệu chứng${names ? `: ${names}` : ""}${d.note ? ` · ${d.note}` : ""}`;
     }
   }
 }

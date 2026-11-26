@@ -91,11 +91,46 @@ describe("buildDetails", () => {
       "water",
       "bath",
       "note",
+      "symptom",
     ] as const) {
       const defaults = defaultQuickValues(type);
       for (const field of QUICK_FIELDS[type])
         expect(defaults).toHaveProperty(field.key);
     }
+  });
+});
+
+describe("symptom (spec 2026-11-26 §3.4)", () => {
+  it("fields and defaults: the codes as one string, a note of at most 200", () => {
+    expect(QUICK_FIELDS.symptom).toEqual([
+      { key: "codes", label: "Triệu chứng", kind: "symptoms" },
+      {
+        key: "note",
+        label: "Ghi chú (không bắt buộc)",
+        kind: "textarea",
+        maxLength: 200,
+      },
+    ]);
+    expect(defaultQuickValues("symptom")).toEqual({ codes: "", note: "" });
+  });
+
+  it("details: the codes as an array; an empty note is left out", () => {
+    expect(
+      buildDetails("symptom", { codes: "runny_nose,cough", note: "" }),
+    ).toEqual({ ok: true, details: { codes: ["runny_nose", "cough"] } });
+    expect(
+      buildDetails("symptom", { codes: "cough", note: "  Ho về đêm " }),
+    ).toEqual({
+      ok: true,
+      details: { codes: ["cough"], note: "Ho về đêm" },
+    });
+  });
+
+  it("no code, or the same code twice, is refused with one message", () => {
+    const refused = { ok: false, message: "Chọn ít nhất một triệu chứng" };
+    expect(buildDetails("symptom", { codes: "", note: "" })).toEqual(refused);
+    expect(buildDetails("symptom", { codes: "cough,cough" })).toEqual(refused);
+    expect(buildDetails("symptom", {})).toEqual(refused);
   });
 });
 

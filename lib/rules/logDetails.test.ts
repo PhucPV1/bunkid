@@ -84,8 +84,7 @@ describe("solids, water, bath and note (spec 2026-11-17 §3.1)", () => {
     detailsSchemas[type].safeParse(details).success;
 
   it("LOG_TYPES ends with the four new types, none of them a timer", () => {
-    expect(LOG_TYPES).toHaveLength(12);
-    expect(LOG_TYPES.slice(8)).toEqual(["solids", "water", "bath", "note"]);
+    expect(LOG_TYPES.slice(8, 12)).toEqual(["solids", "water", "bath", "note"]);
     for (const type of ["solids", "water", "bath", "note"] as const)
       expect(isTimerType(type)).toBe(false);
   });
@@ -130,6 +129,47 @@ describe("solids, water, bath and note (spec 2026-11-17 §3.1)", () => {
     expect(ok("note", { text: "" })).toBe(false);
     expect(ok("note", { text: "  " })).toBe(false);
     expect(ok("note", { text: "a", extra: 1 })).toBe(false);
+  });
+});
+
+describe("symptom (spec 2026-11-26 §3.1)", () => {
+  const ok = (details: unknown) =>
+    detailsSchemas.symptom.safeParse(details).success;
+  const many = (n: number) => Array.from({ length: n }, (_, i) => `code_${i}`);
+
+  it("LOG_TYPES ends with symptom, which is not a timer", () => {
+    expect(LOG_TYPES).toHaveLength(13);
+    expect(LOG_TYPES[12]).toBe("symptom");
+    expect(isTimerType("symptom")).toBe(false);
+  });
+
+  it("1 to 30 different codes of lower-case letters, digits and _", () => {
+    expect(ok({ codes: ["cough"] })).toBe(true);
+    expect(ok({ codes: ["runny_nose", "cough"] })).toBe(true);
+    expect(ok({ codes: many(30) })).toBe(true);
+    expect(ok({ codes: many(31) })).toBe(false);
+    expect(ok({ codes: [] })).toBe(false);
+    expect(ok({})).toBe(false);
+    expect(ok({ codes: ["cough", "cough"] })).toBe(false);
+    expect(ok({ codes: ["Ho"] })).toBe(false);
+    expect(ok({ codes: ["so mui"] })).toBe(false);
+    expect(ok({ codes: [""] })).toBe(false);
+    expect(ok({ codes: ["a".repeat(40)] })).toBe(true);
+    expect(ok({ codes: ["a".repeat(41)] })).toBe(false);
+    expect(ok({ codes: "cough" })).toBe(false);
+    expect(ok({ codes: ["cough"], extra: 1 })).toBe(false);
+  });
+
+  it("an optional note of 1–200 characters after trimming", () => {
+    expect(ok({ codes: ["cough"], note: "Ho nhiều hơn về đêm" })).toBe(true);
+    expect(ok({ codes: ["cough"], note: "a".repeat(200) })).toBe(true);
+    expect(ok({ codes: ["cough"], note: "a".repeat(201) })).toBe(false);
+    expect(ok({ codes: ["cough"], note: "" })).toBe(false);
+    expect(ok({ codes: ["cough"], note: "  " })).toBe(false);
+    expect(
+      detailsSchemas.symptom.parse({ codes: ["cough"], note: "  về đêm " })
+        .note,
+    ).toBe("về đêm");
   });
 });
 

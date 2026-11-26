@@ -43,6 +43,7 @@ const TITLES: Record<InstantType, string> = {
   water: "Uống nước",
   bath: "Tắm",
   note: "Ghi chú",
+  symptom: "Triệu chứng",
 };
 
 export function QuickEntrySheet({
@@ -149,6 +150,8 @@ export function QuickEntrySheet({
     // Tắm has no fields: the sheet is just the time chips and Lưu.
     bath: null,
     note: <NoteFields values={values} onChange={setValues} />,
+    // Spec 2026-11-26 §3.5: the chip picker is added with the sheet's own task.
+    symptom: null,
   }[type];
 
   return (

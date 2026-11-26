@@ -13,6 +13,7 @@ export const LOG_TYPES = [
   "water",
   "bath",
   "note",
+  "symptom",
 ] as const;
 export type LogType = (typeof LOG_TYPES)[number];
 
@@ -91,6 +92,20 @@ const solids = z
   .strict();
 const water = z.object({ ml: z.number().int().min(1).max(500) }).strict();
 const note = z.object({ text: z.string().trim().min(1).max(500) }).strict();
+// Spec 2026-11-26 §3.1: codes of content/triage.vi.json. A code the content no
+// longer has is still valid here; it is only skipped when the log is shown.
+const symptom = z
+  .object({
+    codes: z
+      .array(z.string().regex(/^[a-z0-9_]{1,40}$/))
+      .min(1)
+      .max(30),
+    note: z.string().trim().min(1).max(200).optional(),
+  })
+  .strict()
+  .refine((d) => new Set(d.codes).size === d.codes.length, {
+    message: "Triệu chứng bị lặp",
+  });
 
 export const detailsSchemas = {
   breast,
@@ -105,6 +120,7 @@ export const detailsSchemas = {
   water,
   bath: empty,
   note,
+  symptom,
 } satisfies Record<LogType, z.ZodType>;
 
 export type LogDetails = {

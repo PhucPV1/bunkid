@@ -23,8 +23,9 @@ export const MANUAL_TYPES: { value: LogType; label: string }[] = [
 
 // Spec 2026-11-17 §3.3: a note log's text is its "Nội dung" (details.text), so the
 // sheet's own "Ghi chú" field (the logs.note column) is not offered for it.
+// Spec 2026-11-26 §3.4: the same holds for a symptom log, whose note is details.note.
 export function hasNoteField(type: LogType): boolean {
-  return type !== "note";
+  return type !== "note" && type !== "symptom";
 }
 
 export const LOG_FIELDS: Record<LogType, QuickField[]> = {
@@ -63,7 +64,12 @@ export function valuesFromDetails(
   const parsed = detailsSchemas[type].safeParse(details);
   if (!parsed.success) return values;
   for (const [key, value] of Object.entries(parsed.data))
-    values[key] = typeof value === "number" ? String(value) : value;
+    values[key] =
+      typeof value === "number"
+        ? String(value)
+        : Array.isArray(value)
+          ? value.join(",")
+          : value;
   return values;
 }
 

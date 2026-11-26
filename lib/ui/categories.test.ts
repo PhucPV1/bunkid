@@ -30,6 +30,7 @@ describe("log categories", () => {
       water: { token: "cat-pump", icon: "glass", label: "Uống nước" },
       bath: { token: "cat-diaper", icon: "bath", label: "Tắm" },
       note: { token: "cat-tummy", icon: "doc", label: "Ghi chú" },
+      symptom: { token: "cat-med", icon: "pulse", label: "Triệu chứng" },
     });
   });
 

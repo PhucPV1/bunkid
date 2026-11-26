@@ -30,7 +30,8 @@ const FILTER_TYPES: Record<Exclude<HistoryFilter, "all">, readonly string[]> = {
   sleep: ["sleep"],
   diaper: ["diaper"],
   medicine: ["medicine"],
-  temperature: ["temperature"],
+  // Spec 2026-11-26 §3.3: a symptom log sits with the temperature readings.
+  temperature: ["temperature", "symptom"],
   // Spec 2026-11-17 §3.4: water sits with solids; "Khác" is every type without its own chip.
   solids: ["solids", "water"],
   other: ["bath", "note", "pump", "tummy"],

@@ -164,6 +164,45 @@ describe("logForm", () => {
     expect(buildLogDetails("bath", {})).toEqual({ ok: true, details: {} });
   });
 
+  it("spec 2026-11-26 §3.4: a symptom log round-trips with its codes as one string", () => {
+    expect(LOG_FIELDS.symptom).toBe(QUICK_FIELDS.symptom);
+    expect(defaultLogValues("symptom")).toEqual({ codes: "", note: "" });
+    const details = { codes: ["runny_nose", "cough"], note: "Ho về đêm" };
+    const values = valuesFromDetails("symptom", details);
+    expect(values).toEqual({ codes: "runny_nose,cough", note: "Ho về đêm" });
+    expect(buildLogDetails("symptom", values)).toEqual({ ok: true, details });
+    expect(valuesFromDetails("symptom", { codes: ["cough"] })).toEqual({
+      codes: "cough",
+      note: "",
+    });
+    expect(buildLogDetails("symptom", { codes: "", note: "" })).toEqual({
+      ok: false,
+      message: "Chọn ít nhất một triệu chứng",
+    });
+  });
+
+  it("spec 2026-11-26 §3.4: a symptom log keeps its note in details, never in logs.note", () => {
+    expect(hasNoteField("symptom")).toBe(false);
+    expect(
+      buildLogPatch({
+        ...base,
+        type: "symptom",
+        values: { codes: "cough", note: " Ho về đêm " },
+        start: "2026-11-14T08:30",
+        end: "",
+        note: "gõ lúc còn chọn loại khác",
+      }),
+    ).toEqual({
+      ok: true,
+      patch: {
+        started_at: "2026-11-14T01:30:00.000Z",
+        ended_at: "2026-11-14T01:30:00.000Z",
+        details: { codes: ["cough"], note: "Ho về đêm" },
+        note: null,
+      },
+    });
+  });
+
   it("a note log has no separate Ghi chú: buildLogPatch never fills logs.note for it", () => {
     expect(hasNoteField("note")).toBe(false);
     expect(hasNoteField("solids")).toBe(true);

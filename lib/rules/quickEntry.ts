@@ -1,5 +1,6 @@
 import type { LogLike } from "./describeLog";
 import { detailsSchemas, MEDICINE_UNITS, type StoolColor } from "./logDetails";
+import { parseCodes } from "./symptomForm";
 
 export type InstantType =
   | "bottle"
@@ -9,12 +10,15 @@ export type InstantType =
   | "solids"
   | "water"
   | "bath"
-  | "note";
+  | "note"
+  | "symptom";
 export type QuickValues = Record<string, string | boolean>;
 export type QuickField = {
   key: string;
   label: string;
-  kind: "number" | "text" | "textarea" | "select" | "checkbox";
+  // "symptoms" (spec 2026-11-26 §3.4): the chip picker; its value is the picked
+  // codes joined with ",".
+  kind: "number" | "text" | "textarea" | "select" | "checkbox" | "symptoms";
   options?: { value: string; label: string }[];
   showIf?: (values: QuickValues) => boolean;
   // Same limit as the schema, so a text field cannot be typed past it.
@@ -107,6 +111,15 @@ export const QUICK_FIELDS: Record<InstantType, QuickField[]> = {
   water: [{ key: "ml", label: "Số ml", kind: "number" }],
   bath: [],
   note: [{ key: "text", label: "Nội dung", kind: "textarea", maxLength: 500 }],
+  symptom: [
+    { key: "codes", label: "Triệu chứng", kind: "symptoms" },
+    {
+      key: "note",
+      label: "Ghi chú (không bắt buộc)",
+      kind: "textarea",
+      maxLength: 200,
+    },
+  ],
 };
 
 const DEFAULTS: Record<InstantType, QuickValues> = {
@@ -118,6 +131,7 @@ const DEFAULTS: Record<InstantType, QuickValues> = {
   water: { ml: "" },
   bath: {},
   note: { text: "" },
+  symptom: { codes: "", note: "" },
 };
 
 // Tắm has no fields, so it has nothing to get wrong and no message.
@@ -131,6 +145,7 @@ const MESSAGES: Record<CheckedType, string> = {
   solids: "Nhập tên món",
   water: "Nhập số ml từ 1 đến 500",
   note: "Nhập ghi chú",
+  symptom: "Chọn ít nhất một triệu chứng",
 };
 
 export function defaultQuickValues(type: InstantType): QuickValues {
@@ -194,6 +209,10 @@ function rawDetails(
       return { ml: toNumber(v.ml) };
     case "note":
       return { text: typeof v.text === "string" ? v.text.trim() : "" };
+    case "symptom": {
+      const note = typeof v.note === "string" ? v.note.trim() : "";
+      return { codes: parseCodes(v.codes), ...(note === "" ? {} : { note }) };
+    }
   }
 }
 

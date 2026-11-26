@@ -39,6 +39,18 @@ describe("history", () => {
     expect(matchesFilter({ type: "note" }, "all")).toBe(true);
   });
 
+  it("spec 2026-11-26 §3.3: Nhiệt độ also shows symptom logs", () => {
+    expect(
+      LOG_TYPES.filter((type) => matchesFilter({ type }, "temperature")),
+    ).toEqual(["temperature", "symptom"]);
+    expect(matchesFilter({ type: "symptom" }, "other")).toBe(false);
+    expect(matchesFilter({ type: "symptom" }, "all")).toBe(true);
+    expect(HISTORY_FILTERS[5]).toEqual({
+      value: "temperature",
+      label: "Nhiệt độ",
+    });
+  });
+
   it("groupByVnDay splits at VN midnight, newest day and log first", () => {
     const groups = groupByVnDay([
       { id: "a", started_at: "2026-11-13T16:59:00Z" }, // 23:59 on 13/11

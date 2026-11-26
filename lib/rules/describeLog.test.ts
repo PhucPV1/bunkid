@@ -128,6 +128,22 @@ describe("describeLog", () => {
     expect(instant("water", { ml: 0 })).toBe("Bản ghi không hợp lệ");
     expect(instant("vaccine", {})).toBe("Bản ghi không hợp lệ");
   });
+  it("describes a symptom log by its short names, in the content's order", () => {
+    expect(instant("symptom", { codes: ["cough", "runny_nose"] })).toBe(
+      "Triệu chứng: Sổ mũi, Ho",
+    );
+    expect(
+      instant("symptom", { codes: ["fussy"], note: "Quấy từ chiều" }),
+    ).toBe("Triệu chứng: Quấy · Quấy từ chiều");
+    expect(instant("symptom", { codes: ["gone_code", "cough"] })).toBe(
+      "Triệu chứng: Ho",
+    );
+    expect(instant("symptom", { codes: ["gone_code"] })).toBe("Triệu chứng");
+    expect(instant("symptom", { codes: ["gone_code"], note: "ghi" })).toBe(
+      "Triệu chứng · ghi",
+    );
+    expect(instant("symptom", { codes: [] })).toBe("Bản ghi không hợp lệ");
+  });
   it("falls back for invalid details", () => {
     expect(
       describeLog(
