@@ -148,7 +148,7 @@ Plan này đứng sau M2a nhưng không dùng gì của nó. M2c (biểu đồ),
   - `formatCelsius(celsius: number): string`
   - `detailRange(episode: EpisodeLike): { from: string; to: string | null }`
 
-- [ ] **Step 0: Kiểm M2a đã xong, rồi tạo nhánh**
+- [x] **Step 0: Kiểm M2a đã xong, rồi tạo nhánh**
 
 ```bash
 git checkout main && git pull --ff-only
@@ -159,7 +159,7 @@ bunx vitest run
 
 Expected: dòng `M2a có trên main`; `Test Files  190 passed (190)`, `Tests  1721 passed (1721)`. Không thấy dòng đó thì dừng: M2a chưa lên `main`. Số test khác đi vì `main` có commit mới thì vẫn làm tiếp, và ghi lại số xuất phát thật: mọi con số trong plan lệch đi đúng bằng chừng đó.
 
-- [ ] **Step 1: Viết test đỏ (Patch 1)**
+- [x] **Step 1: Viết test đỏ (Patch 1)**
 
 Hàm `sameForEveryOrder` trong file test chạy một luật với mảng bản ghi xếp tăng dần, giảm dần và xáo trộn, rồi đòi ba kết quả giống nhau (spec §4.2 và §10.1). Các task sau dùng lại nó.
 
@@ -400,12 +400,12 @@ index 0000000..dc32a23
 +});
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run`
 Expected: `Test Files  1 failed | 190 passed (191)`, `Tests  1721 passed (1721)`. File test mới không nạp được vì `./illness` chưa có, nên 15 test của nó chưa được đếm.
 
-- [ ] **Step 3: Viết các luật nền (Patch 2)**
+- [x] **Step 3: Viết các luật nền (Patch 2)**
 
 ```diff
 diff --git a/lib/rules/illness.ts b/lib/rules/illness.ts
@@ -566,12 +566,12 @@ index 0000000..367d56c
 +}
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run && bun run typecheck`
 Expected: `Test Files  191 passed (191)`, `Tests  1736 passed (1736)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/rules/illness.ts lib/rules/illness.test.ts
@@ -597,7 +597,7 @@ git commit -m "feat(illness): days, membership and readings of an episode" -m "C
   - `type Verdict = { title: string; tone: EpisodeTone; icon: "thermo" | "clock" | "check" }`
   - `episodeVerdict(input: { episode: EpisodeLike; status: FeverStatus; babyName: string; now: Date }): Verdict`
 
-- [ ] **Step 1: Viết test đỏ (Patch 3)**
+- [x] **Step 1: Viết test đỏ (Patch 3)**
 
 ```diff
 diff --git a/lib/rules/illness.test.ts b/lib/rules/illness.test.ts
@@ -863,12 +863,12 @@ index dc32a23..0b1f71f 100644
 +});
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run`
 Expected: `Test Files  1 failed | 190 passed (191)`, `Tests  18 failed | 1736 passed (1754)`. 18 test mới đỏ vì bốn hàm chưa có.
 
-- [ ] **Step 3: Viết trạng thái sốt (Patch 4)**
+- [x] **Step 3: Viết trạng thái sốt (Patch 4)**
 
 ```diff
 diff --git a/lib/rules/illness.ts b/lib/rules/illness.ts
@@ -999,12 +999,12 @@ index 367d56c..eca318c 100644
 +}
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run && bun run typecheck`
 Expected: `Test Files  191 passed (191)`, `Tests  1754 passed (1754)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/rules/illness.ts lib/rules/illness.test.ts
@@ -1026,7 +1026,7 @@ git commit -m "feat(illness): fever status and the verdict" -m "Co-Authored-By: 
   - `type EpisodeDayRow = { day: string; n: number; peak: number | null; doses: number; codes: string[]; label: DayLabel | null }`
   - `episodeDays(logs: LogLike[], episode: EpisodeLike, now: Date): EpisodeDayRow[]` (ngày mới nhất trước)
 
-- [ ] **Step 1: Viết test đỏ (Patch 5)**
+- [x] **Step 1: Viết test đỏ (Patch 5)**
 
 ```diff
 diff --git a/lib/rules/illness.test.ts b/lib/rules/illness.test.ts
@@ -1145,12 +1145,12 @@ index 0b1f71f..61a220b 100644
 +});
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run`
 Expected: `Test Files  1 failed | 190 passed (191)`, `Tests  6 failed | 1754 passed (1760)`. 6 test mới đỏ vì `episodeDays` chưa có.
 
-- [ ] **Step 3: Viết các ngày của đợt (Patch 6)**
+- [x] **Step 3: Viết các ngày của đợt (Patch 6)**
 
 ```diff
 diff --git a/lib/rules/illness.ts b/lib/rules/illness.ts
@@ -1231,12 +1231,12 @@ index eca318c..454a769 100644
 +}
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run && bun run typecheck`
 Expected: `Test Files  191 passed (191)`, `Tests  1760 passed (1760)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/rules/illness.ts lib/rules/illness.test.ts
@@ -1259,7 +1259,7 @@ git commit -m "feat(illness): the days of an episode" -m "Co-Authored-By: Claude
   - `episodeError(errors: EpisodeErrors): string | null`
   - `canReopen(episode: EpisodeLike, episodes: EpisodeLike[]): boolean`
 
-- [ ] **Step 1: Viết test đỏ (Patch 7)**
+- [x] **Step 1: Viết test đỏ (Patch 7)**
 
 ```diff
 diff --git a/lib/rules/illness.test.ts b/lib/rules/illness.test.ts
@@ -1436,12 +1436,12 @@ index 61a220b..c798cf0 100644
 +});
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run`
 Expected: `Test Files  1 failed | 190 passed (191)`, `Tests  12 failed | 1760 passed (1772)`. 12 test mới đỏ vì ba hàm chưa có.
 
-- [ ] **Step 3: Viết các kiểm (Patch 8)**
+- [x] **Step 3: Viết các kiểm (Patch 8)**
 
 ```diff
 diff --git a/lib/rules/illness.ts b/lib/rules/illness.ts
@@ -1515,12 +1515,12 @@ index 454a769..1ad983e 100644
 +}
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run && bun run typecheck`
 Expected: `Test Files  191 passed (191)`, `Tests  1772 passed (1772)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/rules/illness.ts lib/rules/illness.test.ts
@@ -1538,21 +1538,21 @@ git commit -m "feat(illness): checks before saving an episode" -m "Co-Authored-B
 - Consumes: mọi thứ của các task trước trong plan này.
 - Produces: kết quả kiểm, ghi ngay trong plan; `main` có M2b.
 
-- [ ] **Step 1: Chạy cả bộ kiểm**
+- [x] **Step 1: Chạy cả bộ kiểm**
 
 Run: `bun run typecheck && bunx vitest run`
 Expected: `tsc --noEmit` không báo lỗi; `Test Files  191 passed (191)`, `Tests  1772 passed (1772)`.
 
-- [ ] **Step 2: Build**
+- [x] **Step 2: Build**
 
 Run: `bun run build`
 Expected: lần đầu có thể dừng với thông báo bảo mật của Next.js 16.4.3 (bình thường; không chạy `next upgrade`). Chạy lại đúng lệnh đó: `✓ Generating static pages` và thoát mã 0.
 
-- [ ] **Step 3: Không có bước trình duyệt, không có pgTAP**
+- [x] **Step 3: Không có bước trình duyệt, không có pgTAP**
 
 Plan này chỉ thêm luật thuần và test của chúng: chưa component nào gọi tới (Diễn giải spec mục 13), và DB không đổi.
 
-- [ ] **Step 4: Ghi kết quả vào plan, commit**
+- [x] **Step 4: Ghi kết quả vào plan, commit**
 
 Ghi ngay dưới bước này: số đo đỏ và xanh của từng task có khớp plan không; kết quả Step 1 và Step 2. Mục nào không cho thấy được thì ghi "chưa kiểm". Đánh dấu `[x]` các bước đã làm.
 
@@ -1561,6 +1561,29 @@ git status --short   # file plan này hiện là untracked (??); các file plan 
 git add docs/blueprint/plans/2026-11-26-kim-bun-dot-om-m2b.md
 git commit -m "docs(plan): the M2b plan and its check results" -m "Co-Authored-By: Claude Fable 5.2 <noreply@anthropic.com>"
 ```
+
+#### Kết quả kiểm (2026-11-27, phiên thực thi)
+
+**Khác plan ở hai chỗ, theo lời giao của phiên điều phối.** Nhánh `feat/kim-bun-dot-om-m2b` được cắt từ `feat/kim-bun-dot-om-m2a` @ `f2dc653`, không phải từ `main`; và Step 5 (đưa lên `main`) không chạy: không merge, không push. Lý do: migration `20261126000200_illness_episodes.sql` của M2a chưa áp lên Supabase thật (`db push` bị bộ kiểm quyền chặn, chờ người dùng tự chạy), mà code cần một migration chưa áp thì không được lên `main`. `main` = `origin/main` = `4f50586`, không đổi. Phiên điều phối sẽ gộp và đẩy cả chồng nhánh sau khi migration đã áp.
+
+- **Step 0.** Thay kiểm "M2a có trên main" bằng kiểm trên nhánh M2a: `lib/data/illness.ts` và `supabase/migrations/20261126000200_illness_episodes.sql` đều có. Nền đo được: `Test Files  190 passed (190)`, `Tests  1721 passed (1721)`. Khớp plan.
+- **Patch.** 8 patch áp sạch bằng `git apply`, không sửa tay dòng nào.
+- **Số đỏ và xanh của từng task, đo trên cả bộ test. Tất cả khớp plan.**
+
+| Task | Đỏ                                                          | Xanh                 | `tsc --noEmit` | Commit    |
+| ---- | ----------------------------------------------------------- | -------------------- | -------------- | --------- |
+| 1    | 1 file đỏ / 190 xanh (191); 1721 test xanh (file không nạp) | 191 file / 1736 test | exit 0         | `f356669` |
+| 2    | 18 đỏ / 1736 xanh (1754)                                    | 191 file / 1754 test | exit 0         | `e7462d1` |
+| 3    | 6 đỏ / 1754 xanh (1760)                                     | 191 file / 1760 test | exit 0         | `d0d2d91` |
+| 4    | 12 đỏ / 1760 xanh (1772)                                    | 191 file / 1772 test | exit 0         | `e046141` |
+
+- **Lý do đỏ đúng như plan ghi.** Task 1: `Cannot find module './illness'`. Task 2: 17 test `feverStatus is not a function`, 1 test `sinceText is not a function`. Task 3: 6 test `episodeDays is not a function`. Task 4: 10 test `checkEpisode`, 1 `episodeError`, 1 `canReopen` `is not a function`.
+- **Task 5 Step 1.** `tsc --noEmit` exit 0; `Test Files  191 passed (191)`, `Tests  1772 passed (1772)`.
+- **Task 5 Step 2.** `bun run build` lần 1 dừng với thông báo bảo mật của Next.js 16.4.3 (exit 1; không chạy `next upgrade`). Lần 2 exit 0, `✓ Generating static pages using 9 workers (40/40)`. Sau build cây làm việc vẫn sạch.
+- **Thêm ngoài plan.** `prettier --check` trên `lib/rules/illness.ts` và `lib/rules/illness.test.ts`: đạt.
+- **Không lỗi nào lộ ra**, không sửa gì ngoài plan, spec không đổi.
+- **Một ranh đã thấy, không sửa** (hệ quả của Diễn giải spec mục 3, tự hết trong vòng một phút). Đợt đang mở, đồng hồ của trang còn ở 23:59 mà một lần đo vừa lưu đã mang giờ của ngày hôm sau (trong 2 phút nới): `feverStatus` tính lần đo đó ngay, còn `episodeDays` chưa có hàng cho ngày mới nên chưa đếm nó, cho tới khi đồng hồ nhích qua nửa đêm. Đã chạy thử bằng một script ngoài repo: `kind` là `fever`, hai hàng ngày đều `peak: null`. Chưa có test cho ranh này; M2d (danh sách từng ngày) nên biết.
+- **Chưa kiểm:** không có bước trình duyệt và không có pgTAP (đúng plan, Step 3). Chưa component nào gọi các luật này, nên chưa có gì để xem trên màn hình. Step 5 chưa chạy (xem trên).
 
 - [ ] **Step 5: Đưa lên `main`**
 
