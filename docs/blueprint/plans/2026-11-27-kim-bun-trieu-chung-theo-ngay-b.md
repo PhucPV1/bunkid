@@ -124,7 +124,7 @@ kb_patch 1 | git apply --verbose   # đổi số 1 thành số patch cần áp
 - Consumes: `toggleCode`, `pickerLayout`.
 - Produces: `SymptomPickerView` và `SymptomPicker` nhận `locked?: readonly string[]`; chip khóa có `aria-disabled="true"`, lớp `opacity-50`, bấm không gọi `onChange`.
 
-- [ ] **Step 0: Kiểm plan A đã xong, rồi tạo nhánh**
+- [x] **Step 0: Kiểm plan A đã xong, rồi tạo nhánh**
 
 ```bash
 git checkout main && git pull --ff-only
@@ -136,7 +136,7 @@ git checkout -b feat/kim-bun-trieu-chung-theo-ngay-b
 bunx vitest run   # Test Files  216 passed (216), Tests  2091 passed (2091)
 ```
 
-- [ ] **Step 1: Viết test đỏ (Patch 1)**
+- [x] **Step 1: Viết test đỏ (Patch 1)**
 
 ```diff
 diff --git a/components/quick/symptoms.test.tsx b/components/quick/symptoms.test.tsx
@@ -171,12 +171,12 @@ index 1740316..9c67820 100644
      const buttons = hostElements(
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run`
 Expected: `Test Files  1 failed | 215 passed (216)`, `Tests  1 failed | 2091 passed (2092)`. `tsc` báo `'locked' does not exist` ở test mới.
 
-- [ ] **Step 3: Viết code (Patch 2)**
+- [x] **Step 3: Viết code (Patch 2)**
 
 ```diff
 diff --git a/components/quick/SymptomPicker.tsx b/components/quick/SymptomPicker.tsx
@@ -244,12 +244,12 @@ index 9d61fa4..798d774 100644
    return (
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run && bun run typecheck`
 Expected: `Test Files  216 passed (216)`, `Tests  2092 passed (2092)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add components/quick/SymptomPicker.tsx components/quick/symptoms.test.tsx
@@ -268,7 +268,7 @@ git commit -m "feat(symptoms): a locked chip stays on" -m "Co-Authored-By: Claud
 - Consumes: `SymptomDay`, `StripDay`, `symptomDay` (plan A); `SymptomPicker` với `locked` (Task 1); `Sheet`, `Button`, `Icon`, `CATEGORIES`, `FIELD_INPUT`, `FIELD_LABEL`.
 - Produces: `DayStrip`, `SheetStatus`, `SymptomDaySheetView` (chữ ký ở Contracts).
 
-- [ ] **Step 1: Viết test đỏ (Patch 3)**
+- [x] **Step 1: Viết test đỏ (Patch 3)**
 
 ```diff
 diff --git a/components/quick/symptomday.test.tsx b/components/quick/symptomday.test.tsx
@@ -572,12 +572,12 @@ index 0000000..64faca1
 +});
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run`
 Expected: `Test Files  1 failed | 216 passed (217)`, `Tests  2092 passed (2092)`. File test mới đỏ ngay ở bước nạp (`./SymptomDaySheet` chưa có).
 
-- [ ] **Step 3: Viết code (Patch 4)**
+- [x] **Step 3: Viết code (Patch 4)**
 
 ```diff
 diff --git a/components/quick/SymptomDaySheet.tsx b/components/quick/SymptomDaySheet.tsx
@@ -849,12 +849,12 @@ index 0000000..cde49d9
 +}
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run && bun run typecheck`
 Expected: `Test Files  217 passed (217)`, `Tests  2105 passed (2105)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add components/quick/SymptomDaySheet.tsx components/quick/symptomday.test.tsx
@@ -875,7 +875,7 @@ git commit -m "feat(symptoms): the day strip and the sheet of one day" -m "Co-Au
 - Consumes: `DayStrip`, `SymptomDaySheetView` (Task 2); `dayStrip`, `symptomDay`, `symptomDaySave`, `symptomDayDelete`, `canDeleteDay`, `startOfDayIso` (plan A); `useEpisodes`, `useRangeLogs`, `useSaveLog`, `useDeleteLog`, `useToast`, `toVietnameseError`, `canModifyLog`.
 - Produces: `SymptomDaySheet({ baby, userId, canModify, day?, sub?, onClose })`; `InstantSheet` trong `QuickActions.tsx`; `nearestScrollLeft({ cellLeft, cellWidth, scrollLeft, clientWidth }): number` và `keepPickedInView(row: HTMLElement | null): void` trong `lib/ui/scrollRow.ts`.
 
-- [ ] **Step 1: Viết test đỏ (Patch 5)**
+- [x] **Step 1: Viết test đỏ (Patch 5)**
 
 ```diff
 diff --git a/components/actions/quickactions.test.tsx b/components/actions/quickactions.test.tsx
@@ -1104,12 +1104,12 @@ index 0000000..f7e10c3
 +});
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run`
 Expected: `Test Files  4 failed | 215 passed (219)`, `Tests  4 failed | 2102 passed (2106)`. Patch 5 cũng xóa hai test của `SymptomFields` và thay test triệu chứng cũ của `QuickEntrySheet`, nên tổng giảm 3 rồi cộng 4 test mới; file test mới `lib/ui/scrollRow.test.ts` đỏ ngay ở bước nạp nên ba test của nó chưa được đếm.
 
-- [ ] **Step 3: Viết code (Patch 6)**
+- [x] **Step 3: Viết code (Patch 6)**
 
 ```diff
 diff --git a/components/actions/QuickActions.tsx b/components/actions/QuickActions.tsx
@@ -1569,12 +1569,12 @@ index 0000000..5a236e9
 +}
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run && bun run typecheck`
 Expected: `Test Files  219 passed (219)`, `Tests  2109 passed (2109)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add components/quick/SymptomDaySheet.tsx components/quick/symptomdaysheet.test.tsx components/actions/QuickActions.tsx components/actions/quickactions.test.tsx components/home/QuickEntrySheet.tsx components/home/quickentry.test.tsx components/quick/symptoms.test.tsx components/quick/SymptomFields.tsx lib/ui/scrollRow.ts lib/ui/scrollRow.test.ts
@@ -1592,11 +1592,21 @@ git commit -m "feat(symptoms): the + sheet and the episode card open the day she
 - Consumes: mọi Produces của Task 1–3.
 - Produces: nhánh `feat/kim-bun-trieu-chung-theo-ngay-b`; plan C cắt từ đây.
 
-- [ ] **Step 1: Chạy cả bộ kiểm**
+- [x] **Step 1: Chạy cả bộ kiểm**
 
 Run: `bun run typecheck && bunx vitest run`
 Expected: `tsc --noEmit` không báo lỗi; `Test Files  219 passed (219)`, `Tests  2109 passed (2109)`.
 
-- [ ] **Step 2: Ghi kết quả vào plan, dừng**
+- [x] **Step 2: Ghi kết quả vào plan, dừng**
 
 Ghi ngay dưới bước này (bằng script): số đỏ và xanh của từng task có khớp plan không; kết quả Step 1. Đánh dấu `[x]` các bước đã làm. Không merge, không push: plan B lên `main` cùng plan C (Diễn giải spec mục 11). Báo cáo bằng tiếng Việt: `git log --oneline` của nhánh; số test; plan C chạy tiếp từ nhánh này.
+
+**Kết quả (2026-11-27, phiên thực thi):**
+
+- Step 0: `main` chưa có plan A (`git show main:lib/rules/symptomDay.ts` không có file), nên nhánh `feat/kim-bun-trieu-chung-theo-ngay-b` cắt từ `feat/kim-bun-trieu-chung-theo-ngay-a` @ `b8469e8`. Không chạy `git checkout main && git pull`. Baseline: `Test Files  216 passed (216)`, `Tests  2091 passed (2091)`.
+- 6 patch trích bằng `kb_patch` đều `git apply` sạch, không sửa tay.
+- Task 1: đỏ `1 failed | 215 passed (216)`, `1 failed | 2091 passed (2092)`, `tsc` báo `'locked' does not exist`; xanh `216 passed (216)`, `2092 passed (2092)`, `tsc` sạch. Khớp plan. Commit `85a5849`.
+- Task 2: đỏ `1 failed | 216 passed (217)`, `2092 passed (2092)` (file mới đỏ lúc nạp); xanh `217 passed (217)`, `2105 passed (2105)`, `tsc` sạch. Khớp plan. Commit `f78c5ea`.
+- Task 3: đỏ `4 failed | 215 passed (219)`, `4 failed | 2102 passed (2106)` (`lib/ui/scrollRow.test.ts` đỏ lúc nạp); xanh `219 passed (219)`, `2109 passed (2109)`, `tsc` sạch. Khớp plan. Commit `e845191`. Không còn chỗ nào nhắc `SymptomFields` trong `components`, `lib`, `app`.
+- Step 1: `tsc --noEmit` thoát 0; `Test Files  219 passed (219)`, `Tests  2109 passed (2109)`. Khớp plan.
+- Không build, không merge, không push. Plan C cắt từ `feat/kim-bun-trieu-chung-theo-ngay-b`; B lên `main` cùng C sau bước trình duyệt của C.
