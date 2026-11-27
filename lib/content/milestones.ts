@@ -33,6 +33,8 @@ export const MotorMilestoneSchema = z
   .object({
     code,
     name: z.string().min(1),
+    // Spec 2026-11-27 §3.4: lower-case name for the "Vận động lớn" summary.
+    short: z.string().min(1),
     // Normal age window in months: WHO 1st–99th percentile for the six WHO
     // milestones; "lat" (rolling) uses the 4–6 months of spec §6.9 / CDC.
     fromMonths: z.number().min(0),
