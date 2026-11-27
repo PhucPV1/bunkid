@@ -405,6 +405,7 @@ alter table public.photos add foreign key (visit_id, baby_id)
 - Quyền xóa ảnh theo policy sẵn có của `photos`: chủ gia đình hoặc người đã thêm ảnh đó.
 - Dung lượng: khi `usage(totalBytes).level === "full"` (`lib/rules/photos.ts`) thì không thêm được ảnh đơn thuốc, giống trang Ảnh.
 - Lưu lần khám mới: lưu hàng lần khám trước, rồi tải từng ảnh. Ảnh nào lỗi thì bỏ qua và tải tiếp ảnh sau; lần khám đã lưu vẫn giữ.
+- `useVisits(babyId, enabled = true)` trả mỗi lần khám kèm các ảnh của nó, cũ trước; khóa `["illness-visits", babyId]`, `staleTime` 60 giây, không đọc từng trang (mỗi bé chỉ vài lần khám, mỗi lần tối đa 6 ảnh). `useVisitActions(babyId, familyId)` có thêm `removePhoto` (xóa một ảnh đã lưu, §8.4); `add` và `update` trả mã lần khám và các ảnh chưa tải được. Phần tải ảnh và xóa ảnh của trang Ảnh tách thành `uploadPhoto`, `deletePhoto` dùng chung; trang Ảnh không đổi gì. (Khác bản đã duyệt ngày 2026-11-26, vốn không nói mấy chỗ này. Chọn ở M5b ngày 2026-11-27 theo lời duyệt trước của người dùng.)
 
 ### 8.3 Thẻ "Lần khám" trên trang chi tiết
 
@@ -416,6 +417,7 @@ alter table public.photos add foreign key (visit_id, baby_id)
 
 - Dòng phụ: "Chỉ cần ngày giờ. Các ô khác điền được sau."
 - "Lúc khám" (ngày giờ, mặc định lúc này; không sau lúc này quá 1 phút; phải nằm trong khoảng của đợt, sai thì "Lúc khám nằm ngoài đợt ốm.").
+- Một câu cho cả hai lỗi của "Lúc khám": giờ sau lúc này quá 1 phút cũng nằm ngoài đợt (đợt đang mở chỉ tới lúc này). Hai đầu của đợt tính vào đợt: đúng `started_at` hay đúng `ended_at` đều hợp lệ. Ô để nguyên như lúc mở sheet thì giữ giờ đã có tới từng giây. Một lần khám đã nằm ngoài đợt vì đợt bị sửa giờ (§8.1) thì phải chọn lại "Lúc khám" mới lưu được, kể cả khi chỉ sửa ô khác. (Khác bản đã duyệt ngày 2026-11-26, vốn không nói bốn chỗ này. Chọn ở M5b ngày 2026-11-27 theo lời duyệt trước của người dùng.)
 - "Nơi khám" (tối đa 80), "Bác sĩ kết luận" (tối đa 120), "Lời dặn" (3 dòng, tối đa 500). Ô trống lưu `null`.
 - "Ảnh đơn thuốc, giấy khám": các ảnh đã có, mỗi ảnh có nút xóa; ô "Thêm" mở chọn ảnh (`accept="image/*"`). Tối đa 6 ảnh một lần khám; đủ 6 thì ẩn ô "Thêm". Ảnh chọn khi đang thêm mới được tải lên sau khi hàng lần khám đã lưu.
 - Nút xóa của một ảnh chỉ hiện với chủ gia đình hoặc người đã thêm ảnh đó. Bấm thì hỏi lại một lần "Xóa ảnh này?" rồi xóa ngay, không chờ "Lưu". Ảnh thêm vào khi đang sửa thì tải lên khi bấm "Lưu".
