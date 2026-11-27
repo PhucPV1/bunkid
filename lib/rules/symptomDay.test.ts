@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   canDeleteDay,
+  dayStrip,
   NOTE_TOO_LONG,
   symptomDay,
   symptomDayDelete,
@@ -257,5 +258,67 @@ describe("symptomDayDelete and canDeleteDay", () => {
     ];
     expect(canDeleteDay(symptomDay(mixed, "2026-11-25", mine))).toBe(false);
     expect(canDeleteDay(symptomDay([], "2026-11-25", mine))).toBe(false);
+  });
+});
+
+// Spec 2026-11-27 §4.3.
+describe("dayStrip", () => {
+  const episode = (start: string, end: string | null = null) => ({
+    id: "ep1",
+    started_at: iso(start),
+    ended_at: end === null ? null : iso(end),
+  });
+
+  it("an open episode: one cell per day of it, today last", () => {
+    expect(
+      dayStrip({
+        episode: episode("2026-11-24 20:10"),
+        today: TODAY,
+        dob: "2026-09-10",
+      }),
+    ).toEqual({
+      label: "Ngày nào? · đợt ốm từ 24/11",
+      days: [
+        { day: "2026-11-24", top: "Ngày 1", bottom: "24/11" },
+        { day: "2026-11-25", top: "Ngày 2", bottom: "25/11" },
+        { day: "2026-11-26", top: "Ngày 3", bottom: "26/11" },
+        { day: "2026-11-27", top: "Hôm nay", bottom: "27/11" },
+      ],
+    });
+  });
+
+  it("an episode that began today: one cell", () => {
+    expect(
+      dayStrip({
+        episode: episode("2026-11-27 06:00"),
+        today: TODAY,
+        dob: "2026-09-10",
+      }).days,
+    ).toEqual([{ day: "2026-11-27", top: "Hôm nay", bottom: "27/11" }]);
+  });
+
+  it("no open episode: the last 7 days by weekday, today last", () => {
+    expect(
+      dayStrip({ episode: null, today: TODAY, dob: "2026-09-10" }),
+    ).toEqual({
+      label: "Ngày nào?",
+      days: [
+        { day: "2026-11-21", top: "T7", bottom: "21/11" },
+        { day: "2026-11-22", top: "CN", bottom: "22/11" },
+        { day: "2026-11-23", top: "T2", bottom: "23/11" },
+        { day: "2026-11-24", top: "T3", bottom: "24/11" },
+        { day: "2026-11-25", top: "T4", bottom: "25/11" },
+        { day: "2026-11-26", top: "Hôm qua", bottom: "26/11" },
+        { day: "2026-11-27", top: "Hôm nay", bottom: "27/11" },
+      ],
+    });
+  });
+
+  it("no day before the baby was born", () => {
+    expect(
+      dayStrip({ episode: null, today: TODAY, dob: "2026-11-25" }).days.map(
+        (cell) => cell.day,
+      ),
+    ).toEqual(["2026-11-25", "2026-11-26", "2026-11-27"]);
   });
 });

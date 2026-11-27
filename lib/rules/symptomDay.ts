@@ -1,4 +1,6 @@
 import { TRIAGE } from "@/lib/content/triage";
+import { addDays, formatDayShort } from "./days";
+import type { EpisodeLike } from "./illness";
 import { detailsSchemas } from "./logDetails";
 import type { LogPatch } from "./logForm";
 import { joinCodes, parseCodes } from "./symptomForm";
@@ -160,4 +162,54 @@ export function symptomDayDelete(day: SymptomDay): SymptomOp[] {
 // nothing of anyone else's, so the day is empty afterwards.
 export function canDeleteDay(day: SymptomDay): boolean {
   return day.own.length > 0 && day.locked.length === 0;
+}
+
+export type StripDay = {
+  day: string;
+  // The bold line: "Ngày 2", "Hôm nay", "Hôm qua", "T2"…"T7", "CN".
+  top: string;
+  // "dd/MM".
+  bottom: string;
+};
+
+const WEEKDAY_SHORT = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
+const STRIP_DAYS = 7;
+
+// Spec §4.3: the cells of the day strip, oldest first (today is the last
+// cell, before "Khác"). `episode` is the baby's open episode, or null. No
+// cell is before the day the baby was born.
+export function dayStrip(input: {
+  episode: EpisodeLike | null;
+  today: string;
+  dob: string;
+}): { label: string; days: StripDay[] } {
+  const { episode, today, dob } = input;
+  const yesterday = addDays(today, -1);
+  if (episode) {
+    const first = vnDateString(new Date(episode.started_at));
+    const days: StripDay[] = [];
+    for (let n = 1, day = first; day <= today; n += 1, day = addDays(day, 1))
+      if (day >= dob)
+        days.push({
+          day,
+          top: day === today ? "Hôm nay" : `Ngày ${n}`,
+          bottom: formatDayShort(day),
+        });
+    return { label: `Ngày nào? · đợt ốm từ ${formatDayShort(first)}`, days };
+  }
+  const days = Array.from({ length: STRIP_DAYS }, (_, i) =>
+    addDays(today, i - STRIP_DAYS + 1),
+  )
+    .filter((day) => day >= dob)
+    .map((day) => ({
+      day,
+      top:
+        day === today
+          ? "Hôm nay"
+          : day === yesterday
+            ? "Hôm qua"
+            : WEEKDAY_SHORT[new Date(`${day}T00:00:00Z`).getUTCDay()],
+      bottom: formatDayShort(day),
+    }));
+  return { label: "Ngày nào?", days };
 }
