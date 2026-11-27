@@ -1547,7 +1547,7 @@ bunx supabase stop
 
 Expected: `All tests successful.`, `Files=17, Tests=194`, `Result: PASS`. Sau đó tắt OrbStack nếu chính phiên này đã bật nó.
 
-- [ ] **Step 4: Áp migration lên Supabase thật**
+- [x] **Step 4: Áp migration lên Supabase thật**
 
 Code của plan này chưa đọc hay ghi bảng mới ở đâu trên màn hình, nhưng `main` không được có code cần một migration trước khi migration đó đã áp (Global Constraints). Làm bước này trước Step 7.
 
@@ -1608,18 +1608,20 @@ Mọi con số đỏ và xanh đo được đều khớp plan; 6 patch áp sạc
 - Không lỗi nào lộ ra khi kiểm; không sửa gì ngoài plan.
 - Thông báo bảo mật của Next.js 16.4.3 gợi ý chạy `next upgrade --agent=security …`: không chạy (Ghi chú khi thực thi). Việc nâng Next vẫn là mục mở từ trước.
 
-**Step 4 — migration CHƯA áp lên Supabase thật.**
+**Step 4 — migration ĐÃ áp lên Supabase thật, do người dùng tự chạy (2026-11-27).**
 
 - 09:33:56 (+07) `bunx supabase db push --linked --dry-run`: `Would push these migrations: • 20261126000200_illness_episodes.sql`, đúng một migration.
 - Ngay sau đó `bunx supabase db push --linked --yes` bị bộ kiểm quyền của app chặn trước khi chạy ("Permission for this action was denied by the Claude Code auto mode classifier"). Không tìm đường vòng, không nhờ phiên khác.
 - 09:34:18 (+07) dry-run lần hai: vẫn liệt kê đúng một migration đó, tức DB thật chưa đổi gì.
-- Theo mục 12 của Diễn giải spec, quay về cách của spec: người dùng tự chạy `bunx supabase db push --linked --dry-run` (phải liệt kê đúng một migration `20261126000200_illness_episodes.sql`), rồi `bunx supabase db push --linked`. Chưa ai chạy.
+- Theo mục 12 của Diễn giải spec, quay về cách của spec: người dùng tự chạy `bunx supabase db push --linked --dry-run` (phải liệt kê đúng một migration `20261126000200_illness_episodes.sql`), rồi `bunx supabase db push --linked`.
+- Người dùng tự chạy cả hai lệnh trong terminal của app, trong khoảng 09:35–09:48 (+07) ngày 2026-11-27 (terminal không in giờ). Dry-run của họ: đúng một migration `20261126000200_illness_episodes.sql`. Lệnh đẩy: trả lời `Yes`, rồi `Applying migration 20261126000200_illness_episodes.sql...`, `Finished supabase db push.`, không lỗi.
+- 09:48:41 (+07) dry-run lần ba, do phiên thực thi chạy: `Remote database is up to date.`, không còn migration nào chờ.
 
-**Step 7 — CHƯA lên `main`.** Code cần một migration không được lên `main` trước khi migration đó đã áp (Global Constraints). Nhánh `feat/kim-bun-dot-om-m2a` giữ nguyên ở máy, chưa merge, chưa push. Sau khi người dùng áp migration: chạy lại dry-run (phải báo không còn gì chờ), ghi giờ áp vào đây, rồi làm Step 7.
+**Step 7 — ĐÃ lên `main` (2026-11-27, sau khi migration đã áp).** `main` = `origin/main` = `f2dc653`, fast-forward từ `4f50586`. Lúc đó thư mục repo đang ở nhánh `feat/kim-bun-dot-om-m2c` (phiên M2c đang chạy), nên không `git checkout main`: `git fetch . feat/kim-bun-dot-om-m2a:main` (chỉ nhận fast-forward) rồi `git push origin main`. Đoạn ghi này được viết sau lần đẩy đó, trên nhánh `docs/kim-bun-dot-om-m2a-da-ap`, vì M2b và M2c đã xếp chồng lên `f2dc653`.
 
-**Chưa kiểm:** `supabase db push` lên DB thật; bảng `illness_episodes` và ràng buộc `exclude` trên Supabase thật; gửi thật một đợt ốm qua outbox lên server (chưa có màn hình nào gọi, và dev nối dữ liệu thật).
+**Chưa kiểm:** bảng `illness_episodes`, RLS và ràng buộc `exclude` trên Supabase thật (mới chỉ biết migration chạy xong không lỗi; pgTAP chỉ chạy trên local); gửi thật một đợt ốm qua outbox lên server (chưa có màn hình nào gọi, và dev nối dữ liệu thật).
 
-- [ ] **Step 7: Đưa lên `main`**
+- [x] **Step 7: Đưa lên `main`**
 
 Chỉ khi mọi bước trên đều đạt và không còn lỗi đã biết (lỗi tìm thấy khi kiểm phải được sửa, có test, và ghi vào plan trước; sửa xong thì chạy lại Step 1 và Step 2). Không hỏi lại người dùng: xem mục "Lên `main` không cần hỏi" ở Ghi chú khi thực thi.
 
