@@ -343,11 +343,15 @@ Nằm ngay dưới `AlertBanners` và `LongTimerBanner`, trên `HeroCardView`. C
 
   "{x}°C lúc {giờ}" luôn là lần đo mới nhất. {giờ} là "{HH:mm}" khi cùng ngày, không thì "{dd/mm} {HH:mm}".
 
+  Dòng phụ dài hơn một dòng thì xuống dòng sau dấu "·", không bao giờ giữa "{x}°C lúc {giờ}". (Làm ở M3a ngày 2026-11-27, sau bước nhìn thử lúc viết plan M3: ở 375 px "Hết sốt 23 giờ · 37,4°C lúc 25/11 23:59" từng bị tách giữa "25/11" và "23:59"; ghi vào spec ở M3b.)
+
 - Ba nút "Nhiệt độ", "Thuốc", "Triệu chứng" như ở thẻ kết luận.
 
 ### 7.2 Lời mời (bảng "Lời mời bắt đầu và lời nhắc đóng", nửa trên)
 
 Khi §5.5 đúng, banner của alert sốt đang hiện (vàng hay đỏ) có thêm, sau các nút sẵn có của nó: câu "Mở một đợt ốm để gom nhiệt độ, thuốc và triệu chứng vào một chỗ?" và hai nút "Bắt đầu đợt ốm", "Không". Chữ và các nút sẵn có của banner giữ nguyên, đứng trước.
+
+Bấm "Bắt đầu đợt ốm" thì ở lại Hôm nay, không có toast: lời mời biến mất và thẻ đợt ốm (§7.1) hiện ngay dưới banner. (Khác bản đã duyệt ngày 2026-11-26, vốn không nói bấm xong thì đi đâu. Chọn ở M3b ngày 2026-11-27 theo lời duyệt trước của người dùng.)
 
 ### 7.3 Nhắc đóng (cùng bảng, nửa dưới)
 
@@ -356,6 +360,7 @@ Khi §5.6 đúng, một thẻ `Glass` ngay dưới thẻ đợt ốm:
 - Tiêu đề theo trường hợp của §5.6. `no-fever`: "{tên} đã 48 giờ không sốt". `unchecked`: "48 giờ qua chưa đo lại nhiệt độ". `quiet`: "48 giờ qua không có triệu chứng hay liều hạ sốt nào".
 - Dòng phụ: "Đợt ốm bắt đầu {dd/mm} xong chưa? Đóng lại thì các bản ghi sau đó không tính vào đợt này nữa."
 - Nút "Bé đã khỏi" (như §6.3 mục 7) và "Chưa" (hoãn 24 giờ theo §5.6).
+- Bên trái tiêu đề là icon tròn theo §5.2 của trạng thái lúc đó, cùng tông và icon với thẻ kết luận, để ba dạng khác nhau cả ở theme `night`. Ở 375 px tiêu đề của `quiet` dài hai dòng và dòng phụ dài ba dòng; không chữ nào bị cắt. (Khác bản đã duyệt ngày 2026-11-26, vốn không nói icon, và mục 2 chỉ cho dòng mô tả của thẻ tối đa hai dòng. Chọn ở M3b ngày 2026-11-27 theo lời duyệt trước của người dùng.)
 
 ## 8. Lần khám
 
