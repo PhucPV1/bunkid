@@ -140,6 +140,18 @@ describe("planStart", () => {
       message: "Trùng thời gian với một đợt ốm khác.",
     });
   });
+
+  // Spec §5.5: from the invite the episode starts at the first fever reading.
+  it("starts at the time it is given, and checks that time", () => {
+    expect(planStart([old], now, iso("2026-11-26 20:15"))).toEqual({
+      ok: true,
+      startedAt: iso("2026-11-26 20:15"),
+    });
+    expect(planStart([old], now, iso("2026-11-11 20:15"))).toEqual({
+      ok: false,
+      message: "Trùng thời gian với một đợt ốm khác.",
+    });
+  });
 });
 
 describe("planClose", () => {

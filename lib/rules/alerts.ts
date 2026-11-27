@@ -17,12 +17,13 @@ const within = (log: LogLike, now: Date, hours: number) => {
   return start <= now.getTime() && now.getTime() - start <= hours * HOUR_MS;
 };
 
-function temperatureAlert(
+// The reading the temperature banner speaks of: the newest valid one of the
+// last 6 hours. Spec 2026-11-26 §5.5 hangs the invite to start an illness
+// episode on this same reading.
+export function bannerReading(
   logs: LogLike[],
-  ageDays: number,
-  triageAvailable: boolean,
   now: Date,
-): HomeAlert | null {
+): { at: number; celsius: number } | null {
   let latest: { at: number; celsius: number } | null = null;
   for (const log of logs) {
     if (log.type !== "temperature" || !within(log, now, 6)) continue;
@@ -32,6 +33,16 @@ function temperatureAlert(
     if (!latest || at > latest.at)
       latest = { at, celsius: parsed.data.celsius };
   }
+  return latest;
+}
+
+function temperatureAlert(
+  logs: LogLike[],
+  ageDays: number,
+  triageAvailable: boolean,
+  now: Date,
+): HomeAlert | null {
+  const latest = bannerReading(logs, now);
   if (!latest) return null;
   const c = latest.celsius;
   if (c < 35.5)

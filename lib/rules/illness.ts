@@ -1,3 +1,4 @@
+import { bannerReading } from "./alerts";
 import { addDays, formatDayShort, vnDayStartMs } from "./days";
 import type { LogLike } from "./describeLog";
 import { detailsSchemas } from "./logDetails";
@@ -633,4 +634,74 @@ export function feverChartModel(
     doses,
     ariaLabel,
   };
+}
+
+// Spec §5.5: the fever banners of the home page that carry the invite.
+const INVITE_ALERTS = ["fever", "fever-infant", "fever-high"];
+// A "not now" on this device holds for a day.
+const REST_MS = 24 * HOUR_MS;
+const LOOK_BACK_MS = 48 * HOUR_MS;
+
+// Is a "not now" given at `at` still in force? The tap is stamped with the
+// real time, which can be a moment after the page's clock, so a stamp a little
+// ahead of `now` holds too; one a day or more ahead (the clock was wrong when
+// it was written) does not.
+function resting(at: number | null, now: Date): boolean {
+  return at !== null && Math.abs(now.getTime() - at) < REST_MS;
+}
+
+// The latest end among the baby's episodes; -Infinity when none has ended.
+function latestEnd(episodes: EpisodeLike[]): number {
+  let latest = -Infinity;
+  for (const episode of episodes)
+    if (episode.ended_at)
+      latest = Math.max(latest, Date.parse(episode.ended_at));
+  return latest;
+}
+
+// Spec §5.5: the invite to start an episode. It shows when the baby has no
+// open episode, the home page has a fever banner, the reading behind that
+// banner was taken after the latest end of the baby's episodes (so the invite
+// does not come straight back after "Bé đã khỏi"), and "Không" was not
+// answered on this device in the last 24 hours. Returns the key of the banner
+// that carries the invite, or null.
+//   episodes     every episode of the baby (useEpisodes)
+//   alerts       what homeAlerts returned for the same logs and the same now
+//   logs         the recent logs (useRecentLogs)
+//   dismissedAt  when "Không" was last answered on this device, in ms; or null
+export function inviteAlert(input: {
+  episodes: EpisodeLike[];
+  alerts: { key: string }[];
+  logs: LogLike[];
+  dismissedAt: number | null;
+  now: Date;
+}): string | null {
+  const { episodes, alerts, logs, dismissedAt, now } = input;
+  if (episodes.some((episode) => episode.ended_at === null)) return null;
+  const alert = alerts.find((item) => INVITE_ALERTS.includes(item.key));
+  if (!alert) return null;
+  const reading = bannerReading(logs, now);
+  if (!reading || reading.at <= latestEnd(episodes)) return null;
+  if (resting(dismissedAt, now)) return null;
+  return alert.key;
+}
+
+// Spec §5.5 "Bắt đầu đợt ốm": the new episode starts at the earliest reading
+// from 38,0 of the last 48 hours, counting only readings after the latest end
+// of the baby's episodes; without such a reading it starts now.
+export function inviteStartedAt(
+  logs: LogLike[],
+  episodes: EpisodeLike[],
+  now: Date,
+): string {
+  const after = Math.max(latestEnd(episodes), now.getTime() - LOOK_BACK_MS - 1);
+  let earliest = now.getTime();
+  for (const log of logs) {
+    if (log.type !== "temperature") continue;
+    const at = Date.parse(log.started_at);
+    if (at <= after || at >= earliest) continue;
+    const parsed = detailsSchemas.temperature.safeParse(log.details);
+    if (parsed.success && hasFever(parsed.data.celsius)) earliest = at;
+  }
+  return new Date(earliest).toISOString();
 }

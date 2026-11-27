@@ -81,12 +81,13 @@ function refusal(input: Parameters<typeof checkEpisode>[0]): Refused | null {
   return message ? { ok: false, message } : null;
 }
 
-// "Bắt đầu đợt ốm": a new open episode that starts now.
+// "Bắt đầu đợt ốm": a new open episode. It starts now; from the invite on
+// Hôm nay it starts at the first fever reading (spec §5.5, inviteStartedAt).
 export function planStart(
   episodes: EpisodeLike[],
   now: Date,
+  startedAt: string = now.toISOString(),
 ): { ok: true; startedAt: string } | Refused {
-  const startedAt = now.toISOString();
   return (
     refusal({
       id: null,

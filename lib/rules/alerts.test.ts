@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  bannerReading,
   homeAlerts,
   medicineWarnings,
   vitaminDToday,
@@ -30,6 +31,32 @@ const alerts = (
   wetDiapers: MetricResult = NO_DATA,
   triageAvailable = false,
 ) => homeAlerts({ logs, ageDays, wetDiapers, triageAvailable, now: NOW });
+
+// Spec 2026-11-26 §5.5: the reading the temperature banner speaks of.
+describe("bannerReading", () => {
+  it("is the newest valid reading of the last 6 hours", () => {
+    expect(
+      bannerReading(
+        [temp(5, 39.1), temp(1, 37.2), temp(3, 38.4), temp(7, 40)],
+        NOW,
+      ),
+    ).toEqual({ at: NOW.getTime() - H, celsius: 37.2 });
+    expect(bannerReading([temp(6, 38.4)], NOW)).toEqual({
+      at: NOW.getTime() - 6 * H,
+      celsius: 38.4,
+    });
+  });
+
+  it("is null without one: too old, dated after now, not a reading", () => {
+    expect(bannerReading([], NOW)).toBeNull();
+    expect(bannerReading([temp(6.01, 39)], NOW)).toBeNull();
+    expect(bannerReading([temp(-0.01, 39)], NOW)).toBeNull();
+    expect(
+      bannerReading([log("temperature", 1, { celsius: "nóng" })], NOW),
+    ).toBeNull();
+    expect(bannerReading([med(1, true)], NOW)).toBeNull();
+  });
+});
 
 describe("homeAlerts — temperature", () => {
   it("flags fever under 3 months as red", () => {
