@@ -109,11 +109,9 @@ describe("LogEditSheet", () => {
     expect(html).toContain('<option value="water">Uống nước</option>');
     expect(html).toContain('<option value="bath">Tắm</option>');
     expect(html).toContain('<option value="note">Ghi chú</option>');
-    expect(html.match(/<option /g)).toHaveLength(11);
-    // Spec 2026-11-26 §3.4: Triệu chứng sits right after Nhiệt độ.
-    expect(html).toContain(
-      '<option value="temperature">Nhiệt độ</option><option value="symptom">Triệu chứng</option>',
-    );
+    expect(html.match(/<option /g)).toHaveLength(10);
+    // Spec 2026-11-27 §4.1: Ghi bù no longer offers Triệu chứng.
+    expect(html).not.toContain('<option value="symptom">');
   });
 
   it("a note log: Nội dung only, the sheet's own Ghi chú field is hidden", () => {

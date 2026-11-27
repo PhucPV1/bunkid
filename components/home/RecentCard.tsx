@@ -3,8 +3,8 @@ import { PendingMark } from "@/components/sync/PendingMark";
 import { Glass } from "@/components/ui/Glass";
 import { Icon } from "@/components/ui/Icon";
 import { describeLog } from "@/lib/rules/describeLog";
+import { logTimeText } from "@/lib/rules/history";
 import type { LogType } from "@/lib/rules/logDetails";
-import { formatVnTime } from "@/lib/rules/time";
 import type { LogRow } from "@/lib/supabase/rows";
 import { CATEGORIES, CATEGORY_CHIP } from "@/lib/ui/categories";
 import { cx } from "@/lib/ui/cx";
@@ -68,7 +68,7 @@ export function RecentCard({
                   </span>
                 </span>
                 <span className="text-[15px] font-semibold text-ink tabular-nums">
-                  {formatVnTime(new Date(log.started_at))}
+                  {logTimeText(log)}
                 </span>
               </li>
             );

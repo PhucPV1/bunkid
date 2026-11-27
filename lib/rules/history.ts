@@ -1,5 +1,5 @@
 import { addDays, vnDayStartMs } from "./days";
-import { vnDateString } from "./time";
+import { formatVnTime, vnDateString } from "./time";
 import type { LogLike } from "./describeLog";
 import { groupFeedSessions } from "./ratings";
 import { shortDuration } from "./summaryText";
@@ -44,7 +44,9 @@ export function matchesFilter(
   return filter === "all" || FILTER_TYPES[filter].includes(log.type);
 }
 
-export function groupByVnDay<T extends { started_at: string }>(
+// Newest day and log first. Spec 2026-11-27 §6.2: a symptom log is for the
+// whole day, so the day's symptom logs head it, the oldest of them first.
+export function groupByVnDay<T extends { started_at: string; type?: string }>(
   logs: T[],
 ): { day: string; logs: T[] }[] {
   const sorted = [...logs].sort(
@@ -57,7 +59,23 @@ export function groupByVnDay<T extends { started_at: string }>(
     if (last && last.day === day) last.logs.push(log);
     else groups.push({ day, logs: [log] });
   }
+  for (const group of groups) {
+    const symptoms = group.logs.filter((log) => log.type === "symptom");
+    if (symptoms.length === 0) continue;
+    group.logs = [
+      ...symptoms.reverse(),
+      ...group.logs.filter((log) => log.type !== "symptom"),
+    ];
+  }
   return groups;
+}
+
+// Spec 2026-11-27 §6.2: the time of a row in Nhật ký and "Gần đây"; a
+// symptom log is for the whole day.
+export function logTimeText(log: { type: string; started_at: string }): string {
+  return log.type === "symptom"
+    ? "Cả ngày"
+    : formatVnTime(new Date(log.started_at));
 }
 
 export const HISTORY_PAGE_DAYS = 7;

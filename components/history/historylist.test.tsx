@@ -42,7 +42,9 @@ const sleep = log(
   "2026-11-14T03:00:00.000Z",
   {},
 );
-const groups = [{ day: "2026-11-14", summary: "1 cữ · 0 tã · ngủ 1g", logs: [bottle, sleep] }];
+const groups = [
+  { day: "2026-11-14", summary: "1 cữ · 0 tã · ngủ 1g", logs: [bottle, sleep] },
+];
 
 describe("HistoryList", () => {
   it("groups by day with a 20/700 title and the day summary, rows with chip, text, time and who", () => {
@@ -68,6 +70,27 @@ describe("HistoryList", () => {
     expect(html.match(/>Ba<\/span>/g)).toHaveLength(2);
     expect(html.match(/aria-label="Chờ đồng bộ"/g)).toHaveLength(1);
     expect(html).toContain("glass");
+  });
+
+  it("spec 2026-11-27 §6.2: a symptom row reads Cả ngày instead of its time", () => {
+    const symptom = log(
+      "y1",
+      "symptom",
+      "2026-11-14T05:00:00.000Z",
+      "2026-11-14T05:00:00.000Z",
+      { codes: ["cough"] },
+    );
+    const html = renderToStaticMarkup(
+      <HistoryList
+        groups={[{ day: "2026-11-14", summary: "", logs: [symptom] }]}
+        now={NOW}
+        nameOf={() => "Ba"}
+        pending={new Set()}
+        onOpen={() => {}}
+      />,
+    );
+    expect(html).toContain(">Cả ngày</span>");
+    expect(html).not.toContain(">12:00</span>");
   });
 
   it("opens the row's log", () => {

@@ -3,8 +3,8 @@ import { Glass } from "@/components/ui/Glass";
 import { Icon } from "@/components/ui/Icon";
 import { vnDayLabel } from "@/lib/rules/days";
 import { describeLog } from "@/lib/rules/describeLog";
+import { logTimeText } from "@/lib/rules/history";
 import type { LogType } from "@/lib/rules/logDetails";
-import { formatVnTime } from "@/lib/rules/time";
 import type { LogRow } from "@/lib/supabase/rows";
 import { CATEGORIES, CATEGORY_CHIP } from "@/lib/ui/categories";
 import { cx } from "@/lib/ui/cx";
@@ -79,7 +79,7 @@ export function HistoryList({
                     </span>
                     <span className="flex shrink-0 flex-col items-end">
                       <span className="text-[15px] font-semibold text-ink tabular-nums">
-                        {formatVnTime(new Date(log.started_at))}
+                        {logTimeText(log)}
                       </span>
                       <span className="text-xs text-muted">
                         {nameOf(log.created_by)}

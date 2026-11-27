@@ -126,6 +126,25 @@ describe("RecentCard", () => {
     expect(html.match(/aria-label="Chờ đồng bộ"/g)).toHaveLength(1);
   });
 
+  it("spec 2026-11-27 §6.2: a symptom row reads Cả ngày instead of its time", () => {
+    const symptom = {
+      ...bottle(1),
+      id: "y1",
+      type: "symptom",
+      details: { codes: ["cough"] },
+    } as LogRow;
+    const html = renderToStaticMarkup(
+      <RecentCard
+        logs={[symptom]}
+        now={NOW}
+        nameOf={() => "Ba"}
+        pending={new Set()}
+      />,
+    );
+    expect(html).toContain(">Cả ngày</span>");
+    expect(html).not.toContain(">11:00</span>");
+  });
+
   it("says so when nothing was logged", () => {
     const html = renderToStaticMarkup(
       <RecentCard

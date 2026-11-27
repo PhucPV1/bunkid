@@ -6,6 +6,7 @@ import {
   groupByVnDay,
   HISTORY_FILTERS,
   historyPageRange,
+  logTimeText,
   matchesFilter,
   nextHistoryPage,
 } from "./history";
@@ -60,6 +61,26 @@ describe("history", () => {
     expect(groups.map((g) => g.day)).toEqual(["2026-11-14", "2026-11-13"]);
     expect(groups[0].logs.map((l) => l.id)).toEqual(["c", "b"]);
     expect(groups[1].logs.map((l) => l.id)).toEqual(["a"]);
+  });
+
+  it("spec 2026-11-27 §6.2: symptom logs head their day, oldest of them first", () => {
+    const groups = groupByVnDay([
+      { id: "s1", type: "symptom", started_at: "2026-11-14T01:00:00Z" }, // 08:00
+      { id: "f", type: "bottle", started_at: "2026-11-14T02:00:00Z" }, // 09:00
+      { id: "s2", type: "symptom", started_at: "2026-11-14T05:00:00Z" }, // 12:00
+      { id: "d", type: "diaper", started_at: "2026-11-14T06:00:00Z" }, // 13:00
+      { id: "y", type: "symptom", started_at: "2026-11-13T05:00:00Z" },
+    ]);
+    expect(groups.map((g) => g.logs.map((l) => l.id))).toEqual([
+      ["s1", "s2", "d", "f"],
+      ["y"],
+    ]);
+  });
+
+  it("spec 2026-11-27 §6.2: a symptom log reads Cả ngày instead of its time", () => {
+    const at = "2026-11-14T05:00:00Z"; // 12:00 VN
+    expect(logTimeText({ type: "symptom", started_at: at })).toBe("Cả ngày");
+    expect(logTimeText({ type: "bottle", started_at: at })).toBe("12:00");
   });
 
   it("historyPageRange covers 7 VN days per page", () => {
