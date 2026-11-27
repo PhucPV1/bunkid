@@ -136,7 +136,7 @@ Plan này đứng sau M5d và là plan cuối của spec. Không plan nào dùng
 - Consumes: `useVisits` (đã đọc trong `EpisodeScreen`), `visitsOf`.
 - Produces: `FeverChartVisit`, `FeverChart.visits`, `feverChartModel(…, visitTimes)`, `EpisodeBody({ …, visitTimes })`.
 
-- [ ] **Step 0: Kiểm M5d đã xong, rồi tạo nhánh**
+- [x] **Step 0: Kiểm M5d đã xong, rồi tạo nhánh**
 
 ```bash
 git checkout main && git pull --ff-only
@@ -147,7 +147,9 @@ bunx vitest run
 
 Expected: lệnh `grep` in đúng một dòng (không thấy thì dừng và báo người dùng); `Test Files  213 passed (213)`, `Tests  2044 passed (2044)`. `main` có thêm commit khác thì ghi lại số xuất phát thật.
 
-- [ ] **Step 1: Viết test đỏ (Patch 1)**
+**Kết quả (2026-11-27):** `main` = `origin/main` = `44121a4`, `grep` in đúng một dòng; `Test Files  213 passed (213)`, `Tests  2044 passed (2044)`. Khớp.
+
+- [x] **Step 1: Viết test đỏ (Patch 1)**
 
 `feverChartVisits.test.ts` (mới): không lần khám thì `visits` rỗng; chỗ của vạch; neo chữ ở hai mép; xếp theo giờ và bỏ chữ chạm chữ trước; lần khám ngoài 7 ngày được vẽ. `feverchart.test.tsx`: có lần khám thì cao thêm 16, vạch nét đứt, một chữ khi hai chữ chạm nhau; không lần khám thì như cũ. `episodescreen.test.tsx`: lần khám của đợt có vạch, lần khám của đợt khác thì không.
 
@@ -309,12 +311,14 @@ index 0000000..627ed8f
 +});
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run`
 Expected: `Test Files  3 failed | 211 passed (214)`, `Tests  8 failed | 2045 passed (2053)`. Tám test đỏ: năm của `feverChartVisits.test.ts` (`chart.visits` chưa có), hai của `FeverChart with visits`, một của `EpisodeScreen` (chưa có vạch).
 
-- [ ] **Step 3: Vẽ vạch "Khám" (Patch 2)**
+**Kết quả:** `3 failed | 211 passed (214)`, `8 failed | 2045 passed (2053)`, đúng tám test kể trên. Khớp.
+
+- [x] **Step 3: Vẽ vạch "Khám" (Patch 2)**
 
 ```diff
 diff --git a/components/illness/EpisodeScreen.tsx b/components/illness/EpisodeScreen.tsx
@@ -521,12 +525,14 @@ index a5d8884..9affec1 100644
  }
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run && bun run typecheck`
 Expected: `Test Files  214 passed (214)`, `Tests  2053 passed (2053)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+**Kết quả:** `214 passed (214)`, `2053 passed (2053)`; `tsc` sạch. Khớp. Commit `913a6a8`.
+
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/rules/illness.ts components/illness/FeverChart.tsx components/illness/EpisodeScreen.tsx lib/rules/feverChartVisits.test.ts components/illness/feverchart.test.tsx components/illness/episodescreen.test.tsx
@@ -546,7 +552,7 @@ git commit -m "feat(illness): doctor's visits on the fever chart" -m "Co-Authore
 - Consumes: `useVisits(babyId, enabled)`, `visitsOf`, `feverChartModel(…, visitTimes)` (Task 1).
 - Produces: `visitRows`; bảng "Lần khám" của kỳ "Đợt ốm".
 
-- [ ] **Step 1: Viết test đỏ (Patch 3)**
+- [x] **Step 1: Viết test đỏ (Patch 3)**
 
 `reportVisits.test.ts` (mới): mỗi lần khám một hàng, ô trống khi không có giá trị. `reportscreen.test.tsx`: bảng bốn cột sau bảng thuốc và trước bảng "Triệu chứng", chỉ lần khám của đợt, hai vạch trên biểu đồ; không bảng khi không có lần khám hay ở kỳ 7 ngày (và kỳ 7 ngày không tải lần khám); kỳ "Đợt ốm" chờ lần khám (đang tải, mất mạng, lỗi).
 
@@ -747,12 +753,14 @@ index 0000000..85b4100
 +});
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run`
 Expected: `Test Files  2 failed | 213 passed (215)`, `Tests  4 failed | 2053 passed (2057)`. Bốn test đỏ: một của `visitRows` (`visitRows is not a function`), ba mới của `ReportScreen: the episode period`.
 
-- [ ] **Step 3: Viết bảng (Patch 4)**
+**Kết quả:** `2 failed | 213 passed (215)`, `4 failed | 2053 passed (2057)`, đúng bốn test kể trên. Khớp.
+
+- [x] **Step 3: Viết bảng (Patch 4)**
 
 ```diff
 diff --git a/components/report/ReportScreen.tsx b/components/report/ReportScreen.tsx
@@ -914,12 +922,14 @@ index f93965c..25802f7 100644
  // Spec 2026-11-26 §9: the period the report shows. `picked` is the choice
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run && bun run typecheck`
 Expected: `Test Files  215 passed (215)`, `Tests  2057 passed (2057)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+**Kết quả:** `215 passed (215)`, `2057 passed (2057)`; `tsc` sạch. Khớp. Commit `21cefb9`. `bun run build` chạy thử ngay sau Task 2: lần đầu dừng vì thông báo bảo mật, lần hai 42/42, `/bao-cao` và `/dot-om/chi-tiet` vẫn `○`.
+
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/rules/report.ts components/report/ReportScreen.tsx lib/rules/reportVisits.test.ts components/report/reportscreen.test.tsx
@@ -939,17 +949,21 @@ git commit -m "feat(report): the doctor's visits of the episode period" -m "Co-A
 - Consumes: mọi thứ của Task 1 và Task 2.
 - Produces: kết quả kiểm, ghi ngay trong plan; Bước 38 mục 34–35; hai đoạn đọc spec; `main` có M5e (hết spec).
 
-- [ ] **Step 1: Chạy cả bộ kiểm**
+- [x] **Step 1: Chạy cả bộ kiểm**
 
 Run: `bun run typecheck && bunx vitest run`
 Expected: `tsc --noEmit` không báo lỗi; `Test Files  215 passed (215)`, `Tests  2057 passed (2057)`.
 
-- [ ] **Step 2: Build**
+**Kết quả (sau bản sửa ở Step 4, chạy lại):** `tsc` sạch; `Test Files  215 passed (215)`, `Tests  2062 passed (2062)` (2057 của plan cộng 5 test của bản sửa).
+
+- [x] **Step 2: Build**
 
 Run: `bun run build`
 Expected: lần đầu có thể dừng với thông báo bảo mật của Next.js 16.4.3 (bình thường; không chạy `next upgrade`). Chạy lại đúng lệnh đó: `✓ Generating static pages using 9 workers (42/42)`, dòng `├ ○ /bao-cao` và `├ ○ /dot-om/chi-tiet` (vẫn tĩnh), và thoát mã 0.
 
-- [ ] **Step 3: Tạo trang fixture tạm**
+**Kết quả (sau bản sửa, sau khi xóa trang tạm):** lần đầu thoát 1 vì thông báo bảo mật (không chạy `next upgrade`); lần hai thoát 0, `42/42`, `├ ○ /bao-cao`, `├ ○ /dot-om/chi-tiet`.
+
+- [x] **Step 3: Tạo trang fixture tạm**
 
 Gia đình chưa có đợt ốm và không được tạo đợt hay lần khám trên dữ liệu thật, nên vạch "Khám" và bảng chỉ thấy đủ ở đây. `?view=chart` vẽ ba thẻ biểu đồ (một ngày: một đợt đã đóng của hôm qua, để hình không phụ thuộc giờ mở trang; ba ngày với hai lần khám gần nhau; 7 ngày cuối của một đợt 13 ngày, có một lần khám trước 7 ngày đó); không tham số `view` thì vẽ `ReportScreen` thật với một đợt đang mở từ hôm kia, bản ghi và ba lần khám giả (mở bằng `?dot=open`). Giờ tính từ hôm nay. Tạo `app/fixture-report-visits/page.tsx` (không commit):
 
@@ -1155,7 +1169,7 @@ export default function Page() {
 Run: `bun run typecheck`
 Expected: `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 4: Kiểm trong trình duyệt (chỉ xem)**
+- [x] **Step 4: Kiểm trong trình duyệt (chỉ xem)**
 
 Chạy `bun run dev` (lần đầu có thể dừng vì thông báo bảo mật: chạy lại). Mở các trang dưới trong khung Browser của app, cỡ 375×812 (xem mục "Trình duyệt" ở Ghi chú khi thực thi). Xóa phần tử `nextjs-portal` trong trang trước khi chụp. Ngày ghi dưới đây là của lần viết plan (hôm nay 27/11); lúc chạy thì theo hôm nay.
 
@@ -1239,7 +1253,20 @@ Trang thật (dữ liệu thật của gia đình: **chỉ xem**; cần đăng n
 
 Dừng `bun run dev` khi xong. Ghi kết quả từng mục ngay dưới bước này, kèm số đo; mục nào thấy trên trang thật, mục nào chỉ thấy trên trang tạm. Mục nào không cho thấy được thì ghi "chưa kiểm". Nếu bước này lộ ra lỗi và code phải đổi: sửa (test trước, code sau), rồi chạy lại Step 1 và Step 2 trước khi đi tiếp.
 
-- [ ] **Step 5: Xóa trang fixture**
+**Kết quả (2026-11-27, khung Browser trong app, server dev bằng `preview_start`).** Ảnh ở thư mục ghi chú của phiên điều phối, tiền tố `m5e-`.
+
+Trang tạm thứ hai (không commit, xóa cùng trang tạm của plan): `app/fixture-chart-visits` vẽ 50 khối biểu đồ của M2g (`m2g-fixture-page-50-khoi`), mỗi khối bảy lần: không lần khám, khám lúc lần đo mới nhất, khám lúc lần đo cao nhất, hai lần khám cách 10 phút, khám sát mép trái, khám sát mép phải, ba lần khám rải đều (350 khối, 343 hình, 292 hình có lần khám, 438 vạch, 368 chữ "Khám"); `?fuzz=1` vẽ 600 đợt ngẫu nhiên của M2g (cùng hạt giống) thêm 0–3 lần khám và đôi khi hai lần khám cách 5–60 phút (432 đợt có lần khám, 1003 vạch, 683 chữ, 249 đợt có vạch không chữ). Đoạn đo của M2c (`overlaps`, `outside`, `onDot`) cộng `onLine` của M2g, tính bằng phần mực của chữ (`measureText`, viền 1,5 tính vào): hộp `getBoundingClientRect` của chữ là hộp em, cao hơn phần mực, nên báo "37,7" chạm đường cả ở khối không lần khám.
+
+1. Trang tạm của plan, 375 px, `rose`: ba hình 317×211; vạch 1, 3, 1; chữ "Khám" 1, 2, 1; chữ trong hình, không chạm chữ khác; `aria-label` không nhắc lần khám. Nhìn: như plan tả (`m5e-bieu-do-kham-375-rose.jpg`). Chạy lại sau bản sửa: y nguyên (ba hình chữ "Sốt" vẫn ở góc phải). Trang 350 khối, 375 / 390 / 440 px (hình 317 / 332 / 382 px), mỗi bề ngang bốn theme `rose`, `light`, `dark`, `night`: chữ đè chữ 0, chữ ra ngoài hình 0, nhãn đè chấm 0, nhãn đè đường 38 0, khe nhỏ nhất giữa chữ "Khám" và chữ khác 3,1–3,4 đơn vị viewBox. Mọi nhãn giá trị và chấm của 50 dáng đứng y nguyên khi thêm lần khám (so từng thuộc tính); 600 đợt ngẫu nhiên cũng vậy. Trang ngẫu nhiên, ba bề ngang: chữ đè chữ 0, ra ngoài 0, đè chấm 31 / 32 / 32 đợt (đúng số M2g đã nhận), đè đường 38 tính cả viền: 8 nhãn, có cả khi không lần khám (`?fuzz=1&novisit=1`), khe −0,1 tới −0,4 đơn vị là viền nền chạm mép nét đường, phần mực còn cách ≥ 1,1; theo định nghĩa `onLine` của M2g (hộp nhãn chứa tâm đường) thì không chạm. Có từ M2g, không do M5e; ghi lại, không sửa.
+2. `night`, `dark`, `light`: vạch và chữ "Khám" đọc được, khác đường 38 (ngang, đỏ, nét 4 4) bằng hướng, màu và nhịp nét; ở `night` khác bằng hướng và nét (`m5e-bieu-do-kham-375-{night,dark,light}.jpg`). **Lộ ra lỗi:** vạch chạy xuyên chữ "Sốt" (không viền nền) khi lần khám rơi vào góc của chữ, nhìn như "S¦ốt" (`m5e-vach-xuyen-chu-sot-truoc-sua-375-{rose,night}.png`): 22 / 432 đợt ngẫu nhiên có lần khám; 51 khối của trang 350 khối. Sửa: xem "Lỗi lộ ra khi kiểm" dưới. Sau sửa: 0 vạch xuyên chữ "Sốt" trần ở cả hai trang, mọi bề ngang và theme; 4 / 432 đợt dùng lối lùi có viền nền (`m5e-seed490-truoc-vien-375-rose.png` → `m5e-seed490-sau-sua-375-{rose,night}.png`, `m5e-vach-xuyen-chu-sot-sau-sua-375-rose.png`).
+3. `?dot=open`, 375 px, `rose` (sau bản sửa): đang chọn "Đợt ốm"; tiêu đề "Theo ngày", "Nhiệt độ", "Thuốc đã dùng", "Lần khám", "Triệu chứng", "Tăng trưởng (lần đo gần nhất)", "Tiêm chủng"; biểu đồ 3 vạch, 2 chữ; bảng ba hàng "26/11 09:15" (đủ ba ô), "26/11 11:30" (ba ô trống), "27/11 08:05" ("Nhà"); bốn cột 63, 80, 71, 94 px; hàng cao 417, 57, 57 px; giờ hai dòng; không ô nào bị cắt; `scrollWidth` 375; nút "In / Lưu PDF" bấm được. Đúng số của plan (`m5e-bao-cao-lan-kham-375-rose.jpg`). 390 px: cột 64, 84, 75, 101; hàng 369, 57, 57; 440 px: cột 65, 96, 89, 123; hàng 273, 57, 57 (`m5e-bao-cao-lan-kham-440-rose.jpg`); cả hai không cắt, không tràn.
+4. Bản in giả lập, `dark` và `light`: `--color-ink` #000, `--color-muted` #444, chữ "Khám" `rgb(68, 68, 68)`, vạch `rgb(0, 0, 0)`; bảng chữ đen trên nền trắng. Đoạn của plan chỉ chép luật `@media print` ở cấp ngoài, nên nút kỳ và nút in vẫn hiện (lớp `print:hidden` của Tailwind nằm trong `@layer`); chép thêm cả luật in trong `@layer` thì: không còn nút nào, không ảnh nào, viền ô bảng đen, lời dặn giữ chỗ xuống dòng (`m5e-ban-in-gia-lap-dark-{dau-trang,bang-lan-kham}.jpg`, `m5e-ban-in-gia-lap-light.jpg`). Bản xem trước khi in thật của trình duyệt: chưa kiểm.
+5. `?dot=open`, bấm "7 ngày" (theo `ref`): đang chọn "7 ngày"; không bảng "Lần khám", không biểu đồ; "Triệu chứng" ngay sau "Thuốc đã dùng".
+6. Trang thật (đã đăng nhập sẵn, chỉ xem), 375 px, theme của app `dark`: `/bao-cao` kỳ 7 ngày như trước; Resource Timing có `logs`, `illness_episodes`, `growth`, `vaccine_doses`, `claim_membership`, `family_members`, `babies`, tất cả 200, **không** có `illness_visits`; console không lỗi; `scrollWidth` 375 (`m5e-trang-that-bao-cao-7-ngay-375-dark.jpg`). Gia đình chưa có đợt ốm (không có nút "Đợt ốm"; `/dot-om` ghi "Chưa có đợt ốm nào", `m5e-trang-that-dot-om-375-dark.jpg`): kỳ "Đợt ốm" trên trang thật, lệnh đọc `illness_visits` và vạch trên trang chi tiết thật: chưa kiểm. Dây nối `EpisodeScreen` → biểu đồ chỉ có test (`episodescreen.test.tsx`), chưa thấy trên trình duyệt. Theme `peach`, `lavender`, `sea`: chưa kiểm.
+
+**Lỗi lộ ra khi kiểm (sửa trong phiên, commit `c741b02`).** Vạch "Khám" chạy xuyên chữ "Sốt" (chữ này không có viền nền): một nét đứt qua chữ trần đọc như một nét của chữ, cùng loại lỗi M2g đã sửa cho nhãn số. `feverChartModel` giờ tính vạch trước, rồi cho chữ "Sốt" chọn chỗ đầu tiên trong phải, trái, giữa mà không chấm, không nhãn và không vạch nào chạm (vạch rộng ±0,005 bề ngang); mọi chỗ không có chấm đều có vạch thì chữ đứng ở chỗ đầu tiên không có chấm (như cũ) và `FeverChart.feverWordHalo` bật: `FeverChart` vẽ chữ với viền nền của nhãn giá trị (`var(--color-glass-solid)`, dày 3, `paint-order: stroke`). Không lần khám thì như cũ. Không thêm màu, icon hay chữ. Test trước: bốn test mới trong `feverChartVisits.test.ts` ("the word Sốt and the visits"): 3 đỏ, `1 failed | 214 passed (215)`, `3 failed | 2058 passed (2061)` (test thứ tư, lối lùi về chỗ không có chấm, xanh từ trước vì cách cũ cũng cho "end"); sau code `215 / 2061`. Rồi viền nền: thêm kỳ vọng `feverWordHalo` vào hai test đó và một test mới trong `feverchart.test.tsx`: 3 đỏ, `2 failed | 213 passed (215)`, `3 failed | 2059 passed (2062)`; sau code `215 / 2062`, `tsc` sạch. Spec §6.5 (đoạn đọc của M5e) và Bước 38 mục 34 ghi thêm chỗ này. Sau sửa chạy lại Step 1, Step 2 và các mục 1–4 của bước này (mục 5–6 chạy sau bản sửa).
+
+- [x] **Step 5: Xóa trang fixture**
 
 ```bash
 rm -r app/fixture-report-visits
@@ -1249,7 +1276,9 @@ git status --short  # không còn app/fixture-report-visits
 
 Expected: `tsc --noEmit` không báo lỗi. Nếu nó đỏ với lỗi trong `.next/…/types/validator.ts`: chạy `rm -rf .next/dev/types .next/types` rồi chạy lại, phải sạch.
 
-- [ ] **Step 6: Phần M5e của Bước 38 và các chỗ đọc spec (Patch 5), commit**
+**Kết quả:** xóa cả `app/fixture-report-visits` và `app/fixture-chart-visits` (bản sao ở thư mục ghi chú: `m5e-fixture-*-page.tsx.txt`). `tsc` lần đầu đỏ giả trong `.next/dev/types/validator.ts`; `rm -rf .next/dev/types .next/types` rồi sạch. `git status` sạch.
+
+- [x] **Step 6: Phần M5e của Bước 38 và các chỗ đọc spec (Patch 5), commit**
 
 ```diff
 diff --git a/docs/blueprint/specs/2026-11-26-kim-bun-dot-om-design.md b/docs/blueprint/specs/2026-11-26-kim-bun-dot-om-design.md
@@ -1298,14 +1327,18 @@ index d02134b..572eb12 100644
 
 `docs/device-checklist.md` từ trước đã không theo prettier: không chạy `prettier --write` lên nó.
 
+**Kết quả:** Patch 5 áp sạch; thêm vào đoạn đọc §6.5 câu về chữ "Sốt" né vạch (và viền nền ở lối lùi), và vào mục 34 "vạch không chạy xuyên chữ "Sốt"". Commit `1ef0473`.
+
 ```bash
 git add docs/device-checklist.md docs/blueprint/specs/2026-11-26-kim-bun-dot-om-design.md
 git commit -m "docs: the M5e part of step 38, and readings of §6.5 and §9 in the spec" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
-- [ ] **Step 7: Ghi kết quả vào plan, commit**
+- [x] **Step 7: Ghi kết quả vào plan, commit**
 
 Ghi ngay dưới bước này: số đo đỏ và xanh của từng task có khớp plan không; kết quả Step 1, Step 2 và Step 4. Mục nào không cho thấy được thì ghi "chưa kiểm". Đánh dấu `[x]` các bước đã làm.
+
+**Kết quả:** đỏ và xanh của Task 1 (8 đỏ → 214 / 2053) và Task 2 (4 đỏ → 215 / 2057) khớp plan. Bản sửa thêm 5 test: cuối cùng 215 file / 2062 test, `tsc` sạch, build 42/42 (thoát 0 ở lần hai), hai trang vẫn tĩnh. Kết quả trình duyệt và các mục chưa kiểm: ở Step 4.
 
 ```bash
 git status --short   # file plan này là untracked (??), hoặc đã được commit lúc duyệt thì là M; các file plan khác chưa chạy: không add chúng
@@ -1313,7 +1346,7 @@ git add docs/blueprint/plans/2026-11-27-kim-bun-dot-om-m5e.md
 git commit -m "docs(plan): the M5e plan and its check results" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
-- [ ] **Step 8: Đưa lên `main`**
+- [x] **Step 8: Đưa lên `main`**
 
 Chỉ khi mọi bước trên đều đạt và không còn lỗi đã biết (lỗi tìm thấy khi kiểm phải được sửa, có test, và ghi vào plan trước; sửa xong thì chạy lại Step 1 và Step 2). Không hỏi lại người dùng: xem mục "Lên `main` không cần hỏi" ở Ghi chú khi thực thi.
 
