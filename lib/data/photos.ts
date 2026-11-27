@@ -29,6 +29,9 @@ export function usePhotos(babyId: string) {
           .from("photos")
           .select("*")
           .eq("baby_id", babyId)
+          // Spec 2026-11-26 §8.2: the photos of a doctor's visit live with
+          // the visit, not on the Photos page.
+          .is("visit_id", null)
           .order("taken_on", { ascending: false })
           .order("created_at", { ascending: false })
           // id last, so rows with equal sort values cannot shuffle between pages.
@@ -91,54 +94,68 @@ export function usePhotoActions(babyId: string, familyId: string) {
   };
   return {
     upload: useMutation({
-      mutationFn: async (input: {
+      mutationFn: (input: {
         file: File;
         takenOn: string;
         caption: string | null;
-      }) => {
-        const blob = await compressPhoto(input.file);
-        const id = crypto.randomUUID();
-        const path = photoPath(familyId, babyId, id);
-        const storage = supabase().storage.from(BUCKET);
-        const uploaded = await storage.upload(path, blob, {
-          contentType: "image/jpeg",
-          upsert: false,
-        });
-        if (uploaded.error) throw uploaded.error;
-        const { error } = await supabase().from("photos").insert({
-          id,
-          baby_id: babyId,
-          storage_path: path,
-          taken_on: input.takenOn,
-          caption: input.caption,
-          size_bytes: blob.size,
-        });
-        if (error) {
-          // No row means nobody can see or delete the object: remove it again.
-          await storage.remove([path]);
-          throw error;
-        }
-      },
+      }) => uploadPhoto({ babyId, familyId, ...input }),
       onSettled,
     }),
-    // Spec §5.2: delete the Storage object first, then the row.
-    remove: useMutation({
-      mutationFn: async (photo: PhotoRow) => {
-        const removed = await supabase()
-          .storage.from(BUCKET)
-          .remove([photo.storage_path]);
-        // 0 objects: already removed by an earlier, half-finished delete (or not
-        // allowed); the row delete below applies the same rule and decides.
-        if (removed.error) throw removed.error;
-        const { data, error } = await supabase()
-          .from("photos")
-          .delete()
-          .eq("id", photo.id)
-          .select("id");
-        if (error) throw error;
-        if (data.length === 0) throw new PermissionDeniedError();
-      },
-      onSettled,
-    }),
+    remove: useMutation({ mutationFn: deletePhoto, onSettled }),
   };
+}
+
+// Compress, store the object, then its row; a row that is refused takes the
+// object away again. `visitId` is the doctor's visit a prescription belongs
+// to (spec 2026-11-26 §8.2); a photo of the Photos page has none.
+export async function uploadPhoto(input: {
+  babyId: string;
+  familyId: string;
+  file: File;
+  takenOn: string;
+  caption: string | null;
+  visitId?: string | null;
+}): Promise<void> {
+  const blob = await compressPhoto(input.file);
+  const id = crypto.randomUUID();
+  const path = photoPath(input.familyId, input.babyId, id);
+  const storage = supabase().storage.from(BUCKET);
+  const uploaded = await storage.upload(path, blob, {
+    contentType: "image/jpeg",
+    upsert: false,
+  });
+  if (uploaded.error) throw uploaded.error;
+  const { error } = await supabase()
+    .from("photos")
+    .insert({
+      id,
+      baby_id: input.babyId,
+      storage_path: path,
+      taken_on: input.takenOn,
+      caption: input.caption,
+      size_bytes: blob.size,
+      visit_id: input.visitId ?? null,
+    });
+  if (error) {
+    // No row means nobody can see or delete the object: remove it again.
+    await storage.remove([path]);
+    throw error;
+  }
+}
+
+// Spec §5.2: delete the Storage object first, then the row.
+export async function deletePhoto(photo: PhotoRow): Promise<void> {
+  const removed = await supabase()
+    .storage.from(BUCKET)
+    .remove([photo.storage_path]);
+  // 0 objects: already removed by an earlier, half-finished delete (or not
+  // allowed); the row delete below applies the same rule and decides.
+  if (removed.error) throw removed.error;
+  const { data, error } = await supabase()
+    .from("photos")
+    .delete()
+    .eq("id", photo.id)
+    .select("id");
+  if (error) throw error;
+  if (data.length === 0) throw new PermissionDeniedError();
 }
