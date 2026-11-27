@@ -9,7 +9,12 @@ import {
   INDICATORS,
   type GrowthInput,
 } from "./growthForm";
-import { type EpisodeLike, episodeDayCount } from "./illness";
+import {
+  belongsTo,
+  type EpisodeLike,
+  episodeDayCount,
+  symptomInEpisode,
+} from "./illness";
 import { detailsSchemas } from "./logDetails";
 import { symptomShorts } from "./symptomForm";
 import { formatVnTime, vnDateString } from "./time";
@@ -79,28 +84,45 @@ export function medicineRows(
     });
 }
 
-// Spec 2026-11-26 §9: the symptom logs of the period, oldest first: the
-// time, the short names in the content's order, the note. Codes the content
-// no longer has are left out (spec §3.1).
+// Spec 2026-11-27 §6.3: the logs of an episode the report shows. A symptom
+// log by its calendar day (§3.4), every other log by its time (belongsTo).
+export function episodeReportLogs<
+  T extends { type: string; started_at: string },
+>(logs: T[], episode: EpisodeLike, now: Date): T[] {
+  return logs.filter((log) =>
+    log.type === "symptom"
+      ? symptomInEpisode(log, episode, now)
+      : belongsTo(episode, log.started_at, now),
+  );
+}
+
+// Spec 2026-11-27 §6.3: one row per Vietnam day of the period, oldest first:
+// the day, the short names of every code of the day in the content's order,
+// the day's notes joined by " · ". Codes the content no longer has are left
+// out (spec 2026-11-26 §3.1).
 export function symptomRows(
   logs: LogLike[],
   fromMs: number,
 ): { at: string; text: string; note: string }[] {
-  return logs
+  const days = new Map<string, { codes: string[]; notes: string[] }>();
+  const sorted = logs
     .filter((log) => log.type === "symptom")
     .filter((log) => Date.parse(log.started_at) >= fromMs)
-    .sort((a, b) => a.started_at.localeCompare(b.started_at))
-    .flatMap((log) => {
-      const parsed = detailsSchemas.symptom.safeParse(log.details);
-      if (!parsed.success) return [];
-      return [
-        {
-          at: when(log.started_at),
-          text: symptomShorts(parsed.data.codes, TRIAGE.symptoms).join(", "),
-          note: parsed.data.note ?? "",
-        },
-      ];
-    });
+    .sort((a, b) => a.started_at.localeCompare(b.started_at));
+  for (const log of sorted) {
+    const parsed = detailsSchemas.symptom.safeParse(log.details);
+    if (!parsed.success) continue;
+    const day = vnDateString(new Date(log.started_at));
+    const entry = days.get(day) ?? { codes: [], notes: [] };
+    entry.codes.push(...parsed.data.codes);
+    if (parsed.data.note) entry.notes.push(parsed.data.note);
+    days.set(day, entry);
+  }
+  return [...days].map(([day, entry]) => ({
+    at: formatDayShort(day),
+    text: symptomShorts(entry.codes, TRIAGE.symptoms).join(", "),
+    note: entry.notes.join(" · "),
+  }));
 }
 
 // Spec 2026-11-26 §9 from M5: the table "Lần khám" of the episode period, a

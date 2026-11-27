@@ -23,9 +23,10 @@ import {
   statsFetchSince,
 } from "@/lib/rules/dailyStats";
 import { formatDayShort, vnDayRange, vnDayStartMs } from "@/lib/rules/days";
-import { belongsTo, feverChartModel } from "@/lib/rules/illness";
+import { feverChartModel } from "@/lib/rules/illness";
 import {
   episodeReport,
+  episodeReportLogs,
   growthSummary,
   medicineRows,
   REPORT_DAYS,
@@ -98,10 +99,9 @@ export function ReportScreen({
 
   const rows = logs.data ?? [];
   // The daily table counts whole calendar days; the readings, the medicines
-  // and the symptoms of an episode are only the logs that belong to it.
-  const own = episode
-    ? rows.filter((log) => belongsTo(episode, log.started_at, now))
-    : rows;
+  // and the symptoms of an episode are only the logs that belong to it (a
+  // symptom by its calendar day, spec 2026-11-27 §3.4).
+  const own = episode ? episodeReportLogs(rows, episode, now) : rows;
   const stats = dailyStats(rows, days, now);
   const temperatures = temperatureRows(own, fromMs);
   const medicines = medicineRows(own, fromMs);
@@ -329,7 +329,7 @@ export function ReportScreen({
               <table className="w-full border-collapse text-left">
                 <thead>
                   <tr>
-                    <th className={cell}>Giờ</th>
+                    <th className={cell}>Ngày</th>
                     <th className={cell}>Triệu chứng</th>
                     <th className={cell}>Ghi chú</th>
                   </tr>

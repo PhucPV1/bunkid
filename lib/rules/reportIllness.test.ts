@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { EpisodeLike } from "./illness";
-import { episodeReport, reportSelection, symptomRows } from "./report";
+import {
+  episodeReport,
+  episodeReportLogs,
+  reportSelection,
+  symptomRows,
+} from "./report";
 
 const vn = (text: string) => new Date(`${text.replace(" ", "T")}:00+07:00`);
 const iso = (text: string) => vn(text).toISOString();
@@ -134,11 +139,13 @@ describe("symptomRows", () => {
     details,
   });
 
-  it("oldest first: the time, the short names in the content's order, the note", () => {
+  it("spec 2026-11-27 §6.3: one row per day, oldest first: the day, the short names, the notes", () => {
     expect(
       symptomRows(
         [
           log("2026-11-25 08:00", { codes: ["cough", "runny_nose"] }),
+          log("2026-11-25 20:00", { codes: ["fussy"], note: "quấy tối" }),
+          log("2026-11-25 07:00", { codes: ["runny_nose"], note: "sáng" }),
           log("2026-11-21 21:15", { codes: ["fever"], note: "quấy cả tối" }),
           log("2026-11-19 09:00", { codes: ["vomit"] }),
           {
@@ -150,8 +157,8 @@ describe("symptomRows", () => {
         from,
       ),
     ).toEqual([
-      { at: "21/11 21:15", text: "Sốt", note: "quấy cả tối" },
-      { at: "25/11 08:00", text: "Sổ mũi, Ho", note: "" },
+      { at: "21/11", text: "Sốt", note: "quấy cả tối" },
+      { at: "25/11", text: "Sổ mũi, Ho, Quấy", note: "sáng · quấy tối" },
     ]);
   });
 
@@ -166,8 +173,29 @@ describe("symptomRows", () => {
         from,
       ),
     ).toEqual([
-      { at: "21/11 08:00", text: "Ho", note: "" },
-      { at: "22/11 08:00", text: "", note: "" },
+      { at: "21/11", text: "Ho", note: "" },
+      { at: "22/11", text: "", note: "" },
+    ]);
+  });
+});
+
+// Spec 2026-11-27 §6.3: the logs of the episode period of the report.
+describe("episodeReportLogs", () => {
+  const at = (type: string, time: string) => ({
+    type,
+    started_at: iso(time),
+  });
+
+  it("a symptom log by its calendar day, every other log by its time", () => {
+    const logs = [
+      at("temperature", "2026-11-24 20:00"),
+      at("symptom", "2026-11-24 20:05"),
+      at("temperature", "2026-11-24 23:40"),
+      at("symptom", "2026-11-23 23:59"),
+    ];
+    expect(episodeReportLogs(logs, OPEN, NOW)).toEqual([
+      at("symptom", "2026-11-24 20:05"),
+      at("temperature", "2026-11-24 23:40"),
     ]);
   });
 });

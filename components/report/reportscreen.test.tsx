@@ -144,16 +144,16 @@ beforeEach(() => {
 
 // Spec 2026-11-26 §9: "Triệu chứng", for every period.
 describe("ReportScreen: symptoms", () => {
-  it("a table after the medicines: time, short names, note", () => {
+  it("a table after the medicines: day, short names, note (spec 2026-11-27 §6.3)", () => {
     const html = render({ stats: SYMPTOMS });
     expect(html).toMatch(
-      /<h3[^>]*>Triệu chứng<\/h3><table[^>]*><thead><tr><th[^>]*>Giờ<\/th><th[^>]*>Triệu chứng<\/th><th[^>]*>Ghi chú<\/th><\/tr><\/thead>/,
+      /<h3[^>]*>Triệu chứng<\/h3><table[^>]*><thead><tr><th[^>]*>Ngày<\/th><th[^>]*>Triệu chứng<\/th><th[^>]*>Ghi chú<\/th><\/tr><\/thead>/,
     );
     expect(html).toMatch(
-      /<td[^>]*>21\/11 21:15<\/td><td[^>]*>Sốt<\/td><td[^>]*>quấy cả tối<\/td>/,
+      /<td[^>]*>21\/11<\/td><td[^>]*>Sốt<\/td><td[^>]*>quấy cả tối<\/td>/,
     );
     expect(html).toMatch(
-      /<td[^>]*>25\/11 08:00<\/td><td[^>]*>Sổ mũi, Ho<\/td><td[^>]*><\/td>/,
+      /<td[^>]*>25\/11<\/td><td[^>]*>Sổ mũi, Ho<\/td><td[^>]*><\/td>/,
     );
     const order = [
       ">Thuốc đã dùng</h3>",
@@ -189,7 +189,8 @@ describe("ReportScreen: symptoms", () => {
 describe("ReportScreen: the episode period", () => {
   const EPISODE_LOGS = [
     // On the first day, before the episode began: a feed counts for the day,
-    // the reading does not belong to the episode.
+    // the reading does not belong to the episode, the symptom does (spec
+    // 2026-11-27 §3.4: a symptom belongs by its calendar day).
     log("breast", "2026-11-24 20:00", { side: "left" }),
     log("temperature", "2026-11-24 20:00", { celsius: 37.9, method: "nach" }),
     log("symptom", "2026-11-24 20:05", { codes: ["vomit"] }),
@@ -274,8 +275,8 @@ describe("ReportScreen: the episode period", () => {
     expect(html).not.toContain("37,9°C");
     expect(html).toContain("24/11 23:40: 38,4°C (nách)");
     expect(html).toContain("25/11 15:10: Hapacol (hạ sốt) — 2,5 ml");
-    expect(html).toContain(">Ho</td>");
-    expect(html).not.toContain(">Nôn</td>");
+    expect(html).toMatch(/<td[^>]*>24\/11<\/td><td[^>]*>Nôn<\/td>/);
+    expect(html).toMatch(/<td[^>]*>25\/11<\/td><td[^>]*>Ho<\/td>/);
   });
 
   it("the fever chart stands before the readings and is printed", () => {
