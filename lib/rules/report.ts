@@ -1,5 +1,6 @@
+import { TRIAGE } from "@/lib/content/triage";
 import type { LmsRow, WhoIndicator } from "@/lib/content/who";
-import { formatDayShort } from "./days";
+import { addDays, formatDayShort, vnDayStartMs } from "./days";
 import { assess } from "./growth";
 import {
   formatGrowthValue,
@@ -8,7 +9,9 @@ import {
   INDICATORS,
   type GrowthInput,
 } from "./growthForm";
+import { type EpisodeLike, episodeDayCount } from "./illness";
 import { detailsSchemas } from "./logDetails";
+import { symptomShorts } from "./symptomForm";
 import { formatVnTime, vnDateString } from "./time";
 import type { ScheduleItem } from "./vaccines";
 
@@ -74,6 +77,99 @@ export function medicineRows(
         },
       ];
     });
+}
+
+// Spec 2026-11-26 §9: the symptom logs of the period, oldest first: the
+// time, the short names in the content's order, the note. Codes the content
+// no longer has are left out (spec §3.1).
+export function symptomRows(
+  logs: LogLike[],
+  fromMs: number,
+): { at: string; text: string; note: string }[] {
+  return logs
+    .filter((log) => log.type === "symptom")
+    .filter((log) => Date.parse(log.started_at) >= fromMs)
+    .sort((a, b) => a.started_at.localeCompare(b.started_at))
+    .flatMap((log) => {
+      const parsed = detailsSchemas.symptom.safeParse(log.details);
+      if (!parsed.success) return [];
+      return [
+        {
+          at: when(log.started_at),
+          text: symptomShorts(parsed.data.codes, TRIAGE.symptoms).join(", "),
+          note: parsed.data.note ?? "",
+        },
+      ];
+    });
+}
+
+export type ReportPeriod = "7" | "14" | "dot";
+
+// Spec 2026-11-26 §9: the period the report shows. `picked` is the choice
+// made on the page (null until one is made), `address` the `dot` of
+// /bao-cao?dot={id}, `episodes` every episode of the baby (undefined while
+// they load). An address that names no episode counts as none; picking
+// "Đợt ốm" by hand takes the open episode, else the one that started last.
+// null: not known yet (the address names an episode and the list is loading).
+export function reportSelection<T extends EpisodeLike>(input: {
+  picked: ReportPeriod | null;
+  address: string | null;
+  episodes: T[] | undefined;
+}): { period: ReportPeriod; episode: T | null } | null {
+  const { picked, address, episodes } = input;
+  if (picked === "7" || picked === "14")
+    return { period: picked, episode: null };
+  if (!episodes)
+    return picked === null && address === null
+      ? { period: "7", episode: null }
+      : null;
+  const episode =
+    picked === null
+      ? (episodes.find((item) => item.id === address) ?? null)
+      : (episodes.find((item) => item.ended_at === null) ??
+        [...episodes].sort((a, b) =>
+          b.started_at.localeCompare(a.started_at),
+        )[0] ??
+        null);
+  return episode ? { period: "dot", episode } : { period: "7", episode: null };
+}
+
+const REPORT_EPISODE_DAYS = 14;
+const startIso = (day: string) => new Date(vnDayStartMs(day)).toISOString();
+
+// Spec 2026-11-26 §9: the days of the "Đợt ốm" period, from the first day to
+// the last (an open episode: today), the last 14 at most; the logs to read,
+// from the start of the day before the first day shown (a sleep from the
+// evening before still counts) to the start of the day after the last (an
+// open episode: no upper bound); and the line under the baby's name.
+export function episodeReport(
+  episode: EpisodeLike,
+  now: Date,
+): {
+  days: string[];
+  truncated: boolean;
+  from: string;
+  to: string | null;
+  line: string;
+} {
+  const firstDay = vnDateString(new Date(episode.started_at));
+  // A start may be up to a minute ahead (spec §5.7), so just before midnight
+  // an open episode can begin on tomorrow's date: it still has its first day.
+  const count = Math.max(1, episodeDayCount(episode, now));
+  const shown = Math.min(count, REPORT_EPISODE_DAYS);
+  const days = Array.from({ length: shown }, (_, i) =>
+    addDays(firstDay, count - shown + i),
+  );
+  const lastDay = days[days.length - 1];
+  return {
+    days,
+    truncated: count > REPORT_EPISODE_DAYS,
+    from: startIso(addDays(days[0], -1)),
+    to: episode.ended_at ? startIso(addDays(lastDay, 1)) : null,
+    line: episode.ended_at
+      ? `Đợt ốm ${formatDayShort(firstDay)} – ${formatDayShort(lastDay)} · ${count} ngày`
+      : `Đợt ốm từ ${formatDayShort(firstDay)} · ngày thứ ${count}`,
+  };
 }
 
 // Spec §6.15: the latest measurement of each indicator, with its WHO percentile.
