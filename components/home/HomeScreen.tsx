@@ -21,6 +21,7 @@ import { ageDays, formatAgeVi } from "@/lib/rules/time";
 import { nextBreastSide, overdueTimers } from "@/lib/rules/timer";
 import type { Baby } from "@/lib/supabase/rows";
 import { AlertBanners } from "./AlertBanners";
+import { CloseReminder, EpisodeCard } from "./EpisodeHomeCards";
 import { HeroCardView } from "./HeroCard";
 import { HomeHeader } from "./HomeHeader";
 import { HomeSkeleton } from "./HomeSkeleton";
@@ -31,6 +32,7 @@ import { StatsSection } from "./StatsSection";
 import { StatusTiles } from "./StatusTiles";
 import { TimerButtons } from "./TimerButtons";
 import { TimerRow } from "./TimerRow";
+import { useHomeIllness } from "./useHomeIllness";
 import { VitaminDButton } from "./VitaminDButton";
 
 export function HomeScreen({ baby, userId }: { baby: Baby; userId: string }) {
@@ -62,6 +64,7 @@ export function HomeScreen({ baby, userId }: { baby: Baby; userId: string }) {
     triageAvailable: true,
     now,
   });
+  const illness = useHomeIllness({ baby, userId, logs: rows, alerts, now });
   const hero = heroState({
     logs: rows,
     feedIntervalMin: baby.feed_interval_min,
@@ -90,7 +93,7 @@ export function HomeScreen({ baby, userId }: { baby: Baby; userId: string }) {
         <HomeSkeleton />
       ) : (
         <>
-          <AlertBanners alerts={alerts} />
+          <AlertBanners alerts={alerts} invite={illness.invite} />
 
           {overdueTimers(rows, now).map((log) => (
             <LongTimerBanner
@@ -101,6 +104,18 @@ export function HomeScreen({ baby, userId }: { baby: Baby; userId: string }) {
               onStop={() => actions.stopTimer(log)}
             />
           ))}
+
+          {illness.card && (
+            <EpisodeCard view={illness.card} onLog={actions.openInstant} />
+          )}
+          {illness.reminder && (
+            <CloseReminder
+              view={illness.reminder.view}
+              busy={illness.reminder.busy}
+              onClose={illness.reminder.onClose}
+              onSnooze={illness.reminder.onSnooze}
+            />
+          )}
 
           {failed ? (
             <ErrorCard

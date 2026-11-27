@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SyncBarProvider } from "@/components/sync/SyncSlot";
-import type { Baby, LogRow } from "@/lib/supabase/rows";
+import type { Baby, EpisodeRow, LogRow } from "@/lib/supabase/rows";
 import { HomeScreen } from "./HomeScreen";
 
 const NOW = vi.hoisted(() => new Date("2026-11-14T05:00:00Z")); // 12:00 giờ VN
@@ -11,14 +11,45 @@ const state = vi.hoisted(() => ({
   actionError: null as Error | null,
   // The handler HomeScreen gave to the "Khác" button.
   onMore: null as ((event?: unknown) => void) | null,
+  // The baby's illness episodes (useEpisodes) and the open one's logs.
+  episodes: { data: undefined } as { data: EpisodeRow[] | undefined },
+  rangeLogs: { data: undefined } as { data: LogRow[] | undefined },
+  // Times kept on the device, by key.
+  stored: {} as Record<string, number>,
+  // What HomeScreen handed to the banners and to the episode cards.
+  banners: null as Record<string, unknown> | null,
+  card: null as Record<string, unknown> | null,
+  reminder: null as Record<string, unknown> | null,
 }));
 const openActionSheet = vi.hoisted(() => vi.fn());
+const openInstant = vi.hoisted(() => vi.fn());
+const useRangeLogs = vi.hoisted(() => vi.fn());
+const startEpisode = vi.hoisted(() => vi.fn());
+const updateEpisode = vi.hoisted(() => vi.fn());
+const markStored = vi.hoisted(() => vi.fn());
+const toast = vi.hoisted(() => vi.fn());
 
 vi.mock("@/lib/hooks/useNow", () => ({ useNow: () => NOW }));
 vi.mock("@/lib/data/logs", () => ({
   useRecentLogs: () => state.logs,
   useFirstLogAt: () => ({ data: null }),
+  useRangeLogs,
 }));
+vi.mock("@/lib/data/illness", () => ({
+  useEpisodes: () => state.episodes,
+  useEpisodeActions: () => ({
+    start: { isPending: false, mutate: startEpisode },
+    update: { isPending: false, mutate: updateEpisode },
+  }),
+}));
+// The hook reads the device after the first render; here it has been read.
+vi.mock("@/lib/hooks/useStoredTime", () => ({
+  useStoredTime: (key: string | null) => ({
+    at: key === null ? null : (state.stored[key] ?? null),
+    mark: (now: Date) => markStored(key, now),
+  }),
+}));
+vi.mock("@/components/ui/Toast", () => ({ useToast: () => toast }));
 vi.mock("@/lib/data/realtime", () => ({ useLogsRealtime: () => {} }));
 vi.mock("@/lib/data/family", () => ({ useMembers: () => ({ data: [] }) }));
 vi.mock("@/lib/data/emergency", () => ({ useEmergencyContacts: () => {} }));
@@ -30,7 +61,7 @@ vi.mock("@/components/actions/QuickActions", () => ({
     error: state.actionError,
     pressTimer: () => {},
     stopTimer: () => {},
-    openInstant: () => {},
+    openInstant,
     openActionSheet,
   }),
 }));
@@ -41,6 +72,31 @@ vi.mock("./QuickLogGrid", async (importOriginal) => {
     QuickLogGrid: (props: Props) => {
       state.onMore = props.onMore;
       return actual.QuickLogGrid(props);
+    },
+  };
+});
+vi.mock("./AlertBanners", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./AlertBanners")>();
+  type Props = Parameters<typeof actual.AlertBanners>[0];
+  return {
+    AlertBanners: (props: Props) => {
+      state.banners = props;
+      return actual.AlertBanners(props);
+    },
+  };
+});
+vi.mock("./EpisodeHomeCards", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./EpisodeHomeCards")>();
+  type CardProps = Parameters<typeof actual.EpisodeCard>[0];
+  type ReminderProps = Parameters<typeof actual.CloseReminder>[0];
+  return {
+    EpisodeCard: (props: CardProps) => {
+      state.card = props;
+      return actual.EpisodeCard(props);
+    },
+    CloseReminder: (props: ReminderProps) => {
+      state.reminder = props;
+      return actual.CloseReminder(props);
     },
   };
 });
@@ -117,7 +173,23 @@ function expectInOrder(html: string, marks: string[]) {
 beforeEach(() => {
   state.actionError = null;
   state.onMore = null;
-  openActionSheet.mockClear();
+  state.episodes = { data: undefined };
+  state.rangeLogs = { data: undefined };
+  state.stored = {};
+  state.banners = null;
+  state.card = null;
+  state.reminder = null;
+  for (const mock of [
+    openActionSheet,
+    openInstant,
+    startEpisode,
+    updateEpisode,
+    markStored,
+    toast,
+  ])
+    mock.mockClear();
+  useRangeLogs.mockReset();
+  useRangeLogs.mockImplementation(() => state.rangeLogs);
 });
 
 // The loading shapes follow the page of spec 2026-11-19 §3: hero 104, three
@@ -270,5 +342,160 @@ describe("HomeScreen with logs", () => {
     loaded(DAY);
     state.onMore?.({ type: "click" });
     expect(openActionSheet.mock.calls).toEqual([[["other"]]]);
+  });
+});
+
+const episode = (
+  id: string,
+  start: string,
+  end: string | null = null,
+): EpisodeRow => ({
+  id,
+  baby_id: "b1",
+  started_at: start,
+  ended_at: end,
+  created_by: "u1",
+  created_at: start,
+  updated_at: start,
+});
+const QUESTION =
+  "Mở một đợt ốm để gom nhiệt độ, thuốc và triệu chứng vào một chỗ?";
+// DAY has a fever of 38,5 at 11:50; the baby is 65 days old, so the banner
+// is the red one for babies under 3 months.
+const FEVER_BANNER = "Bé dưới 3 tháng sốt ≥ 38°C: cần đi khám ngay.";
+
+// Spec 2026-11-26 §7.2 and §5.5.
+describe("HomeScreen: the invite to start an illness episode", () => {
+  it("rides on the fever banner when the baby has no open episode", () => {
+    state.episodes = {
+      data: [episode("old", "2026-11-01T01:00:00Z", "2026-11-03T01:00:00Z")],
+    };
+    const html = loaded(DAY);
+    expect(html.indexOf(FEVER_BANNER)).toBeLessThan(html.indexOf(QUESTION));
+    expect(state.banners?.invite).toMatchObject({
+      alertKey: "fever-infant",
+      busy: false,
+    });
+    // No open episode: no card, no reminder, and the open episode's logs are
+    // not read.
+    expect(html).not.toContain("Đang ốm");
+    expect(useRangeLogs).toHaveBeenLastCalledWith("b1", "", null, false);
+  });
+
+  it("is not offered before the episodes are known, nor after Không on this device", () => {
+    expect(loaded(DAY)).not.toContain(QUESTION);
+    expect(state.banners?.invite).toBeNull();
+    state.episodes = { data: [] };
+    state.stored = {
+      "kb.illness.inviteDismissedAt.b1": NOW.getTime() - 3_600_000,
+    };
+    expect(loaded(DAY)).not.toContain(QUESTION);
+  });
+
+  it("Bắt đầu đợt ốm starts at the first fever reading and stays on Hôm nay; Không is kept on this device", () => {
+    state.episodes = { data: [] };
+    loaded(DAY);
+    const invite = state.banners?.invite as {
+      onStart: () => void;
+      onDismiss: () => void;
+    };
+    invite.onStart();
+    expect(startEpisode).toHaveBeenCalledOnce();
+    const [variables, options] = startEpisode.mock.calls[0];
+    expect(variables).toEqual({ startedAt: at("04:50") });
+    expect(options.onSuccess).toBeUndefined();
+    options.onError(new Error("boom"));
+    expect(toast).toHaveBeenCalledWith("Có lỗi xảy ra: boom");
+    invite.onDismiss();
+    expect(markStored).toHaveBeenCalledWith(
+      "kb.illness.inviteDismissedAt.b1",
+      NOW,
+    );
+  });
+});
+
+// Spec §7.1 and §7.3.
+describe("HomeScreen with an open illness episode", () => {
+  // Opened two days ago, at 09:00 Vietnam time.
+  const open = episode("ep1", "2026-11-12T02:00:00Z");
+
+  it("the card sits under the banners and the long timer, above the hero; no invite", () => {
+    state.episodes = { data: [open] };
+    state.rangeLogs = { data: DAY };
+    const html = loaded(DAY);
+    expectInOrder(html, [
+      "cần đi khám ngay",
+      "Còn đang nằm sấp không?",
+      ">Đang ốm · ngày 3</span>",
+      "Đang sốt · 38,5°C\u00a0lúc\u00a011:50",
+      ">Đang ngủ<",
+    ]);
+    expect(html).toContain('href="/dot-om/chi-tiet?id=ep1"');
+    expect(html).not.toContain(QUESTION);
+    expect(useRangeLogs).toHaveBeenLastCalledWith(
+      "b1",
+      "2026-11-12T02:00:00Z",
+      null,
+      true,
+    );
+    // Fever 10 minutes ago: nothing to remind.
+    expect(html).not.toContain("48 giờ");
+  });
+
+  it("the three buttons of the card open the quick-log sheets", () => {
+    state.episodes = { data: [open] };
+    state.rangeLogs = { data: DAY };
+    loaded(DAY);
+    (state.card?.onLog as (type: string) => void)("symptom");
+    expect(openInstant).toHaveBeenCalledWith("symptom");
+  });
+
+  it("the card has no state line while the episode's logs load", () => {
+    state.episodes = { data: [open] };
+    const html = loaded(DAY);
+    expect(html).toContain(">Đang ốm · ngày 3</span>");
+    expect(html).not.toContain("Đang sốt ·");
+    expect(html).not.toContain("48 giờ");
+  });
+
+  it("48 quiet hours: the reminder right under the card; Bé đã khỏi closes, Chưa waits a day", () => {
+    state.episodes = { data: [open] };
+    state.rangeLogs = { data: [] };
+    const html = loaded([]);
+    expectInOrder(html, [
+      ">Đang ốm · ngày 3</span>",
+      "48 giờ qua không có triệu chứng hay liều hạ sốt nào",
+      "Đợt ốm bắt đầu 12/11 xong chưa?",
+      ">Bé đã khỏi</button>",
+      ">Chưa</button>",
+      ">Bấm giờ<",
+    ]);
+    const reminder = state.reminder as {
+      onClose: () => void;
+      onSnooze: () => void;
+    };
+    reminder.onClose();
+    expect(updateEpisode).toHaveBeenCalledOnce();
+    const [variables, options] = updateEpisode.mock.calls[0];
+    expect(variables).toEqual({
+      id: "ep1",
+      patch: { ended_at: NOW.toISOString() },
+    });
+    options.onSuccess();
+    expect(toast).toHaveBeenCalledWith("Đã đóng đợt ốm");
+    reminder.onSnooze();
+    expect(markStored).toHaveBeenCalledWith(
+      "kb.illness.closeSnoozedAt.ep1",
+      NOW,
+    );
+  });
+
+  it("no reminder for a day after Chưa on this device", () => {
+    state.episodes = { data: [open] };
+    state.rangeLogs = { data: [] };
+    state.stored = {
+      "kb.illness.closeSnoozedAt.ep1": NOW.getTime() - 3_600_000,
+    };
+    expect(loaded([])).not.toContain("48 giờ");
   });
 });
