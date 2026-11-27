@@ -67,7 +67,7 @@ export function EpisodeVerdict({
           <Icon name={verdict.icon} size={22} />
         </span>
         <div className="flex min-w-0 flex-col">
-          <h2 className="text-xl leading-[26px] font-bold text-ink">
+          <h2 className="text-xl leading-[26px] font-bold text-balance text-ink">
             {verdict.title}
           </h2>
           <span className="text-[13px] leading-[18px] text-muted">

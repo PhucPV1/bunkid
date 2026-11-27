@@ -33,6 +33,21 @@ describe("EpisodeVerdict", () => {
     expect(html).toContain(">Ngày thứ 3 · bắt đầu 24/11 lúc 23:30</span>");
   });
 
+  // At 375 px the longest title takes two lines; balanced, its last word is
+  // not left alone on the second.
+  it("a title that needs two lines breaks into even lines", () => {
+    const html = card({
+      verdict: {
+        title: "Bun đã hết sốt chưa đầy 1 giờ",
+        tone: "good",
+        icon: "check",
+      },
+    });
+    expect(html).toMatch(
+      /<h2 class="[^"]*text-balance[^"]*">Bun đã hết sốt chưa đầy 1 giờ<\/h2>/,
+    );
+  });
+
   it("the tone and the icon both change with the verdict", () => {
     const fever = card({
       verdict: { title: "Bun đang sốt 39,4°C", tone: "danger", icon: "thermo" },
