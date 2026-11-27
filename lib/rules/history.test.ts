@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import {
   canModifyLog,
   daySummary,
-  firstScreen,
   groupByVnDay,
   HISTORY_FILTERS,
   historyPageRange,
@@ -189,31 +188,5 @@ describe("daySummary", () => {
     expect(daySummary({ day: "2026-11-15", logs: [], all: [night], now })).toBe(
       "0 cữ · 0 tã · ngủ 6g",
     );
-  });
-});
-
-describe("firstScreen", () => {
-  const day = (name: string, count: number) => ({
-    day: name,
-    logs: Array.from({ length: count }, (_, i) => `${name}-${i}`),
-  });
-
-  it("keeps whole days until the row budget is used", () => {
-    const groups = [day("a", 5), day("b", 7), day("c", 4)];
-    expect(firstScreen(groups, 12)).toEqual([groups[0], groups[1]]);
-  });
-
-  it("cuts the last day it reaches to the rows that are left", () => {
-    const groups = [day("a", 5), day("b", 20), day("c", 4)];
-    const shown = firstScreen(groups, 12);
-    expect(shown.map((g) => g.logs.length)).toEqual([5, 7]);
-    expect(shown[1].logs).toEqual(groups[1].logs.slice(0, 7));
-    expect(groups[1].logs).toHaveLength(20);
-  });
-
-  it("returns every day when they fit", () => {
-    const groups = [day("a", 2), day("b", 3)];
-    expect(firstScreen(groups, 12)).toEqual(groups);
-    expect(firstScreen([], 12)).toEqual([]);
   });
 });
