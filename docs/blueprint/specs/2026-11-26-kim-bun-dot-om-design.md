@@ -437,6 +437,7 @@ alter table public.photos add foreign key (visit_id, baby_id)
   - Sau bảng thuốc có bảng "Lần khám" (từ M5): Lúc khám, Nơi khám, Bác sĩ kết luận, Lời dặn. Không in ảnh.
 - Với mọi kỳ: khi kỳ có bản ghi `symptom`, sau bảng thuốc có bảng "Triệu chứng": Giờ, Triệu chứng (các `short`), Ghi chú.
 - Kỳ 7 và 14 ngày: ngoài bảng "Triệu chứng", không đổi gì.
+- Bảng "Triệu chứng": mỗi bản ghi một hàng, cũ trước; Giờ viết "{dd/mm} {HH:mm}" như các dòng nhiệt độ. Mã không còn trong nội dung thì bỏ; bản ghi chỉ còn mã lạ thì ô Triệu chứng để trống. Không có ghi chú thì ô Ghi chú để trống. (Khác bản đã duyệt ngày 2026-11-26, vốn không nói ba chỗ này. Chọn ở M4b ngày 2026-11-27 theo lời duyệt trước của người dùng.)
 
 ## 10. Kiểm thử
 
