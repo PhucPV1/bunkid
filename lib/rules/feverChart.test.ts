@@ -197,6 +197,8 @@ describe("feverChartModel", () => {
   it("a lower reading soon after a higher one: its label does not cover the earlier dot", () => {
     // Three days; the fever is coming down. The earlier dot of today has no
     // label of its own, and the newest label above its dot would sit on it.
+    // Beside the dot of 38,1 the label would sit on the 38 line: it goes
+    // under the dot.
     const chart = feverChartModel(
       [
         temp("2026-11-25 15:00", 39.2),
@@ -209,8 +211,61 @@ describe("feverChartModel", () => {
     expect(chart.points.map((point) => point.label)).toEqual([
       { text: "39,2", anchor: "middle", place: "above" },
       null,
-      { text: "38,1", anchor: "start", place: "side" },
+      { text: "38,1", anchor: "middle", place: "below" },
     ]);
+  });
+
+  it("the newest label keeps off the 38 line", () => {
+    // One day, an earlier reading far to the left: no dot is in the way.
+    // From 37,2 to 37,7 the label above the dot would sit on the dashed line
+    // of 38,0; it goes beside the dot.
+    const place = (celsius: number, hour: string, of: EpisodeLike) =>
+      feverChartModel(
+        [temp("2026-11-25 03:00", 38.6), temp(`2026-11-25 ${hour}`, celsius)],
+        of,
+        vn("2026-11-25 23:55"),
+      )!.points[1].label;
+    const day = episode("2026-11-25 00:10");
+    for (const celsius of [37.2, 37.3, 37.4, 37.5, 37.6, 37.7])
+      expect(place(celsius, "09:00", day), String(celsius)).toMatchObject({
+        anchor: "start",
+        place: "side",
+      });
+    // Lower than that the label is under the line, from 37,8 it is over it.
+    for (const celsius of [37.1, 37.8, 37.9, 38, 38.1, 38.5])
+      expect(place(celsius, "09:00", day)?.place, String(celsius)).toBe(
+        "above",
+      );
+    // Near the right edge there is no room beside the dot: under it.
+    expect(place(37.5, "23:00", day)).toEqual({
+      text: "37,5",
+      anchor: "end",
+      place: "below",
+    });
+    // 38,9 then 38,5 at the right edge: above is the earlier dot, under is
+    // the 38 line. The label goes beside the dot on the left.
+    const falling = feverChartModel(
+      [temp("2026-11-25 22:00", 38.9), temp("2026-11-25 23:00", 38.5)],
+      episode("2026-11-25 00:10", "2026-11-25 23:50"),
+      vn("2026-11-26 10:00"),
+    )!;
+    expect(falling.points[1].label).toEqual({
+      text: "38,5",
+      anchor: "end",
+      place: "side",
+    });
+    // The scale grows (34 to 43) and the line moves with it: 37,2 is then
+    // close under the line, and its label goes beside the dot as well.
+    const tall = feverChartModel(
+      [
+        temp("2026-11-25 09:00", 34.2),
+        temp("2026-11-25 20:00", 42.6),
+        temp("2026-11-26 09:00", 37.2),
+      ],
+      episode("2026-11-25 08:00"),
+      vn("2026-11-26 10:00"),
+    )!;
+    expect(tall.points[2].label).toMatchObject({ text: "37,2", place: "side" });
   });
 
   it("near the right edge there is no room beside the dot: the label goes under it", () => {

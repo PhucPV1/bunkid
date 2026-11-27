@@ -544,16 +544,20 @@ export function feverChartModel(
     peakLabel = labelBox(peakPoint.x, peakPoint.y, peakPoint.label);
     boxes.push(peakLabel);
   }
-  // The newest label takes the first place that covers no other dot and not
-  // the highest reading's label: above, beside on the right, under, beside on
-  // the left. Nothing is ever drawn to the right of the newest dot, so that
-  // side is free whenever it fits; near the right edge it does not fit, and
-  // the left side is the last try (the line runs behind the label there, and
-  // the halo keeps it readable). Where no place is free (readings a few
-  // pixels apart, as on a week's axis), it takes the place that covers least
-  // of the other dots, and never one that reaches the other label: two
-  // numbers on each other cannot be read, a dot partly under a number can.
+  // The newest label takes the first place that covers no other dot, not the
+  // highest reading's label and not the 38 line: above, beside on the right,
+  // under, beside on the left. Nothing is ever drawn to the right of the
+  // newest dot, so that side is free whenever it fits; near the right edge it
+  // does not fit, and the left side is the last try (the line runs behind the
+  // label there, and the halo keeps it readable). Where no place is free
+  // (readings a few pixels apart, as on a week's axis), it takes the place
+  // that covers least of the other dots, and never one that reaches the other
+  // label or sits on the 38 line while another place does neither: two
+  // numbers on each other cannot be read, and a dash of the line showing
+  // behind a number reads as part of it; a dot partly under a number can be
+  // read. For one dot the three heights never sit on the line together.
   const newest = points.at(-1);
+  const feverY = yOf(38);
   if (newest) {
     const dots = boxes.slice(0, points.length - 1);
     const text = formatCelsius(newest.celsius);
@@ -574,14 +578,17 @@ export function feverChartModel(
       return {
         option,
         onLabel: peakLabel !== null && hit(box, peakLabel),
+        onLine: box.y0 < feverY && feverY < box.y1,
         onDots: dots.reduce((sum, dot) => sum + covered(box, dot), 0),
       };
     });
     // Above or under always clears the other label: that label is above the
     // highest dot, and the newest dot is never higher than it.
-    const clear = placed.filter((place) => !place.onLabel);
-    newest.label = (clear.length > 0 ? clear : placed).reduce((best, place) =>
-      place.onDots < best.onDots ? place : best,
+    const offLabel = placed.filter((place) => !place.onLabel);
+    const clear = offLabel.length > 0 ? offLabel : placed;
+    const offLine = clear.filter((place) => !place.onLine);
+    newest.label = (offLine.length > 0 ? offLine : clear).reduce(
+      (best, place) => (place.onDots < best.onDots ? place : best),
     ).option;
     boxes.push(labelBox(newest.x, newest.y, newest.label));
   }
@@ -620,7 +627,7 @@ export function feverChartModel(
       celsius: yMin + index,
       y: index / (yMax - yMin),
     })),
-    feverY: yOf(38),
+    feverY,
     feverWord,
     points,
     doses,
