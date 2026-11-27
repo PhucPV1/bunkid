@@ -14,3 +14,4 @@ export type PhotoRow = Tables["photos"]["Row"];
 export type MilestoneRow = Tables["milestones_achieved"]["Row"];
 export type MedicineScheduleRow = Tables["medicine_schedules"]["Row"];
 export type EpisodeRow = Tables["illness_episodes"]["Row"];
+export type VisitRow = Tables["illness_visits"]["Row"];

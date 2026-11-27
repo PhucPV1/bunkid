@@ -119,6 +119,32 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"illness_visits": {
+                  Row: {
+                    "advice": string | null,"baby_id": string,"conclusion": string | null,"created_at": string,"created_by": string,"episode_id": string,"id": string,"place": string | null,"updated_at": string,"visited_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "advice"?: string | null,"baby_id": string,"conclusion"?: string | null,"created_at"?: string,"created_by"?: string,"episode_id": string,"id": string,"place"?: string | null,"updated_at"?: string,"visited_at": string
+                  }
+                  Update: {
+                    "advice"?: string | null,"baby_id"?: string,"conclusion"?: string | null,"created_at"?: string,"created_by"?: string,"episode_id"?: string,"id"?: string,"place"?: string | null,"updated_at"?: string,"visited_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "illness_visits_baby_id_fkey"
+      columns: ["baby_id"]
+isOneToOne: false
+      referencedRelation: "babies"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "illness_visits_episode_id_baby_id_fkey"
+      columns: ["episode_id","baby_id"]
+isOneToOne: false
+      referencedRelation: "illness_episodes"
+      referencedColumns: ["id","baby_id"]
+    }
+                  ]
                 },"logs": {
                   Row: {
                     "baby_id": string,"created_at": string,"created_by": string,"details": NonNullable<Json>,"ended_at": string | null,"id": string,"note": string | null,"started_at": string,"type": string,"updated_at": string
@@ -235,14 +261,14 @@ isOneToOne: false
                   ]
                 },"photos": {
                   Row: {
-                    "baby_id": string,"caption": string | null,"created_at": string,"created_by": string,"id": string,"size_bytes": number,"storage_path": string,"taken_on": string
+                    "baby_id": string,"caption": string | null,"created_at": string,"created_by": string,"id": string,"size_bytes": number,"storage_path": string,"taken_on": string,"visit_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "baby_id": string,"caption"?: string | null,"created_at"?: string,"created_by"?: string,"id": string,"size_bytes": number,"storage_path": string,"taken_on": string
+                    "baby_id": string,"caption"?: string | null,"created_at"?: string,"created_by"?: string,"id": string,"size_bytes": number,"storage_path": string,"taken_on": string,"visit_id"?: string | null
                   }
                   Update: {
-                    "baby_id"?: string,"caption"?: string | null,"created_at"?: string,"created_by"?: string,"id"?: string,"size_bytes"?: number,"storage_path"?: string,"taken_on"?: string
+                    "baby_id"?: string,"caption"?: string | null,"created_at"?: string,"created_by"?: string,"id"?: string,"size_bytes"?: number,"storage_path"?: string,"taken_on"?: string,"visit_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -251,6 +277,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "babies"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "photos_visit_id_baby_id_fkey"
+      columns: ["visit_id","baby_id"]
+isOneToOne: false
+      referencedRelation: "illness_visits"
+      referencedColumns: ["id","baby_id"]
     }
                   ]
                 },"push_subscriptions": {
