@@ -15,6 +15,12 @@ export function vnDayStartMs(day: string): number {
   return Date.parse(`${day}T00:00:00+07:00`);
 }
 
+// Spec 2026-11-27 §4.3: the start of a VN day as an ISO string, the form
+// useRangeLogs takes.
+export function startOfDayIso(day: string): string {
+  return new Date(vnDayStartMs(day)).toISOString();
+}
+
 export function addDays(day: string, n: number): string {
   return new Date(Date.parse(`${day}T00:00:00Z`) + n * DAY_MS)
     .toISOString()

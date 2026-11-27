@@ -1,6 +1,6 @@
 import { bannerReading } from "./alerts";
 import { dailyStats } from "./dailyStats";
-import { addDays, formatDayShort, vnDayStartMs } from "./days";
+import { addDays, formatDayShort, startOfDayIso, vnDayStartMs } from "./days";
 import type { LogLike } from "./describeLog";
 import { detailsSchemas } from "./logDetails";
 import { vnDateString } from "./time";
@@ -105,6 +105,22 @@ export function antipyreticTimes(
 
 export type SymptomEntry = { at: number; codes: string[] };
 
+// Spec 2026-11-27 §3.4: a symptom is recorded for a whole day, so it belongs
+// to the episode by its Vietnam calendar day: from the episode's first day to
+// its last (an open episode: today), whatever the hour of start and end.
+export function symptomInEpisode(
+  log: { started_at: string },
+  episode: EpisodeLike,
+  now: Date,
+): boolean {
+  const day = vnDateString(new Date(log.started_at));
+  const first = vnDateString(new Date(episode.started_at));
+  const last = vnDateString(
+    episode.ended_at ? new Date(episode.ended_at) : now,
+  );
+  return day >= first && day <= last;
+}
+
 // The symptom logs of the episode, oldest first.
 export function symptomEntries(
   logs: LogLike[],
@@ -114,7 +130,7 @@ export function symptomEntries(
   const entries: SymptomEntry[] = [];
   for (const log of logs) {
     if (log.type !== "symptom") continue;
-    if (!belongsTo(episode, log.started_at, now)) continue;
+    if (!symptomInEpisode(log, episode, now)) continue;
     const parsed = detailsSchemas.symptom.safeParse(log.details);
     if (parsed.success)
       entries.push({
@@ -131,9 +147,6 @@ const decimal = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 1 });
 export function formatCelsius(celsius: number): string {
   return decimal.format(celsius);
 }
-
-const startOfDayIso = (day: string) =>
-  new Date(vnDayStartMs(day)).toISOString();
 
 // Spec §6.3: the logs the episode's page reads. From the start of the 8th day
 // before the first day (seven days to compare with, and one more so a sleep

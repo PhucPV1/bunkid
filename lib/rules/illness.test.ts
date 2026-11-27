@@ -18,6 +18,7 @@ import {
   sinceText,
   statusTone,
   symptomEntries,
+  symptomInEpisode,
 } from "./illness";
 
 // Vietnam time, written the way a parent reads the clock.
@@ -204,6 +205,42 @@ describe("episodeReadings, antipyreticTimes, symptomEntries", () => {
       38.6, 39.2,
     ]);
     expect(antipyreticTimes(logs, closed, now)).toHaveLength(1);
+  });
+});
+
+// Spec 2026-11-27 §3.4: a symptom log belongs to an episode by its Vietnam
+// calendar day, not by the time of the episode's start or end.
+describe("symptomInEpisode", () => {
+  const now = vn("2026-11-27 08:00");
+  const open = episode("2026-11-25 18:00");
+  const closed = episode("2026-11-25 18:00", "2026-11-26 07:00");
+  const on = (time: string) => ({ started_at: iso(time) });
+
+  it("the whole first day counts, even before the episode's start", () => {
+    expect(symptomInEpisode(on("2026-11-25 12:00"), open, now)).toBe(true);
+    expect(symptomInEpisode(on("2026-11-25 00:00"), open, now)).toBe(true);
+    expect(symptomInEpisode(on("2026-11-24 23:59"), open, now)).toBe(false);
+  });
+
+  it("an open episode reaches the end of today", () => {
+    expect(symptomInEpisode(on("2026-11-27 12:00"), open, now)).toBe(true);
+    expect(symptomInEpisode(on("2026-11-28 00:00"), open, now)).toBe(false);
+  });
+
+  it("a closed episode reaches the end of its last day, not further", () => {
+    expect(symptomInEpisode(on("2026-11-26 12:00"), closed, now)).toBe(true);
+    expect(symptomInEpisode(on("2026-11-27 00:00"), closed, now)).toBe(false);
+  });
+
+  it("symptomEntries uses it: a 12:00 log of the first day is on day 1", () => {
+    const logs = [
+      symptom("2026-11-25 12:00", ["cough"]),
+      symptom("2026-11-24 12:00", ["fever"]),
+    ];
+    expect(
+      sameForEveryOrder(logs, (list) => symptomEntries(list, open, now)),
+    ).toEqual([{ at: vn("2026-11-25 12:00").getTime(), codes: ["cough"] }]);
+    expect(episodeDays(logs, open, now).at(-1)?.codes).toEqual(["cough"]);
   });
 });
 

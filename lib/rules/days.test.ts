@@ -4,6 +4,7 @@ import {
   addMonths,
   formatDayFull,
   formatDayShort,
+  startOfDayIso,
   vnDayLabel,
   vnDayRange,
   vnDayStartMs,
@@ -14,6 +15,10 @@ describe("days", () => {
     expect(new Date(vnDayStartMs("2026-11-14")).toISOString()).toBe(
       "2026-11-13T17:00:00.000Z",
     );
+  });
+
+  it("spec 2026-11-27 §4.3: startOfDayIso is VN midnight as an ISO string", () => {
+    expect(startOfDayIso("2026-11-14")).toBe("2026-11-13T17:00:00.000Z");
   });
 
   it("addMonths keeps the day of month and clamps to the month's last day", () => {
