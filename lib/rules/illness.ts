@@ -705,3 +705,47 @@ export function inviteStartedAt(
   }
   return new Date(earliest).toISOString();
 }
+
+// Spec §5.6: an open episode with nothing new for this long may be over.
+const CLOSE_AFTER_MS = 48 * HOUR_MS;
+
+export type CloseCase = "no-fever" | "unchecked" | "quiet";
+
+// Spec §5.6: the reminder to close an open episode. Each case has its own
+// last mark; the reminder shows once that mark is 48 hours old, unless
+// "Chưa" was answered on this device in the last 24 hours.
+//   no-fever   the fever is over (cleared): the last reading from 38,0
+//   unchecked  the newest reading is still from 38,0: that reading
+//   quiet      no fever on record: the latest of the start, the last symptom
+//              log and the last dose of fever medicine
+// So it never says the fever is over while the newest reading is a fever.
+//   logs       the logs of the episode (useRangeLogs)
+//   snoozedAt  when "Chưa" was last answered on this device, in ms; or null
+export function closeReminder(input: {
+  episode: EpisodeLike;
+  logs: LogLike[];
+  snoozedAt: number | null;
+  now: Date;
+}): CloseCase | null {
+  const { episode, logs, snoozedAt, now } = input;
+  if (episode.ended_at !== null) return null;
+  const { kind, latest, lastFever } = feverStatus(logs, episode, now);
+  let result: CloseCase;
+  let mark: number;
+  if (kind === "cleared" && lastFever) {
+    result = "no-fever";
+    mark = lastFever.at;
+  } else if ((kind === "fever" || kind === "stale") && latest) {
+    result = "unchecked";
+    mark = latest.at;
+  } else {
+    result = "quiet";
+    mark = Math.max(
+      Date.parse(episode.started_at),
+      symptomEntries(logs, episode, now).at(-1)?.at ?? -Infinity,
+      antipyreticTimes(logs, episode, now).at(-1) ?? -Infinity,
+    );
+  }
+  if (now.getTime() - mark < CLOSE_AFTER_MS) return null;
+  return resting(snoozedAt, now) ? null : result;
+}

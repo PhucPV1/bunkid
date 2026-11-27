@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { type HomeAlert, homeAlerts } from "./alerts";
 import type { LogLike } from "./describeLog";
-import { type EpisodeLike, inviteAlert, inviteStartedAt } from "./illness";
+import {
+  closeReminder,
+  type EpisodeLike,
+  inviteAlert,
+  inviteStartedAt,
+} from "./illness";
 
 // Vietnam time, written the way a parent reads the clock.
 const vn = (text: string) => new Date(`${text.replace(" ", "T")}:00+07:00`);
@@ -25,6 +30,15 @@ const at = (type: string, time: string, details: unknown): LogLike => ({
 });
 const temp = (time: string, celsius: number) =>
   at("temperature", time, { celsius, method: "nach" });
+const dose = (time: string, antipyretic = true) =>
+  at("medicine", time, {
+    name: antipyretic ? "Hapacol" : "Vitamin D",
+    amount: 2.5,
+    unit: "ml",
+    antipyretic,
+  });
+const symptom = (time: string, codes: string[]) =>
+  at("symptom", time, { codes });
 
 // Spec §4.2: the rules may not lean on the order of the array. Every order of
 // `logs` must give the same answer.
@@ -203,5 +217,98 @@ describe("inviteStartedAt", () => {
     );
     // A reading dated after now is not one of the last 48 hours.
     expect(startedAt([temp("2026-11-27 12:01", 38.6)])).toBe(NOW.toISOString());
+  });
+});
+
+// Spec §5.6: the reminder to close an open episode. The answer is which of
+// the three cases it is, or null.
+describe("closeReminder", () => {
+  const open = episode("2026-11-22 08:00");
+  const reminder = (
+    logs: LogLike[],
+    over: { episode?: EpisodeLike; snoozedAt?: number | null; now?: Date } = {},
+  ) =>
+    sameForEveryOrder(logs, (ordered) =>
+      closeReminder({
+        episode: over.episode ?? open,
+        logs: ordered,
+        snoozedAt: over.snoozedAt ?? null,
+        now: over.now ?? NOW,
+      }),
+    );
+
+  it("no-fever: 48 hours since the last reading from 38,0, with a lower one after it", () => {
+    const logs = [
+      temp("2026-11-24 09:00", 39.1),
+      temp("2026-11-25 12:00", 38),
+      temp("2026-11-26 08:00", 37.2),
+      // Fever medicine and symptoms do not move this mark.
+      dose("2026-11-27 07:00"),
+      symptom("2026-11-27 07:00", ["cough"]),
+    ];
+    expect(reminder(logs)).toBe("no-fever");
+    expect(reminder(logs, { now: vn("2026-11-27 11:59") })).toBeNull();
+  });
+
+  it("unchecked: 48 hours since the newest reading, which is still from 38,0", () => {
+    const logs = [
+      temp("2026-11-24 09:00", 37.5),
+      temp("2026-11-25 12:00", 38.4),
+      dose("2026-11-27 07:00"),
+    ];
+    expect(reminder(logs)).toBe("unchecked");
+    expect(reminder(logs, { now: vn("2026-11-27 11:59") })).toBeNull();
+    // It never says the fever is over while the newest reading is a fever.
+    expect(reminder(logs, { now: vn("2026-12-05 12:00") })).toBe("unchecked");
+  });
+
+  it("quiet: no fever on record, and 48 hours since the start, the last symptom and the last fever medicine", () => {
+    // Nothing logged at all: the start is the mark.
+    expect(reminder([], { episode: episode("2026-11-25 12:00") })).toBe(
+      "quiet",
+    );
+    expect(reminder([], { episode: episode("2026-11-25 12:01") })).toBeNull();
+    // Readings under 38,0 do not move the mark.
+    const cool = [temp("2026-11-27 11:00", 37.1)];
+    expect(reminder(cool)).toBe("quiet");
+    expect(reminder([...cool, symptom("2026-11-25 12:00", ["cough"])])).toBe(
+      "quiet",
+    );
+    expect(
+      reminder([...cool, symptom("2026-11-25 12:01", ["cough"])]),
+    ).toBeNull();
+    expect(reminder([...cool, dose("2026-11-25 12:00")])).toBe("quiet");
+    expect(reminder([...cool, dose("2026-11-25 12:01")])).toBeNull();
+    // Medicine that is not for fever does not count.
+    expect(reminder([...cool, dose("2026-11-27 09:00", false)])).toBe("quiet");
+  });
+
+  it("only looks at logs of the episode", () => {
+    // A fever and a symptom from before the episode began.
+    expect(
+      reminder([
+        temp("2026-11-21 09:00", 39),
+        symptom("2026-11-21 09:00", ["cough"]),
+        temp("2026-11-23 09:00", 37),
+      ]),
+    ).toBe("quiet");
+  });
+
+  it("stays away for 24 hours after Chưa on this device", () => {
+    const logs = [temp("2026-11-24 09:00", 39.1), temp("2026-11-25 08:00", 37)];
+    const ago = (ms: number) => NOW.getTime() - ms;
+    expect(reminder(logs, { snoozedAt: ago(0) })).toBeNull();
+    expect(reminder(logs, { snoozedAt: ago(24 * HOUR - 1) })).toBeNull();
+    expect(reminder(logs, { snoozedAt: ago(24 * HOUR) })).toBe("no-fever");
+    expect(reminder(logs, { snoozedAt: ago(-900) })).toBeNull();
+    expect(reminder(logs, { snoozedAt: ago(-24 * HOUR) })).toBe("no-fever");
+  });
+
+  it("never shows for a closed episode", () => {
+    expect(
+      reminder([], {
+        episode: episode("2026-11-20 08:00", "2026-11-22 08:00"),
+      }),
+    ).toBeNull();
   });
 });
