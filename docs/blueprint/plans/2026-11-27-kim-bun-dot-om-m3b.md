@@ -129,7 +129,7 @@ Plan này đứng ngay sau M3a và là plan cuối của mốc M3. M4 (so sánh 
   - `CloseReminder(props: { view: CloseReminderView; busy: boolean; onClose: () => void; onSnooze: () => void })`
   - `TONE_CIRCLE: Record<EpisodeTone, string>` (`components/illness/EpisodeVerdict.tsx`)
 
-- [ ] **Step 0: Kiểm M3a đã xong, rồi tạo nhánh**
+- [x] **Step 0: Kiểm M3a đã xong, rồi tạo nhánh**
 
 ```bash
 git checkout main && git pull --ff-only
@@ -140,7 +140,7 @@ bunx vitest run
 
 Expected: dòng `M3a có trên main`; `Test Files  203 passed (203)`, `Tests  1911 passed (1911)`. Không thấy dòng đó thì dừng: M3a chưa lên `main`. Số test khác đi vì `main` có commit mới thì vẫn làm tiếp, và ghi lại số xuất phát thật.
 
-- [ ] **Step 1: Viết test đỏ (Patch 1)**
+- [x] **Step 1: Viết test đỏ (Patch 1)**
 
 Hai thẻ không có hook, nên test vẽ chúng bằng `renderToStaticMarkup` và bấm nút bằng `findElements`, như `components/illness/episodecards.test.tsx`.
 
@@ -291,12 +291,12 @@ index 0000000..233b50c
 +});
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run`
 Expected: `Test Files  1 failed | 203 passed (204)`, `Tests  1911 passed (1911)`. File test mới không nạp được (chưa có `EpisodeHomeCards.tsx`), nên số test không đổi.
 
-- [ ] **Step 3: Viết hai thẻ (Patch 2)**
+- [x] **Step 3: Viết hai thẻ (Patch 2)**
 
 ```diff
 diff --git a/components/home/EpisodeHomeCards.tsx b/components/home/EpisodeHomeCards.tsx
@@ -432,12 +432,12 @@ index d0b7437..d26cdee 100644
            <Icon name={verdict.icon} size={22} />
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run && bun run typecheck`
 Expected: `Test Files  204 passed (204)`, `Tests  1919 passed (1919)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add components/home/EpisodeHomeCards.tsx components/home/episodehome.test.tsx components/illness/EpisodeVerdict.tsx
@@ -456,7 +456,7 @@ git commit -m "feat(illness): the episode card and the reminder for Hôm nay" -m
 - Consumes: `type HomeAlert` (`lib/rules/alerts.ts`); khóa banner do `inviteAlert` trả về (M3a).
 - Produces: `type BannerInvite = { alertKey: string; busy: boolean; onStart: () => void; onDismiss: () => void }`; `AlertBanners(props: { alerts: HomeAlert[]; invite?: BannerInvite | null })`. Không có `invite` thì banner vẽ ra đúng như trước.
 
-- [ ] **Step 1: Viết test đỏ (Patch 3)**
+- [x] **Step 1: Viết test đỏ (Patch 3)**
 
 ```diff
 diff --git a/components/home/alerts.test.tsx b/components/home/alerts.test.tsx
@@ -584,12 +584,12 @@ index e932277..27753ee 100644
      const html = renderToStaticMarkup(<SyncBarView count={3} dropped={null} />);
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run`
 Expected: `Test Files  1 failed | 203 passed (204)`, `Tests  3 failed | 1920 passed (1923)`. Ba test đỏ trong `alerts.test.tsx`; test "không có lời mời thì banner như cũ" xanh ngay (prop `invite` chưa được đọc). Ở bước này `tsc` báo lỗi vì `AlertBanners` chưa nhận `invite`: bình thường, Step 4 hết.
 
-- [ ] **Step 3: Thêm lời mời vào banner (Patch 4)**
+- [x] **Step 3: Thêm lời mời vào banner (Patch 4)**
 
 ```diff
 diff --git a/components/home/AlertBanners.tsx b/components/home/AlertBanners.tsx
@@ -673,12 +673,12 @@ index b7c4670..cac328d 100644
        )}
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run && bun run typecheck`
 Expected: `Test Files  204 passed (204)`, `Tests  1923 passed (1923)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add components/home/AlertBanners.tsx components/home/alerts.test.tsx
@@ -698,7 +698,7 @@ git commit -m "feat(illness): the invite to start an episode in the fever banner
 - Consumes: `useEpisodes`, `useEpisodeActions` (`lib/data/illness.ts`, M2a); `useRangeLogs` (`lib/data/logs.ts`, M2e); `planClose` (M2e); `inviteAlert`, `inviteStartedAt`, `closeReminder`, `planStart(episodes, now, startedAt)`, `homeEpisodeCard`, `closeReminderView`, `inviteDismissKey`, `closeSnoozeKey`, `useStoredTime` (M3a); `EpisodeCard`, `CloseReminder` (Task 1); `AlertBanners` có `invite` (Task 2); `useToast`, `toVietnameseError`, `useQuickActions().openInstant`.
 - Produces: `useHomeIllness(input: { baby: Baby; userId: string; logs: LogLike[]; alerts: HomeAlert[]; now: Date }): HomeIllness`, với `type HomeIllness = { invite: BannerInvite | null; card: HomeEpisodeView | null; reminder: { view: CloseReminderView; busy: boolean; onClose: () => void; onSnooze: () => void } | null }`. `HomeScreen` vẽ lời mời trong banner, thẻ đợt ốm và thẻ nhắc đóng ngay dưới `AlertBanners` và `LongTimerBanner`, trên `HeroCardView`.
 
-- [ ] **Step 1: Viết test đỏ (Patch 5)**
+- [x] **Step 1: Viết test đỏ (Patch 5)**
 
 Test giả lập `useEpisodes`, `useEpisodeActions`, `useRangeLogs`, `useStoredTime` và `useToast`, rồi bọc `AlertBanners` và hai thẻ để giữ lại các hàm bấm mà `HomeScreen` trao cho chúng (cùng cách test sẵn có làm với `QuickLogGrid`). `useStoredTime` giả trả ngay giờ đã lưu, như sau khi trang đã đọc xong `localStorage`.
 
@@ -989,12 +989,12 @@ index ed0213d..41ad578 100644
 +});
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run`
 Expected: `Test Files  1 failed | 203 passed (204)`, `Tests  7 failed | 1924 passed (1931)`. Bảy test đỏ trong `homescreen.test.tsx`; test "Chưa thì không nhắc trong một ngày" xanh ngay (nó chỉ khẳng định thẻ nhắc không hiện). Các test cũ của Hôm nay vẫn xanh: khi danh sách đợt ốm chưa có (`data: undefined`) trang như trước.
 
-- [ ] **Step 3: Viết hook và nối vào Hôm nay (Patch 6)**
+- [x] **Step 3: Viết hook và nối vào Hôm nay (Patch 6)**
 
 ```diff
 diff --git a/components/home/HomeScreen.tsx b/components/home/HomeScreen.tsx
@@ -1211,12 +1211,12 @@ index 0000000..fb580f4
 +}
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run && bun run typecheck`
 Expected: `Test Files  204 passed (204)`, `Tests  1931 passed (1931)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add components/home/useHomeIllness.ts components/home/HomeScreen.tsx components/home/homescreen.test.tsx
@@ -1235,17 +1235,17 @@ git commit -m "feat(illness): the illness episode on Hôm nay" -m "Co-Authored-B
 - Consumes: mọi thứ của các task trước trong plan này.
 - Produces: kết quả kiểm, ghi ngay trong plan; phần M3 của Bước 38; ba chỗ đọc spec của M3 ghi vào spec (§7.1, §7.2, §7.3); `main` có M3b, tức mốc M3 của spec xong.
 
-- [ ] **Step 1: Chạy cả bộ kiểm**
+- [x] **Step 1: Chạy cả bộ kiểm**
 
 Run: `bun run typecheck && bunx vitest run`
 Expected: `tsc --noEmit` không báo lỗi; `Test Files  204 passed (204)`, `Tests  1931 passed (1931)`.
 
-- [ ] **Step 2: Build**
+- [x] **Step 2: Build**
 
 Run: `bun run build`
 Expected: lần đầu có thể dừng với thông báo bảo mật của Next.js 16.4.3 (bình thường; không chạy `next upgrade`). Chạy lại đúng lệnh đó: `✓ Generating static pages (42/42)` và thoát mã 0.
 
-- [ ] **Step 3: Tạo trang fixture tạm**
+- [x] **Step 3: Tạo trang fixture tạm**
 
 Dữ liệu thật không có đợt ốm và không được tạo đợt, ghi lần đo sốt hay bấm lời mời trên dữ liệu thật, nên ba khối mới chỉ thấy đủ ở đây. Trang dùng `AlertBanners`, `EpisodeCard`, `CloseReminder` (không hook) với dữ liệu giả, không đọc hay ghi dữ liệu của gia đình, vẽ được khi chưa đăng nhập. Tạo `app/fixture-illness/page.tsx` (không commit):
 
@@ -1378,7 +1378,7 @@ export default function Page() {
 Run: `bun run typecheck`
 Expected: `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 4: Kiểm trong trình duyệt (chỉ xem)**
+- [x] **Step 4: Kiểm trong trình duyệt (chỉ xem)**
 
 Chạy `bun run dev` (lần đầu có thể dừng vì thông báo bảo mật: chạy lại). Mở `http://localhost:3000/fixture-illness` trong khung Browser của app, cỡ 375×812 (xem mục "Trình duyệt" ở Ghi chú khi thực thi). Xóa phần tử `nextjs-portal` trong trang trước khi chụp.
 
@@ -1429,7 +1429,20 @@ Trang thật (dữ liệu thật của gia đình: **chỉ xem**; cần đăng n
 
 Dừng `bun run dev` khi xong. Ghi kết quả từng mục ngay dưới bước này, kèm số đo; mục nào thấy trên trang thật, mục nào chỉ thấy trên trang tạm. Mục nào không cho thấy được thì ghi "chưa kiểm". Nếu bước này lộ ra lỗi và code phải đổi: sửa (test trước, code sau), rồi chạy lại Step 1 và Step 2 trước khi đi tiếp.
 
-- [ ] **Step 5: Xóa trang fixture**
+**Kết quả (2026-11-27, phiên thực thi M3b):** khung Browser trong app; đo bằng đoạn JS trên, thêm một phép dò chữ bị clip (`scrollWidth`/`scrollHeight` vượt khung có `overflow` khác `visible`) và chữ đè nhau (giao nhau giữa các hộp chữ trong mỗi banner và thẻ). Theme đổi bằng `dataset.theme` trong trang, giữ bằng `MutationObserver`, ngắt khi xong; không lưu, không đụng Cài đặt.
+
+- Mục 1–3 (chỉ trang tạm): đúng như mô tả ở cả bốn theme. Banner đỏ: "Gọi 115" nền sáng, nổi nhất; "Bắt đầu đợt ốm", "Không" chỉ có viền. Hai thẻ "hết sốt" xuống dòng sau "·": "Hết sốt 23 giờ ·" / "37,4°C lúc 25/11 23:59"; không thẻ nào tách "25/11" khỏi "23:59". Thẻ "chưa tải" không có dòng phụ.
+- Mục 4, 375 px (`innerWidth` 375): khớp từng số của plan ở cả `rose`, `light`, `dark`, `night`: banner 343×246, 343×244, 343×220, câu hỏi 2 dòng, nút 144×44 và 80×44; thẻ đợt ốm 343×136 (đường dẫn 309×44) và 343×150 cho hai thẻ "hết sốt" (309×58); thẻ nhắc 343×168 (tiêu đề 1 dòng, dòng phụ 3 dòng) và 343×190 cho `quiet` (tiêu đề 2 dòng), nút 151×44; `scrollWidth <= innerWidth` là `true`; 0 phần tử `ellipsis`; 0 chữ bị clip; 0 chữ đè nhau.
+- Thêm 390 px (cả bốn theme, số như nhau): banner 358×222, 358×244, 358×220; thẻ đợt ốm 358×136, chỉ "Hết sốt chưa đầy 1 giờ · 37,4°C lúc 09:50" còn 2 dòng (358×150); thẻ nhắc 358×168 / 358×190, dòng phụ vẫn 3 dòng, nút 158×44; không tràn, 0 `ellipsis`, 0 clip, 0 đè.
+- Thêm 440 px (cả bốn theme, số như nhau): banner 408×222, 408×220, 408×220; mọi thẻ đợt ốm 1 dòng phụ (408×136); thẻ nhắc 408×150 / 408×172, dòng phụ 2 dòng, tiêu đề `quiet` vẫn 2 dòng, nút 183×44; không tràn, 0 `ellipsis`, 0 clip, 0 đè.
+- Thẻ nhắc đóng nhìn bằng mắt ở 375 px: dòng phụ 3 dòng đọc gọn, dòng cuối ngắn ("này nữa."), không chữ nào bị cắt "…" hay đè lên nút; hai nút ngang nhau. Không phải bug, không sửa.
+- Mục 5: ở `night`, ba thẻ nhắc khác nhau nhờ icon (dấu tích, đồng hồ, nhiệt kế); hai nút của lời mời đọc rõ trên banner vàng và đỏ. `dark`, `light`, `rose` cũng đọc rõ.
+- Mục 6 (trang thật `/`, đã đăng nhập sẵn, chỉ xem, không bấm gì): trang Hôm nay mở như trước, không thẻ lỗi. Lúc kiểm không có banner nào (không có lần đo sốt) nên không có lời mời; gia đình không có đợt ốm đang mở nên không có thẻ đợt ốm hay thẻ nhắc. Resource Timing: `illness_episodes` 200 (cùng `logs`, `babies`, `family_members`, `emergency_contacts`, `claim_membership` đều 200). Console (`onlyErrors`): không lỗi; log server: không lỗi. `scrollWidth <= innerWidth` là `true` ở 375, 390, 440 × bốn theme; 8 phần tử `truncate` có sẵn (header, hàng dòng thời gian), không phần tử nào đang bị cắt.
+- Mục 7: chưa kiểm (gia đình không có đợt ốm đang mở; không được tạo).
+- Lời mời và thẻ nhắc trên trang thật: chưa kiểm (không có lần đo sốt, không có đợt mở); để Bước 38 mục 16–21.
+- Ảnh: thư mục ghi chú của nhóm phiên (`m3b-*.jpg`), không nằm trong repo.
+
+- [x] **Step 5: Xóa trang fixture**
 
 ```bash
 rm -r app/fixture-illness
@@ -1439,7 +1452,7 @@ git status --short  # không còn app/fixture-illness
 
 Expected: `tsc --noEmit` không báo lỗi. Nếu nó đỏ với lỗi trong `.next/…/types/validator.ts`: chạy `rm -rf .next/dev/types .next/types` rồi chạy lại, phải sạch.
 
-- [ ] **Step 6: Phần M3 của Bước 38 (Patch 7) và ba chỗ đọc spec (Patch 8), commit**
+- [x] **Step 6: Phần M3 của Bước 38 (Patch 7) và ba chỗ đọc spec (Patch 8), commit**
 
 ```diff
 diff --git a/docs/device-checklist.md b/docs/device-checklist.md
@@ -1509,7 +1522,7 @@ git add docs/device-checklist.md docs/blueprint/specs/2026-11-26-kim-bun-dot-om-
 git commit -m "docs: the M3 part of step 38, and three readings of M3 in the spec" -m "Co-Authored-By: Claude Fable 5.2 <noreply@anthropic.com>"
 ```
 
-- [ ] **Step 7: Ghi kết quả vào plan, commit**
+- [x] **Step 7: Ghi kết quả vào plan, commit**
 
 Ghi ngay dưới bước này: số đo đỏ và xanh của từng task có khớp plan không; kết quả Step 1, Step 2 và Step 4. Mục nào không cho thấy được thì ghi "chưa kiểm". Đánh dấu `[x]` các bước đã làm.
 
@@ -1519,7 +1532,21 @@ git add docs/blueprint/plans/2026-11-27-kim-bun-dot-om-m3b.md
 git commit -m "docs(plan): the M3b plan and its check results" -m "Co-Authored-By: Claude Fable 5.2 <noreply@anthropic.com>"
 ```
 
-- [ ] **Step 8: Đưa lên `main`**
+**Kết quả (2026-11-27):**
+
+- Step 0: `M3a có trên main`; nền `Test Files  203 passed (203)`, `Tests  1911 passed (1911)`, đúng plan.
+- Task 1: đỏ `Test Files  1 failed | 203 passed (204)`, `Tests  1911 passed (1911)`; xanh `204 passed (204)`, `1919 passed (1919)`; `tsc` sạch. Khớp plan.
+- Task 2: đỏ `Test Files  1 failed | 203 passed (204)`, `Tests  3 failed | 1920 passed (1923)`; xanh 204 / 1923; `tsc` sạch. Khớp plan.
+- Task 3: đỏ `Test Files  1 failed | 203 passed (204)`, `Tests  7 failed | 1924 passed (1931)`; xanh 204 / 1931; `tsc` sạch. Khớp plan.
+- Task 4 Step 1: `tsc --noEmit` thoát 0; `Test Files  204 passed (204)`, `Tests  1931 passed (1931)`.
+- Task 4 Step 2: `bun run build` lần 1 thoát 1 (thông báo bảo mật của Next.js 16.4.3, không chạy `next upgrade`), lần 2 thoát 0, `✓ Generating static pages … (42/42)`.
+- Task 4 Step 3: trang fixture chép nguyên từ plan, `tsc` sạch.
+- Task 4 Step 4: xem kết quả ngay dưới bước đó. Không lộ lỗi; không có bản sửa nào.
+- Task 4 Step 5: đã xóa `app/fixture-illness`; `tsc` đỏ giả một lần (`.next/dev/types/validator.ts` còn trỏ tới trang tạm), xóa `.next/dev/types` và `.next/types` thì sạch. Sau Patch 7–8: vitest vẫn 204 / 1931.
+- Task 4 Step 6: Patch 7 và Patch 8 áp sạch.
+- Không lỗi nào lộ ra, không đổi code ngoài plan, không đổi spec ngoài Patch 8.
+
+- [x] **Step 8: Đưa lên `main`**
 
 Chỉ khi mọi bước trên đều đạt và không còn lỗi đã biết (lỗi tìm thấy khi kiểm phải được sửa, có test, và ghi vào plan trước; sửa xong thì chạy lại Step 1 và Step 2). Không hỏi lại người dùng: xem mục "Lên `main` không cần hỏi" ở Ghi chú khi thực thi.
 
