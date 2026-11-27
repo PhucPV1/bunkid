@@ -1,11 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useQuickActions } from "@/components/actions/QuickActions";
-import { Button } from "@/components/ui/Button";
+import { Button, buttonClass } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorCard } from "@/components/ui/ErrorCard";
+import { Icon } from "@/components/ui/Icon";
 import { IconButton } from "@/components/ui/IconButton";
 import { NeedsNetwork, waitingForNetwork } from "@/components/ui/NeedsNetwork";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -72,11 +74,22 @@ export function EpisodeBody({
       <FeverChartCard chart={feverChartModel(logs, episode, now)} />
       <EpisodeDayList rows={dayRows(logs, episode, now)} />
       <EpisodeUsual view={usualView(logs, episode, now)} />
-      {episode.ended_at === null && (
-        <Button variant="secondary" block busy={closing} onClick={onClose}>
-          Bé đã khỏi
-        </Button>
-      )}
+      {/* Spec §6.3 item 7: the report of this episode (§9), then, while it
+          is open, "Bé đã khỏi". */}
+      <div className="flex flex-col gap-2.5">
+        <Link
+          href={`/bao-cao?dot=${episode.id}`}
+          className={buttonClass({ block: true })}
+        >
+          <Icon name="doc" size={20} />
+          Báo cáo cho bác sĩ
+        </Link>
+        {episode.ended_at === null && (
+          <Button variant="secondary" block busy={closing} onClick={onClose}>
+            Bé đã khỏi
+          </Button>
+        )}
+      </div>
     </>
   );
 }

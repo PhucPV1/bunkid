@@ -171,7 +171,7 @@ describe("EpisodeScreen", () => {
     expect(useLogsRealtime).toHaveBeenCalledWith("b1");
   });
 
-  it("an open episode: verdict, chart, days, the comparison, then Bé đã khỏi", () => {
+  it("an open episode: verdict, chart, days, the comparison, the report, then Bé đã khỏi", () => {
     const html = render();
     expect(html).toContain(">Bun đã hết sốt 19 giờ</h2>");
     expect(html).toContain(">Ngày thứ 3 · bắt đầu 24/11 lúc 23:30</span>");
@@ -193,13 +193,13 @@ describe("EpisodeScreen", () => {
       ">Nhiệt độ và thuốc hạ sốt</h2>",
       ">Từng ngày</h2>",
       ">So với thường ngày</h2>",
+      "Báo cáo cho bác sĩ</a>",
       ">Bé đã khỏi</button>",
     ].map((mark) => html.indexOf(mark));
     expect(order).toEqual([...order].sort((a, b) => a - b));
     expect(order[0]).toBeGreaterThan(-1);
-    // Not in this milestone: the report, the visits.
-    for (const text of ["Báo cáo cho bác sĩ", "Lần khám"])
-      expect(html).not.toContain(text);
+    // Not in this milestone: the visits.
+    expect(html).not.toContain("Lần khám");
   });
 
   // The page's clock moves once a minute; a log saved since its last tick is
@@ -239,6 +239,9 @@ describe("EpisodeScreen", () => {
     expect(html).toContain(">10/10 – 12/10</span>");
     expect(html).toContain(">Chưa có lần đo nào trong đợt này.</p>");
     expect(html).toContain(">So với thường ngày</h2>");
+    expect(html).toMatch(
+      /<a[^>]*href="\/bao-cao\?dot=past"[^>]*>.*Báo cáo cho bác sĩ<\/a>/,
+    );
     expect(html).not.toContain("Bé đã khỏi");
     expect(html).not.toContain(">Triệu chứng</button>");
     expect(useRangeLogs).toHaveBeenCalledWith(
@@ -314,6 +317,18 @@ describe("EpisodeBody", () => {
     expect(onClose).toHaveBeenCalledOnce();
     expect(renderToStaticMarkup(body(true))).toMatch(
       /aria-busy="true"[^>]*>Bé đã khỏi</,
+    );
+  });
+
+  // Spec §6.3 item 7 and §9 (board "Đợt ốm · A"): a full-width link styled
+  // as the main button, with the document icon, above "Bé đã khỏi".
+  it("Báo cáo cho bác sĩ opens the report on this episode", () => {
+    const html = renderToStaticMarkup(body(false));
+    expect(html).toMatch(
+      /<a class="[^"]*bg-accent[^"]*min-h-\[50px\][^"]*w-full[^"]*" href="\/bao-cao\?dot=open">/,
+    );
+    expect(html).toMatch(
+      new RegExp(`d="${ICON_PATHS.doc}".*Báo cáo cho bác sĩ</a>`),
     );
   });
 
