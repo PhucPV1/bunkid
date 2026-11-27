@@ -168,6 +168,7 @@ create table public.illness_episodes (
 - Outbox: `OutboxEntry["table"]` thêm `"illness_episodes"`, các thao tác `insert`, `update`, `delete` theo `rowId`. Thêm `enqueueEpisodeChange`, `withPendingEpisodes`, `episodesKey(babyId)` theo mẫu của `growth`.
 - `DROP_CODES` thêm `"23P01": "Trùng thời gian với một đợt ốm khác"`.
 - `lib/data/illness.ts`: `useEpisodes(babyId)` đọc mọi đợt của bé, xếp `started_at` giảm dần, `staleTime` 60 giây, `refetchInterval` 60 giây; `useEpisodeActions(babyId, userId)` có `start`, `update`, `remove`.
+- Sau mỗi lần outbox gửi xong mà có ít nhất một thay đổi được gửi đi hoặc bị bỏ, danh sách đợt ốm được tải lại cùng `logs`, `growth` và các danh sách khác: khóa `["illness-episodes"]` nằm trong hằng `REFRESH_AFTER_FLUSH` (`lib/data/outbox.ts`) mà `OutboxSync` làm mới. Nhờ vậy một đợt bị server từ chối (trùng thời gian) biến khỏi màn hình ngay, không chờ lần tải lại sau 60 giây. (Khác bản đã duyệt ngày 2026-11-26, vốn không nhắc tới chỗ này. Thêm ở M2a ngày 2026-11-27 theo lời duyệt trước của người dùng; ghi vào spec ở M2f.)
 - Bản ghi của một khoảng: thêm vào `lib/data/logs.ts` hàm `fetchLogsBetween(babyId, from, to)` và hook `useRangeLogs(babyId, from, to)`, khóa `[...logsKey(babyId), "range", from, to ?? "open"]`. Lọc `started_at >= from`, và `started_at < to` khi `to` khác `null`; xếp `started_at` tăng dần rồi `id`; đọc từng trang 1000 hàng cho tới khi một trang về thiếu (như `usePhotos`), vì server trả tối đa 1000 hàng mỗi lần. Phủ thay đổi đang chờ bằng `withPending` với cùng điều kiện khoảng. Mọi chỗ trong spec này cần bản ghi của đợt ốm đều dùng hook này, không dùng `useStatsLogs`.
 - Thứ tự tăng dần ở trên chỉ để việc đọc từng trang ổn định. Lớp phủ đang chờ và ghi lạc quan (`applyLogChange`) xếp lại mảng theo chiều giảm dần, nên dữ liệu của hook không có thứ tự bảo đảm: mọi hàm trong `lib/rules/illness.ts` tự tìm "mới nhất", "cuối cùng", "sớm nhất" theo `started_at`, không dựa vào vị trí trong mảng.
 - `useRangeLogs` nhận thêm `enabled`: Hôm nay khi không có đợt mở và Báo cáo ở kỳ 7, 14 ngày không tải gì.
@@ -175,6 +176,8 @@ create table public.illness_episodes (
 ### 4.3 Bản ghi thuộc về đợt ốm
 
 Một bản ghi thuộc đợt ốm khi `started_at` của nó ≥ `started_at` của đợt và ≤ `ended_at` của đợt (đợt đang mở: ≤ lúc này). Không có khóa ngoại nào từ `logs` sang đợt ốm. Sửa giờ của đợt là đổi luôn tập bản ghi của nó.
+
+Với đợt đang mở, "≤ lúc này" được nới thêm 2 phút (`OPEN_SLACK_MS` trong `lib/rules/illness.ts`): bản ghi thuộc đợt khi `started_at` của nó ≤ lúc này cộng 2 phút. Đồng hồ của màn hình (`useNow`) chỉ nhích mỗi phút, nên một lần đo vừa lưu mang giờ mới hơn đồng hồ đó; so sát chữ thì thẻ không đổi cho tới phút sau. App cũng cho một bản ghi mang giờ đi trước giờ thật tối đa 1 phút. Không bản ghi nào mang giờ xa hơn thế, nên nới 2 phút không nhận nhầm bản ghi nào. Đợt đã đóng vẫn dừng đúng ở `ended_at`. (Khác bản đã duyệt ngày 2026-11-26, vốn ghi "≤ lúc này" không nới. Đổi ở M2b ngày 2026-11-27 theo lời duyệt trước của người dùng; ghi vào spec ở M2f.)
 
 ## 5. Đợt ốm: luật
 
@@ -197,6 +200,7 @@ Tất cả là hàm thuần trong `lib/rules/illness.ts`.
 | `cleared`    | lần đo mới nhất < 38,0 và trong đợt có lần đo ≥ 38,0 trước đó | {tên} đã hết sốt {khoảng} | `good`                              | `check`  |
 | `none`       | mọi lần đo < 38,0                                             | {tên} không sốt           | `good`                              | `check`  |
 
+- {x} và mọi nhiệt độ khác trên các màn Đợt ốm (thẻ kết luận, danh sách từng ngày, nhãn giá trị và `aria-label` của biểu đồ) viết bằng `formatCelsius` (`lib/rules/illness.ts`): dấu phẩy, tối đa 1 chữ số lẻ, không thêm số 0 ở cuối, như trang Báo cáo. 38,0 viết "38"; 38,6 viết "38,6". (Khác bản đã duyệt ngày 2026-11-26, vốn chỉ ghi "tối đa 1 chữ số lẻ" ở mục 2 và không nói số tròn viết thế nào. Code làm vậy từ M2b ngày 2026-11-27; ghi vào spec ở M2f.)
 - {khoảng} tính từ lần đo ≥ 38,0 cuối cùng tới lúc này: dưới 1 giờ là "chưa đầy 1 giờ"; từ 1 tới dưới 48 giờ là "{h} giờ" (làm tròn xuống); từ 48 giờ là "{d} ngày" (làm tròn xuống).
 - Đợt đã đóng: tiêu đề luôn là "Đã khỏi sau {n} ngày", tông `good`, icon `check`.
 - 6 giờ là cùng cửa sổ với banner sốt của `temperatureAlert`.
@@ -257,7 +261,7 @@ Nhắc khi lúc này − mốc cuối ≥ 48 giờ và trên máy này lời nh�
 
 ### 6.2 Danh sách (bảng "Danh sách đợt ốm")
 
-- Mục "Đang diễn ra": có đợt mở thì là một thẻ dẫn tới trang chi tiết, tiêu đề "Từ {dd/mm} · ngày thứ {n}", bên phải là chip theo §5.2 (`fever`: "Đang sốt"; `stale`: "Chưa đo lại"; `cleared`: "Hết sốt"; `none`: "Không sốt"; `unmeasured`: không chip). Không có đợt mở thì là nút "Bắt đầu đợt ốm": tạo đợt với `started_at` = lúc này rồi mở trang chi tiết.
+- Mục "Đang diễn ra": có đợt mở thì là một thẻ dẫn tới trang chi tiết, tiêu đề "Từ {dd/mm} · ngày thứ {n}", dưới tiêu đề là chip theo §5.2 (`fever`: "Đang sốt"; `stale`: "Chưa đo lại"; `cleared`: "Hết sốt"; `none`: "Không sốt"; `unmeasured`: không chip), bên phải thẻ luôn có mũi tên. (Khác bản đã duyệt ngày 2026-11-26, vốn ghi chip ở bên phải tiêu đề. Đổi ở M2f ngày 2026-11-27 theo lời duyệt trước của người dùng: ở 375 px thẻ còn 247 px cho tiêu đề và chip, tiêu đề rộng 160–169 px và chip rộng 66–91 px, nên đặt cạnh nhau thì tiêu đề bị đẩy xuống hai dòng; đặt chip dưới tiêu đề thì mọi trạng thái đều một dòng.) Không có đợt mở thì là nút "Bắt đầu đợt ốm": tạo đợt với `started_at` = lúc này rồi mở trang chi tiết.
 - Mục "Đã qua": mỗi đợt một hàng, mới nhất trước, "{dd/mm} – {dd/mm} · {n} ngày". Ngày thuộc năm khác năm hiện tại viết `dd/mm/yyyy`. Không có đợt nào đã đóng thì ẩn mục.
 - Chưa có đợt nào: `EmptyState` "Chưa có đợt ốm nào" với dòng "Khi bé ốm, mở một đợt để gom nhiệt độ, thuốc và triệu chứng vào một chỗ."
 - Thẻ đợt đang mở cần bản ghi của đợt: `useRangeLogs(babyId, started_at, null)`.
@@ -306,6 +310,13 @@ Hàm thuần `feverChartModel` trong `lib/rules/illness.ts` trả về điểm, 
 - Chú thích: "Nhiệt độ", "Liều hạ sốt", "Từ 38°C là sốt".
 - Không có lần đo: thẻ chỉ ghi "Chưa có lần đo nào trong đợt này."
 - `role="img"` với `aria-label` nêu số lần đo, giá trị cao nhất và số liều.
+
+Ba chỗ dưới đây khác bản đã duyệt ngày 2026-11-26, vốn không nói chỗ đặt nhãn, chỗ của chữ "Sốt" và câu của `aria-label`. Chọn ở M2c ngày 2026-11-27 theo lời duyệt trước của người dùng (cách đặt nhãn của chấm mới nhất sửa sau bước kiểm trình duyệt của M2c); ghi vào spec ở M2f.
+
+- Nhãn giá trị không kèm "°C" (đơn vị đã ghi ở trục) và có một viền màu nền thẻ, để đọc được khi đường nối chạy qua. Hai lần đo cao nhất bằng nhau: nhãn thuộc lần sau. Nhãn của chấm cao nhất luôn nằm trên chấm (khi chấm đó cũng là chấm mới nhất thì theo mục dưới). Chấm cách mép trái hoặc mép phải dưới 10% bề ngang thì nhãn neo đầu hoặc cuối chữ vào chấm, để không tràn khỏi vùng vẽ.
+- Nhãn của chấm mới nhất lấy chỗ đầu tiên không che một chấm khác và không chạm nhãn của chấm cao nhất, theo thứ tự: trên chấm; bên phải chấm (khi chấm chưa quá 85% bề ngang); dưới chấm (khi chấm cao hơn 20% bề cao); bên trái chấm (khi chấm đã quá 85% bề ngang). Không chỗ nào trống (mấy lần đo cuối chỉ cách nhau vài pixel) thì lấy chỗ che các chấm khác ít nhất, và không bao giờ lấy chỗ chạm nhãn của chấm cao nhất khi còn chỗ khác.
+- Chữ "Sốt" nằm ở góc trên phải của vùng tô; một chấm hay một nhãn chạm tới chỗ đó thì chữ sang góc trên trái, rồi tới giữa; cả ba chỗ đều vướng thì ở lại bên phải.
+- `aria-label`: "Biểu đồ nhiệt độ: {n} lần đo, cao nhất {x}°C, {m} liều hạ sốt." Đợt dài hơn 7 ngày: "Biểu đồ nhiệt độ, 7 ngày gần nhất: …", và ba con số chỉ tính 7 ngày được vẽ.
 
 ## 7. Tab Hôm nay
 

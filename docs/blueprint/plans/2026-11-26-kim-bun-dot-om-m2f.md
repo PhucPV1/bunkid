@@ -4,7 +4,7 @@ Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Spec:** `docs/blueprint/specs/2026-11-26-kim-bun-dot-om-design.md` (§6.1 trừ `nav` và service worker; §6.2; §6.3 mục 1, mục 7 và các trạng thái của trang; phần "Màn hình" của §10.1; §10.3)
 
-**Status:** approved 2026-11-27 (theo lời duyệt trước của người dùng ngày 2026-11-26)
+**Status:** approved 2026-11-27 (theo lời duyệt trước của người dùng ngày 2026-11-26); đã thi công 2026-11-27, kết quả ở Task 3
 
 **Goal:** Có hai trang của Đợt ốm: danh sách các đợt (bắt đầu một đợt bằng tay) và trang của một đợt (xem, sửa, đóng, mở lại, xóa). Sau plan này chúng mở được bằng địa chỉ; M2g thêm lối vào từ tab Sức khỏe.
 
@@ -140,7 +140,7 @@ Plan này đứng sau M2e. M2g thêm lối vào. M3 thêm thẻ đợt ốm, l�
   - `EpisodeDetailPage()`: đọc `id` từ địa chỉ, bọc trong `Suspense`, rồi `AuthGate`.
   - Trang tĩnh `/dot-om/chi-tiet`.
 
-- [ ] **Step 0: Kiểm M2e đã xong, rồi tạo nhánh**
+- [x] **Step 0: Kiểm M2e đã xong, rồi tạo nhánh**
 
 ```bash
 git checkout main && git pull --ff-only
@@ -153,7 +153,7 @@ Expected: dòng `M2e có trên main`; `Test Files  198 passed (198)`, `Tests  18
 
 Mở plan M2a, Task 4 Step 4: phải có ghi giờ migration `20261126000200_illness_episodes.sql` được áp lên Supabase thật. Chưa có thì dừng và báo: plan này đưa ra các trang đọc và ghi bảng đó.
 
-- [ ] **Step 1: Viết test đỏ (Patch 1)**
+- [x] **Step 1: Viết test đỏ (Patch 1)**
 
 Trước khi viết code, đọc `node_modules/next/dist/docs/01-app/03-api-reference/04-functions/use-search-params.md` (AGENTS.md): một trang tĩnh gọi `useSearchParams` phải nằm trong `Suspense`, không thì `bun run build` lỗi.
 
@@ -504,12 +504,12 @@ index 0000000..a64565a
 +});
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run`
 Expected: `Test Files  1 failed | 198 passed (199)`, `Tests  1852 passed (1852)`. File test mới không nạp được vì hai component chưa có, nên 13 test của nó chưa được đếm.
 
-- [ ] **Step 3: Viết trang chi tiết (Patch 2)**
+- [x] **Step 3: Viết trang chi tiết (Patch 2)**
 
 ```diff
 diff --git a/app/dot-om/chi-tiet/page.tsx b/app/dot-om/chi-tiet/page.tsx
@@ -771,12 +771,12 @@ index 0000000..12166dc
 +}
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run && bun run typecheck`
 Expected: `Test Files  199 passed (199)`, `Tests  1865 passed (1865)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add components/illness/EpisodeScreen.tsx components/illness/EpisodeDetailPage.tsx components/illness/episodescreen.test.tsx app/dot-om/chi-tiet/page.tsx
@@ -798,7 +798,7 @@ git commit -m "feat(illness): the episode page at /dot-om/chi-tiet" -m "Co-Autho
   - `EpisodeListScreen(props: { baby: Baby; userId: string })`
   - Trang tĩnh `/dot-om`.
 
-- [ ] **Step 1: Viết test đỏ (Patch 3)**
+- [x] **Step 1: Viết test đỏ (Patch 3)**
 
 ```diff
 diff --git a/components/illness/episodelist.test.tsx b/components/illness/episodelist.test.tsx
@@ -1025,12 +1025,12 @@ index 0000000..9368d32
 +});
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run`
 Expected: `Test Files  1 failed | 199 passed (200)`, `Tests  1865 passed (1865)`. File test mới không nạp được vì `./EpisodeListScreen` chưa có, nên 10 test của nó chưa được đếm.
 
-- [ ] **Step 3: Viết trang danh sách (Patch 4)**
+- [x] **Step 3: Viết trang danh sách (Patch 4)**
 
 ```diff
 diff --git a/app/dot-om/page.tsx b/app/dot-om/page.tsx
@@ -1244,12 +1244,12 @@ index 0000000..0eec29a
 +}
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run && bun run typecheck`
 Expected: `Test Files  200 passed (200)`, `Tests  1875 passed (1875)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add components/illness/EpisodeListScreen.tsx components/illness/episodelist.test.tsx app/dot-om/page.tsx
@@ -1268,19 +1268,19 @@ git commit -m "feat(illness): the list of episodes at /dot-om" -m "Co-Authored-B
 - Consumes: mọi thứ của các task trước trong plan này.
 - Produces: kết quả kiểm, ghi ngay trong plan; `main` có M2f: hai trang mở được bằng địa chỉ.
 
-- [ ] **Step 1: Chạy cả bộ kiểm**
+- [x] **Step 1: Chạy cả bộ kiểm**
 
 Run: `bun run typecheck && bunx vitest run`
 Expected: `tsc --noEmit` không báo lỗi; `Test Files  200 passed (200)`, `Tests  1875 passed (1875)`.
 
-- [ ] **Step 2: Build**
+- [x] **Step 2: Build**
 
 Run: `bun run build`
 Expected: lần đầu có thể dừng với thông báo bảo mật của Next.js 16.4.3 (bình thường; không chạy `next upgrade`). Chạy lại đúng lệnh đó: `✓ Generating static pages` và thoát mã 0.
 
 Trong bảng trang của `bun run build`, `/dot-om` và `/dot-om/chi-tiet` phải mang dấu `○` (trang tĩnh). Thấy lỗi "Missing Suspense boundary with useSearchParams" thì `EpisodeDetailPage` đã mất `Suspense`: dừng và sửa.
 
-- [ ] **Step 3: Tạo trang fixture tạm**
+- [x] **Step 3: Tạo trang fixture tạm**
 
 Dữ liệu thật chưa có đợt ốm nào và không được tạo đợt trên dữ liệu thật, nên trang chi tiết có nội dung và mọi trạng thái của danh sách chỉ thấy được ở đây. Trang dùng `EpisodeBody` và `EpisodeListBody` (phần vẽ của hai trang) với dữ liệu giả. Trang này không đọc hay ghi dữ liệu của gia đình và vẽ được khi chưa đăng nhập. Tạo `app/fixture-illness/page.tsx` (không commit):
 
@@ -1436,7 +1436,7 @@ export default function Page() {
 Run: `bun run typecheck`
 Expected: `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 4: Kiểm trong trình duyệt (chỉ xem)**
+- [x] **Step 4: Kiểm trong trình duyệt (chỉ xem)**
 
 Chạy `bun run dev` (lần đầu có thể dừng vì thông báo bảo mật: chạy lại). Mở `http://localhost:3000/fixture-illness` trong khung Browser của app, cỡ 375×812 (xem mục "Trình duyệt" ở Ghi chú khi thực thi). Xóa phần tử `nextjs-portal` trong trang trước khi chụp.
 
@@ -1482,7 +1482,45 @@ Trang thật (dữ liệu thật của gia đình: **chỉ xem**; cần đăng n
 
 Dừng `bun run dev` khi xong. Ghi kết quả từng mục ngay dưới bước này, kèm số đo: các con số của đoạn đo ở từng bề ngang; mục nào thấy trên trang thật, mục nào chỉ thấy trên trang tạm. Mục nào không cho thấy được thì ghi "chưa kiểm". Nếu bước này lộ ra lỗi và code phải đổi: sửa (test trước, code sau), rồi chạy lại Step 1 và Step 2 trước khi đi tiếp.
 
-- [ ] **Step 5: Xóa trang fixture**
+**Kết quả Step 4 (2026-11-27, khung Browser trong app; server dev chạy bằng `preview_start`, đã tắt):**
+
+Trang tạm `/fixture-illness`, 375×812, theme `rose` (giữ bằng `MutationObserver`), đã xóa `nextjs-portal`:
+
+1. Đạt. Hai khối "Trang chi tiết", chín khối "Danh sách" (thêm một khối "phiếu sửa" của phiên này, xem dưới). `scrollWidth <= innerWidth` là `true`; không phần tử nào bị cắt "…".
+2. Đạt. Đợt đang mở: thẻ "Bun đã hết sốt 13 giờ" (1 dòng) 343×283 với ba nút 98×44; thẻ biểu đồ 343×280 (`aria-label` "Biểu đồ nhiệt độ: 5 lần đo, cao nhất 39,2°C, 3 liều hạ sốt."); "Từng ngày" ba hàng (343×328); nút "Bé đã khỏi" 343×50. Khoảng cách giữa các khối 18, 18, 17 px (17 do làm tròn). Không có "So với thường ngày", "Báo cáo cho bác sĩ", "Lần khám".
+3. Đạt. Đợt đã đóng: "Đã khỏi sau 3 ngày", dòng "24/11 – 26/11", không nút nào trong khối; biểu đồ và "Từng ngày" như trên.
+4. Đạt. Sáu khối đầu: "Từ 24/11 · ngày thứ 3" 1 dòng, rộng 160; chip nằm dưới tiêu đề: "Đang sốt" (`warn`) 77×22, "Đang sốt" (`danger`) 77×22, "Chưa đo lại" 91×22, "Hết sốt" 66×22, "Không sốt" 84×22, khối "chưa đo" không chip; mỗi thẻ có icon nhiệt kế và mũi tên. "Đã qua" ba hàng đúng thứ tự, mỗi hàng 1 dòng, cao 52–53, có mũi tên.
+5. Đạt. "Từ 27/10 · ngày thứ 31": 1 dòng, rộng 169, chip "Chưa đo lại" bên dưới.
+6. Đạt. Nút "Bắt đầu đợt ốm" 343×50 dưới "Đang diễn ra", rồi "Đã qua".
+7. Đạt. Icon lịch, "Chưa có đợt ốm nào" (1 dòng), dòng phụ 2 dòng, nút "Bắt đầu đợt ốm" 144×44; không tiêu đề mục.
+8. Đạt, đúng số của plan: tiêu đề 160 px (bản dài nhất 169 px), thẻ 343×80 khi có chip và 343×70 khi không.
+9. Đạt. `light`, `dark`, `night`: mọi số đo ở trên giống `rose` từng con số (so cả chuỗi kết quả). Nhìn bằng mắt: `rose` (cả trang), `night` (chi tiết, danh sách, hai khối cuối), `dark` (chi tiết, danh sách), `light` (chi tiết, hai khối cuối). `night`: các chip đọc được bằng chữ; hai khối "Đang sốt" khác nhau rất ít (đúng như plan ghi).
+10. Đạt. 390 px: tiêu đề 160 và 169, 1 dòng; thẻ 358×80 / 358×70; ba nút 103×44; "Bé đã khỏi" và "Bắt đầu đợt ốm" 358×50; thẻ biểu đồ 358×290. 440 px: thẻ 408×80 / 408×70; ba nút 119×44; nút 408×50; thẻ biểu đồ 408×321. Ở cả hai: không tràn, không "…", hàng "Đã qua" 1 dòng, dòng phụ của trạng thái trống 2 dòng.
+
+Trang thật (đã đăng nhập sẵn trong khung; 375 px, theme `dark` của máy; **không bấm nút ghi nào**):
+
+11. Đạt. `/dot-om`: tiêu đề "Đợt ốm", nút quay lại "Sức khỏe" → `/suc-khoe`, không tab nào sáng thêm; gia đình chưa có đợt nào nên trang là trạng thái trống của mục 7. Lệnh `GET …/rest/v1/illness_episodes` (tham số `select`, `baby_id`, `order`) trả **200**. Không bấm "Bắt đầu đợt ốm".
+12. Đạt. `/dot-om/chi-tiet?id=khong-co`: nút quay lại "Đợt ốm" → `/dot-om`, "Không tìm thấy đợt ốm này", đường dẫn "Về danh sách", không có bút chì; bấm "Về danh sách" về `/dot-om`. `/dot-om/chi-tiet` (không `id`): cùng trạng thái. Ở hai địa chỉ này không có lệnh đọc bản ghi theo khoảng nào được gửi (chỉ có lệnh đọc bản ghi gần đây của app).
+13. Trang chi tiết thật chưa xem được (gia đình chưa có đợt nào), chỉ thấy trên trang tạm. **Chưa kiểm:** nút bút chì mở `EpisodeSheet` từ `EpisodeScreen` thật, ba nút ghi nhanh mở `QuickEntrySheet`, "Bé đã khỏi", việc chuyển trang sau "Bắt đầu đợt ốm" và sau "Xóa đợt ốm".
+14. Đạt. `scrollWidth <= innerWidth` là `true` ở cả ba địa chỉ; console lọc `onlyErrors`: không có gì; không có thẻ lỗi tải.
+
+Ghi chú về cách đo: `read_network_requests` của khung Browser không liệt kê lệnh `fetch` tới Supabase (chỉ thấy tài nguyên của `localhost`), nên mã 200 ở mục 11 đọc từ Resource Timing trong trang (`performance.getEntriesByType("resource")`, `responseStatus`), không in token hay mã của bé.
+
+**`EpisodeSheet` thật trên trang tạm** (ngoài plan, theo lời giao của phiên: trang tạm có thêm `SheetHarness.tsx` dựng `EpisodeSheet` có trạng thái với đợt ốm giả, mã không phải uuid; `window.confirm` ở trang đó luôn trả lời "không" và ghi lại câu hỏi). Chỉ bấm những đường mà code không gọi `mutate`; 375 px, `rose`:
+
+- Phiếu đợt đang mở: chỉ có ô "Bắt đầu", "Lưu", "Xóa đợt ốm". "Lưu" khi không đổi gì: phiếu đóng (`onClose`), không ghi gì.
+- Ô "Bắt đầu" đặt sang năm 2099 rồi "Lưu": "Giờ bắt đầu ở tương lai." dưới ô, 1 dòng, phiếu ở lại. Xóa trống ô rồi "Lưu": "Nhập giờ bắt đầu".
+- Đóng khi đang sửa dở (nút "Đóng", rồi Esc): hộp "Bỏ thay đổi?" 300×214 với hai nút 264×50. "Tiếp tục nhập": về phiếu, ô và câu lỗi còn nguyên. "Bỏ thay đổi": phiếu đóng; mở lại thì ô về giờ cũ, không còn câu lỗi.
+- "Xóa đợt ốm": hỏi đúng câu "Xóa đợt ốm này? Các bản ghi nhiệt độ, thuốc, triệu chứng vẫn giữ nguyên."; trả lời "không" thì không có gì xảy ra, `onDeleted` không chạy.
+- Phiếu đợt đã đóng mà dữ liệu giả có một đợt khác chồng lên: "Mở lại đợt ốm" bị từ chối, câu "Trùng thời gian với một đợt ốm khác." hiện trong phiếu, ngay trên nút "Lưu" (317×23, 1 dòng), đọc được ở `rose` và `night`. "Lưu" sau đó: câu ấy chuyển xuống dưới ô "Bắt đầu", dòng báo phía trên nút biến mất. Ô "Kết thúc" năm 2099: "Giờ kết thúc ở tương lai."; xóa trống: "Nhập giờ kết thúc"; trước giờ bắt đầu: "Giờ kết thúc phải sau giờ bắt đầu.". Phiếu cao nhất 359×496, đáy 804 / 812.
+- Sau mọi lần bấm: hàng chờ `outbox` trong IndexedDB có 0 mục; đo lại bằng Resource Timing (tải lại trang tạm, "Lưu" không đổi và "Mở lại" bị từ chối): trang tạm không gửi lệnh nào ra ngoài `localhost`; console không lỗi.
+- **Chưa kiểm:** `mutate` của `submit`, `reopen`, `remove` chạy thật (một lần "Lưu" hợp lệ, "Mở lại" được nhận, "Xóa" được đồng ý) và hai nhánh `onSuccess`, `onError` của chúng: phải ghi vào hàng chờ thật nên để cho Bước 38.
+
+Không lỗi nào lộ ra ở bước này; không có code nào đổi sau Task 2. Một điều thấy được, không sửa (thuộc M2c): nhãn "37,6" của chấm mới nhất nằm trên chấm và đè lên đường nét đứt 38°C, một nét đứt ló ra ngay sau số; số vẫn đọc được nhờ viền.
+
+Ảnh và bản fixture để ở thư mục ghi chú chung của nhóm phiên (ngoài repo): `m2f-*.jpg`, `m2f-fixture-page.tsx.txt`, `m2f-fixture-sheet-harness.tsx.txt`.
+
+- [x] **Step 5: Xóa trang fixture**
 
 ```bash
 rm -r app/fixture-illness
@@ -1492,7 +1530,7 @@ git status --short  # không còn app/fixture-illness
 
 Expected: `tsc --noEmit` không báo lỗi. Nếu nó đỏ với lỗi trong `.next/…/types/validator.ts` (thư mục `.next` còn trỏ tới trang tạm vừa xóa): chạy `rm -rf .next/dev/types .next/types` rồi chạy lại, phải sạch.
 
-- [ ] **Step 6: Ghi kết quả vào plan, commit**
+- [x] **Step 6: Ghi kết quả vào plan, commit**
 
 Ghi ngay dưới bước này: số đo đỏ và xanh của từng task có khớp plan không; kết quả Step 1, Step 2 và Step 4. Mục nào không cho thấy được thì ghi "chưa kiểm". Đánh dấu `[x]` các bước đã làm.
 
@@ -1502,7 +1540,22 @@ git add docs/blueprint/plans/2026-11-26-kim-bun-dot-om-m2f.md
 git commit -m "docs(plan): the M2f plan and its check results" -m "Co-Authored-By: Claude Fable 5.2 <noreply@anthropic.com>"
 ```
 
-- [ ] **Step 7: Đưa lên `main`**
+**Kết quả (2026-11-27):**
+
+- **Số xuất phát khác plan.** M2c thêm 3 test và M2d thêm 1 test so với lúc viết plan này, nên nền thật là **198 file / 1856 test** (plan ghi 1852) và mọi con số test xanh của plan cộng thêm 4. Số test đỏ không đổi.
+- Step 0: `M2e có trên main`; `Test Files  198 passed (198)`, `Tests  1856 passed (1856)`. Plan M2a có ghi giờ áp migration (09:35–09:48 ngày 2026-11-27, dry-run sau đó "Remote database is up to date.").
+- Task 1: đỏ `Test Files  1 failed | 198 passed (199)`, `Tests  1856 passed (1856)` (file test không nạp được, đúng như plan); xanh `199 passed`, `1869 passed` (plan 1865 + 4); `tsc --noEmit` thoát 0.
+- Task 2: đỏ `Test Files  1 failed | 199 passed (200)`, `Tests  1869 passed (1869)`; xanh `200 passed`, `1879 passed` (plan 1875 + 4); `tsc --noEmit` thoát 0.
+- Bốn patch áp sạch bằng `kb_patch`, không sửa tay dòng nào.
+- Step 1: `tsc --noEmit` thoát 0; **200 file / 1879 test**. Chạy lại sau khi xóa trang tạm: vẫn vậy.
+- Step 2: `bun run build` lần đầu thoát 1 với thông báo bảo mật của Next.js 16.4.3 (không chạy `next upgrade`), lần hai thoát 0: `✓ Generating static pages (42/42)`, `/dot-om` và `/dot-om/chi-tiet` đều mang dấu `○`.
+- Step 4: xem kết quả ngay dưới Step 4.
+- Step 5: sau khi xóa trang tạm `tsc` đỏ giả vì `.next/dev/types/validator.ts`; `rm -rf .next/dev/types .next/types` rồi chạy lại: thoát 0.
+- Không lỗi nào phải sửa; không test nào thêm ngoài plan.
+- Spec, cùng commit docs này (mỗi chỗ có chú thích "Khác bản đã duyệt ngày 2026-11-26"): §4.2 danh sách đợt ốm tải lại sau mỗi lần outbox gửi xong (M2a); §4.3 nới 2 phút cho đợt đang mở (M2b); §5.2 nhiệt độ viết bằng `formatCelsius`, 38,0 là "38" như trang Báo cáo; §6.2 chip nằm dưới tiêu đề, thẻ luôn có mũi tên (M2f); §6.5 chỗ đặt nhãn, chữ "Sốt" đổi góc, câu `aria-label` (M2c).
+- **Chưa kiểm:** theme `peach`, `lavender`, `sea`; iPhone thật và Safari iOS; trang chi tiết thật có nội dung và mọi nút ghi (mục 13 của Step 4); `mutate` của `EpisodeSheet`; trạng thái đang tải, mất mạng, lỗi của hai trang trong trình duyệt (chỉ có test); việc realtime đổi chip.
+
+- [x] **Step 7: Đưa lên `main`**
 
 Chỉ khi mọi bước trên đều đạt và không còn lỗi đã biết (lỗi tìm thấy khi kiểm phải được sửa, có test, và ghi vào plan trước; sửa xong thì chạy lại Step 1 và Step 2). Không hỏi lại người dùng: xem mục "Lên `main` không cần hỏi" ở Ghi chú khi thực thi.
 
