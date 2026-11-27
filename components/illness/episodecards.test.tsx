@@ -162,13 +162,28 @@ describe("EpisodeDayList", () => {
   // Spec 2026-11-27 §6.1 (board "Từng ngày · E").
   it("a day with symptoms ends its chips with Sửa; a day without has Ghi triệu chứng", () => {
     expect(items[1]).toMatch(
-      />Quấy<\/span><button type="button" aria-label="Sửa triệu chứng ngày 25\/11" class="[^"]*min-h-11[^"]*bg-accent-tint[^"]*text-accent-text[^"]*">/,
+      />Quấy<\/span><button type="button" aria-label="Sửa triệu chứng ngày 25\/11" class="[^"]*bg-accent-tint[^"]*text-accent-text[^"]*">/,
     );
     expect(items[1]).toContain(`d="${ICON_PATHS.pencil}"`);
     expect(items[1]).toMatch(/<\/svg>Sửa<\/button>/);
     expect(items[0]).toContain('aria-label="Ghi triệu chứng ngày 26/11"');
     expect(items[0]).toContain(`d="${ICON_PATHS.plus}"`);
     expect(items[0]).toMatch(/<\/svg>Ghi triệu chứng<\/button>/);
+  });
+
+  // The button looks like a chip (same height and type as StatusChip) and
+  // keeps a 44 px tap area through an ::after box, like Switch.
+  it("the button is drawn chip-sized with a 44 px tap area", () => {
+    const buttons = items.map((item) => item.match(/<button [^>]*>/)?.[0]);
+    for (const button of buttons) {
+      expect(button).toContain("relative");
+      expect(button).toContain("py-0.5");
+      expect(button).toContain("text-[13px]");
+      expect(button).toContain("leading-[18px]");
+      expect(button).toContain("after:absolute");
+      expect(button).toContain("after:-inset-y-[11px]");
+      expect(button).not.toContain("min-h-11");
+    }
   });
 
   it("the button hands its day on", () => {

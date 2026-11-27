@@ -7,7 +7,9 @@ import type { DayRowView } from "@/lib/rules/illnessView";
 // The label sits beside the title only, so the line under it keeps the full
 // width of the row. Spec 2026-11-27 §6.1 (board E): the row itself opens
 // nothing; a small button after the symptom chips opens the day's symptom
-// sheet: "Sửa" when the day has symptoms, else "Ghi triệu chứng".
+// sheet: "Sửa" when the day has symptoms, else "Ghi triệu chứng". It is
+// drawn as tall as the chips beside it; an ::after box keeps its tap area at
+// 44 px, as in Switch.
 export function EpisodeDayList({
   rows,
   onEdit,
@@ -47,7 +49,7 @@ export function EpisodeDayList({
                   type="button"
                   aria-label={`${logged ? "Sửa" : "Ghi"} triệu chứng ngày ${formatDayShort(row.day)}`}
                   onClick={() => onEdit(row.day)}
-                  className="inline-flex min-h-11 items-center gap-1 rounded-full bg-accent-tint px-3 text-[13px] font-semibold text-accent-text"
+                  className="relative inline-flex items-center gap-1 rounded-full bg-accent-tint px-2.5 py-0.5 text-[13px] leading-[18px] font-semibold whitespace-nowrap text-accent-text after:absolute after:-inset-y-[11px] after:inset-x-0 after:content-['']"
                 >
                   <Icon name={logged ? "pencil" : "plus"} size={14} />
                   {logged ? "Sửa" : "Ghi triệu chứng"}
