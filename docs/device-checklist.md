@@ -736,3 +736,24 @@ Kết quả: Chờ người dùng.
 | iPhone 11     |     |         |         |
 | iPhone 16     |     |         |         |
 | iPhone 17 Pro |     |         |         |
+
+## Bước 41 — Mốc phát triển theo dòng thời gian (spec 2026-11-27)
+
+Chỉ xem, không bấm Lưu, không bỏ đánh dấu mốc nào. Một máy là đủ.
+
+1. Mở tab Sức khỏe, bấm "Phát triển". Kỳ vọng: không còn đoạn giới thiệu dài; trên cùng là dòng "Vận động lớn" có ngôi sao và một dòng tóm tắt bằng tên mốc (ví dụ "Đã lật · đang tới tuổi ngồi, đứng có đỡ"), không có số; dưới là dòng thời gian 8 mốc từ "Mốc 2 tháng" tới "Mốc 24 tháng". Chỉ mốc của tháng bé đang ở mở sẵn, nút tròn của nó màu chủ đạo có số tháng. Các mốc sau mốc "Sắp tới" có tiêu đề màu nhạt. Không chữ nào bị cắt "…".
+2. Bấm tiêu đề một mốc đang gập. Kỳ vọng: mốc đó mở thành một thẻ chia nhóm "Xã hội, cảm xúc", "Ngôn ngữ, giao tiếp", "Nhận thức", "Vận động", mỗi nhóm một chấm màu; mốc đang mở trước đó gập lại; mũi tên đổi chiều. Bấm lại tiêu đề vừa mở. Kỳ vọng: gập, không mốc nào mở.
+3. Nhìn các mốc đã qua. Kỳ vọng: mốc đạt đủ có nút xanh với dấu tick và "Đạt đủ … mốc"; mốc còn thiếu có nút cam "!" và chữ cam "Còn … mốc chưa đạt · nên hỏi bác sĩ".
+4. Bấm dòng "Vận động lớn". Kỳ vọng: sheet "Vận động lớn" trượt lên, dòng đầu "{tên bé} hôm nay: …", 7 mốc; mỗi mốc có một chip ngắn không xuống dòng ("Đạt dd/mm/yyyy", "Đang tới tuổi", "Sắp tới" hoặc "Nên hỏi bác sĩ"), một thanh màu và một vạch đen "hôm nay"; dưới cùng nhãn "0", "6", "12", "18 tháng".
+5. Trong sheet đó bấm một mốc chưa đạt. Kỳ vọng: sheet nhập ngày đạt thay chỗ ngay. Bấm nút Đóng (không Lưu). Kỳ vọng: sheet "Vận động lớn" mở lại. Đóng nó.
+6. Bấm dòng cam "Khi nào nên hỏi bác sĩ" cuối màn. Kỳ vọng: sheet cùng tên có 3 ý. Đóng. Bấm "Nguồn CDC" rồi "Nguồn WHO". Kỳ vọng: mỗi link mở trang nguồn ở tab mới.
+7. Bật Ban đêm. Kỳ vọng: chữ cam, tiêu đề mốc nhạt, tiêu đề nhóm và chip "Sắp tới" đều đọc được; mốc mở và mốc gập phân biệt được bằng mũi tên. Tắt Ban đêm.
+8. Bật VoiceOver, vuốt tới tiêu đề một mốc. Kỳ vọng: đọc "Mốc … tháng", dòng tóm tắt, là nút, và "thu gọn" hoặc "mở rộng" đúng trạng thái. Mở sheet "Vận động lớn", vuốt tới một mốc. Kỳ vọng: đọc tên mốc, chip và "Thường trong khoảng … tháng". Tắt VoiceOver.
+
+Kết quả: Chờ người dùng.
+
+| Máy           | iOS | Kết quả | Ghi chú |
+| ------------- | --- | ------- | ------- |
+| iPhone 11     |     |         |         |
+| iPhone 16     |     |         |         |
+| iPhone 17 Pro |     |         |         |
