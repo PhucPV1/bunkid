@@ -3,7 +3,10 @@ import type { LogLike } from "./describeLog";
 import {
   antipyreticTimes,
   belongsTo,
+  canReopen,
+  checkEpisode,
   detailRange,
+  episodeError,
   type EpisodeLike,
   episodeDay,
   episodeDayCount,
@@ -568,5 +571,158 @@ describe("episodeDays", () => {
     ]);
     // 19:00 on the last day is after the end: only the 09:00 reading counts.
     expect(rows[0].peak).toBe(37.6);
+  });
+});
+
+// Spec §5.7.
+describe("checkEpisode", () => {
+  const now = vn("2026-11-27 08:00");
+  const others = [
+    episode("2026-11-10 08:00", "2026-11-12 08:00", "old"),
+    episode("2026-11-20 08:00", "2026-11-22 08:00", "mid"),
+  ];
+  const check = (start: string, end: string | null, id: string | null = null) =>
+    checkEpisode({
+      id,
+      started_at: iso(start),
+      ended_at: end === null ? null : iso(end),
+      episodes: others,
+      now,
+    });
+
+  it("a start more than a minute ahead is refused, a minute ahead is not", () => {
+    expect(check("2026-11-27 08:01", null)).toEqual({});
+    expect(check("2026-11-27 08:02", null)).toEqual({
+      started_at: "Giờ bắt đầu ở tương lai.",
+    });
+    // To the second: 60 seconds ahead passes, 61 does not.
+    const ahead = (ms: number) =>
+      checkEpisode({
+        id: null,
+        started_at: new Date(now.getTime() + ms).toISOString(),
+        ended_at: null,
+        episodes: [],
+        now,
+      });
+    expect(ahead(60_000)).toEqual({});
+    expect(ahead(61_000)).toEqual({ started_at: "Giờ bắt đầu ở tương lai." });
+  });
+
+  it("the end must be after the start", () => {
+    expect(check("2026-11-25 08:00", "2026-11-25 08:00")).toEqual({
+      ended_at: "Giờ kết thúc phải sau giờ bắt đầu.",
+    });
+    expect(check("2026-11-25 08:00", "2026-11-25 07:00")).toEqual({
+      ended_at: "Giờ kết thúc phải sau giờ bắt đầu.",
+    });
+    expect(check("2026-11-25 08:00", "2026-11-25 08:01")).toEqual({});
+  });
+
+  it("an end more than a minute ahead is refused", () => {
+    expect(check("2026-11-25 08:00", "2026-11-27 08:01")).toEqual({});
+    expect(check("2026-11-25 08:00", "2026-11-27 08:02")).toEqual({
+      ended_at: "Giờ kết thúc ở tương lai.",
+    });
+  });
+
+  it("an open episode may not start before the end of another one", () => {
+    expect(check("2026-11-22 07:59", null)).toEqual({
+      started_at: "Trùng thời gian với một đợt ốm khác.",
+    });
+    expect(check("2026-11-05 08:00", null)).toEqual({
+      started_at: "Trùng thời gian với một đợt ốm khác.",
+    });
+  });
+
+  it("two episodes may share one moment: this one starts as the other ends, or ends as it starts", () => {
+    expect(check("2026-11-22 08:00", null)).toEqual({});
+    expect(check("2026-11-12 08:00", "2026-11-20 08:00")).toEqual({});
+  });
+
+  it("a closed episode whose start is inside another: the error is under the start", () => {
+    expect(check("2026-11-21 08:00", "2026-11-25 08:00")).toEqual({
+      started_at: "Trùng thời gian với một đợt ốm khác.",
+    });
+  });
+
+  it("a closed episode that runs into a later one: the error is under the end", () => {
+    expect(check("2026-11-15 08:00", "2026-11-20 08:01")).toEqual({
+      ended_at: "Trùng thời gian với một đợt ốm khác.",
+    });
+    // Wrapping a whole other episode is an overlap as well.
+    expect(check("2026-11-19 08:00", "2026-11-23 08:00")).toEqual({
+      ended_at: "Trùng thời gian với một đợt ốm khác.",
+    });
+  });
+
+  it("an episode is not compared with itself", () => {
+    expect(check("2026-11-20 09:00", "2026-11-22 07:00", "mid")).toEqual({});
+    expect(check("2026-11-20 09:00", "2026-11-22 07:00", "new")).not.toEqual(
+      {},
+    );
+  });
+
+  it("an open episode elsewhere blocks everything after its start", () => {
+    const withOpen = [...others, episode("2026-11-25 08:00", null, "open")];
+    expect(
+      checkEpisode({
+        id: null,
+        started_at: iso("2026-11-27 08:00"),
+        ended_at: null,
+        episodes: withOpen,
+        now,
+      }),
+    ).toEqual({ started_at: "Trùng thời gian với một đợt ốm khác." });
+    // Reopening "mid" would run into the open one.
+    expect(
+      checkEpisode({
+        id: "mid",
+        started_at: iso("2026-11-20 08:00"),
+        ended_at: null,
+        episodes: withOpen,
+        now,
+      }),
+    ).toEqual({ started_at: "Trùng thời gian với một đợt ốm khác." });
+  });
+
+  it("reports one error per field, the time errors first", () => {
+    expect(check("2026-11-21 08:00", "2026-11-21 07:00")).toEqual({
+      started_at: "Trùng thời gian với một đợt ốm khác.",
+      ended_at: "Giờ kết thúc phải sau giờ bắt đầu.",
+    });
+    expect(check("2026-11-27 09:00", "2026-11-27 10:00")).toEqual({
+      started_at: "Giờ bắt đầu ở tương lai.",
+      ended_at: "Giờ kết thúc ở tương lai.",
+    });
+  });
+});
+
+describe("episodeError", () => {
+  it("is the one sentence a toast shows: the start's error first, null when all is well", () => {
+    expect(episodeError({})).toBeNull();
+    expect(episodeError({ ended_at: "Giờ kết thúc ở tương lai." })).toBe(
+      "Giờ kết thúc ở tương lai.",
+    );
+    expect(
+      episodeError({
+        started_at: "Giờ bắt đầu ở tương lai.",
+        ended_at: "Giờ kết thúc ở tương lai.",
+      }),
+    ).toBe("Giờ bắt đầu ở tương lai.");
+  });
+});
+
+// Spec §6.4.
+describe("canReopen", () => {
+  const old = episode("2026-11-10 08:00", "2026-11-12 08:00", "old");
+  const last = episode("2026-11-20 08:00", "2026-11-22 08:00", "last");
+  const open = episode("2026-11-25 08:00", null, "open");
+
+  it("only the closed episode with the latest start, and only while none is open", () => {
+    expect(canReopen(last, [old, last])).toBe(true);
+    expect(canReopen(last, [last, old])).toBe(true);
+    expect(canReopen(old, [old, last])).toBe(false);
+    expect(canReopen(last, [old, last, open])).toBe(false);
+    expect(canReopen(open, [old, last, open])).toBe(false);
   });
 });

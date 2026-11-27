@@ -327,3 +327,64 @@ export function episodeDays(
   }
   return rows.reverse();
 }
+
+const MINUTE_MS = 60_000;
+const OVERLAP = "Trùng thời gian với một đợt ốm khác.";
+
+export type EpisodeErrors = { started_at?: string; ended_at?: string };
+
+const startOf = (episode: { started_at: string }) =>
+  Date.parse(episode.started_at);
+const endOf = (episode: { ended_at: string | null }) =>
+  episode.ended_at === null ? Infinity : Date.parse(episode.ended_at);
+
+// Spec §5.7: the checks before an episode is saved, one sentence per field.
+// `episodes` is every episode of the baby (useEpisodes); `id` is the episode
+// being changed, or null for a new one. An empty result means it may be saved.
+// Two ranges [start, end) overlap unless one starts where the other ends,
+// like the constraint on the server, which still has the last word.
+export function checkEpisode(input: {
+  id: string | null;
+  started_at: string;
+  ended_at: string | null;
+  episodes: EpisodeLike[];
+  now: Date;
+}): EpisodeErrors {
+  const { id, episodes } = input;
+  const start = startOf(input);
+  const end = endOf(input);
+  const limit = input.now.getTime() + MINUTE_MS;
+  const errors: EpisodeErrors = {};
+  if (start > limit) errors.started_at = "Giờ bắt đầu ở tương lai.";
+  if (end <= start) errors.ended_at = "Giờ kết thúc phải sau giờ bắt đầu.";
+  else if (end !== Infinity && end > limit)
+    errors.ended_at = "Giờ kết thúc ở tương lai.";
+  for (const other of episodes) {
+    if (other.id === id) continue;
+    const otherStart = startOf(other);
+    const otherEnd = endOf(other);
+    if (!(start < otherEnd && otherStart < end)) continue;
+    // Under the start when the start itself falls inside the other episode,
+    // and always for an open episode, which has no end field.
+    if (end === Infinity || (start >= otherStart && start < otherEnd))
+      errors.started_at ??= OVERLAP;
+    else errors.ended_at ??= OVERLAP;
+  }
+  return errors;
+}
+
+// The sentence for a toast, for the one-tap actions that have no field.
+export function episodeError(errors: EpisodeErrors): string | null {
+  return errors.started_at ?? errors.ended_at ?? null;
+}
+
+// Spec §6.4: "Mở lại đợt ốm" is offered for a closed episode, while the baby
+// has no open one, and only for the episode with the latest start.
+export function canReopen(
+  episode: EpisodeLike,
+  episodes: EpisodeLike[],
+): boolean {
+  if (episode.ended_at === null) return false;
+  if (episodes.some((other) => other.ended_at === null)) return false;
+  return episodes.every((other) => startOf(other) <= startOf(episode));
+}
