@@ -14,6 +14,9 @@ import {
   formatCelsius,
   sinceText,
   statusTone,
+  usualComparison,
+  type UsualKey,
+  type UsualVerdict,
   type Verdict,
 } from "./illness";
 import { symptomShorts } from "./symptomForm";
@@ -130,6 +133,63 @@ export function dayRows(
     chips: symptomShorts(row.codes, TRIAGE.symptoms),
     label: row.label,
   }));
+}
+
+const USUAL_LABEL: Record<UsualKey, string> = {
+  feeds: "Bú",
+  wetDiapers: "Tã ướt",
+  sleepMinutes: "Ngủ",
+};
+const USUAL_CHIP: Record<UsualVerdict, { text: string; tone: EpisodeTone }> = {
+  less: { text: "Ít hơn", tone: "warn" },
+  usual: { text: "Như thường", tone: "good" },
+  more: { text: "Nhiều hơn", tone: "neutral" },
+};
+// Spec §5.4: "{giá trị} cữ · thường {nền} cữ"; the usual value is rounded to
+// a whole number, and sleep is counted in whole hours.
+const usualLine = (key: UsualKey, value: number, base: number) =>
+  key === "sleepMinutes"
+    ? `${Math.round(value / 60)} giờ · thường ${Math.round(base / 60)} giờ`
+    : `${value} ${key === "feeds" ? "cữ" : "lần"} · thường ${Math.round(base)} ${key === "feeds" ? "cữ" : "lần"}`;
+
+export type UsualView = {
+  // What is compared with what; null when there is nothing to compare.
+  sub: string | null;
+  // The one sentence instead of the rows.
+  message: string | null;
+  rows: {
+    label: string;
+    line: string;
+    chip: { text: string; tone: EpisodeTone };
+  }[];
+};
+
+// Spec §6.3 item 5: the card "So với thường ngày". No advice, ever.
+export function usualView(
+  logs: LogLike[],
+  episode: EpisodeLike,
+  now: Date,
+): UsualView {
+  const result = usualComparison(logs, episode, now);
+  if (result.kind !== "rows")
+    return {
+      sub: null,
+      message:
+        result.kind === "no-day"
+          ? "Chưa có ngày trọn nào của đợt ốm để so."
+          : "Chưa đủ dữ liệu trước khi ốm để so.",
+      rows: [],
+    };
+  const day = episode.ended_at ? formatDayShort(result.day) : "Hôm qua";
+  return {
+    sub: `${day}, so với trung bình 7 ngày trước khi ốm`,
+    message: null,
+    rows: result.rows.map((row) => ({
+      label: USUAL_LABEL[row.key],
+      line: usualLine(row.key, row.value, row.base),
+      chip: USUAL_CHIP[row.verdict],
+    })),
+  };
 }
 
 const CHIP_TEXT = {

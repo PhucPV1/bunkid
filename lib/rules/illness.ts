@@ -1,4 +1,5 @@
 import { bannerReading } from "./alerts";
+import { dailyStats } from "./dailyStats";
 import { addDays, formatDayShort, vnDayStartMs } from "./days";
 import type { LogLike } from "./describeLog";
 import { detailsSchemas } from "./logDetails";
@@ -327,6 +328,76 @@ export function episodeDays(
     if (hasFever(peak)) feverBefore = true;
   }
   return rows.reverse();
+}
+
+// Spec §5.4: one day of the episode against the baby's usual days.
+export type UsualKey = "feeds" | "wetDiapers" | "sleepMinutes";
+export type UsualVerdict = "less" | "usual" | "more";
+export type UsualRow = {
+  key: UsualKey;
+  // The day compared: feeds, wet diapers, or minutes of sleep.
+  value: number;
+  // The average of the days before the episode, not rounded.
+  base: number;
+  verdict: UsualVerdict;
+};
+export type UsualComparison =
+  | { kind: "no-day" }
+  | { kind: "no-base" }
+  | { kind: "rows"; day: string; rows: UsualRow[] };
+
+const USUAL_KEYS: UsualKey[] = ["feeds", "wetDiapers", "sleepMinutes"];
+const BASE_DAYS = 7;
+const BASE_MIN_DAYS = 3;
+// A day counts towards the usual only when something of the routine was
+// logged that day.
+const ROUTINE = new Set(["breast", "bottle", "sleep", "diaper"]);
+
+// Spec §5.4: the day compared is yesterday for an open episode and the day
+// before the last day for a closed one; it may not be before the first day.
+// The usual is the average of the 7 calendar days before the first day,
+// counting only the days with a feed, a sleep or a diaper (at least 3).
+// `logs` must reach back to the 8th day before the first day (detailRange),
+// so a sleep from the evening before still counts. A measure that is 0 on
+// average has no row; with no row left there is nothing to compare.
+// Every value is a whole number and the average is a sum over a count, so the
+// thresholds 0.75 and 1.25 are checked on whole numbers, exactly.
+export function usualComparison(
+  logs: LogLike[],
+  episode: EpisodeLike,
+  now: Date,
+): UsualComparison {
+  const firstDay = vnDateString(new Date(episode.started_at));
+  const lastDay = vnDateString(
+    episode.ended_at ? new Date(episode.ended_at) : now,
+  );
+  const day = addDays(lastDay, -1);
+  if (day < firstDay) return { kind: "no-day" };
+  const logged = new Set(
+    logs
+      .filter((log) => ROUTINE.has(log.type))
+      .map((log) => vnDateString(new Date(log.started_at))),
+  );
+  const baseDays = Array.from({ length: BASE_DAYS }, (_, i) =>
+    addDays(firstDay, i - BASE_DAYS),
+  ).filter((baseDay) => logged.has(baseDay));
+  if (baseDays.length < BASE_MIN_DAYS) return { kind: "no-base" };
+  const [target, ...base] = dailyStats(logs, [day, ...baseDays], now);
+  const count = base.length;
+  const rows = USUAL_KEYS.flatMap((key): UsualRow[] => {
+    const sum = base.reduce((total, stat) => total + stat[key], 0);
+    if (sum === 0) return [];
+    const value = target[key];
+    // value / (sum / count) <= 0.75, and >= 1.25 for sleep.
+    const verdict: UsualVerdict =
+      value * count * 4 <= sum * 3
+        ? "less"
+        : key === "sleepMinutes" && value * count * 4 >= sum * 5
+          ? "more"
+          : "usual";
+    return [{ key, value, base: sum / count, verdict }];
+  });
+  return rows.length > 0 ? { kind: "rows", day, rows } : { kind: "no-base" };
 }
 
 const MINUTE_MS = 60_000;
