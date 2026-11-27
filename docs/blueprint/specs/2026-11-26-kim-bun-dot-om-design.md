@@ -221,6 +221,7 @@ Dùng `dailyStats` có sẵn.
 - Ngủ: ≤ 0,75 là "Ít hơn" (`warn`); ≥ 1,25 là "Nhiều hơn" (trung tính); còn lại "Như thường" (`good`).
 - Dòng số: "{giá trị} cữ · thường {nền} cữ", "{giá trị} lần · thường {nền} lần", "{giá trị} giờ · thường {nền} giờ". Nền làm tròn tới số nguyên gần nhất; giờ ngủ làm tròn tới giờ gần nhất.
 - Thẻ không có câu khuyên nào.
+- Ngày `D` được là chính ngày bắt đầu, và khi đó vẫn tính trọn ngày lịch như bảng "Theo ngày" của Báo cáo, kể cả phần trước `started_at`. Một ngày nền được tính khi có ít nhất một bản ghi `breast`, `bottle`, `sleep` hoặc `diaper` bắt đầu trong ngày đó. Cả ba hàng đều ẩn (trung bình nền bằng 0) thì thẻ ghi "Chưa đủ dữ liệu trước khi ốm để so.". Khi thẻ chỉ có một câu ("Chưa có ngày trọn …" hay "Chưa đủ dữ liệu …"), thẻ không có dòng phụ của §6.3 mục 5; đường dẫn "Phân loại triệu chứng" vẫn ở cuối thẻ. (Khác bản đã duyệt ngày 2026-11-26, vốn không nói bốn chỗ này. Chọn ở M4a ngày 2026-11-27 theo lời duyệt trước của người dùng.)
 
 ### 5.5 Lời mời bắt đầu
 
