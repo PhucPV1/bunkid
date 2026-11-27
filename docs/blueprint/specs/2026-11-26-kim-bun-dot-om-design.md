@@ -434,6 +434,7 @@ alter table public.photos add foreign key (visit_id, baby_id)
   - Bảng nhiệt độ, bảng thuốc, bảng "Triệu chứng" chỉ lấy bản ghi thuộc đợt (§4.3) và nằm trong các ngày của báo cáo.
   - Dòng "{range} ngày, từ … đến …" sẵn có được thay bằng "Đợt ốm {dd/mm} – {dd/mm} · {n} ngày"; đợt đang mở: "Đợt ốm từ {dd/mm} · ngày thứ {n}". Phần " · in ngày {dd/mm/yyyy}" ở cuối dòng giữ nguyên.
   - Biểu đồ §6.5 đứng trước bảng nhiệt độ và in ra giấy.
+  - Dòng "14 ngày cuối của đợt ốm" là một dòng riêng, ngay dưới dòng "Đợt ốm …". Biểu đồ nằm trong mục "Nhiệt độ", giữa tiêu đề và các dòng đo, và chỉ có khi 7 ngày nó vẽ có lần đo (không in một khung trống). Trên giấy, biểu đồ mang màu của theme sáng (đường, chấm, hình thoi, vùng sốt, chữ "38" và "Sốt"), kể cả khi app đang ở theme tối. Mở bằng `?dot=` khi danh sách đợt ốm chưa tải xong thì trang chờ (khung chờ; mất mạng: "Cần mạng để tải báo cáo. …"; lỗi: thẻ lỗi "Đợt ốm: …"), không hiện tạm kỳ 7 ngày. (Khác bản đã duyệt ngày 2026-11-26, vốn không nói bốn chỗ này. Chọn ở M4c ngày 2026-11-27 theo lời duyệt trước của người dùng.)
   - Sau bảng thuốc có bảng "Lần khám" (từ M5): Lúc khám, Nơi khám, Bác sĩ kết luận, Lời dặn. Không in ảnh.
 - Với mọi kỳ: khi kỳ có bản ghi `symptom`, sau bảng thuốc có bảng "Triệu chứng": Giờ, Triệu chứng (các `short`), Ghi chú.
 - Kỳ 7 và 14 ngày: ngoài bảng "Triệu chứng", không đổi gì.
