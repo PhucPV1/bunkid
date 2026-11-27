@@ -35,6 +35,34 @@ describe("EmptyState", () => {
       renderToStaticMarkup(<EmptyState icon="list" text="Trống." />),
     ).not.toContain("<button");
   });
+
+  // Spec 2026-11-26 §6.2 and §6.3.
+  it("takes a second, smaller line and an action that is a link", () => {
+    const html = renderToStaticMarkup(
+      <EmptyState
+        icon="calendar"
+        text="Chưa có đợt ốm nào"
+        detail="Khi bé ốm, mở một đợt."
+        action={{ label: "Về danh sách", href: "/dot-om" }}
+      />,
+    );
+    expect(html).toContain(">Chưa có đợt ốm nào</p>");
+    expect(html).toContain(
+      '<p class="text-[13px] leading-[18px] text-muted">Khi bé ốm, mở một đợt.</p>',
+    );
+    expect(html.indexOf("Chưa có đợt ốm nào")).toBeLessThan(
+      html.indexOf("Khi bé ốm, mở một đợt."),
+    );
+    expect(html).toMatch(/<a[^>]*href="\/dot-om"[^>]*>Về danh sách<\/a>/);
+    expect(html).toMatch(/<a[^>]*class="[^"]*glass[^"]*min-h-11/);
+    expect(html).not.toContain("<button");
+    // Without the second line there is no empty paragraph.
+    expect(
+      renderToStaticMarkup(<EmptyState icon="list" text="Trống." />).match(
+        /<p /g,
+      ),
+    ).toHaveLength(1);
+  });
 });
 
 describe("ErrorCard", () => {
