@@ -300,6 +300,7 @@ Trang theo realtime của bản ghi như danh sách (xem §6.2; khác bản đã
 - Nút "Xóa đợt ốm", chỉ hiện với chủ gia đình hoặc người tạo. Hỏi lại một lần: "Xóa đợt ốm này? Các bản ghi nhiệt độ, thuốc, triệu chứng vẫn giữ nguyên."
 - Xóa xong, trang chuyển về `/dot-om` bằng `router.replace` (thay địa chỉ hiện tại, không thêm vào lịch sử), để nút quay lại của trình duyệt không dẫn về một đợt đã xóa. Giữa lúc đợt biến khỏi danh sách và lúc trang chuyển xong, dòng "Không tìm thấy đợt ốm này" có thể chớp lên một nhịp. (Khác bản đã duyệt ngày 2026-11-26, vốn không nói xóa xong trang đi đâu. Làm ở M2f ngày 2026-11-27 theo lời duyệt trước của người dùng; ghi vào spec ở M2g.)
 - Từ M5: đợt còn lần khám thì nút "Xóa đợt ốm" tắt, kèm dòng "Xóa các lần khám trước."; khi `useVisits` chưa có dữ liệu (mất mạng, chưa từng tải) nút cũng tắt, kèm dòng "Cần mạng để kiểm các lần khám."
+- Dòng lý do nằm ngay dưới nút "Xóa đợt ốm". Danh sách lần khám tải lỗi cũng tính là chưa có dữ liệu. Lần khám do máy khác thêm sau lúc kiểm thì server từ chối lệnh xóa (đợt còn lần khám); outbox bỏ lệnh đó với câu sẵn có "Bản ghi liên quan không còn", và đợt hiện lại sau lần tải lại. (Khác bản đã duyệt ngày 2026-11-26, vốn không nói ba chỗ này. Chọn ở M5d ngày 2026-11-27 theo lời duyệt trước của người dùng.)
 - Nút "Lưu".
 
 ### 6.5 Biểu đồ sốt
@@ -412,6 +413,7 @@ alter table public.photos add foreign key (visit_id, baby_id)
 - Tiêu đề "Lần khám", bên phải nút "Thêm".
 - Mỗi lần khám, cũ trước: dòng "{dd/mm} {HH:mm} · {nơi khám}" (không có nơi khám thì chỉ ngày giờ); nhãn nhỏ "Bác sĩ kết luận" rồi `conclusion` đậm; `advice` chữ nhỏ; các ảnh thành ô 60×78 bấm để xem lớn. Bấm vào lần khám mở sheet sửa.
 - Chưa có lần khám: dòng "Chưa có lần khám nào."
+- Thẻ đứng sau thẻ "So với thường ngày", trên nút "Báo cáo cho bác sĩ". Dòng ngày giờ chữ nhỏ màu nhạt; nhãn "Bác sĩ kết luận" chỉ có khi có kết luận; lời dặn giữ các chỗ xuống dòng như lúc gõ. Bấm phần chữ thì mở sheet sửa; bấm một ô ảnh thì xem ảnh lớn, chỉ xem (xóa ảnh ở trong sheet); nhãn đọc màn hình của ô ảnh là "Ảnh 1", "Ảnh 2", …. Nút "Thêm" có ở cả đợt đã đóng; tắt khi mất mạng (kèm dòng "Cần kết nối mạng để thay đổi các mục dưới đây.") và khi danh sách lần khám chưa tải xong. Chưa từng tải mà mất mạng: "Cần mạng để tải lần khám. Trang sẽ tự tải khi có mạng lại."; tải lỗi: thẻ lỗi có "Thử lại". (Khác bản đã duyệt ngày 2026-11-26, vốn không nói mấy chỗ này. Chọn ở M5d ngày 2026-11-27 theo lời duyệt trước của người dùng.)
 
 ### 8.4 Sheet "Lần khám" (bảng "Lần khám — phiếu nhập")
 
