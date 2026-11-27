@@ -38,8 +38,9 @@ export function QuickLogButtons({
 }
 
 // The round icon behind the verdict. The icon changes with the verdict too,
-// so the states still differ in theme night, which has one hue.
-const TONE: Record<EpisodeTone, string> = {
+// so the states still differ in theme night, which has one hue. The reminder
+// to close an episode on Hôm nay uses the same circles.
+export const TONE_CIRCLE: Record<EpisodeTone, string> = {
   good: "bg-good-soft text-good-ink",
   warn: "bg-warn-soft text-warn-ink",
   danger: "bg-danger-soft text-danger-ink",
@@ -61,7 +62,7 @@ export function EpisodeVerdict({
         <span
           className={cx(
             "flex size-11 shrink-0 items-center justify-center rounded-full",
-            TONE[verdict.tone],
+            TONE_CIRCLE[verdict.tone],
           )}
         >
           <Icon name={verdict.icon} size={22} />
