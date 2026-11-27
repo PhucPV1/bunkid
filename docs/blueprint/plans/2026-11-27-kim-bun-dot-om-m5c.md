@@ -132,7 +132,7 @@ Plan này đứng sau M5b. M5d mở sheet từ thẻ "Lần khám" và dùng `Of
 - Consumes: như mục Consumes ở trên.
 - Produces: `OfflineNote`, `VisitPhotoTile`, `VisitSheetView`, `VisitSheet` (chữ ký ở Contracts); `toVietnameseError` đổi mã `23503` thành "Bản ghi liên quan không còn.".
 
-- [ ] **Step 0: Kiểm M5b đã xong, rồi tạo nhánh**
+- [x] **Step 0: Kiểm M5b đã xong, rồi tạo nhánh**
 
 ```bash
 git checkout main && git pull --ff-only
@@ -143,7 +143,9 @@ bunx vitest run
 
 Expected: lệnh `grep` in đúng một dòng (không thấy thì dừng và báo người dùng); `Test Files  211 passed (211)`, `Tests  2015 passed (2015)`. `main` có thêm commit khác thì ghi lại số xuất phát thật.
 
-- [ ] **Step 1: Viết test đỏ (Patch 1)**
+**Kết quả (2026-11-27):** `grep` in đúng một dòng (`6e3d1df`). Nền: `Test Files  211 passed (211)`, `Tests  2015 passed (2015)`. Khớp plan.
+
+- [x] **Step 1: Viết test đỏ (Patch 1)**
 
 `VisitSheetView`: các ô theo thứ tự, câu lỗi dưới "Lúc khám", "Lưu" tắt khi ô trống, đủ 6 ảnh thì ẩn "Thêm", nút xóa ảnh chỉ khi được xóa, viền nét đứt của ảnh chưa gửi, kho đầy, thẻ lỗi có "Thử lại" (ẩn trong lúc đang lưu), mất mạng, ba dạng của "Xóa lần khám", câu lỗi của server, và các ô và nút báo đúng việc. `VisitSheet`: mở đúng giá trị khi thêm mới và khi sửa, ai được xóa ảnh và lần khám, đủ 6 ảnh, kho đầy, mất mạng. `errors.test.ts`: mã `23503`.
 
@@ -532,12 +534,14 @@ index 60ec147..1e1028a 100644
        toVietnameseError({ code: "42501", message: "permission_denied" }),
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run`
 Expected: `Test Files  2 failed | 210 passed (212)`, `Tests  1 failed | 2015 passed (2016)`. `components/illness/visitsheet.test.tsx` không nạp được vì `./VisitSheet` chưa có; test đỏ là "maps a missing related row, as the outbox does" của `errors.test.ts`.
 
-- [ ] **Step 3: Viết sheet (Patch 2)**
+**Kết quả:** `Test Files  2 failed | 210 passed (212)`, `Tests  1 failed | 2015 passed (2016)`; `visitsheet.test.tsx` không nạp được, test đỏ là "maps a missing related row, as the outbox does". Khớp plan.
+
+- [x] **Step 3: Viết sheet (Patch 2)**
 
 ```diff
 diff --git a/components/OnlineOnly.tsx b/components/OnlineOnly.tsx
@@ -1051,12 +1055,14 @@ index d03920f..3dc6f2a 100644
    if (e instanceof Error) return `Có lỗi xảy ra: ${e.message}`;
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run && bun run typecheck`
 Expected: `Test Files  212 passed (212)`, `Tests  2034 passed (2034)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+**Kết quả:** `Test Files  212 passed (212)`, `Tests  2034 passed (2034)`; `tsc --noEmit` thoát 0. Khớp plan. Commit `96bddaf`.
+
+- [x] **Step 5: Commit**
 
 ```bash
 git add components/illness/VisitSheet.tsx components/OnlineOnly.tsx lib/data/errors.ts components/illness/visitsheet.test.tsx lib/data/errors.test.ts
@@ -1076,17 +1082,21 @@ git commit -m "feat(illness): the doctor's visit sheet" -m "Co-Authored-By: Clau
 - Consumes: mọi thứ của Task 1.
 - Produces: kết quả kiểm, ghi ngay trong plan; một đoạn đọc spec; `main` có M5c.
 
-- [ ] **Step 1: Chạy cả bộ kiểm**
+- [x] **Step 1: Chạy cả bộ kiểm**
 
 Run: `bun run typecheck && bunx vitest run`
 Expected: `tsc --noEmit` không báo lỗi; `Test Files  212 passed (212)`, `Tests  2034 passed (2034)`.
 
-- [ ] **Step 2: Build**
+**Kết quả:** `tsc` thoát 0; `Test Files  212 passed (212)`, `Tests  2034 passed (2034)`. Chạy lại sau khi xóa fixture: vẫn 212/2034.
+
+- [x] **Step 2: Build**
 
 Run: `bun run build`
 Expected: lần đầu có thể dừng với thông báo bảo mật của Next.js 16.4.3 (bình thường; không chạy `next upgrade`). Chạy lại đúng lệnh đó: `✓ Generating static pages using 9 workers (42/42)` và thoát mã 0.
 
-- [ ] **Step 3: Tạo trang fixture tạm**
+**Kết quả:** lần 1 thoát 1 (thông báo bảo mật của npm advisories sau khi đã `42/42`), lần 2 thoát 0, `✓ Generating static pages using 9 workers (42/42)`. Không chạy `next upgrade`.
+
+- [x] **Step 3: Tạo trang fixture tạm**
 
 Sheet chưa có lối vào, nên chỉ thấy ở đây. Trang vẽ `VisitSheetView` với một trong bảy trạng thái, chọn bằng `?case=`: `moi` (thêm mới, trống), `sua` (sửa, 3 ảnh, một ảnh của người khác, "Xóa lần khám" tắt), `sau` (đủ 6 ảnh), `chua-tai` (2 ảnh đã lưu, 2 ảnh tải lỗi), `day` (kho đầy), `mat-mang` (mất mạng), `loi` (câu lỗi dưới "Lúc khám" và câu lỗi của server). Tạo `app/fixture-visit-sheet/page.tsx` (không commit):
 
@@ -1216,7 +1226,9 @@ export default function Page() {
 Run: `bun run typecheck`
 Expected: `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 4: Kiểm trong trình duyệt (chỉ xem)**
+**Kết quả:** `tsc` thoát 0. Trang tạm có thêm trạng thái `chua-tai-ban` (như `chua-tai` nhưng `saving` và `busy` bật) để xem "Thử lại" lúc đang lưu; bản trang tạm đã dùng chép ở thư mục ghi chú của nhóm phiên (`m5c-fixture-page.tsx.txt`).
+
+- [x] **Step 4: Kiểm trong trình duyệt (chỉ xem)**
 
 Chạy `bun run dev` (lần đầu có thể dừng vì thông báo bảo mật: chạy lại). Mở các trang dưới trong khung Browser của app, cỡ 375×812 (xem mục "Trình duyệt" ở Ghi chú khi thực thi). Xóa phần tử `nextjs-portal` trong trang trước khi chụp. Thân sheet cuộn được: tìm phần tử cuộn bằng đoạn dưới rồi đặt `scrollTop`.
 
@@ -1240,7 +1252,23 @@ scroller.scrollTop = 9999;
 
 Dừng `bun run dev` khi xong. Ghi kết quả từng mục ngay dưới bước này, kèm số đo. Mục nào không cho thấy được thì ghi "chưa kiểm". Nếu bước này lộ ra lỗi và code phải đổi: sửa (test trước, code sau), rồi chạy lại Step 1 và Step 2 trước khi đi tiếp.
 
-- [ ] **Step 5: Xóa trang fixture**
+**Kết quả (khung Browser trong app, server chạy bằng `preview_start`; khung bị ẩn nên hiệu ứng trượt lên bị treo: trước mỗi lần đo gọi `document.getAnimations().forEach(a => a.finish())`; ảnh `m5c-*.jpg` ở thư mục ghi chú của nhóm phiên):**
+
+1. `moi`, `rose`, 375: đạt. Dòng phụ 1 dòng (cao 23); 5 nhãn đúng thứ tự; ô 317×44 ×3, "Lời dặn" 317×94; "Thêm" 60×78; "Lưu" 317×56; không có "Xóa lần khám".
+2. `sua`, `rose`, 375, cuộn cuối: đạt. 3 ảnh 60×78; 2 dấu × (vùng chạm 44×44, dấu 24×24 nằm đúng góc trên phải của ảnh, không bị cắt); ảnh thứ ba không có ×; "Thêm" cạnh ảnh; "Xóa lần khám" `disabled`, dòng lý do 2 dòng (cao 39); ellipsis 0; `scrollWidth - clientWidth` = 0.
+3. `chua-tai`, `night`, 375: đạt. Thẻ lỗi "Lần khám đã lưu, còn 2 ảnh chưa tải được." (2 dòng) với "Thử lại" 82×44; cuộn xuống: 4 ảnh, 2 ảnh sau `outline: dashed 2px`, thấy rõ ở `night`; "Thêm" xuống hàng dưới.
+   - Thêm `chua-tai-ban` (`rose`, 375): thẻ lỗi và "Thử lại" không có; "Lưu" `disabled` + `aria-busy="true"`; 4 dấu ×, ô chọn ảnh và "Xóa lần khám" đều `disabled`.
+4. `sau`, 375: đạt. 6 ảnh, 2 hàng (4 + 2); không có "Thêm", không có `input[type=file]`; "Xóa lần khám" bấm được.
+5. `day`, 375: đạt. 1 ảnh, không có "Thêm"; dòng "Kho ảnh đã đầy. …" 2 dòng.
+6. `mat-mang`, `rose`, 375: đạt. Dòng `role="status"` nền vàng ngay dưới dòng phụ; `button[type=submit]` và ô chọn ảnh `disabled`; × của ảnh đã lưu `disabled`, của ảnh chưa gửi (viền nét đứt) thì không; "Xóa lần khám" `disabled`; các ô chữ vẫn gõ được.
+7. `loi`, 375: đạt. "Lúc khám nằm ngoài đợt ốm." cách đáy ô "Lúc khám" 6 px; `role="alert"` "Mất kết nối mạng, thử lại sau." cách "Lưu" 8 px.
+8. `sua` với `light`, `dark`, `night`, 375: đạt; chữ, ô và dấu × đọc rõ (ở `night` dấu × tối trên nền ảnh sáng, vẫn rõ).
+9. Thêm 390×844: `chua-tai` (`rose`), `sua` (`rose`), `mat-mang` (`night`); 440×956: `chua-tai` (`rose`), `sua` (`dark`, `light`), `mat-mang` (`rose`). Ô rộng 332 / 382; ở 440 bốn ảnh và "Thêm" chung một hàng; ellipsis 0, không tràn ngang; trạng thái tắt như ở 375.
+10. Console (lọc lỗi): không có lỗi.
+
+Chưa kiểm: theme `peach`, `lavender`, `sea`; Safari iOS thật (bánh xe ngày giờ, chọn ảnh từ máy ảnh); bấm thật "Lưu", "Thêm", "Thử lại", xóa ảnh, xóa lần khám với Supabase (sheet chưa có lối vào trên trang thật; lần đầu ghi thật là việc của M5d). Không có bug, không có bản sửa.
+
+- [x] **Step 5: Xóa trang fixture**
 
 ```bash
 rm -r app/fixture-visit-sheet
@@ -1250,7 +1278,9 @@ git status --short  # không còn app/fixture-visit-sheet
 
 Expected: `tsc --noEmit` không báo lỗi. Nếu nó đỏ với lỗi trong `.next/…/types/validator.ts`: chạy `rm -rf .next/dev/types .next/types` rồi chạy lại, phải sạch.
 
-- [ ] **Step 6: Các chỗ đọc spec (Patch 3), commit**
+**Kết quả:** lần đầu `tsc` đỏ đúng như ghi (`.next/dev/types/validator.ts` còn trỏ tới trang tạm); `rm -rf .next/dev/types .next/types` rồi chạy lại: thoát 0. `git status --short` sạch.
+
+- [x] **Step 6: Các chỗ đọc spec (Patch 3), commit**
 
 ```diff
 diff --git a/docs/blueprint/specs/2026-11-26-kim-bun-dot-om-design.md b/docs/blueprint/specs/2026-11-26-kim-bun-dot-om-design.md
@@ -1263,7 +1293,7 @@ index 8458583..c2d6e89 100644
  - Có ảnh tải lỗi: sheet ở lại, chuyển sang sửa lần khám vừa lưu, hiện `ErrorCard` "Lần khám đã lưu, còn {k} ảnh chưa tải được." Các ảnh lỗi vẫn nằm trong phiếu; bấm "Lưu" lần nữa chỉ tải các ảnh đó.
 +- Mất mạng: đầu sheet có dòng "Cần kết nối mạng để thay đổi các mục dưới đây." (câu sẵn có của các mục cần mạng) thay cho `NeedsNetwork`, vốn nói chuyện tải trang; "Lưu", ô "Thêm", nút xóa của ảnh đã lưu và "Xóa lần khám" tắt; các ô chữ vẫn gõ được, ảnh chưa gửi vẫn bỏ ra được. "Lưu" cũng tắt khi ô "Lúc khám" bị xóa trống (không thêm câu nào). Mỗi lần bấm "Thêm" chọn một ảnh. Ảnh chưa gửi bỏ ra không hỏi lại (chưa gửi lên đâu cả); nút xóa của ảnh có nhãn đọc màn hình "Xóa ảnh". Trong lúc đang lưu, thẻ lỗi ẩn đi, để "Thử lại" không gửi lần thứ hai. Ảnh chưa gửi (vừa chọn, hay tải lỗi) có viền nét đứt, để biết ảnh nào còn chờ; viền khác bằng hình dạng nên đọc được cả ở theme `night`. Dòng "Kho ảnh đã đầy. …" chỉ hiện khi còn chỗ cho ảnh (chưa đủ 6). Lưu xong sheet đóng, không có toast; sửa mà không đổi gì thì "Lưu" chỉ đóng sheet. Thêm lần khám cho một đợt đã đóng: "Lúc khám" vẫn mặc định là lúc này, nằm ngoài đợt, nên phải chọn lại giờ trước khi lưu. Lần khám của một đợt chưa lên server (vừa bắt đầu, outbox chưa gửi) hay vừa bị xóa ở máy khác bị server từ chối; sheet báo câu sẵn có của outbox "Bản ghi liên quan không còn.". (Khác bản đã duyệt ngày 2026-11-26, vốn không nói mấy chỗ này. Chọn ở M5c ngày 2026-11-27 theo lời duyệt trước của người dùng; viền nét đứt thêm sau bước nhìn thử lúc viết plan M5.)
  - Nút "Lưu". Khi sửa có thêm "Xóa lần khám" (chủ gia đình hoặc người tạo lần khám), hỏi lại một lần: "Xóa lần khám này và các ảnh của nó?" Lần khám còn ảnh mà người đang dùng không xóa được (không phải chủ gia đình, không phải người thêm ảnh) thì nút tắt, kèm dòng "Còn ảnh do người khác thêm. Nhờ người đó hoặc chủ gia đình xóa trước."
- 
+
  ## 9. Báo cáo cho bác sĩ
 ```
 
@@ -1272,9 +1302,13 @@ git add docs/blueprint/specs/2026-11-26-kim-bun-dot-om-design.md
 git commit -m "docs: readings of §8.4 in the spec (M5c)" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
-- [ ] **Step 7: Ghi kết quả vào plan, commit**
+**Kết quả:** Patch 3 áp sạch; commit `3b860ff`.
+
+- [x] **Step 7: Ghi kết quả vào plan, commit**
 
 Ghi ngay dưới bước này: số đo đỏ và xanh của Task 1 có khớp plan không; kết quả Step 1, Step 2 và Step 4. Mục nào không cho thấy được thì ghi "chưa kiểm". Đánh dấu `[x]` các bước đã làm.
+
+**Kết quả:** đỏ và xanh của Task 1 khớp plan (2 file / 1 test đỏ → 212/2034). Step 1, 2, 4 như ghi ở trên. Không có lệch số nào.
 
 ```bash
 git status --short   # file plan này là untracked (??), hoặc đã được commit lúc duyệt thì là M; các file plan khác chưa chạy: không add chúng
@@ -1282,7 +1316,7 @@ git add docs/blueprint/plans/2026-11-27-kim-bun-dot-om-m5c.md
 git commit -m "docs(plan): the M5c plan and its check results" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
-- [ ] **Step 8: Đưa lên `main`**
+- [x] **Step 8: Đưa lên `main`**
 
 Chỉ khi mọi bước trên đều đạt và không còn lỗi đã biết (lỗi tìm thấy khi kiểm phải được sửa, có test, và ghi vào plan trước; sửa xong thì chạy lại Step 1 và Step 2). Không hỏi lại người dùng: xem mục "Lên `main` không cần hỏi" ở Ghi chú khi thực thi.
 
