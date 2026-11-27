@@ -128,7 +128,7 @@ Plan này đứng sau M5a. M5c (sheet), M5d (thẻ, luật tắt "Xóa đợt �
 - Consumes: `VisitRow`, `PhotoRow` (M5a); `compressPhoto`, `photoPath`, `PermissionDeniedError`, `supabase`, `vnDateString`.
 - Produces: `uploadPhoto`, `deletePhoto`; `Visit`, `VisitFields`, `VisitSaved`, `visitsKey`, `fetchVisits`, `useVisits`, `useVisitActions` (chữ ký ở Contracts).
 
-- [ ] **Step 0: Kiểm M5a đã xong, rồi tạo nhánh**
+- [x] **Step 0: Kiểm M5a đã xong, rồi tạo nhánh**
 
 ```bash
 git checkout main && git pull --ff-only
@@ -140,7 +140,7 @@ bunx vitest run
 
 Expected: lệnh `grep` đầu in đúng một dòng (M5a đã lên `main`, nghĩa là migration đã áp; không thấy thì dừng và báo người dùng); lệnh thứ hai in `1`; `Test Files  208 passed (208)`, `Tests  1981 passed (1981)`. `main` có thêm commit khác thì ghi lại số xuất phát thật; mọi con số sau lệch đúng bằng số test mới.
 
-- [ ] **Step 1: Viết test đỏ (Patch 1)**
+- [x] **Step 1: Viết test đỏ (Patch 1)**
 
 Hai file test mới. `photos.test.ts`: `usePhotos` gửi `visit_id is null`; `uploadPhoto` lưu object rồi hàng mang `visit_id`, xóa object lại khi hàng bị từ chối; `deletePhoto` xóa object trước, hàng sau. `illnessVisits.test.ts`: `fetchVisits` gom ảnh theo lần khám; `useVisits` có `enabled`; `add`, `update`, `remove`, `removePhoto` theo đúng thứ tự của §8.2.
 
@@ -633,12 +633,12 @@ index 0000000..6745c09
 +});
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run`
 Expected: `Test Files  2 failed | 208 passed (210)`, `Tests  19 failed | 1981 passed (2000)`. Mười chín test đỏ đều thuộc hai file mới (`uploadPhoto is not a function`, `fetchVisits is not a function`, …).
 
-- [ ] **Step 3: Viết `uploadPhoto`, `deletePhoto`, `useVisits`, `useVisitActions` (Patch 2)**
+- [x] **Step 3: Viết `uploadPhoto`, `deletePhoto`, `useVisits`, `useVisitActions` (Patch 2)**
 
 ```diff
 diff --git a/lib/data/illness.ts b/lib/data/illness.ts
@@ -955,12 +955,12 @@ index 89e2f9c..99a8067 100644
 +}
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run && bun run typecheck`
 Expected: `Test Files  210 passed (210)`, `Tests  2000 passed (2000)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/data/photos.ts lib/data/illness.ts lib/data/photos.test.ts lib/data/illnessVisits.test.ts
@@ -979,7 +979,7 @@ git commit -m "feat(illness): read and write doctor's visits and their photos" -
 - Consumes: `type Visit`, `type VisitFields` (Task 1, chỉ kiểu); `type EpisodeLike` (M2); `formatDayShort`, `formatVnTime`, `fromVnLocalInput`, `toVnLocalInput`, `vnDateString`.
 - Produces: `MAX_VISIT_PHOTOS`, `VisitRaw`, `visitToRaw`, `buildVisit`, `visitsOf`, `visitHeading`, `Viewer`, `photoDeletable`, `visitDelete`, `episodeDeleteBlock` (chữ ký ở Contracts).
 
-- [ ] **Step 1: Viết test đỏ (Patch 3)**
+- [x] **Step 1: Viết test đỏ (Patch 3)**
 
 ```diff
 diff --git a/lib/rules/visits.test.ts b/lib/rules/visits.test.ts
@@ -1255,12 +1255,12 @@ index 0000000..4a1a1ed
 +});
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run`
 Expected: `Test Files  1 failed | 210 passed (211)`, `Tests  2000 passed (2000)`. File đỏ là `lib/rules/visits.test.ts`, không nạp được vì `./visits` chưa có.
 
-- [ ] **Step 3: Viết luật (Patch 4)**
+- [x] **Step 3: Viết luật (Patch 4)**
 
 ```diff
 diff --git a/lib/rules/visits.ts b/lib/rules/visits.ts
@@ -1409,12 +1409,12 @@ index 0000000..57e684d
 +}
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run && bun run typecheck`
 Expected: `Test Files  211 passed (211)`, `Tests  2015 passed (2015)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/rules/visits.ts lib/rules/visits.test.ts
@@ -1433,17 +1433,17 @@ git commit -m "feat(illness): the rules of a doctor's visit" -m "Co-Authored-By:
 - Consumes: mọi thứ của Task 1 và Task 2.
 - Produces: kết quả kiểm, ghi ngay trong plan; hai đoạn đọc spec; `main` có M5b.
 
-- [ ] **Step 1: Chạy cả bộ kiểm**
+- [x] **Step 1: Chạy cả bộ kiểm**
 
 Run: `bun run typecheck && bunx vitest run`
 Expected: `tsc --noEmit` không báo lỗi; `Test Files  211 passed (211)`, `Tests  2015 passed (2015)`.
 
-- [ ] **Step 2: Build**
+- [x] **Step 2: Build**
 
 Run: `bun run build`
 Expected: lần đầu có thể dừng với thông báo bảo mật của Next.js 16.4.3 (bình thường; không chạy `next upgrade`). Chạy lại đúng lệnh đó: `✓ Generating static pages using 9 workers (42/42)` và thoát mã 0.
 
-- [ ] **Step 3: Trang Ảnh thật (chỉ xem)**
+- [x] **Step 3: Trang Ảnh thật (chỉ xem)**
 
 Chạy `bun run dev` (lần đầu có thể dừng vì thông báo bảo mật: chạy lại). Mở `http://localhost:3000/anh` trong khung Browser của app, cỡ 375×812 (xem mục "Trình duyệt" ở Ghi chú khi thực thi); cần đăng nhập thì nhờ người dùng. Không bấm gì trên trang. Đọc lệnh đọc ảnh trong trang (chỉ in đường dẫn, tên tham số và mã trả về; không in giá trị):
 
@@ -1468,7 +1468,7 @@ Không có mục nào (cache còn mới dưới 60 giây nên trang không đọ
 
 Expected: ít nhất một mục `path` `/rest/v1/photos` có `visit_id` trong `params`, `visitFilter` là `"is.null"` và `status` 200; trang vẽ lưới ảnh như trước (hoặc "Chưa có ảnh nào."). `status` 400 nghĩa là Supabase thật chưa có cột `visit_id`: dừng và báo người dùng (M5a chưa áp xong). Lọc console bằng `onlyErrors`: không có lỗi mới. Dừng `bun run dev` khi xong.
 
-- [ ] **Step 4: Các chỗ đọc spec (Patch 5), commit**
+- [x] **Step 4: Các chỗ đọc spec (Patch 5), commit**
 
 ```diff
 diff --git a/docs/blueprint/specs/2026-11-26-kim-bun-dot-om-design.md b/docs/blueprint/specs/2026-11-26-kim-bun-dot-om-design.md
@@ -1498,7 +1498,7 @@ git add docs/blueprint/specs/2026-11-26-kim-bun-dot-om-design.md
 git commit -m "docs: readings of §8.2 and §8.4 in the spec (M5b)" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
-- [ ] **Step 5: Ghi kết quả vào plan, commit**
+- [x] **Step 5: Ghi kết quả vào plan, commit**
 
 Ghi ngay dưới bước này: số đo đỏ và xanh của từng task có khớp plan không; kết quả Step 1 đến Step 3. Mục nào không cho thấy được thì ghi "chưa kiểm". Đánh dấu `[x]` các bước đã làm.
 
@@ -1507,6 +1507,18 @@ git status --short   # file plan này là untracked (??), hoặc đã được c
 git add docs/blueprint/plans/2026-11-27-kim-bun-dot-om-m5b.md
 git commit -m "docs(plan): the M5b plan and its check results" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
+
+**Kết quả kiểm (2026-11-27, phiên thực thi M5b):**
+
+- Step 0: `main` = `origin/main` = `dc80473`, có "the M5a plan and its check results" (`91a9168`). `grep -c '"illness_visits"' lib/supabase/types.ts` in `2`, không phải `1`: dòng thứ hai là `referencedRelation: "illness_visits"` của khóa ngoại `photos.visit_id`, do `db:types` sinh ra (M5a đã khớp từng byte). Plan đếm thiếu, không phải lỗi. Nền vitest `208 passed (208)`, `1981 passed (1981)`, khớp.
+- Task 1: đỏ `2 failed | 208 passed (210)`, `19 failed | 1981 passed (2000)`, 19 test đỏ đều thuộc hai file mới: khớp. Xanh `210 passed (210)`, `2000 passed (2000)`; `tsc` exit 0: khớp. Commit `e31e227`.
+- Task 2: đỏ `1 failed | 210 passed (211)`, `2000 passed (2000)`, `lib/rules/visits.test.ts` không nạp được (`Cannot find module './visits'`): khớp. Xanh `211 passed (211)`, `2015 passed (2015)`; `tsc` exit 0: khớp. Commit `167aeed`.
+- Step 1: `tsc --noEmit` exit 0; `211 passed (211)`, `2015 passed (2015)`.
+- Step 2: lần 1 thoát 1 với `SecurityFatalError` của Next.js 16.4.3 sau khi đã `✓ Generating static pages using 9 workers (42/42)`; lần 2 thoát 0, 42/42, `/anh` `○`. Không chạy `next upgrade`.
+- Step 3: khung Browser trong app, 375×812 (`innerWidth` 375), `/anh` thật, không bấm gì. Một mục `/rest/v1/photos`, `params` `select, baby_id, visit_id, order, offset, limit`, `visitFilter` `"is.null"`, `status` 200. Trang vẽ lưới ảnh như trước: 3 ảnh, nhóm "2 tháng tuổi" (2) và "1 tháng tuổi" (1), cả 3 tải xong; "Đã dùng 1 MB / 1 GB". Console `onlyErrors`: không có lỗi. Server dev đã tắt.
+- Step 4: Patch 5 áp sạch, commit `2c0dc6f`.
+- Không lỗi nào lộ ra, không bản sửa.
+- Chưa kiểm: thêm, sửa, xóa lần khám và ảnh đơn thuốc trên Supabase thật (plan này không có màn hình; chỉ được xem trang thật); RLS của `illness_visits` trên server thật; số ảnh trước và sau bộ lọc chỉ suy ra (chưa có lần khám nào nên mọi ảnh đều có `visit_id` null), không đếm riêng.
 
 - [ ] **Step 6: Đưa lên `main`**
 
