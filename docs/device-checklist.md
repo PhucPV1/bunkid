@@ -691,3 +691,27 @@ Kết quả: Chờ người dùng.
 | iPhone 11     |     |         |         |
 | iPhone 16     |     |         |         |
 | iPhone 17 Pro |     |         |         |
+
+## Bước 39 — Triệu chứng theo ngày (spec 2026-11-27)
+
+Bước này thay mục 1–4, 18 và 24 của Bước 38 ở những chỗ nói tới phiếu "Triệu chứng" cũ (chip "Lúc nào?", toast có "Hoàn tác", phiếu "Bản ghi" của Nhật ký): phiếu đó không còn. Mục 2–5 tạo một bản ghi Triệu chứng thử cho hôm qua; mục 6–10 tạo một đợt ốm thử và hai bản ghi Triệu chứng thử cho hôm nay (một của chủ, một của thành viên; mục 10 gộp chúng làm một), cần hai máy cùng gia đình: máy A đăng nhập bằng tài khoản chủ, máy B bằng một thành viên không phải chủ; mục 11 xóa hết.
+
+1. Máy A, bé không có đợt ốm nào đang mở. Bấm "+", nhóm "Khác", "Triệu chứng". Kỳ vọng: phiếu "Triệu chứng" có nhãn "Ngày nào?" và một dải ô vuông: năm ô thứ ("T2"…"CN"), "Hôm qua", "Hôm nay", rồi ô "Khác" có icon lịch; dải đã cuộn sẵn tới cuối, ô "Hôm nay" nền đậm; không có "Lúc nào?". Dòng "Bấm những gì bé có trong ngày."; ô ghi chú mờ, dưới ô có dòng "Bật ít nhất một triệu chứng để ghi chú."; nút "Lưu" mờ. Không chữ nào bị cắt.
+2. Bấm ô "Hôm qua", chọn "Ho", gõ ghi chú "thử", bấm "Lưu". Kỳ vọng: phiếu đóng, toast "Đã lưu triệu chứng {dd/mm của hôm qua}", không có nút "Hoàn tác". Tab Nhật ký, ngày hôm qua: dòng "Triệu chứng: Ho · thử" đứng đầu ngày, chỗ giờ ghi "Cả ngày".
+3. Bấm "+" → "Triệu chứng" lần nữa. Kỳ vọng: ô "Hôm qua" có một chấm nhỏ. Bấm ô "Hôm qua". Kỳ vọng: chip "Ho" bật sẵn, ô ghi chú có "thử", dòng nền hồng "Ngày này đã ghi Ho. Bấm để thêm hoặc bỏ rồi Lưu.". Chọn thêm "Sổ mũi", bấm "Lưu". Kỳ vọng: ở Nhật ký ngày hôm qua vẫn chỉ một dòng triệu chứng, nay là "Triệu chứng: Sổ mũi, Ho · thử".
+4. Bấm "+" → "Triệu chứng", chạm ô "Khác". Kỳ vọng: bánh xe chọn ngày của iOS mở ra; không chọn được ngày sau hôm nay. Chọn ngày cách đây 10 ngày, bấm "Xong". Kỳ vọng: ô "Khác" nền đậm, dòng dưới đổi thành ngày đó (dd/mm); không ô ngày nào khác nền đậm. Đóng phiếu (không lưu).
+5. Nhật ký, bấm dòng triệu chứng của hôm qua. Kỳ vọng: phiếu "Triệu chứng · {dd/mm}" với dòng "Cả ngày", không có dải ngày; dưới "Lưu" có nút chữ đỏ "Xóa triệu chứng ngày này". Đóng phiếu. Bấm "Ghi bù". Kỳ vọng: ô "Loại" không còn "Triệu chứng". Đóng phiếu.
+6. Máy A: Sức khỏe → "Đợt ốm" → "Bắt đầu đợt ốm". Kỳ vọng: ở "Từng ngày", hàng "Hôm nay · ngày 1" có nút nhỏ "+ Ghi triệu chứng". Bấm nút đó. Kỳ vọng: phiếu "Triệu chứng · {dd/mm}" với dòng "Ngày 1 của đợt ốm · cả ngày", không có dải ngày, không có nút xóa. Chọn "Sốt", bấm "Lưu". Kỳ vọng: hàng có chip "Sốt" và ngay sau là nút "Sửa" có hình bút chì; hàng tự nó không bấm được.
+7. Trong thẻ trên cùng bấm "Triệu chứng". Kỳ vọng: nhãn "Ngày nào? · đợt ốm từ {dd/mm}" và một ô "Hôm nay" có chấm, cộng ô "Khác". Đóng phiếu.
+8. Máy B (thành viên), trang chi tiết của đợt vừa mở, chờ tối đa 2 phút cho thấy chip "Sốt". Bấm "Sửa" ở hàng hôm nay. Kỳ vọng: chip "Sốt" bật nhưng mờ, chạm vào không tắt; dưới các chip có dòng "Chip mờ do người khác ghi, chỉ họ hoặc chủ gia đình bỏ được."; ô ghi chú mờ; không có nút xóa. Bật "Ho", gõ "máy B", bấm "Lưu". Kỳ vọng: hàng hôm nay có "Sốt" và "Ho". Máy A (sau tối đa 30 giây) cũng thấy hai chip đó. Máy A bấm "Báo cáo cho bác sĩ". Kỳ vọng: bảng "Triệu chứng" có cột đầu tên "Ngày", một hàng cho hôm nay với "Sốt, Ho" và ghi chú "máy B".
+9. Máy A bật Ban đêm, mở "+" → "Triệu chứng". Kỳ vọng: ô đang chọn của dải khác hẳn các ô khác (nền đậm, chữ sáng); chấm của ô "Hôm qua" vẫn thấy. Mở "Sửa" ở hàng hôm nay trên máy B khi bật Ban đêm. Kỳ vọng: chip mờ vẫn phân biệt được với chip thường. Tắt Ban đêm.
+10. Máy A (chủ) mở "Sửa" ở hàng hôm nay. Kỳ vọng: "Sốt" và "Ho" đều bật, không chip nào mờ (chủ sửa được mọi bản ghi); ô ghi chú có "máy B"; có nút "Xóa triệu chứng ngày này". Bật thêm "Quấy", bấm "Lưu". Kỳ vọng: toast "Đã lưu triệu chứng hôm nay"; hàng hôm nay có "Sốt", "Ho", "Quấy". Tab Nhật ký, hôm nay: chỉ còn **một** dòng triệu chứng, "Triệu chứng: Sốt, Ho, Quấy · máy B", người ghi là người của máy A (bản ghi của máy B đã gộp vào bản ghi cũ hơn của máy A rồi bị xóa). Máy B (sau tối đa 30 giây) mở "Sửa" ở hàng hôm nay. Kỳ vọng: cả ba chip đều mờ, ô ghi chú mờ, không có nút xóa. Đóng phiếu.
+11. Dọn: máy A mở "Sửa" ở hàng hôm nay, bấm "Xóa triệu chứng ngày này". Kỳ vọng: hỏi lại "Xóa triệu chứng ngày {dd/mm}?"; đồng ý thì toast "Đã xóa triệu chứng {dd/mm}", hàng trở lại "+ Ghi triệu chứng". Bút chì → "Xóa đợt ốm". Nhật ký: bấm dòng triệu chứng của hôm qua, "Xóa triệu chứng ngày này", đồng ý.
+
+Kết quả: Chờ người dùng.
+
+| Máy           | iOS | Kết quả | Ghi chú |
+| ------------- | --- | ------- | ------- |
+| iPhone 11     |     |         |         |
+| iPhone 16     |     |         |         |
+| iPhone 17 Pro |     |         |         |
