@@ -39,7 +39,7 @@ Steps use checkbox (`- [ ]`) syntax for tracking.
 
 1. **Mô hình trả tỉ lệ 0–1, component đổi ra tọa độ.** `viewBox` là 330×204: vùng vẽ từ x 34 tới 322 và y 26 tới 154 (chừa chỗ phía trên cho nhãn của lần đo nằm sát đỉnh thang), hàng liều hạ sốt ở y 170, tên ngày ở y 198.
 2. **Hàng liều hạ sốt nằm dưới vùng vẽ** như spec ghi; bản vẽ đặt các hình thoi đè lên đáy vùng vẽ.
-3. **Nhãn giá trị** chỉ có ở chấm mới nhất và ở chấm cao nhất từ 38,0 (hai lần đo cao nhất bằng nhau: lấy lần sau); cùng một chấm thì một nhãn. Spec không nói chỗ đặt nhãn. Plan chọn: nhãn nằm trên chấm, không kèm "°C" (đơn vị đã ghi ở trục); nhãn neo đầu hoặc cuối chữ vào chấm khi chấm cách mép dưới 10% bề ngang; mỗi nhãn có một viền màu nền thẻ để đọc được khi đường nối chạy qua. Riêng nhãn của chấm mới nhất: mô hình tính ô chữ của nó và lấy chỗ đầu tiên không che một chấm khác hay nhãn của chấm cao nhất, theo thứ tự trên chấm, bên phải chấm (bên phải chấm mới nhất không bao giờ có gì được vẽ; dùng khi chấm chưa quá 85% bề ngang), dưới chấm (khi chấm cao hơn 20% bề cao), bên trái chấm (khi chấm đã quá 85% bề ngang); không chỗ nào trống thì ở trên. Trường hợp cuối đó còn xảy ra khi hai lần đo sát giờ nhau nằm cuối ngày và thấp trên thang (ví dụ 36,9 rồi 36,5 cách nhau một giờ): nhãn khi ấy che một phần chấm trước, số vẫn đọc được. Bài học từ biểu đồ Tăng trưởng: nhãn đè nhau là loại lỗi hay gặp nhất, và dáng thường gặp nhất ở đây là đo lại sau một liều hạ sốt, thấp hơn lần trước một chút.
+3. **Nhãn giá trị** chỉ có ở chấm mới nhất và ở chấm cao nhất từ 38,0 (hai lần đo cao nhất bằng nhau: lấy lần sau); cùng một chấm thì một nhãn. Spec không nói chỗ đặt nhãn. Plan chọn: nhãn nằm trên chấm, không kèm "°C" (đơn vị đã ghi ở trục); nhãn neo đầu hoặc cuối chữ vào chấm khi chấm cách mép dưới 10% bề ngang; mỗi nhãn có một viền màu nền thẻ để đọc được khi đường nối chạy qua. Riêng nhãn của chấm mới nhất: mô hình tính ô chữ của nó và lấy chỗ đầu tiên không che một chấm khác hay nhãn của chấm cao nhất, theo thứ tự trên chấm, bên phải chấm (bên phải chấm mới nhất không bao giờ có gì được vẽ; dùng khi chấm chưa quá 85% bề ngang), dưới chấm (khi chấm cao hơn 20% bề cao), bên trái chấm (khi chấm đã quá 85% bề ngang); không chỗ nào trống thì lấy chỗ che các chấm khác ít nhất, và không bao giờ lấy chỗ chạm nhãn của chấm cao nhất (sửa ngày 2026-11-27 sau bước trình duyệt; bản đầu ghi "thì ở trên", làm hai nhãn số đè lên nhau trên trục nhiều ngày: xem "Sửa lỗi lộ ra khi kiểm" ở cuối file). Không chỗ nào trống là khi mấy lần đo cuối chỉ cách nhau vài pixel: trục 5 đến 7 ngày, hoặc đo dồn trong vài giờ. Nhãn khi ấy có thể che một phần một chấm trước, số vẫn đọc được. Bài học từ biểu đồ Tăng trưởng: nhãn đè nhau là loại lỗi hay gặp nhất, và dáng thường gặp nhất ở đây là đo lại sau một liều hạ sốt, thấp hơn lần trước một chút.
 4. **Chữ "Sốt" của vùng tô** nằm ở góc trên phải như bản vẽ; khi một chấm hay một nhãn chạm tới chỗ đó thì chữ sang góc trên trái, rồi tới giữa; cả ba chỗ đều vướng thì ở lại bên phải.
 5. **Đợt dài hơn 7 ngày:** chỉ vẽ 7 ngày cuối; thang nhiệt tính theo các lần đo được vẽ. Đợt có lần đo nhưng không lần nào nằm trong 7 ngày cuối: vẽ khung trống, không dùng câu "Chưa có lần đo nào trong đợt này." (câu đó chỉ cho đợt không có lần đo nào).
 6. **`aria-label`:** "Biểu đồ nhiệt độ: {n} lần đo, cao nhất {x}°C, {m} liều hạ sốt."; đợt bị cắt thì "Biểu đồ nhiệt độ, 7 ngày gần nhất: …" và ba con số chỉ tính 7 ngày được vẽ. Spec chỉ nêu ba thứ phải có.
@@ -69,7 +69,7 @@ Steps use checkbox (`- [ ]`) syntax for tracking.
 
 ### Ghi chú khi thực thi (của plan này, không thuộc spec)
 
-- **Patch.** Mọi thay đổi nằm trong các khối `diff`, đánh số **Patch 1** đến **Patch 4** theo thứ tự xuất hiện trong file này. Áp bằng lệnh dưới (dán cả hàm vào cùng một lần gọi shell), hoặc sửa tay: dòng bắt đầu bằng `-` là bỏ, `+` là thêm.
+- **Patch.** Mọi thay đổi nằm trong các khối `diff`, đánh số **Patch 1** đến **Patch 4** theo thứ tự xuất hiện trong file này (thêm ngày 2026-11-27: **Patch 5** đến **Patch 8** ở cuối file là hai bản sửa lỗi lộ ra khi kiểm). Áp bằng lệnh dưới (dán cả hàm vào cùng một lần gọi shell), hoặc sửa tay: dòng bắt đầu bằng `-` là bỏ, `+` là thêm.
 
 ```bash
 kb_patch() {
@@ -109,7 +109,7 @@ Plan này đứng sau M2b. M2f đặt `FeverChartCard` lên trang chi tiết; M4
 
 - `lib/rules/illness.ts`: `type FeverChartLabel`, `type FeverChartPoint`, `type FeverChart`, `feverChartModel(logs: LogLike[], episode: EpisodeLike, now: Date): FeverChart | null` (kiểu đầy đủ ở Task 1).
 - `components/illness/FeverChart.tsx`: `FeverChart(props: { chart: FeverChart })`; `FeverChartCard(props: { chart: FeverChart | null })`.
-- **Vitest sau M2c:** 1798 test, 193 file.
+- **Vitest sau M2c:** 1801 test, 193 file (plan viết 1798; hai bản sửa lỗi ở cuối file thêm 3 test, nên con số "sau plan" của M2d đến M2g đều cộng 3).
 
 ---
 
@@ -129,7 +129,7 @@ Plan này đứng sau M2b. M2f đặt `FeverChartCard` lên trang chi tiết; M4
   - `type FeverChart = { truncated: boolean; days: { day: string; label: string; x: number }[]; dividers: number[]; ticks: { celsius: number; y: number }[]; feverY: number; feverWord: "start" | "middle" | "end"; points: FeverChartPoint[]; doses: { at: number; x: number }[]; ariaLabel: string }`. Mọi `x` và `y` là tỉ lệ 0–1 của vùng vẽ (`x` từ trái sang, `y` từ độ thấp nhất lên).
   - `feverChartModel(logs: LogLike[], episode: EpisodeLike, now: Date): FeverChart | null` (`null` khi đợt không có lần đo nào)
 
-- [ ] **Step 0: Kiểm M2b đã xong, rồi tạo nhánh**
+- [x] **Step 0: Kiểm M2b đã xong, rồi tạo nhánh**
 
 ```bash
 git checkout main && git pull --ff-only
@@ -140,7 +140,7 @@ bunx vitest run
 
 Expected: dòng `M2b có trên main`; `Test Files  191 passed (191)`, `Tests  1772 passed (1772)`. Không thấy dòng đó thì dừng: M2b chưa lên `main`. Số test khác đi vì `main` có commit mới thì vẫn làm tiếp, và ghi lại số xuất phát thật.
 
-- [ ] **Step 1: Viết test đỏ (Patch 1)**
+- [x] **Step 1: Viết test đỏ (Patch 1)**
 
 ```diff
 diff --git a/lib/rules/feverChart.test.ts b/lib/rules/feverChart.test.ts
@@ -494,12 +494,12 @@ index 0000000..10b852a
 +});
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run`
 Expected: `Test Files  1 failed | 191 passed (192)`, `Tests  15 failed | 1772 passed (1787)`. 15 test của file mới đỏ vì `feverChartModel` chưa có.
 
-- [ ] **Step 3: Viết mô hình (Patch 2)**
+- [x] **Step 3: Viết mô hình (Patch 2)**
 
 Patch thêm vào cuối `lib/rules/illness.ts` và thêm `formatDayShort` vào dòng import đầu file.
 
@@ -743,12 +743,12 @@ index 1ad983e..81f9c1b 100644
 +}
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run && bun run typecheck`
 Expected: `Test Files  192 passed (192)`, `Tests  1787 passed (1787)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/rules/illness.ts lib/rules/feverChart.test.ts
@@ -770,7 +770,7 @@ git commit -m "feat(illness): the fever chart model" -m "Co-Authored-By: Claude 
   - `FeverChartCard(props: { chart: FeverChart | null })`: thẻ "Nhiệt độ và thuốc hạ sốt" có hình, chú thích, dòng "7 ngày gần nhất" khi bị cắt; `null` thì chỉ có câu "Chưa có lần đo nào trong đợt này."
   - Để test và bước trình duyệt tìm: nhãn giá trị mang `data-point-label`, mốc liều mang `data-dose`, vạch ranh giới ngày mang `data-day-border`.
 
-- [ ] **Step 1: Viết test đỏ (Patch 3)**
+- [x] **Step 1: Viết test đỏ (Patch 3)**
 
 ```diff
 diff --git a/components/illness/feverchart.test.tsx b/components/illness/feverchart.test.tsx
@@ -922,12 +922,12 @@ index 0000000..e337d67
 +});
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run`
 Expected: `Test Files  1 failed | 192 passed (193)`, `Tests  1787 passed (1787)`. File test mới không nạp được vì `./FeverChart` chưa có, nên 11 test của nó chưa được đếm.
 
-- [ ] **Step 3: Viết component (Patch 4)**
+- [x] **Step 3: Viết component (Patch 4)**
 
 Hình vẽ bằng SVG tay, không dùng recharts: render tĩnh được nên test đọc được từng phần tử. Màu chỉ lấy qua biến CSS của theme.
 
@@ -1175,12 +1175,12 @@ index 0000000..f1c3b29
 +}
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run && bun run typecheck`
 Expected: `Test Files  193 passed (193)`, `Tests  1798 passed (1798)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add components/illness/FeverChart.tsx components/illness/feverchart.test.tsx
@@ -1199,17 +1199,17 @@ git commit -m "feat(illness): the fever chart" -m "Co-Authored-By: Claude Fable 
 - Consumes: mọi thứ của các task trước trong plan này.
 - Produces: kết quả kiểm, ghi ngay trong plan; `main` có M2c.
 
-- [ ] **Step 1: Chạy cả bộ kiểm**
+- [x] **Step 1: Chạy cả bộ kiểm**
 
 Run: `bun run typecheck && bunx vitest run`
 Expected: `tsc --noEmit` không báo lỗi; `Test Files  193 passed (193)`, `Tests  1798 passed (1798)`.
 
-- [ ] **Step 2: Build**
+- [x] **Step 2: Build**
 
 Run: `bun run build`
 Expected: lần đầu có thể dừng với thông báo bảo mật của Next.js 16.4.3 (bình thường; không chạy `next upgrade`). Chạy lại đúng lệnh đó: `✓ Generating static pages` và thoát mã 0.
 
-- [ ] **Step 3: Tạo trang fixture tạm**
+- [x] **Step 3: Tạo trang fixture tạm**
 
 Biểu đồ chưa nằm trên trang nào của app, nên chỉ thấy được ở đây: mười ba dáng, gồm những dáng dễ làm nhãn đè nhau. Trang này không đọc hay ghi dữ liệu của gia đình và vẽ được khi chưa đăng nhập. Tạo `app/fixture-illness/page.tsx` (không commit):
 
@@ -1384,7 +1384,7 @@ export default function Page() {
 Run: `bun run typecheck`
 Expected: `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 4: Kiểm trong trình duyệt (chỉ xem)**
+- [x] **Step 4: Kiểm trong trình duyệt (chỉ xem)**
 
 Chạy `bun run dev` (lần đầu có thể dừng vì thông báo bảo mật: chạy lại). Mở `http://localhost:3000/fixture-illness` trong khung Browser của app, cỡ 375×812 (xem mục "Trình duyệt" ở Ghi chú khi thực thi). Xóa phần tử `nextjs-portal` trong trang trước khi chụp.
 
@@ -1458,7 +1458,24 @@ Trang thật (chỉ xem): mở `http://localhost:3000/`. Trang mở được nh�
 
 Dừng `bun run dev` khi xong. Ghi kết quả từng mục ngay dưới bước này, kèm số đo: bề ngang của hình ở 375 px, kết quả của đoạn đo ở từng theme và từng bề ngang. Mục nào không cho thấy được thì ghi "chưa kiểm". Nếu bước này lộ ra lỗi và code phải đổi: sửa (test trước, code sau), rồi chạy lại Step 1 và Step 2 trước khi đi tiếp.
 
-- [ ] **Step 5: Xóa trang fixture**
+**Kết quả Step 4 (2026-11-27, khoảng 09:45 đến 10:20, khung Browser trong app):**
+
+Server dev chạy bằng `preview_start` với một `.claude/launch.json` tạm (đã xóa). Khung mở ở theme `dark`; theme đổi bằng `document.documentElement.dataset.theme` trong trang. Ban ngày nên app không tự đặt lại `night`. Khung bỏ cỡ 375 px một lần giữa hai ảnh chụp trong cùng một lượt gọi; từ đó mỗi lượt đặt lại cỡ và đọc `innerWidth` trước khi đo.
+
+- Mục 1: đạt. `innerWidth` 375, `scrollWidth` 375; 13 khối, 13 thẻ, 12 hình.
+- Mục 2 đến 10: đạt, đọc bằng thuộc tính của từng phần tử và nhìn ảnh chụp. "3 ngày": 10 chấm, 1 đường nối, 1 chấm to có viền, "39,2" trên chấm cao nhất, "37,6" bên phải chấm mới nhất, 4 hình thoi cùng một hàng, 2 vạch ranh giới, "Sốt" ở góc phải, một đường nét đứt, trục 36 đến 40 với 38 đậm, "°C". "hơn 7 ngày": 7 chấm, 7 nhãn ngày, 6 vạch, dòng "7 ngày gần nhất", nhãn "39,1" và "37". "không có lần đo": chỉ tiêu đề và một câu. Chỗ đặt nhãn của các khối còn lại đúng như plan tả: bên phải ("38,9", "38,1"), dưới ("38,1" sát mép phải), bên trái ("38,3"), "Sốt" sang trái ở ba khối có nhãn hay chấm ở góc trên phải, hai nhãn "40" nằm trọn trong hình, thang 34 đến 43 đủ mười số.
+- Mục 11, ở 375 px: hình rộng 317 px; `overlaps`, `outside`, `onDot` rỗng ở cả 12 khối có hình. Nhãn "Hôm nay" rộng 44 px, nhãn ngày khác 25 đến 26 px.
+- Mục 12: đoạn đo rỗng ở cả bốn theme `rose`, `light`, `dark`, `night`. Nhìn bằng mắt: `rose` (khối 1 đến 5 và 9 đến 11, phóng to khối "nhãn bên trái chấm"), `night` (khối 1 đến 3), `light` (khối 9 đến 11), `dark` (khối 5 đến 7). Ở `night` chấm tròn và hình thoi khác nhau rõ bằng hình dạng; chữ "Sốt", đường 38 nét đứt và các nhãn đọc được. Chưa nhìn bằng mắt: từng khối ở từng theme (các khối còn lại chỉ có số đo).
+- Mục 13: 390 px (hình 332 px) và 440 px (hình 382 px): đoạn đo rỗng ở cả bốn theme.
+- Trang thật: `/` mở được, đang đăng nhập, tab Hôm nay như trước, không tràn ngang, không có lỗi console mới. Không bấm gì.
+
+**Ngoài plan, vì cách đặt nhãn chưa reviewer nào đọc lại:** một trang tạm thứ hai vẽ 600 đợt ốm sinh ngẫu nhiên (hạt giống cố định; 1 đến 10 ngày, tới 13 lần đo, 60% số đợt có thêm một cụm đo trong 5 giờ cuối) và chạy đúng đoạn đo của mục 11 lên tất cả. Kết quả lần đầu: 44 đợt không rỗng, gồm 12 đợt có hai nhãn số đè lên nhau và 38 đợt nhãn đè lên một chấm; cả 44 đều là nhánh "không chỗ nào trống thì ở trên". Các chỗ đặt khác (phải, dưới, trái) không lệch với trình duyệt ở đợt nào. Console của trang đó còn báo hai phần tử trùng key. Hai lỗi đã sửa, xem "Sửa lỗi lộ ra khi kiểm" ở cuối file.
+
+**Sau hai bản sửa, chạy lại cả bước này:** 13 khối của plan giữ nguyên chỗ đặt nhãn; thêm 4 khối cho các dáng vừa tìm ra (trục 7 ngày "39 / 38,2 / 38,6", trục 6 ngày "40 rồi 39,9", hai lần đo và hai liều cùng một phút, "36,9 rồi 36,5" sát mép phải). 16 khối có hình: đoạn đo rỗng ở 375, 390, 440 px, mỗi bề ngang bốn theme. 600 đợt ngẫu nhiên ở 375, 390, 440 px: 0 đợt chữ đè nhau, 0 đợt chữ ra ngoài hình, 22 đợt nhãn che một phần một chấm trước (cụm đo dày, không chỗ nào trống: giới hạn đã ghi ở Diễn giải 3). Tải lại trang có hai liều cùng phút: không thêm lỗi console nào.
+
+**Chưa kiểm:** ba theme `peach`, `lavender`, `sea` (plan không liệt kê); máy thật; biểu đồ trên trang thật (chưa trang nào dùng nó, M2f mới đặt lên).
+
+- [x] **Step 5: Xóa trang fixture**
 
 ```bash
 rm -r app/fixture-illness
@@ -1468,7 +1485,7 @@ git status --short  # không còn app/fixture-illness
 
 Expected: `tsc --noEmit` không báo lỗi. Nếu nó đỏ với lỗi trong `.next/…/types/validator.ts` (thư mục `.next` còn trỏ tới trang tạm vừa xóa): chạy `rm -rf .next/dev/types .next/types` rồi chạy lại, phải sạch.
 
-- [ ] **Step 6: Ghi kết quả vào plan, commit**
+- [x] **Step 6: Ghi kết quả vào plan, commit**
 
 Ghi ngay dưới bước này: số đo đỏ và xanh của từng task có khớp plan không; kết quả Step 1, Step 2 và Step 4. Mục nào không cho thấy được thì ghi "chưa kiểm". Đánh dấu `[x]` các bước đã làm.
 
@@ -1478,7 +1495,23 @@ git add docs/blueprint/plans/2026-11-26-kim-bun-dot-om-m2c.md
 git commit -m "docs(plan): the M2c plan and its check results" -m "Co-Authored-By: Claude Fable 5.2 <noreply@anthropic.com>"
 ```
 
+**Kết quả (2026-11-27):**
+
+- **Điểm xuất phát và điểm dừng khác plan, theo lời giao của phiên điều phối:** nhánh `feat/kim-bun-dot-om-m2c` cắt từ `feat/kim-bun-dot-om-m2b` @ `79066d8`, không từ `main`; Step 7 không chạy: không gộp vào `main`, không đẩy gì lên `origin`. Lý do: migration `20261126000200_illness_episodes.sql` của M2a chưa áp lên Supabase thật, và spec cấm đưa lên `main` code cần một migration chưa áp; phiên điều phối gộp và đẩy cả chồng nhánh M2 sau.
+- Step 0: `canReopen` có trên nhánh M2b; nền 191 file / 1772 test, khớp. Các file plan của M2 đã được commit từ trước (ghi chú "chưa được commit" không còn đúng), nên Step 6 commit file này như một file đã theo dõi.
+- Task 1: đỏ `1 failed | 191 passed (192)`, `15 failed | 1772 passed (1787)`; xanh 192 file / 1787 test; `tsc --noEmit` thoát 0. Khớp plan.
+- Task 2: đỏ `1 failed | 192 passed (193)`, `1787 passed (1787)`; xanh 193 file / 1798 test; `tsc --noEmit` thoát 0. Khớp plan.
+- Bốn patch áp sạch, không sửa tay.
+- Step 1 (trước các bản sửa): `tsc --noEmit` thoát 0; 193 file / 1798 test. Step 2: lần đầu thoát 1 với thông báo bảo mật của Next.js 16.4.3 (không chạy `next upgrade`), lần hai thoát 0, 40/40 trang tĩnh.
+- Bản sửa 1 (Patch 5, 6): đỏ `2 failed | 1797 passed (1799)`; xanh 193 file / 1799 test.
+- Bản sửa 2 (Patch 7, 8): đỏ `2 failed | 1799 passed (1801)`; xanh 193 file / 1801 test.
+- Sau hai bản sửa, chạy lại Step 1 và Step 2: `tsc --noEmit` thoát 0; **193 file / 1801 test**; build lần đầu thoát 1 (cùng thông báo), lần hai thoát 0, 40/40 trang tĩnh. Rồi chạy lại Step 4 (kết quả ghi ở đó).
+- Step 5: sau khi xóa trang tạm, `tsc` đỏ ở `.next/dev/types/validator.ts` đúng như dự báo; xóa `.next/dev/types` và `.next/types` thì sạch.
+- pgTAP: không chạy (plan không đụng DB).
+
 - [ ] **Step 7: Đưa lên `main`**
+
+**Không chạy (2026-11-27):** xem dòng đầu của phần Kết quả ở Step 6. Nhánh `feat/kim-bun-dot-om-m2c` dừng ở trạng thái đã commit, chưa gộp, chưa đẩy.
 
 Chỉ khi mọi bước trên đều đạt và không còn lỗi đã biết (lỗi tìm thấy khi kiểm phải được sửa, có test, và ghi vào plan trước; sửa xong thì chạy lại Step 1 và Step 2). Không hỏi lại người dùng: xem mục "Lên `main` không cần hỏi" ở Ghi chú khi thực thi.
 
@@ -1493,3 +1526,310 @@ git rev-parse --short origin/main   # hai dòng phải giống nhau
 `git merge --ff-only` từ chối (ai đó đã đẩy thêm lên `main`) thì dừng và báo, không tự rebase.
 
 Báo cáo bằng tiếng Việt: `git log --oneline` của các commit vừa lên `main`; kết quả typecheck, vitest, build; mục nào của bước trình duyệt đã thấy, ở theme nào; lỗi nào đã sửa trong phiên; mục nào chưa kiểm.
+
+---
+
+### Sửa lỗi lộ ra khi kiểm (2026-11-27, sau Step 4)
+
+Hai lỗi, mỗi lỗi một commit: test đỏ trước, code sau. Spec không đổi (§6.5 không quy định chỗ đặt nhãn; chỗ đó là Diễn giải 3 của plan này, đã sửa ở trên). Không patch nào của M2d đến M2g sửa vào ba file này.
+
+**Lỗi 1: nhãn của chấm mới nhất đè lên nhãn của chấm cao nhất.** Khi quanh chấm mới nhất không còn chỗ nào trống, mô hình đặt nhãn lên trên chấm, kể cả khi chỗ đó là nhãn của chấm cao nhất. Trên trục nhiều ngày các lần đo gần nhau chỉ cách vài pixel, nên dáng rất thường gặp cũng dính: tối qua 39,0, sáng nay 38,2 rồi 38,6 trên trục 7 ngày thì "39" và "38,6" đè lên nhau, không số nào đọc được. Mười ba khối của trang fixture không có dáng này. Sửa: không chỗ nào trống thì lấy chỗ che các chấm khác ít nhất (theo diện tích), và bỏ qua mọi chỗ chạm nhãn kia. Trên hoặc dưới luôn tránh được nhãn kia: nhãn đó nằm trên chấm cao nhất, còn chấm mới nhất không bao giờ cao hơn chấm đó. Kỳ vọng của một test cũ đổi theo: "36,9 rồi 36,5" sát mép phải nay đặt nhãn bên trái chấm (chỉ chạm phần hở quanh chấm trước) thay vì ở trên (che chấm trước).
+
+Patch 5 (test; đỏ `2 failed | 1797 passed (1799)`):
+
+```diff
+diff --git a/lib/rules/feverChart.test.ts b/lib/rules/feverChart.test.ts
+index 10b852a..c9db8d4 100644
+--- a/lib/rules/feverChart.test.ts
++++ b/lib/rules/feverChart.test.ts
+@@ -219,13 +219,58 @@ describe("feverChartModel", () => {
+       null,
+       { text: "38,3", anchor: "end", place: "side" },
+     ]);
+-    // Low on the scale as well: nothing fits, so it stays above.
++    // Low on the scale as well: no place is free. Above would sit on the
++    // earlier dot; beside on the left only touches the air round it.
+     const low = feverChartModel(
+       [temp("2026-11-24 22:00", 36.9), temp("2026-11-24 23:00", 36.5)],
+       episode("2026-11-24 00:10"),
+       vn("2026-11-24 23:50"),
+     )!;
+-    expect(low.points[1].label?.place).toBe("above");
++    expect(low.points[1].label).toEqual({
++      text: "36,5",
++      anchor: "end",
++      place: "side",
++    });
++  });
++
++  it("no place is free: the newest label never sits on the highest reading's label, and takes the place that covers least", () => {
++    // Seven days. 39,0 last night, 38,2 this morning, 38,6 two hours later:
++    // on a week's axis the three dots are a few pixels apart. Above the
++    // newest dot is the label "39"; under it is the dot of 38,2.
++    const chart = feverChartModel(
++      [
++        temp("2026-11-25 20:15", 39),
++        temp("2026-11-26 09:15", 38.2),
++        temp("2026-11-26 10:55", 38.6),
++      ],
++      episode("2026-11-20 08:00"),
++      vn("2026-11-26 11:30"),
++    )!;
++    expect(chart.days).toHaveLength(7);
++    expect(chart.points.map((point) => point.label)).toEqual([
++      { text: "39", anchor: "middle", place: "above" },
++      null,
++      { text: "38,6", anchor: "end", place: "side" },
++    ]);
++    // The fever at its peak on the morning of day six: 39,9 half an hour
++    // after 40. Above is the label "40"; the left side is all but free.
++    const peaking = feverChartModel(
++      [
++        temp("2026-11-26 00:40", 39.3),
++        temp("2026-11-26 07:50", 39.8),
++        temp("2026-11-26 08:50", 40),
++        temp("2026-11-26 09:25", 39.9),
++      ],
++      episode("2026-11-21 08:00"),
++      vn("2026-11-26 10:00"),
++    )!;
++    expect(peaking.days).toHaveLength(6);
++    expect(peaking.points.map((point) => point.label)).toEqual([
++      null,
++      null,
++      { text: "40", anchor: "middle", place: "above" },
++      { text: "39,9", anchor: "end", place: "side" },
++    ]);
+   });
+ 
+   it("the word Sốt takes the first of right, left, middle that no dot and no label reaches", () => {
+```
+
+Patch 6 (code; xanh 193 file / 1799 test):
+
+```diff
+diff --git a/lib/rules/illness.ts b/lib/rules/illness.ts
+index 81f9c1b..066102d 100644
+--- a/lib/rules/illness.ts
++++ b/lib/rules/illness.ts
+@@ -394,8 +394,11 @@ const CHART_DAYS = 7;
+ // The chart's geometry, in fractions of the plot (about 288 × 128 px at
+ // 375 px wide), so the model can keep the texts apart.
+ type Box = { x0: number; x1: number; y0: number; y1: number };
+-const hit = (a: Box, b: Box) =>
+-  a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
++// How much of each other two boxes cover; 0 when they are apart.
++const covered = (a: Box, b: Box) =>
++  Math.max(0, Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0)) *
++  Math.max(0, Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0));
++const hit = (a: Box, b: Box) => covered(a, b) > 0;
+ // A dot, with a little air round it.
+ const DOT_X = 0.025;
+ const DOT_Y = 0.055;
+@@ -532,23 +535,28 @@ export function feverChartModel(
+   const peakPoint = points.find(
+     (point) => point.at === peak?.at && !point.latest,
+   );
++  let peakLabel: Box | null = null;
+   if (peak && peakPoint && peak !== latest) {
+     peakPoint.label = {
+       text: formatCelsius(peak.celsius),
+       anchor: anchorOf(peakPoint.x),
+       place: "above",
+     };
+-    boxes.push(labelBox(peakPoint.x, peakPoint.y, peakPoint.label));
++    peakLabel = labelBox(peakPoint.x, peakPoint.y, peakPoint.label);
++    boxes.push(peakLabel);
+   }
+   // The newest label takes the first place that covers no other dot and not
+   // the highest reading's label: above, beside on the right, under, beside on
+   // the left. Nothing is ever drawn to the right of the newest dot, so that
+   // side is free whenever it fits; near the right edge it does not fit, and
+   // the left side is the last try (the line runs behind the label there, and
+-  // the halo keeps it readable).
++  // the halo keeps it readable). Where no place is free (readings a few
++  // pixels apart, as on a week's axis), it takes the place that covers least
++  // of the other dots, and never one that reaches the other label: two
++  // numbers on each other cannot be read, a dot partly under a number can.
+   const newest = points.at(-1);
+   if (newest) {
+-    const others = boxes.filter((_, index) => index !== points.length - 1);
++    const dots = boxes.slice(0, points.length - 1);
+     const text = formatCelsius(newest.celsius);
+     const options: FeverChartLabel[] = [
+       { text, anchor: anchorOf(newest.x), place: "above" },
+@@ -562,11 +570,20 @@ export function feverChartModel(
+         ? [{ text, anchor: "end", place: "side" } as const]
+         : []),
+     ];
+-    newest.label =
+-      options.find((option) => {
+-        const box = labelBox(newest.x, newest.y, option);
+-        return !others.some((other) => hit(box, other));
+-      }) ?? options[0];
++    const placed = options.map((option) => {
++      const box = labelBox(newest.x, newest.y, option);
++      return {
++        option,
++        onLabel: peakLabel !== null && hit(box, peakLabel),
++        onDots: dots.reduce((sum, dot) => sum + covered(box, dot), 0),
++      };
++    });
++    // Above or under always clears the other label: that label is above the
++    // highest dot, and the newest dot is never higher than it.
++    const clear = placed.filter((place) => !place.onLabel);
++    newest.label = (clear.length > 0 ? clear : placed).reduce((best, place) =>
++      place.onDots < best.onDots ? place : best,
++    ).option;
+     boxes.push(labelBox(newest.x, newest.y, newest.label));
+   }
+   const feverWord =
+```
+
+Commit: `fix(illness): the newest label never sits on the other label`.
+
+**Lỗi 2: hai bản ghi cùng một phút.** M2b đã tính tới hai lần đo cùng thời điểm (lần cao hơn xếp sau). `feverChartModel` lại tìm chấm cao nhất bằng mốc giờ, nên với 38,5 và 39,5 cùng phút rồi một lần đo sau đó, nhãn "39,5" bị gắn lên chấm 38,5. `FeverChart` dùng mốc giờ làm key cho chấm, nhãn và hình thoi, nên hai lần đo hay hai liều cùng phút bị trùng key (trình duyệt báo lỗi, và có thể vẽ thiếu hoặc lặp một phần tử khi cập nhật). Sửa: tìm chấm cao nhất theo vị trí trong mảng; key là vị trí.
+
+Patch 7 (test; đỏ `2 failed | 1799 passed (1801)`):
+
+```diff
+diff --git a/components/illness/feverchart.test.tsx b/components/illness/feverchart.test.tsx
+index e337d67..b65c394 100644
+--- a/components/illness/feverchart.test.tsx
++++ b/components/illness/feverchart.test.tsx
+@@ -92,6 +92,34 @@ describe("FeverChart", () => {
+     expect(html).not.toMatch(/#[0-9a-fA-F]{3,6}\b/);
+   });
+ 
++  it("draws two readings and two doses logged at the same minute, each once", () => {
++    const chart = feverChartModel(
++      [
++        temp("2026-11-25 20:00", 38.5),
++        temp("2026-11-25 20:00", 39.5),
++        temp("2026-11-25 22:00", 38.2),
++        dose("2026-11-25 20:10"),
++        dose("2026-11-25 20:10"),
++      ],
++      episode("2026-11-25 08:00"),
++      vn("2026-11-25 23:00"),
++    )!;
++    const twins = renderToStaticMarkup(<FeverChart chart={chart} />);
++    expect(twins.match(/<circle/g)).toHaveLength(3);
++    expect(twins.match(/data-dose/g)).toHaveLength(2);
++    expect(twins.match(/data-point-label/g)).toHaveLength(2);
++    // No two siblings share a key (the server renderer does not report it;
++    // the browser does, and may then drop or repeat one of them).
++    const children: unknown[] = FeverChart({ chart }).props.children;
++    for (const list of children) {
++      if (!Array.isArray(list)) continue;
++      const keys = list
++        .filter((child) => child !== null && typeof child === "object")
++        .map((child: { key: string | null }) => child.key);
++      expect(new Set(keys).size).toBe(keys.length);
++    }
++  });
++
+   it("a single reading has a dot and no line", () => {
+     const one = renderToStaticMarkup(
+       <FeverChart
+diff --git a/lib/rules/feverChart.test.ts b/lib/rules/feverChart.test.ts
+index c9db8d4..9f74113 100644
+--- a/lib/rules/feverChart.test.ts
++++ b/lib/rules/feverChart.test.ts
+@@ -133,6 +133,27 @@ describe("feverChartModel", () => {
+     ).toEqual([null, "39,2", "37,2"]);
+   });
+ 
++  it("two readings at the same moment: the highest one's label sits on its own point", () => {
++    // Measured twice and logged with the same minute; a later reading is
++    // the newest. The label "39,5" belongs to the dot of 39,5.
++    const chart = feverChartModel(
++      [
++        temp("2026-11-24 20:00", 38.5),
++        temp("2026-11-24 20:00", 39.5),
++        temp("2026-11-24 22:00", 37),
++      ],
++      episode("2026-11-24 08:00"),
++      vn("2026-11-24 23:00"),
++    )!;
++    expect(
++      chart.points.map((point) => [point.celsius, point.label?.text ?? null]),
++    ).toEqual([
++      [38.5, null],
++      [39.5, "39,5"],
++      [37, "37"],
++    ]);
++  });
++
+   it("only the newest point is marked latest", () => {
+     const chart = feverChartModel(
+       [temp("2026-11-24 09:00", 38.4), temp("2026-11-24 20:00", 39.2)],
+```
+
+Patch 8 (code; xanh 193 file / 1801 test):
+
+```diff
+diff --git a/components/illness/FeverChart.tsx b/components/illness/FeverChart.tsx
+index f1c3b29..f85d00f 100644
+--- a/components/illness/FeverChart.tsx
++++ b/components/illness/FeverChart.tsx
+@@ -132,9 +132,10 @@ export function FeverChart({ chart }: { chart: FeverChartModel }) {
+           strokeLinejoin="round"
+         />
+       )}
+-      {chart.points.map((point) => (
++      {/* Keys are positions: two logs may carry the same minute. */}
++      {chart.points.map((point, index) => (
+         <circle
+-          key={point.at}
++          key={index}
+           cx={round(px(point.x))}
+           cy={round(py(point.y))}
+           r={point.latest ? 6.5 : 4}
+@@ -143,19 +144,19 @@ export function FeverChart({ chart }: { chart: FeverChartModel }) {
+           strokeWidth={point.latest ? 2.5 : 0}
+         />
+       ))}
+-      {chart.doses.map((dose) => (
++      {chart.doses.map((dose, index) => (
+         <path
+-          key={dose.at}
++          key={index}
+           data-dose
+           d={`M${round(px(dose.x))} ${DOSE_Y - 6}l6 6-6 6-6-6z`}
+           fill="var(--color-cat-med)"
+         />
+       ))}
+       {chart.points.map(
+-        (point) =>
++        (point, index) =>
+           point.label && (
+             <text
+-              key={point.at}
++              key={index}
+               data-point-label
+               x={
+                 round(px(point.x)) +
+diff --git a/lib/rules/illness.ts b/lib/rules/illness.ts
+index 066102d..dba0b79 100644
+--- a/lib/rules/illness.ts
++++ b/lib/rules/illness.ts
+@@ -531,10 +531,9 @@ export function feverChartModel(
+     x < LABEL_EDGE ? "start" : x > 1 - LABEL_EDGE ? "end" : "middle";
+   const boxes: Box[] = points.map((point) => dotBox(point.x, point.y));
+ 
+-  // The highest reading keeps its label above the dot.
+-  const peakPoint = points.find(
+-    (point) => point.at === peak?.at && !point.latest,
+-  );
++  // The highest reading keeps its label above the dot. Its point is found by
++  // position, not by time: two readings may carry the same minute.
++  const peakPoint = peak ? points[drawn.indexOf(peak)] : undefined;
+   let peakLabel: Box | null = null;
+   if (peak && peakPoint && peak !== latest) {
+     peakPoint.label = {
+```
+
+Commit: `fix(illness): two logs at the same minute on the fever chart`.
+
+**Còn lại, không phải lỗi:** trong 600 đợt ngẫu nhiên còn 22 đợt nhãn che một phần một chấm trước, đều là cụm đo dày không còn chỗ nào trống (Diễn giải 3). Hai liều cùng phút vẽ hai hình thoi chồng khít lên nhau; `aria-label` vẫn đếm đủ.
