@@ -17,7 +17,7 @@ Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Tech Stack:** Next.js 16.4.3, React 19.3.1, TypeScript 5.9.3 `strict`, Tailwind CSS 4.3.3, Vitest, Bun. Không thêm gói nào.
 
-**Nhánh:** `feat/kim-bun-dot-om-m2d`, cắt từ `main` sau khi M2c đã lên. Baseline: 1798 test vitest xanh (193 file), typecheck sạch.
+**Nhánh:** `feat/kim-bun-dot-om-m2d`, cắt từ `main` sau khi M2c đã lên. Baseline: 1798 test vitest xanh (193 file), typecheck sạch. **Khi chạy (2026-11-27):** nền thật là 193 file / 1801 test, vì M2c thêm 3 test cho hai bản sửa của biểu đồ sốt; mọi con số test xanh trong plan này vì vậy cộng 3. Số đo thật ghi ở Task 4 Step 6.
 
 **Các mốc của spec này:**
 
@@ -71,7 +71,7 @@ Steps use checkbox (`- [ ]`) syntax for tracking.
 
 ### Ghi chú khi thực thi (của plan này, không thuộc spec)
 
-- **Patch.** Mọi thay đổi nằm trong các khối `diff`, đánh số **Patch 1** đến **Patch 6** theo thứ tự xuất hiện trong file này. Áp bằng lệnh dưới (dán cả hàm vào cùng một lần gọi shell), hoặc sửa tay: dòng bắt đầu bằng `-` là bỏ, `+` là thêm.
+- **Patch.** Mọi thay đổi nằm trong các khối `diff`, đánh số **Patch 1** đến **Patch 6** theo thứ tự xuất hiện trong file này (thêm khi chạy: **Patch 7** và **Patch 8**, bản sửa sau bước trình duyệt, ở cuối file). Áp bằng lệnh dưới (dán cả hàm vào cùng một lần gọi shell), hoặc sửa tay: dòng bắt đầu bằng `-` là bỏ, `+` là thêm.
 
 ```bash
 kb_patch() {
@@ -113,7 +113,7 @@ Plan này đứng sau M2c. M2f đặt thẻ kết luận và danh sách từng n
 - `components/illness/EpisodeVerdict.tsx`: `type QuickLogType`; `QuickLogButtons(props: { onLog: (type: QuickLogType) => void })`; `EpisodeVerdict(props: { view: VerdictView; onLog: (type: QuickLogType) => void })`.
 - `components/illness/EpisodeDayList.tsx`: `EpisodeDayList(props: { rows: DayRowView[] })`.
 - `components/ui/EmptyState.tsx`: thêm `detail?: string` và `action?: { label: string; onClick?: () => void; href?: string }`.
-- **Vitest sau M2d:** 1821 test, 195 file.
+- **Vitest sau M2d:** 1821 test, 195 file. **Thực tế: 1825 test, 195 file** (+3 từ M2c, +1 từ bản sửa ở cuối plan này). Các plan sau (M2e–M2g) cộng 4 vào mọi con số test xanh của mình; số file không đổi.
 
 ---
 
@@ -138,7 +138,7 @@ Plan này đứng sau M2c. M2f đặt thẻ kết luận và danh sách từng n
   - `type EpisodeListView = { open: { id: string; href: string; title: string; chip: { text: string; tone: EpisodeTone } | null } | null; past: { id: string; href: string; text: string }[] }`
   - `episodeList(input: { episodes: EpisodeLike[]; openLogs: LogLike[] | undefined; now: Date }): EpisodeListView`
 
-- [ ] **Step 0: Kiểm M2c đã xong, rồi tạo nhánh**
+- [x] **Step 0: Kiểm M2c đã xong, rồi tạo nhánh**
 
 ```bash
 git checkout main && git pull --ff-only
@@ -149,7 +149,7 @@ bunx vitest run
 
 Expected: dòng `M2c có trên main`; `Test Files  193 passed (193)`, `Tests  1798 passed (1798)`. Không thấy dòng đó thì dừng: M2c chưa lên `main`. Số test khác đi vì `main` có commit mới thì vẫn làm tiếp, và ghi lại số xuất phát thật.
 
-- [ ] **Step 1: Viết test đỏ (Patch 1)**
+- [x] **Step 1: Viết test đỏ (Patch 1)**
 
 ```diff
 diff --git a/lib/rules/illnessView.test.ts b/lib/rules/illnessView.test.ts
@@ -419,12 +419,12 @@ index 0000000..850f727
 +});
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run`
 Expected: `Test Files  1 failed | 193 passed (194)`, `Tests  1798 passed (1798)`. File test mới không nạp được vì `./illnessView` chưa có, nên 12 test của nó chưa được đếm.
 
-- [ ] **Step 3: Viết phần chữ (Patch 2)**
+- [x] **Step 3: Viết phần chữ (Patch 2)**
 
 ```diff
 diff --git a/lib/rules/illnessView.ts b/lib/rules/illnessView.ts
@@ -624,12 +624,12 @@ index 0000000..1eb80a2
 +}
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run && bun run typecheck`
 Expected: `Test Files  194 passed (194)`, `Tests  1810 passed (1810)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/rules/illnessView.ts lib/rules/illnessView.test.ts
@@ -652,7 +652,7 @@ git commit -m "feat(illness): the words of the list and the episode page" -m "Co
   - `EpisodeVerdict(props: { view: VerdictView; onLog: (type: QuickLogType) => void })`
   - `EpisodeDayList(props: { rows: DayRowView[] })`
 
-- [ ] **Step 1: Viết test đỏ (Patch 3)**
+- [x] **Step 1: Viết test đỏ (Patch 3)**
 
 ```diff
 diff --git a/components/illness/episodecards.test.tsx b/components/illness/episodecards.test.tsx
@@ -822,12 +822,12 @@ index 0000000..d9b5017
 +});
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run`
 Expected: `Test Files  1 failed | 194 passed (195)`, `Tests  1810 passed (1810)`. File test mới không nạp được vì hai component chưa có, nên 10 test của nó chưa được đếm.
 
-- [ ] **Step 3: Viết ba component (Patch 4)**
+- [x] **Step 3: Viết ba component (Patch 4)**
 
 ```diff
 diff --git a/components/illness/EpisodeDayList.tsx b/components/illness/EpisodeDayList.tsx
@@ -983,12 +983,12 @@ index 0000000..2fd5c81
 +}
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run && bun run typecheck`
 Expected: `Test Files  195 passed (195)`, `Tests  1820 passed (1820)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add components/illness/EpisodeVerdict.tsx components/illness/EpisodeDayList.tsx components/illness/episodecards.test.tsx
@@ -1007,7 +1007,7 @@ git commit -m "feat(illness): the verdict card and the day list" -m "Co-Authored
 - Consumes: `Button`, `buttonClass` (`components/ui/Button.tsx`); `Icon`; `Link` của Next.
 - Produces: `EmptyState(props: { icon: IconName; text: string; detail?: string; action?: { label: string; onClick?: () => void; href?: string } })`. Có `href` thì hành động là một đường dẫn mang dáng nút phụ; không thì là nút gọi `onClick` như trước. Ba nơi đang dùng (`GrowthScreen`, `HistoryScreen`, `PhotosScreen`) không phải đổi.
 
-- [ ] **Step 1: Viết test đỏ (Patch 5)**
+- [x] **Step 1: Viết test đỏ (Patch 5)**
 
 ```diff
 diff --git a/components/ui/states.test.tsx b/components/ui/states.test.tsx
@@ -1051,12 +1051,12 @@ index e318fa7..405d862 100644
  describe("ErrorCard", () => {
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run`
 Expected: `Test Files  1 failed | 194 passed (195)`, `Tests  1 failed | 1820 passed (1821)`. Một test mới đỏ: `EmptyState` chưa vẽ dòng phụ và chưa biết `href`.
 
-- [ ] **Step 3: Mở rộng `EmptyState` (Patch 6)**
+- [x] **Step 3: Mở rộng `EmptyState` (Patch 6)**
 
 ```diff
 diff --git a/components/ui/EmptyState.tsx b/components/ui/EmptyState.tsx
@@ -1115,12 +1115,12 @@ index 51e9b20..bdec4d3 100644
  }
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run && bun run typecheck`
 Expected: `Test Files  195 passed (195)`, `Tests  1821 passed (1821)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add components/ui/EmptyState.tsx components/ui/states.test.tsx
@@ -1139,17 +1139,17 @@ git commit -m "feat(ui): EmptyState with a second line and a link" -m "Co-Author
 - Consumes: mọi thứ của các task trước trong plan này.
 - Produces: kết quả kiểm, ghi ngay trong plan; `main` có M2d.
 
-- [ ] **Step 1: Chạy cả bộ kiểm**
+- [x] **Step 1: Chạy cả bộ kiểm**
 
 Run: `bun run typecheck && bunx vitest run`
 Expected: `tsc --noEmit` không báo lỗi; `Test Files  195 passed (195)`, `Tests  1821 passed (1821)`.
 
-- [ ] **Step 2: Build**
+- [x] **Step 2: Build**
 
 Run: `bun run build`
 Expected: lần đầu có thể dừng với thông báo bảo mật của Next.js 16.4.3 (bình thường; không chạy `next upgrade`). Chạy lại đúng lệnh đó: `✓ Generating static pages` và thoát mã 0.
 
-- [ ] **Step 3: Tạo trang fixture tạm**
+- [x] **Step 3: Tạo trang fixture tạm**
 
 Thẻ kết luận và danh sách từng ngày chưa nằm trên trang nào, và dữ liệu thật chưa có đợt ốm nào: năm trạng thái của §5.2, đợt đã đóng, các dòng dài nhất và hai trạng thái trống mới chỉ thấy được ở đây. Trang này không đọc hay ghi dữ liệu của gia đình và vẽ được khi chưa đăng nhập. Tạo `app/fixture-illness/page.tsx` (không commit):
 
@@ -1240,7 +1240,7 @@ const VERDICTS: { name: string; episode: EpisodeLike; logs: LogLike[] }[] = [
     name: "cleared, tiêu đề dài nhất và 12 liều hôm nay",
     episode: THREE_DAYS,
     logs: [
-      temp("2026-11-26 09:00", 38.5),
+      temp("2026-11-26 09:10", 38.5),
       temp("2026-11-26 09:40", 37.4),
       ...Array.from({ length: 12 }, (_, index) =>
         dose(
@@ -1343,7 +1343,7 @@ export default function Page() {
 Run: `bun run typecheck`
 Expected: `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 4: Kiểm trong trình duyệt (chỉ xem)**
+- [x] **Step 4: Kiểm trong trình duyệt (chỉ xem)**
 
 Chạy `bun run dev` (lần đầu có thể dừng vì thông báo bảo mật: chạy lại). Mở `http://localhost:3000/fixture-illness` trong khung Browser của app, cỡ 375×812 (xem mục "Trình duyệt" ở Ghi chú khi thực thi). Xóa phần tử `nextjs-portal` trong trang trước khi chụp.
 
@@ -1364,7 +1364,7 @@ Chạy `bun run dev` (lần đầu có thể dừng vì thông báo bảo mật:
 
    Dòng phụ của tám thẻ đầu: "Ngày thứ 3 · bắt đầu 24/11 lúc 20:10"; của thẻ đã đóng: "10/11 – 13/11". Thẻ "cleared" có các giờ "07:05 hôm nay", "25/11 02:15", "gần nhất 25/11 20:05". Thẻ "tiêu đề dài nhất" có hàng "Thuốc hạ sốt" ghi "gần nhất 09:05 hôm nay" và "12 liều" trên một dòng. Thẻ đã đóng có "gần nhất 13/11 03:00" và **không** có ba nút.
 
-3. Không chữ nào bị cắt "…". Chạy đoạn đo dưới: mọi hàng của thẻ kết luận cao 44 px (một dòng), mọi tiêu đề một dòng ở 375 px (tiêu đề được phép xuống hai dòng: nếu ở bề ngang khác có tiêu đề hai dòng thì ghi lại, không phải lỗi), và chữ của ba nút nằm trọn trong nút (đo khi viết plan: nút rộng 97,7 px, chữ "Triệu chứng" 80,1 px, nút cao 44 px).
+3. Không chữ nào bị cắt "…". Chạy đoạn đo dưới: mọi hàng của thẻ kết luận cao 44 px (một dòng), mọi tiêu đề một dòng trừ tiêu đề dài nhất "Bun đã hết sốt chưa đầy 1 giờ", vốn hai dòng ở 375 và 390 px và một dòng ở 440 px (tiêu đề được phép xuống hai dòng; sửa khi chạy: bản viết plan ghi "mọi tiêu đề một dòng ở 375 px" vì dữ liệu fixture lúc đó chưa vẽ ra tiêu đề dài nhất, xem kết quả dưới Step 4), và chữ của ba nút nằm trọn trong nút (đo khi viết plan: nút rộng 97,7 px, chữ "Triệu chứng" 80,1 px, nút cao 44 px).
 
 ```js
 const lines = (el) => {
@@ -1414,7 +1414,24 @@ Trang thật (chỉ xem): `EmptyState` đang dùng ở ba trang. Mở `http://lo
 
 Dừng `bun run dev` khi xong. Ghi kết quả từng mục ngay dưới bước này, kèm số đo: các con số của đoạn đo ở từng bề ngang, và theme nào đã xem. Mục nào không cho thấy được thì ghi "chưa kiểm". Nếu bước này lộ ra lỗi và code phải đổi: sửa (test trước, code sau), rồi chạy lại Step 1 và Step 2 trước khi đi tiếp.
 
-- [ ] **Step 5: Xóa trang fixture**
+**Kết quả Step 4 (2026-11-27, khung Browser trong app, khoảng 10:03–10:08, trang `http://localhost:3000/fixture-illness`):**
+
+- **Dữ liệu fixture của plan sai một chỗ, đã sửa ngay trong khối `tsx` ở Step 3.** Khối "cleared, tiêu đề dài nhất và 12 liều hôm nay" đặt lần sốt cuối lúc 09:00, giờ của trang là 10:00: {khoảng} của §5.2 là tròn 1 giờ nên tiêu đề ra "Bun đã hết sốt 1 giờ", không phải "… chưa đầy 1 giờ" như bảng của mục 2. Luật đúng spec; tiêu đề dài nhất chưa hề được vẽ. Đổi lần đo đó sang 09:10 (hàng "Sốt cao nhất" của khối này vì vậy ghi "09:10 hôm nay"). Sau khi đổi, chín thẻ khớp bảng của mục 2 từng chữ.
+- **Lỗi lộ ra và đã sửa (Patch 7, Patch 8 ở cuối file).** Với dữ liệu đúng, ở 375 px tiêu đề dài nhất xuống hai dòng "Bun đã hết sốt chưa đầy 1" / "giờ": chữ "giờ" đứng một mình, số 1 rời đơn vị (dòng rộng 238,9 và 29,0 px trong ô 253 px). Spec cho tiêu đề xuống dòng nên không phạm ràng buộc nào, nhưng đây là trạng thái gặp ngay sau khi bé hạ sốt. Sửa: `text-balance` trên tiêu đề. Sau sửa: "Bun đã hết sốt" / "chưa đầy 1 giờ" (134,8 và 133,1 px). Mọi số dưới đây đo **sau** bản sửa.
+- **Mục 1:** 13 khối (9 thẻ kết luận, 2 danh sách, 2 trạng thái trống); `scrollWidth <= innerWidth` là `true` ở 375, 390, 440 px.
+- **Mục 2:** chín thẻ khớp bảng: tiêu đề, icon (đọc theo đường vẽ của `ICON_PATHS`), tông của vòng tròn, dòng phụ, ba hàng kể cả giờ nhỏ; tám thẻ đang mở có ba nút (24 nút), thẻ đã đóng không có nút.
+- **Mục 3 (đoạn đo của plan), 375 px:** `rowHeights` = [44] (27 hàng); `titlesOnTwoLines` = ["Bun đã hết sốt chưa đầy 1 giờ"]; nút "Nhiệt độ: chữ 57.3 trong nút 97.7 × 44", "Thuốc: chữ 42.2 trong nút 97.7 × 44", "Triệu chứng: chữ 80.1 trong nút 97.7 × 44" (chữ 14 px, đệm 4 px); mọi tiêu đề và dòng mô tả của "Từng ngày" 1 dòng. Đo thêm: không phần tử nào có `text-overflow: ellipsis`, không phần tử nào ra ngoài màn hình hay tràn ô của nó; trong mỗi hàng của thẻ, nhãn, giờ nhỏ và giá trị không chạm nhau (hở ít nhất 4 px) và không xuống dòng; dòng phụ của cả chín thẻ một dòng.
+- **Mục 4:** "Từng ngày · 3 ngày" khớp từng chữ: tiêu đề mục, ba hàng mới nhất trước, nhãn "Hết sốt" (`good`), "Sốt cao" (`danger`), "Sốt" (`warn`) cùng dòng với tiêu đề của hàng, chip "Sổ mũi, Ho" / "Sốt, Sổ mũi, Ho, Quấy" / "Sốt, Sổ mũi"; không hàng nào chứa nút hay đường dẫn.
+- **Mục 5:** hàng "25/11 · ngày 2" ghi "Cao nhất 39,2°C · 15 liều hạ sốt" một dòng; 10 chip thành 3 hàng, không chip nào ra khỏi thẻ hay xuống dòng bên trong.
+- **Mục 6:** "missing": icon lịch, "Không tìm thấy đợt ốm này", `<a>` "Về danh sách" 129,4 × 44 px, không có `<button>`. "empty": "Chưa có đợt ốm nào" 16 px một dòng, dòng phụ 13 px hai dòng không bị cắt, nút "Bắt đầu đợt ốm" 143,5 × 44 px.
+- **Mục 7:** chạy lại toàn bộ các phép đo trên ở `rose`, `light`, `dark`, `night` (giữ theme bằng `MutationObserver`, ngắt khi xong): bốn theme cho kết quả giống nhau từng số ở cả ba bề ngang. Nhìn bằng mắt ở 375 px: `rose` cả trang từ trên xuống; `night` các khối unmeasured, hai khối fever, stale, cleared, none, "Từng ngày · 3 ngày", cuối danh sách dài và hai trạng thái trống; `light` hai khối fever, stale, danh sách dài, "missing"; `dark` fever dưới 39, stale, cleared, hai danh sách. Ở `night` ba loại thẻ phân biệt được bằng icon (nhiệt kế, đồng hồ, dấu tích) và chữ tiêu đề; nhãn của ngày phân biệt bằng chữ.
+- **Mục 8:** 390 px: như 375 px, nút rộng 102,7 px, tiêu đề dài nhất vẫn hai dòng. 440 px: nút rộng 119,3 px, không tiêu đề nào hai dòng. Còn lại không đổi (hàng 44 px, 3 hàng chip, không tràn).
+- **Trang thật (chỉ xem, 375 px, theme `dark` đang đặt sẵn, không bấm gì):** `/tang-truong`, `/nhat-ky`, `/anh` đều mở được, đang đăng nhập, cả ba đang có dữ liệu: không ở trạng thái trống, không xem được `EmptyState` ở đó. Console lọc `onlyErrors`: không có dòng nào ở cả ba trang. Không tràn ngang.
+- **Ghi chú:** ảnh chụp ngay sau khi cuộn ở `night` có vài thẻ ra ô trống; chụp lại sau 1,2 giây thì đủ (ảnh chụp trước khi trình duyệt kịp vẽ lớp kính, không phải lỗi của trang).
+- **Chưa kiểm:** theme `peach`, `lavender`, `sea` (plan không liệt kê); nhìn bằng mắt từng khối ở từng theme và ở 390, 440 px (phần đó chỉ có số đo); iPhone thật; Safari iOS trước 17.5 không có `text-wrap: balance` nên ở đó tiêu đề dài nhất vẫn xuống dòng kiểu cũ (chữ "giờ" đứng riêng); `EmptyState` trên ba trang thật; tên bé dài hơn "Bun"; thẻ và danh sách trên trang thật (chưa trang nào dùng, M2f).
+- Ảnh và bản sao trang fixture nằm ở thư mục ghi chú chung của nhóm phiên (ngoài repo): `m2d-*.jpg`, `m2d-*.png`, `m2d-fixture-page.tsx.txt`.
+
+- [x] **Step 5: Xóa trang fixture**
 
 ```bash
 rm -r app/fixture-illness
@@ -1424,9 +1441,33 @@ git status --short  # không còn app/fixture-illness
 
 Expected: `tsc --noEmit` không báo lỗi. Nếu nó đỏ với lỗi trong `.next/…/types/validator.ts` (thư mục `.next` còn trỏ tới trang tạm vừa xóa): chạy `rm -rf .next/dev/types .next/types` rồi chạy lại, phải sạch.
 
-- [ ] **Step 6: Ghi kết quả vào plan, commit**
+- [x] **Step 6: Ghi kết quả vào plan, commit**
 
 Ghi ngay dưới bước này: số đo đỏ và xanh của từng task có khớp plan không; kết quả Step 1, Step 2 và Step 4. Mục nào không cho thấy được thì ghi "chưa kiểm". Đánh dấu `[x]` các bước đã làm.
+
+**Kết quả (2026-11-27):**
+
+| Bước                                   | Plan (đã cộng 3 của M2c)                                  | Đo thật                                                   |
+| -------------------------------------- | --------------------------------------------------------- | --------------------------------------------------------- |
+| Step 0, nền                            | 193 file / 1801 test                                      | 193 file / 1801 test                                      |
+| Task 1 đỏ                              | `1 failed \| 193 passed (194)`, `1801 passed`             | khớp                                                      |
+| Task 1 xanh                            | 194 / 1813                                                | 194 / 1813, `tsc` thoát 0                                 |
+| Task 2 đỏ                              | `1 failed \| 194 passed (195)`, `1813 passed`             | khớp                                                      |
+| Task 2 xanh                            | 195 / 1823                                                | 195 / 1823, `tsc` thoát 0                                 |
+| Task 3 đỏ                              | `1 failed \| 194 passed (195)`, `1 failed \| 1823 passed` | khớp                                                      |
+| Task 3 xanh                            | 195 / 1824                                                | 195 / 1824, `tsc` thoát 0                                 |
+| Bản sửa đỏ (Patch 7)                   | ngoài plan                                                | `1 failed \| 194 passed (195)`, `1 failed \| 1824 passed` |
+| Bản sửa xanh (Patch 8), cũng là Step 1 | ngoài plan                                                | **195 file / 1825 test**, `tsc` thoát 0                   |
+
+- Số đỏ và xanh của cả ba task khớp plan sau khi cộng 3. Sáu patch áp sạch bằng `kb_patch`.
+- **Step 2, build:** chạy hai đợt (trước bước trình duyệt, và lại sau bản sửa, khi trang fixture đã xóa). Mỗi đợt lần đầu thoát 1 với thông báo bảo mật của Next.js 16.4.3 (không chạy `next upgrade`), lần hai thoát 0, `✓ Generating static pages (40/40)`.
+- **Step 3:** trang fixture qua `tsc --noEmit`. Server dev chạy bằng `preview_start` với một `.claude/launch.json` tạm; file đó và trang fixture đã xóa, server đã tắt.
+- **Step 4:** ghi ngay dưới Step 4. Một lỗi đã sửa (tiêu đề dài nhất, Patch 7 và 8); một chỗ sai trong dữ liệu fixture của plan đã sửa.
+- **Step 5:** sau khi xóa trang tạm, `tsc --noEmit` thoát 0 (đã xóa `.next/dev/types` và `.next/types` trước).
+- **Khác với ghi chú của plan:** các file plan M2a–M2g đã được commit từ trước (không còn untracked), nên commit docs của plan này là một lần sửa file, không phải thêm file. `Link` của Next 16.4.3 đã đọc ở `node_modules/next/dist/docs/01-app/03-api-reference/02-components/link.md` trước Task 3: `href` chuỗi và `className` vẫn như app đang dùng.
+- **Spec đã sửa cho khớp (cùng commit docs):** §6.3 mục 2, hàng "Sốt cao nhất" ghi "Chưa đo" khi đợt chưa có lần đo nào (Diễn giải 1 của plan này; bản duyệt đọc sát chữ là "Không sốt"); và câu về tiêu đề chia đều hai dòng.
+- **Chưa kiểm:** xem danh sách ở cuối kết quả Step 4. Plan này không đụng DB, không chạy pgTAP.
+- **Cho các plan sau:** nền của M2e là 195 file / 1825 test (plan M2e ghi 1821): cộng 4 vào mọi con số test xanh của M2e–M2g; cuối M2 là 200 file / 1879 test nếu không plan nào thêm test. Không patch nào của M2e–M2g sửa các file của plan này (`illnessView.ts`, `EpisodeVerdict.tsx`, `EpisodeDayList.tsx`, `EmptyState.tsx` và test của chúng; đã tìm tên file trong phần đầu diff của ba plan). Dữ liệu fixture của M2f nếu chép khối "tiêu đề dài nhất" thì dùng lần đo 09:10, không phải 09:00.
 
 ```bash
 git status --short   # file plan này hiện là untracked (??); các file plan khác của M2 chưa chạy cũng vậy, không add chúng
@@ -1434,7 +1475,7 @@ git add docs/blueprint/plans/2026-11-26-kim-bun-dot-om-m2d.md
 git commit -m "docs(plan): the M2d plan and its check results" -m "Co-Authored-By: Claude Fable 5.2 <noreply@anthropic.com>"
 ```
 
-- [ ] **Step 7: Đưa lên `main`**
+- [x] **Step 7: Đưa lên `main`**
 
 Chỉ khi mọi bước trên đều đạt và không còn lỗi đã biết (lỗi tìm thấy khi kiểm phải được sửa, có test, và ghi vào plan trước; sửa xong thì chạy lại Step 1 và Step 2). Không hỏi lại người dùng: xem mục "Lên `main` không cần hỏi" ở Ghi chú khi thực thi.
 
@@ -1449,3 +1490,58 @@ git rev-parse --short origin/main   # hai dòng phải giống nhau
 `git merge --ff-only` từ chối (ai đó đã đẩy thêm lên `main`) thì dừng và báo, không tự rebase.
 
 Báo cáo bằng tiếng Việt: `git log --oneline` của các commit vừa lên `main`; kết quả typecheck, vitest, build; mục nào của bước trình duyệt đã thấy, ở theme nào; lỗi nào đã sửa trong phiên; mục nào chưa kiểm.
+
+### Bản sửa sau bước trình duyệt (thêm khi chạy, 2026-11-27): tiêu đề hai dòng chia đều
+
+Lộ ra ở Task 4 Step 4, sau khi sửa dữ liệu fixture: ở 375 px tiêu đề dài nhất của thẻ kết luận, "{tên} đã hết sốt chưa đầy 1 giờ", xuống hai dòng và để chữ "giờ" đứng một mình ở dòng dưới. Test trước (Patch 7), code sau (Patch 8); một commit `fix(illness): the verdict title breaks into even lines`.
+
+**Patch 7 (test đỏ):** `Test Files  1 failed | 194 passed (195)`, `Tests  1 failed | 1824 passed (1825)`.
+
+```diff
+diff --git a/components/illness/episodecards.test.tsx b/components/illness/episodecards.test.tsx
+index d9b5017..9c7e826 100644
+--- a/components/illness/episodecards.test.tsx
++++ b/components/illness/episodecards.test.tsx
+@@ -33,6 +33,21 @@ describe("EpisodeVerdict", () => {
+     expect(html).toContain(">Ngày thứ 3 · bắt đầu 24/11 lúc 23:30</span>");
+   });
+
++  // At 375 px the longest title takes two lines; balanced, its last word is
++  // not left alone on the second.
++  it("a title that needs two lines breaks into even lines", () => {
++    const html = card({
++      verdict: {
++        title: "Bun đã hết sốt chưa đầy 1 giờ",
++        tone: "good",
++        icon: "check",
++      },
++    });
++    expect(html).toMatch(
++      /<h2 class="[^"]*text-balance[^"]*">Bun đã hết sốt chưa đầy 1 giờ<\/h2>/,
++    );
++  });
++
+   it("the tone and the icon both change with the verdict", () => {
+     const fever = card({
+       verdict: { title: "Bun đang sốt 39,4°C", tone: "danger", icon: "thermo" },
+```
+
+**Patch 8 (code):** `Test Files  195 passed (195)`, `Tests  1825 passed (1825)`; `tsc --noEmit` thoát 0.
+
+```diff
+diff --git a/components/illness/EpisodeVerdict.tsx b/components/illness/EpisodeVerdict.tsx
+index 2fd5c81..d0b7437 100644
+--- a/components/illness/EpisodeVerdict.tsx
++++ b/components/illness/EpisodeVerdict.tsx
+@@ -67,7 +67,7 @@ export function EpisodeVerdict({
+           <Icon name={verdict.icon} size={22} />
+         </span>
+         <div className="flex min-w-0 flex-col">
+-          <h2 className="text-xl leading-[26px] font-bold text-ink">
++          <h2 className="text-xl leading-[26px] font-bold text-balance text-ink">
+             {verdict.title}
+           </h2>
+           <span className="text-[13px] leading-[18px] text-muted">
+```
+
+`text-wrap: balance` có từ Safari 17.5; Safari 16.4–17.4 bỏ qua thuộc tính này và xuống dòng như trước (không vỡ gì).

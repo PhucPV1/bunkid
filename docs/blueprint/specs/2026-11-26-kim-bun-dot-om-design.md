@@ -268,11 +268,11 @@ Bản ghi tải bằng `useRangeLogs` với `from` = đầu ngày thứ 8 trư�
 
 1. **Đầu trang.** Tiêu đề "Đợt ốm", nút quay lại, nút bút chì "Sửa đợt ốm" (§6.4).
 2. **Thẻ kết luận.**
-   - Icon tròn, tiêu đề và tông theo §5.2.
+   - Icon tròn, tiêu đề và tông theo §5.2. Tiêu đề dài hơn một dòng thì chia đều thành hai dòng (`text-wrap: balance`), để không chữ nào đứng một mình ở dòng dưới: ở 375 px "{tên} đã hết sốt chưa đầy 1 giờ" thành "{tên} đã hết sốt" / "chưa đầy 1 giờ". (Thêm ở M2d ngày 2026-11-27, sau bước kiểm trình duyệt.)
    - Dòng phụ, đợt đang mở: "Ngày thứ {n} · bắt đầu {dd/mm} lúc {HH:mm}". Đợt đã đóng: "{dd/mm} – {dd/mm}".
    - Ba hàng, mỗi hàng nhãn bên trái, giờ chữ nhỏ, giá trị đậm bên phải:
      - "Đo gần nhất": giờ và "{x}°C". Chưa đo: giá trị "Chưa đo", không có giờ.
-     - "Sốt cao nhất": giờ và "{x}°C" của lần đo cao nhất khi nó ≥ 38,0. Không thì giá trị "Không sốt".
+     - "Sốt cao nhất": giờ và "{x}°C" của lần đo cao nhất khi nó ≥ 38,0. Đã đo mà chưa lần nào ≥ 38,0: giá trị "Không sốt", không có giờ. Đợt chưa có lần đo nào: giá trị "Chưa đo", không có giờ. (Khác bản đã duyệt ngày 2026-11-26, vốn ghi "Không thì giá trị 'Không sốt'", tức đợt chưa đo cũng ghi "Không sốt". Đổi ở M2d ngày 2026-11-27 theo lời duyệt trước của người dùng: app không khẳng định "Không sốt" khi chưa ai đo.)
      - "Thuốc hạ sốt": "gần nhất {giờ}" và "{n} liều" (bản ghi `medicine` có `antipyretic`). Không có: giá trị "Chưa dùng".
    - Giờ viết "{HH:mm} hôm nay" khi cùng ngày, không thì "{dd/mm} {HH:mm}".
    - Đợt đang mở: ba nút "Nhiệt độ", "Thuốc", "Triệu chứng", mỗi nút mở `QuickEntrySheet` của loại đó. Đợt đã đóng: không có ba nút.
