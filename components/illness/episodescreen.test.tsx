@@ -171,7 +171,7 @@ describe("EpisodeScreen", () => {
     expect(useLogsRealtime).toHaveBeenCalledWith("b1");
   });
 
-  it("an open episode: verdict, chart, days, then Bé đã khỏi", () => {
+  it("an open episode: verdict, chart, days, the comparison, then Bé đã khỏi", () => {
     const html = render();
     expect(html).toContain(">Bun đã hết sốt 19 giờ</h2>");
     expect(html).toContain(">Ngày thứ 3 · bắt đầu 24/11 lúc 23:30</span>");
@@ -186,15 +186,19 @@ describe("EpisodeScreen", () => {
     expect(html).toContain(">25/11 · ngày 2</span>");
     expect(html).toContain(">Sổ mũi</span>");
     expect(html).toMatch(/<button[^>]*w-full[^>]*>Bé đã khỏi<\/button>/);
+    // No feed, sleep or diaper was logged before the episode.
+    expect(html).toContain(">Chưa đủ dữ liệu trước khi ốm để so.</p>");
     const order = [
       ">Bun đã hết sốt 19 giờ</h2>",
       ">Nhiệt độ và thuốc hạ sốt</h2>",
       ">Từng ngày</h2>",
+      ">So với thường ngày</h2>",
       ">Bé đã khỏi</button>",
     ].map((mark) => html.indexOf(mark));
     expect(order).toEqual([...order].sort((a, b) => a - b));
-    // Not in this milestone: the comparison card, the report, the visits.
-    for (const text of ["So với thường ngày", "Báo cáo cho bác sĩ", "Lần khám"])
+    expect(order[0]).toBeGreaterThan(-1);
+    // Not in this milestone: the report, the visits.
+    for (const text of ["Báo cáo cho bác sĩ", "Lần khám"])
       expect(html).not.toContain(text);
   });
 
@@ -213,11 +217,28 @@ describe("EpisodeScreen", () => {
     expect(html).not.toContain("Chưa đo nhiệt độ");
   });
 
+  it("compares yesterday with the days before the episode, from the same logs", () => {
+    const routine = ["2026-11-20", "2026-11-21", "2026-11-22", "2026-11-25"]
+      .flatMap((day) =>
+        ["02:00", "06:00", "10:00", "14:00"].map((time) =>
+          log("breast", `${day} ${time}`, { side: "left" }),
+        ),
+      )
+      .slice(0, -2);
+    const html = render({ logs: loaded([...LOGS, ...routine]) });
+    expect(html).toContain(
+      ">Hôm qua, so với trung bình 7 ngày trước khi ốm</p>",
+    );
+    expect(html).toContain(">2 cữ · thường 4 cữ</span>");
+    expect(html).toContain(">Ít hơn</span>");
+  });
+
   it("a closed episode: Đã khỏi, no quick logs and no Bé đã khỏi; its logs stop after its last day", () => {
     const html = render({ id: "past", logs: loaded([]) });
     expect(html).toContain(">Đã khỏi sau 3 ngày</h2>");
     expect(html).toContain(">10/10 – 12/10</span>");
     expect(html).toContain(">Chưa có lần đo nào trong đợt này.</p>");
+    expect(html).toContain(">So với thường ngày</h2>");
     expect(html).not.toContain("Bé đã khỏi");
     expect(html).not.toContain(">Triệu chứng</button>");
     expect(useRangeLogs).toHaveBeenCalledWith(

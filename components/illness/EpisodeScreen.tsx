@@ -23,10 +23,11 @@ import {
   feverChartModel,
 } from "@/lib/rules/illness";
 import { planClose } from "@/lib/rules/illnessForm";
-import { dayRows, verdictView } from "@/lib/rules/illnessView";
+import { dayRows, usualView, verdictView } from "@/lib/rules/illnessView";
 import type { Baby } from "@/lib/supabase/rows";
 import { EpisodeDayList } from "./EpisodeDayList";
 import { EpisodeSheet } from "./EpisodeSheet";
+import { EpisodeUsual } from "./EpisodeUsual";
 import { EpisodeVerdict, type QuickLogType } from "./EpisodeVerdict";
 import { FeverChartCard } from "./FeverChart";
 
@@ -70,6 +71,7 @@ export function EpisodeBody({
       />
       <FeverChartCard chart={feverChartModel(logs, episode, now)} />
       <EpisodeDayList rows={dayRows(logs, episode, now)} />
+      <EpisodeUsual view={usualView(logs, episode, now)} />
       {episode.ended_at === null && (
         <Button variant="secondary" block busy={closing} onClick={onClose}>
           Bé đã khỏi
