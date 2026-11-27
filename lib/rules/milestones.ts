@@ -4,18 +4,6 @@ const DAYS_PER_MONTH = 30.4375;
 
 export const ageInMonths = (ageDays: number) => ageDays / DAYS_PER_MONTH;
 
-// Spec §6.9: show the current age group and the next one.
-export function visibleGroups(
-  groups: MilestoneGroup[],
-  ageMonths: number,
-): MilestoneGroup[] {
-  let current = 0;
-  groups.forEach((group, index) => {
-    if (group.months <= ageMonths) current = index;
-  });
-  return groups.slice(current, current + 2);
-}
-
 export type MotorState = "done" | "early" | "window" | "late";
 
 const months = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 1 });

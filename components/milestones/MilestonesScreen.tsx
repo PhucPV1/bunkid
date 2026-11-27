@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/Button";
 import { ErrorCard } from "@/components/ui/ErrorCard";
-import { ListGroup } from "@/components/ui/ListGroup";
+import { Icon } from "@/components/ui/Icon";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { MILESTONES } from "@/lib/content/milestones";
 import { toVietnameseError } from "@/lib/data/errors";
@@ -12,21 +11,26 @@ import { entriesFor, pendingRowIds } from "@/lib/data/outboxCore";
 import { useOutboxEntries } from "@/lib/hooks/useOutboxEntries";
 import {
   ageInMonths,
-  motorStatus,
-  visibleGroups,
-  type MotorState,
+  defaultOpenMonths,
+  motorSummary,
+  timelineSteps,
 } from "@/lib/rules/milestones";
-import { ageDays } from "@/lib/rules/time";
+import { ageDays, formatAgeVi } from "@/lib/rules/time";
 import type { Baby, MilestoneRow } from "@/lib/supabase/rows";
-import { MilestoneItem } from "./MilestoneItem";
+import { cx } from "@/lib/ui/cx";
+import { AskDoctorSheet } from "./AskDoctorSheet";
 import { MilestoneSheet } from "./MilestoneSheet";
+import { MilestoneTimeline } from "./MilestoneTimeline";
+import { MotorSheet } from "./MotorSheet";
 
-const STATE_CLASS: Record<MotorState, string> = {
-  done: "bg-good-soft text-good-ink",
-  early: "bg-muted/15 text-ink",
-  window: "bg-accent-tint text-accent-text",
-  late: "bg-warn-soft text-warn-ink",
-};
+// Spec 2026-11-27 §4.4: one sheet at a time. An item opened from the motor
+// sheet goes back to it when it closes.
+type OpenSheet =
+  | { kind: "motor" }
+  | { kind: "askDoctor" }
+  | { kind: "item"; code: string; title: string; fromMotor: boolean };
+
+const WHO_SOURCE = MILESTONES.motor.find((m) => m.code === "ngoi")!.source;
 
 export function MilestonesScreen({
   baby,
@@ -41,32 +45,25 @@ export function MilestonesScreen({
   const pending = pendingRowIds(
     entriesFor(useOutboxEntries(userId), "milestones_achieved"),
   );
-  const months = ageInMonths(ageDays(baby.dob, new Date()));
-  const [showAll, setShowAll] = useState(false);
-  const [open, setOpen] = useState<{ code: string; title: string } | null>(
-    null,
+  const now = new Date();
+  const months = ageInMonths(ageDays(baby.dob, now));
+  const groups = MILESTONES.groups;
+  const [openMonths, setOpenMonths] = useState<number | null>(() =>
+    defaultOpenMonths(groups, months),
   );
+  const [sheet, setSheet] = useState<OpenSheet | null>(null);
   const byCode = new Map((marks.data ?? []).map((m) => [m.milestone_code, m]));
-  const groups = showAll
-    ? MILESTONES.groups
-    : visibleGroups(MILESTONES.groups, months);
+  const loaded = marks.data !== undefined;
+  const achieved = new Set(byCode.keys());
+  const steps = timelineSteps(groups, months, achieved, loaded, baby.name);
+  const motor = motorSummary(MILESTONES.motor, months, achieved);
   const canEdit = (row: MilestoneRow | undefined) =>
     !row || isOwner || row.created_by === userId;
-
-  const item = (code: string, title: string, extra?: React.ReactNode) => {
-    const row = byCode.get(code);
-    return (
-      <MilestoneItem
-        key={code}
-        title={title}
-        row={row}
-        pending={pending.has(code)}
-        disabled={!canEdit(row)}
-        extra={extra}
-        onOpen={() => setOpen({ code, title })}
-      />
-    );
-  };
+  // §4.5, §4.6: the baby's current group, or the first one for a newborn.
+  const current = groups.find(
+    (g) => g.months === defaultOpenMonths(groups, months),
+  )!;
+  const cdcGroup = groups.find((g) => g.months === openMonths) ?? current;
 
   return (
     <main className="mx-auto flex max-w-md flex-col gap-[18px] px-4 pt-2 pb-4">
@@ -74,74 +71,120 @@ export function MilestonesScreen({
         title={MILESTONES.title}
         back={{ href: "/suc-khoe", label: "Sức khỏe" }}
       />
-      <p className="px-1 text-[15px] text-muted">{MILESTONES.intro}</p>
       {marks.isError && !marks.data && (
         <ErrorCard
           message={toVietnameseError(marks.error)}
           onRetry={() => void marks.refetch()}
         />
       )}
-      <ListGroup title="Mốc vận động lớn">
-        {MILESTONES.motor.map((m) => {
-          const status = motorStatus(m, months, byCode.has(m.code));
-          return item(
-            m.code,
-            m.name,
-            status.state === "done" ? null : (
-              <span
-                className={`mt-1 self-start rounded-full px-2 text-[13px] font-semibold ${STATE_CLASS[status.state]}`}
-              >
-                {status.text}
+      <ul className="glass overflow-hidden rounded-[22px]">
+        <li>
+          <button
+            type="button"
+            aria-haspopup="dialog"
+            onClick={() => setSheet({ kind: "motor" })}
+            className="flex min-h-14 w-full items-center gap-3 px-4 py-2.5 text-left"
+          >
+            <span className="flex size-[34px] shrink-0 items-center justify-center rounded-full bg-accent-tint text-accent-text">
+              <Icon name="star" size={18} />
+            </span>
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className="text-base font-semibold text-ink">
+                Vận động lớn
               </span>
-            ),
-          );
-        })}
-      </ListGroup>
-      {groups.map((group) => (
-        <section key={group.months} className="flex flex-col gap-3">
-          <h2 className="px-1 text-xl leading-[26px] font-bold text-ink">
-            Mốc {group.months} tháng
-          </h2>
-          {(["social", "language", "cognitive", "movement"] as const).map(
-            (domain) => {
-              const list = group.items.filter((i) => i.domain === domain);
-              if (list.length === 0) return null;
-              return (
-                <ListGroup key={domain} title={MILESTONES.domains[domain]}>
-                  {list.map((i) => item(i.code, i.text))}
-                </ListGroup>
-              );
-            },
-          )}
-          <div className="rounded-[22px] bg-warn-soft p-4 text-[15px] text-warn-ink">
-            <p className="font-semibold">Khi nào nên hỏi bác sĩ</p>
-            <ul className="mt-1 list-disc pl-5">
-              {group.askDoctor.map((line) => (
-                <li key={line}>{line}</li>
-              ))}
-            </ul>
-          </div>
+              {loaded && (
+                <span
+                  className={cx(
+                    "text-[13px]",
+                    motor.tone === "warn"
+                      ? "font-semibold text-warn"
+                      : "text-muted",
+                  )}
+                >
+                  {motor.text}
+                </span>
+              )}
+            </span>
+            <Icon name="chevronRight" size={16} className="text-muted" />
+          </button>
+        </li>
+      </ul>
+      <MilestoneTimeline
+        steps={steps}
+        openMonths={openMonths}
+        domains={MILESTONES.domains}
+        byCode={byCode}
+        pending={pending}
+        canEdit={canEdit}
+        onToggle={(m) => setOpenMonths(openMonths === m ? null : m)}
+        onOpenItem={(code, title) =>
+          setSheet({ kind: "item", code, title, fromMotor: false })
+        }
+      />
+      <button
+        type="button"
+        aria-haspopup="dialog"
+        onClick={() => setSheet({ kind: "askDoctor" })}
+        className="flex min-h-[52px] w-full items-center gap-3 rounded-[22px] bg-warn-soft px-4 py-2.5 text-warn-ink"
+      >
+        <Icon name="alert" size={20} />
+        <span className="flex-1 text-left font-semibold">
+          Khi nào nên hỏi bác sĩ
+        </span>
+        <Icon name="chevronRight" size={16} />
+      </button>
+      <div className="flex flex-col">
+        <p className="px-1 text-[13px] text-muted">
+          Theo CDC và WHO, không thay cho khám sàng lọc.
+        </p>
+        <div className="flex gap-4 px-1">
           <a
-            href={group.source}
+            href={cdcGroup.source}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex min-h-11 items-center px-1 text-[13px] text-muted underline"
+            className="inline-flex min-h-11 items-center text-[13px] text-muted underline"
           >
-            Nguồn: CDC
+            Nguồn CDC
           </a>
-        </section>
-      ))}
-      <Button variant="secondary" block onClick={() => setShowAll(!showAll)}>
-        {showAll ? "Chỉ xem tháng hiện tại và kế tiếp" : "Xem tất cả các mốc"}
-      </Button>
-      {open && (
+          <a
+            href={WHO_SOURCE}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex min-h-11 items-center text-[13px] text-muted underline"
+          >
+            Nguồn WHO
+          </a>
+        </div>
+      </div>
+      {sheet?.kind === "motor" && (
+        <MotorSheet
+          motor={MILESTONES.motor}
+          ageMonths={months}
+          ageText={formatAgeVi(baby.dob, now)}
+          babyName={baby.name}
+          byCode={byCode}
+          pending={pending}
+          canEdit={canEdit}
+          onPick={(code, title) =>
+            setSheet({ kind: "item", code, title, fromMotor: true })
+          }
+          onClose={() => setSheet(null)}
+        />
+      )}
+      {sheet?.kind === "askDoctor" && (
+        <AskDoctorSheet
+          lines={current.askDoctor}
+          onClose={() => setSheet(null)}
+        />
+      )}
+      {sheet?.kind === "item" && (
         <MilestoneSheet
-          code={open.code}
-          title={open.title}
-          row={byCode.get(open.code) ?? null}
+          code={sheet.code}
+          title={sheet.title}
+          row={byCode.get(sheet.code) ?? null}
           baby={baby}
           userId={userId}
-          onClose={() => setOpen(null)}
+          onClose={() => setSheet(sheet.fromMotor ? { kind: "motor" } : null)}
         />
       )}
     </main>
