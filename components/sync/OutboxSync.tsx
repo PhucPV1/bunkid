@@ -2,6 +2,7 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
+import { REFRESH_AFTER_FLUSH } from "@/lib/data/outbox";
 import { outboxDeps } from "@/lib/data/outboxDeps";
 import { flushRequests } from "@/lib/data/outboxEvents";
 import { flushOutbox } from "@/lib/data/outboxFlush";
@@ -42,12 +43,8 @@ export function OutboxSync() {
         const result = await withOutboxLock(() => flushOutbox(deps));
         blocked = result?.blocked ?? false;
         if (result && result.sent + result.dropped > 0) {
-          void queryClient.invalidateQueries({ queryKey: ["logs"] });
-          void queryClient.invalidateQueries({ queryKey: ["first-log"] });
-          // Also rolls back a refused dose mark (spec §9) and drops temporary rows.
-          void queryClient.invalidateQueries({ queryKey: ["vaccine-doses"] });
-          void queryClient.invalidateQueries({ queryKey: ["growth"] });
-          void queryClient.invalidateQueries({ queryKey: ["milestones"] });
+          for (const queryKey of REFRESH_AFTER_FLUSH)
+            void queryClient.invalidateQueries({ queryKey });
         }
       } catch (error) {
         console.warn("Không gửi được dữ liệu chờ đồng bộ", error);

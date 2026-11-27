@@ -210,6 +210,61 @@ async function sendGrowth(entry: OutboxEntry): Promise<SendOutcome> {
   }
 }
 
+type EpisodeColumns = { started_at?: string; ended_at?: string | null };
+
+// Spec 2026-11-26 §4.2. An overlap with another episode comes back as 23P01
+// and is dropped with its own sentence (DROP_CODES).
+async function sendEpisode(entry: OutboxEntry): Promise<SendOutcome> {
+  const sb = supabase();
+  const row = (entry.row ?? {}) as EpisodeColumns;
+  switch (entry.op) {
+    case "insert": {
+      // ignoreDuplicates: a retry after a lost response must not overwrite the row.
+      const result = await sb.from("illness_episodes").upsert(
+        {
+          id: entry.rowId,
+          baby_id: entry.babyId,
+          started_at: String(row.started_at),
+          ended_at: row.ended_at ?? null,
+        },
+        { onConflict: "id", ignoreDuplicates: true },
+      );
+      return result.error ? failed(result) : { ok: true };
+    }
+    case "update": {
+      const result = await sb
+        .from("illness_episodes")
+        .update(row)
+        .eq("id", entry.rowId)
+        .select("id");
+      if (result.error) return failed(result);
+      return result.data.length > 0
+        ? { ok: true }
+        : { ok: false, failure: { zeroRows: true } };
+    }
+    case "delete": {
+      const result = await sb
+        .from("illness_episodes")
+        .delete()
+        .eq("id", entry.rowId)
+        .select("id");
+      if (result.error) return failed(result);
+      if (result.data.length > 0) return { ok: true };
+      // 0 rows: gone already (another device deleted it) counts as done.
+      const check = await sb
+        .from("illness_episodes")
+        .select("id")
+        .eq("id", entry.rowId);
+      if (check.error) return failed(check);
+      return check.data.length === 0
+        ? { ok: true }
+        : { ok: false, failure: { zeroRows: true } };
+    }
+    default:
+      return UNSUPPORTED;
+  }
+}
+
 // Spec §9: upsert on (baby_id, milestone_code) without sending id.
 async function sendMilestone(entry: OutboxEntry): Promise<SendOutcome> {
   const sb = supabase();
@@ -261,6 +316,7 @@ function send(entry: OutboxEntry): Promise<SendOutcome> {
   if (entry.table === "milestones_achieved") return sendMilestone(entry);
   if (entry.table === "vaccine_doses") return sendDose(entry);
   if (entry.table === "growth") return sendGrowth(entry);
+  if (entry.table === "illness_episodes") return sendEpisode(entry);
   return sendLog(entry);
 }
 

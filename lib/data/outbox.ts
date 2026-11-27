@@ -2,6 +2,7 @@
 
 import type { QueryClient } from "@tanstack/react-query";
 import type {
+  EpisodeRow,
   GrowthRow,
   LogRow,
   MilestoneRow,
@@ -10,11 +11,13 @@ import type {
 import { localDb } from "./localDb";
 import {
   applyDoseChange,
+  applyEpisodeChange,
   applyGrowthChange,
   applyMilestoneChange,
   applyToCache,
   overlayPending,
   overlayPendingDoses,
+  overlayPendingEpisodes,
   overlayPendingGrowth,
   overlayPendingMilestones,
   type OutboxEntry,
@@ -215,6 +218,63 @@ export async function withPendingMilestones(
       .equals(babyId)
       .toArray();
     return overlayPendingMilestones(rows, entries, new Date().toISOString());
+  } catch {
+    return rows;
+  }
+}
+
+// The caches refreshed after a flush that sent or dropped something: fresh
+// server rows take the place of the optimistic ones. This is also what rolls
+// back a change the server refused (spec §9) and drops temporary rows.
+export const REFRESH_AFTER_FLUSH = [
+  ["logs"],
+  ["first-log"],
+  ["vaccine-doses"],
+  ["growth"],
+  ["milestones"],
+  ["illness-episodes"],
+] as const;
+
+// Spec 2026-11-26 §4.2: illness episodes, by row id like growth.
+export type EpisodeChange = Pick<
+  OutboxEntry,
+  "rowId" | "babyId" | "userId" | "row"
+> & { op: "insert" | "update" | "delete" };
+
+export const episodesKey = (babyId: string) =>
+  ["illness-episodes", babyId] as const;
+
+export async function enqueueEpisodeChange(
+  queryClient: QueryClient,
+  change: EpisodeChange,
+): Promise<void> {
+  const entry: OutboxEntry = {
+    ...change,
+    id: crypto.randomUUID(),
+    table: "illness_episodes",
+    createdAt: await nextCreatedAt(),
+    attempts: 0,
+  };
+  await localDb().outbox.add(entry);
+  const key = episodesKey(change.babyId);
+  await queryClient.cancelQueries({ queryKey: key });
+  const nowIso = new Date().toISOString();
+  queryClient.setQueryData<EpisodeRow[]>(key, (rows) =>
+    rows ? applyEpisodeChange(rows, entry, nowIso) : rows,
+  );
+  flushRequests.emit();
+}
+
+export async function withPendingEpisodes(
+  babyId: string,
+  rows: EpisodeRow[],
+): Promise<EpisodeRow[]> {
+  try {
+    const entries = await localDb()
+      .outbox.where("babyId")
+      .equals(babyId)
+      .toArray();
+    return overlayPendingEpisodes(rows, entries, new Date().toISOString());
   } catch {
     return rows;
   }
