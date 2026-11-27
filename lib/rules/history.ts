@@ -70,6 +70,19 @@ export function groupByVnDay<T extends { started_at: string; type?: string }>(
   return groups;
 }
 
+// Spec 2026-11-27 §6.2: what a tap on a row of Nhật ký opens: the sheet of
+// the log's day for a symptom log, the edit sheet for any other log.
+export type HistorySheet<T> =
+  { kind: "log"; log: T | null } | { kind: "symptoms"; day: string };
+
+export function historySheet<T extends { type: string; started_at: string }>(
+  log: T,
+): HistorySheet<T> {
+  return log.type === "symptom"
+    ? { kind: "symptoms", day: vnDateString(new Date(log.started_at)) }
+    : { kind: "log", log };
+}
+
 // Spec 2026-11-27 §6.2: the time of a row in Nhật ký and "Gần đây"; a
 // symptom log is for the whole day.
 export function logTimeText(log: { type: string; started_at: string }): string {

@@ -6,6 +6,7 @@ import {
   groupByVnDay,
   HISTORY_FILTERS,
   historyPageRange,
+  historySheet,
   logTimeText,
   matchesFilter,
   nextHistoryPage,
@@ -81,6 +82,24 @@ describe("history", () => {
     const at = "2026-11-14T05:00:00Z"; // 12:00 VN
     expect(logTimeText({ type: "symptom", started_at: at })).toBe("Cả ngày");
     expect(logTimeText({ type: "bottle", started_at: at })).toBe("12:00");
+  });
+
+  it("spec 2026-11-27 §6.2: a symptom row opens its day's sheet, any other row its edit sheet", () => {
+    const symptom = {
+      id: "y",
+      type: "symptom",
+      started_at: "2026-11-13T17:30:00Z", // 00:30 on 14/11
+    };
+    expect(historySheet(symptom)).toEqual({
+      kind: "symptoms",
+      day: "2026-11-14",
+    });
+    const bottle = {
+      id: "f",
+      type: "bottle",
+      started_at: "2026-11-14T02:00:00Z",
+    };
+    expect(historySheet(bottle)).toEqual({ kind: "log", log: bottle });
   });
 
   it("historyPageRange covers 7 VN days per page", () => {

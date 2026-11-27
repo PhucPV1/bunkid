@@ -1,13 +1,8 @@
 "use client";
 
-import {
-  memo,
-  useCallback,
-  useDeferredValue,
-  useMemo,
-  useState,
-} from "react";
+import { memo, useCallback, useDeferredValue, useMemo, useState } from "react";
 import { useQuickActions } from "@/components/actions/QuickActions";
+import { SymptomDaySheet } from "@/components/quick/SymptomDaySheet";
 import { Button } from "@/components/ui/Button";
 import { ChipGroup } from "@/components/ui/ChipGroup";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -28,6 +23,8 @@ import {
   firstScreen,
   groupByVnDay,
   HISTORY_FILTERS,
+  historySheet,
+  type HistorySheet,
   matchesFilter,
   type HistoryFilter,
 } from "@/lib/rules/history";
@@ -36,7 +33,7 @@ import type { Baby, FamilyMember, LogRow } from "@/lib/supabase/rows";
 import { HistoryList } from "./HistoryList";
 import { LogEditSheet } from "./LogEditSheet";
 
-type SheetState = { log: LogRow | null } | null;
+type SheetState = HistorySheet<LogRow> | null;
 
 // Skips re-rendering a week of rows when only the query state, the outbox or
 // the quick-actions context changed.
@@ -111,13 +108,17 @@ export function HistoryScreen({
       members.data?.find((m) => m.user_id === userId)?.display_name ?? "Ai đó",
     [members.data],
   );
-  const openLog = useCallback((log: LogRow) => setSheet({ log }), []);
+  const openLog = useCallback((log: LogRow) => setSheet(historySheet(log)), []);
 
   return (
     <main className="mx-auto flex max-w-md flex-col gap-[18px] px-4 pt-2 pb-4">
       <PageHeader
         title="Nhật ký"
-        action={<BackfillButton onClick={() => setSheet({ log: null })} />}
+        action={
+          <BackfillButton
+            onClick={() => setSheet({ kind: "log", log: null })}
+          />
+        }
       />
 
       <ChipGroup
@@ -182,7 +183,17 @@ export function HistoryScreen({
         </Button>
       )}
 
-      {sheet && (
+      {sheet?.kind === "symptoms" && (
+        <SymptomDaySheet
+          baby={baby}
+          userId={userId}
+          canModify={(createdBy) => canModifyLog(member, createdBy)}
+          day={sheet.day}
+          sub="Cả ngày"
+          onClose={() => setSheet(null)}
+        />
+      )}
+      {sheet?.kind === "log" && (
         <LogEditSheet
           babyId={baby.id}
           userId={userId}
