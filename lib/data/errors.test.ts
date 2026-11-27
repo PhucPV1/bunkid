@@ -11,6 +11,12 @@ describe("toVietnameseError", () => {
       "Đã có người bắt đầu trước.",
     );
   });
+  it("maps a missing related row, as the outbox does", () => {
+    expect(
+      toVietnameseError({ code: "23503", message: "violates foreign key" }),
+    ).toBe("Bản ghi liên quan không còn.");
+  });
+
   it("maps permission errors", () => {
     expect(
       toVietnameseError({ code: "42501", message: "permission_denied" }),
