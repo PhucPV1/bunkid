@@ -715,3 +715,24 @@ Kết quả: Chờ người dùng.
 | iPhone 11     |     |         |         |
 | iPhone 16     |     |         |         |
 | iPhone 17 Pro |     |         |         |
+
+## Bước 40 — Nhật ký gom theo buổi (spec 2026-11-27)
+
+Chỉ xem, trừ mục 6 tạo một bản ghi thử rồi xóa nó. Một máy là đủ.
+
+1. Mở tab Nhật ký. Kỳ vọng: mỗi ngày một khối kính; nếu ngày có triệu chứng thì dòng "Cả ngày" đứng đầu khối; sau đó là các hàng buổi từ muộn tới sớm ("Tối · 18–24 giờ", "Chiều · 12–18 giờ", "Sáng · 6–12 giờ", "Đêm · 0–6 giờ"). Hôm nay không có buổi chưa tới. Chỉ một buổi đang mở: buổi muộn nhất có bản ghi của hôm nay. Hàng buổi có nền hơi đậm hơn dòng bản ghi. Không chữ nào bị cắt "…".
+2. Hàng buổi đang gập có tóm tắt kiểu "3 cữ · 2 tã · ngủ 2g 10p" và mũi tên xuống. Bấm vào. Kỳ vọng: các dòng của buổi hiện ra ngay dưới, mũi tên lên, trang không nhảy. Bấm lại: gập.
+3. Một ngày cũ. Kỳ vọng: đủ bốn buổi; buổi không có gì là hàng mờ "Không có bản ghi", bấm không có gì xảy ra. Nếu đêm đó bé ngủ từ tối hôm trước mà 0–6 giờ không ghi gì thì "Đêm · 0–6 giờ" ghi "ngủ …", cũng không bấm được.
+4. Bấm chip "Bú". Kỳ vọng: mọi buổi còn lại đều mở, chỉ có dòng bú; buổi không có cữ bú nào biến mất. Bấm "Tất cả". Kỳ vọng: về như mục 1.
+5. Mở một buổi của hôm qua, sang tab "Hôm nay" rồi quay lại "Nhật ký". Kỳ vọng: buổi đó đã gập lại, như mục 1.
+6. Bật chế độ máy bay, ghi một cữ bú thử. Nhật ký: dòng đó có dấu đồng hồ "Chờ đồng bộ". Gập buổi đó. Kỳ vọng: dấu đồng hồ hiện trên hàng buổi. Tắt chế độ máy bay, chờ dấu mất, rồi mở dòng thử và xóa nó.
+7. Bật Ban đêm. Kỳ vọng: hàng buổi vẫn tách được với dòng bản ghi, hàng "Không có bản ghi" đọc được, buổi mở và gập phân biệt được bằng mũi tên. Tắt Ban đêm.
+8. Bật VoiceOver, vuốt tới một hàng buổi. Kỳ vọng: đọc tên buổi, tóm tắt, là nút, và "thu gọn" hoặc "mở rộng" đúng trạng thái. Tắt VoiceOver.
+
+Kết quả: Chờ người dùng.
+
+| Máy           | iOS | Kết quả | Ghi chú |
+| ------------- | --- | ------- | ------- |
+| iPhone 11     |     |         |         |
+| iPhone 16     |     |         |         |
+| iPhone 17 Pro |     |         |         |
