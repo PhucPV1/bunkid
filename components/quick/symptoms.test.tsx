@@ -116,6 +116,25 @@ describe("SymptomPickerView", () => {
     for (const button of buttons) expect(button.props.type).toBe("button");
   });
 
+  it("spec 2026-11-27 §5.3: a locked chip stays on, is marked disabled and does nothing", () => {
+    const onChange = vi.fn();
+    const html = view({ value: "fever,cough", locked: ["fever"] });
+    expect(html).toMatch(
+      /aria-pressed="true" aria-disabled="true" class="[^"]*opacity-50[^"]*">✓ Sốt<\/button>/,
+    );
+    expect(html).toMatch(/aria-pressed="true" class="[^"]*">✓ Ho<\/button>/);
+    const buttons = hostElements(
+      SymptomPickerView(
+        props({ value: "fever,cough", locked: ["fever"], onChange }),
+      ),
+      "button",
+    );
+    (buttons[0].props.onClick as () => void)();
+    expect(onChange).not.toHaveBeenCalled();
+    (buttons[2].props.onClick as () => void)();
+    expect(onChange).toHaveBeenCalledWith("fever");
+  });
+
   it("a code the content lost survives a toggle", () => {
     const onChange = vi.fn();
     const buttons = hostElements(

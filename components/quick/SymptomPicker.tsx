@@ -10,13 +10,16 @@ const ROW = "flex flex-wrap gap-2";
 
 // Spec 2026-11-26 §3.5: the common chips first; one button opens the rest by
 // group. `value` is the picked codes joined with ",". A picked chip is filled
-// and ticked, so it reads without colour (theme night).
+// and ticked, so it reads without colour (theme night). Spec 2026-11-27 §5.3:
+// a `locked` code was logged by someone the viewer may not overrule; its chip
+// stays on, faded, and a tap does nothing.
 export function SymptomPickerView({
   value,
   onChange,
   ageDays,
   expanded,
   onExpanded,
+  locked = [],
 }: {
   value: string;
   onChange: (next: string) => void;
@@ -24,6 +27,7 @@ export function SymptomPickerView({
   ageDays: number | null;
   expanded: boolean;
   onExpanded: (next: boolean) => void;
+  locked?: readonly string[];
 }) {
   const selected = parseCodes(value);
   const layout = pickerLayout({
@@ -34,17 +38,21 @@ export function SymptomPickerView({
   });
   const chip = (symptom: TriageSymptom) => {
     const on = selected.includes(symptom.code);
+    const fixed = locked.includes(symptom.code);
     return (
       <button
         key={symptom.code}
         type="button"
         aria-pressed={on}
-        onClick={() =>
-          onChange(toggleCode(value, symptom.code, TRIAGE.symptoms))
-        }
+        aria-disabled={fixed || undefined}
+        onClick={() => {
+          if (!fixed)
+            onChange(toggleCode(value, symptom.code, TRIAGE.symptoms));
+        }}
         className={cx(
           "min-h-11 rounded-full px-4 text-[15px]",
           on ? "bg-ink font-semibold text-bg" : "glass font-medium text-ink",
+          fixed && "opacity-50",
         )}
       >
         {on ? `✓ ${symptom.short}` : symptom.short}
@@ -85,6 +93,7 @@ export function SymptomPicker(props: {
   value: string;
   onChange: (next: string) => void;
   ageDays: number | null;
+  locked?: readonly string[];
 }) {
   const [expanded, setExpanded] = useState(false);
   return (
