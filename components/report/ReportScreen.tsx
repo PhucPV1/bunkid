@@ -25,6 +25,7 @@ import {
   growthSummary,
   medicineRows,
   REPORT_DAYS,
+  symptomRows,
   temperatureRows,
   vaccineSummary,
 } from "@/lib/rules/report";
@@ -57,6 +58,7 @@ export function ReportScreen({ baby }: { baby: Baby }) {
   const stats = dailyStats(rows, days, now);
   const temperatures = temperatureRows(rows, fromMs);
   const medicines = medicineRows(rows, fromMs);
+  const symptoms = symptomRows(rows, fromMs);
   const measures = growthSummary(
     growth.data ?? [],
     {
@@ -205,6 +207,33 @@ export function ReportScreen({ baby }: { baby: Baby }) {
               </ul>
             )}
           </section>
+
+          {/* Spec 2026-11-26 §9: only when the period has a symptom log. */}
+          {symptoms.length > 0 && (
+            <section>
+              <h3 className="font-semibold">Triệu chứng</h3>
+              <table className="w-full border-collapse text-left">
+                <thead>
+                  <tr>
+                    <th className={cell}>Giờ</th>
+                    <th className={cell}>Triệu chứng</th>
+                    <th className={cell}>Ghi chú</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {symptoms.map((row, i) => (
+                    <tr key={i} className="break-inside-avoid">
+                      <td className={`${cell} whitespace-nowrap tabular-nums`}>
+                        {row.at}
+                      </td>
+                      <td className={cell}>{row.text}</td>
+                      <td className={cell}>{row.note}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </section>
+          )}
 
           <section>
             <h3 className="font-semibold">Tăng trưởng (lần đo gần nhất)</h3>
