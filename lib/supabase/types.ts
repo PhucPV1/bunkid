@@ -99,6 +99,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"illness_episodes": {
+                  Row: {
+                    "baby_id": string,"created_at": string,"created_by": string,"ended_at": string | null,"id": string,"started_at": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "baby_id": string,"created_at"?: string,"created_by"?: string,"ended_at"?: string | null,"id": string,"started_at": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "baby_id"?: string,"created_at"?: string,"created_by"?: string,"ended_at"?: string | null,"id"?: string,"started_at"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "illness_episodes_baby_id_fkey"
+      columns: ["baby_id"]
+isOneToOne: false
+      referencedRelation: "babies"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"logs": {
                   Row: {
                     "baby_id": string,"created_at": string,"created_by": string,"details": NonNullable<Json>,"ended_at": string | null,"id": string,"note": string | null,"started_at": string,"type": string,"updated_at": string
