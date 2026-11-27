@@ -2,9 +2,12 @@ import { describe, expect, it } from "vitest";
 import type { LogLike } from "./describeLog";
 import type { EpisodeLike } from "./illness";
 import {
+  clockText,
+  closeReminderView,
   dayRows,
   episodeHref,
   episodeList,
+  homeEpisodeCard,
   verdictView,
   whenText,
 } from "./illnessView";
@@ -255,5 +258,112 @@ describe("episodeList", () => {
     expect(episodeList({ episodes: past, openLogs: undefined, now }).open).toBe(
       null,
     );
+  });
+});
+
+// Spec 2026-11-26 §7.1: {giờ} on the home card.
+describe("clockText", () => {
+  const now = vn("2026-11-26 10:00");
+
+  it("is the time alone for a time today, with the date otherwise", () => {
+    expect(clockText(vn("2026-11-26 07:05").getTime(), now)).toBe("07:05");
+    expect(clockText(vn("2026-11-25 23:59").getTime(), now)).toBe(
+      "25/11 23:59",
+    );
+  });
+});
+
+// Spec §7.1: the episode card of the home page.
+describe("homeEpisodeCard", () => {
+  const open = episode("2026-11-24 23:30", null, "ab-12");
+  const now = vn("2026-11-26 10:00");
+  const card = (logs: LogLike[] | undefined, at = now) =>
+    homeEpisodeCard({ episode: open, logs, now: at });
+
+  it("leads to the episode's page and names the day it is on", () => {
+    expect(card([])).toEqual({
+      href: "/dot-om/chi-tiet?id=ab-12",
+      title: "Đang ốm · ngày 3",
+      sub: "Chưa đo nhiệt độ",
+    });
+    expect(card([], vn("2026-11-24 23:45")).title).toBe("Đang ốm · ngày 1");
+  });
+
+  // The reading after "·" has no plain space: the line never breaks inside it.
+  const nb = (text: string) => text.replaceAll(" ", "\u00a0");
+
+  it("the line under the title follows the fever state, with the newest reading", () => {
+    expect(card([temp("2026-11-26 07:05", 38.6)]).sub).toBe(
+      `Đang sốt · ${nb("38,6°C lúc 07:05")}`,
+    );
+    // More than 6 hours old, and taken yesterday.
+    expect(card([temp("2026-11-25 21:10", 38)]).sub).toBe(
+      `Chưa đo lại · ${nb("38°C lúc 25/11 21:10")}`,
+    );
+    expect(
+      card([temp("2026-11-25 15:00", 39.2), temp("2026-11-26 07:05", 37.4)])
+        .sub,
+    ).toBe(`Hết sốt 19 giờ · ${nb("37,4°C lúc 07:05")}`);
+    expect(
+      card([temp("2026-11-26 09:10", 38.2), temp("2026-11-26 09:50", 37.4)])
+        .sub,
+    ).toBe(`Hết sốt chưa đầy 1 giờ · ${nb("37,4°C lúc 09:50")}`);
+    expect(card([temp("2026-11-26 07:05", 37.4)]).sub).toBe(
+      `Không sốt · ${nb("37,4°C lúc 07:05")}`,
+    );
+  });
+
+  it("has no line under the title until the episode's logs have loaded", () => {
+    expect(card(undefined)).toEqual({
+      href: "/dot-om/chi-tiet?id=ab-12",
+      title: "Đang ốm · ngày 3",
+      sub: null,
+    });
+  });
+});
+
+// Spec §7.3: the reminder to close the episode.
+describe("closeReminderView", () => {
+  const open = episode("2026-11-24 23:30");
+  const now = vn("2026-11-29 10:00");
+  const SUB =
+    "Đợt ốm bắt đầu 24/11 xong chưa? Đóng lại thì các bản ghi sau đó không tính vào đợt này nữa.";
+  const view = (kind: "no-fever" | "unchecked" | "quiet", logs: LogLike[]) =>
+    closeReminderView({ kind, episode: open, logs, babyName: "Bun", now });
+
+  it("no-fever: names the baby; the icon and tone of a fever that is over", () => {
+    expect(
+      view("no-fever", [
+        temp("2026-11-25 15:00", 39.2),
+        temp("2026-11-26 07:05", 37.4),
+      ]),
+    ).toEqual({
+      title: "Bun đã 48 giờ không sốt",
+      sub: SUB,
+      tone: "good",
+      icon: "check",
+    });
+  });
+
+  it("unchecked: a clock, because nobody measured again", () => {
+    expect(view("unchecked", [temp("2026-11-25 15:00", 39.2)])).toEqual({
+      title: "48 giờ qua chưa đo lại nhiệt độ",
+      sub: SUB,
+      tone: "warn",
+      icon: "clock",
+    });
+  });
+
+  it("quiet: the icon of the episode's state, measured or not", () => {
+    expect(view("quiet", [])).toEqual({
+      title: "48 giờ qua không có triệu chứng hay liều hạ sốt nào",
+      sub: SUB,
+      tone: "neutral",
+      icon: "thermo",
+    });
+    expect(view("quiet", [temp("2026-11-26 07:05", 37.4)])).toMatchObject({
+      tone: "good",
+      icon: "check",
+    });
   });
 });

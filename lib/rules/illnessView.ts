@@ -3,6 +3,7 @@ import { formatDayFull, formatDayShort } from "./days";
 import type { LogLike } from "./describeLog";
 import {
   antipyreticTimes,
+  type CloseCase,
   type DayLabel,
   type EpisodeLike,
   episodeDayCount,
@@ -11,6 +12,7 @@ import {
   episodeVerdict,
   feverStatus,
   formatCelsius,
+  sinceText,
   statusTone,
   type Verdict,
 } from "./illness";
@@ -185,5 +187,82 @@ export function episodeList(input: {
         href: episodeHref(episode.id),
         text: `${date(episode.started_at)} – ${date(String(episode.ended_at))} · ${episodeDayCount(episode, now)} ngày`,
       })),
+  };
+}
+
+// Spec §7.1 {giờ}: "{HH:mm}" for a time today, "{dd/mm} {HH:mm}" otherwise.
+export function clockText(at: number, now: Date): string {
+  const time = formatVnTime(new Date(at));
+  return dayOf(at) === vnDateString(now) ? time : `${shortDay(at)} ${time}`;
+}
+
+export type HomeEpisodeView = {
+  href: string;
+  title: string;
+  // The fever state and the newest reading; null until the logs have loaded.
+  sub: string | null;
+};
+
+// Spec §7.1: the card of the open episode on the home page. `logs` are the
+// logs of that episode (useRangeLogs); undefined until they have loaded.
+export function homeEpisodeCard(input: {
+  episode: EpisodeLike;
+  logs: LogLike[] | undefined;
+  now: Date;
+}): HomeEpisodeView {
+  const { episode, logs, now } = input;
+  let sub: string | null = null;
+  if (logs) {
+    const { kind, latest, lastFever } = feverStatus(logs, episode, now);
+    if (kind === "unmeasured" || !latest) sub = "Chưa đo nhiệt độ";
+    else {
+      const state =
+        kind === "cleared" && lastFever
+          ? `${CHIP_TEXT.cleared} ${sinceText(now.getTime() - lastFever.at)}`
+          : CHIP_TEXT[kind];
+      // The reading stays whole: its spaces do not break, so a narrow
+      // card breaks the line after "·", never inside "25/11 23:59".
+      const reading = `${formatCelsius(latest.celsius)}°C lúc ${clockText(latest.at, now)}`;
+      sub = `${state} · ${reading.replaceAll(" ", "\u00a0")}`;
+    }
+  }
+  return {
+    href: episodeHref(episode.id),
+    title: `Đang ốm · ngày ${episodeDayCount(episode, now)}`,
+    sub,
+  };
+}
+
+const CLOSE_TITLE: Record<CloseCase, (babyName: string) => string> = {
+  "no-fever": (babyName) => `${babyName} đã 48 giờ không sốt`,
+  unchecked: () => "48 giờ qua chưa đo lại nhiệt độ",
+  quiet: () => "48 giờ qua không có triệu chứng hay liều hạ sốt nào",
+};
+
+export type CloseReminderView = {
+  title: string;
+  sub: string;
+  // The round icon: the one the verdict card shows for the episode's state.
+  tone: EpisodeTone;
+  icon: Verdict["icon"];
+};
+
+// Spec §7.3: the reminder to close the open episode. `kind` comes from
+// closeReminder; `logs` are the logs of the episode.
+export function closeReminderView(input: {
+  kind: CloseCase;
+  episode: EpisodeLike;
+  logs: LogLike[];
+  babyName: string;
+  now: Date;
+}): CloseReminderView {
+  const { kind, episode, logs, babyName, now } = input;
+  const status = feverStatus(logs, episode, now);
+  const { tone, icon } = episodeVerdict({ episode, status, babyName, now });
+  return {
+    title: CLOSE_TITLE[kind](babyName),
+    sub: `Đợt ốm bắt đầu ${shortDay(Date.parse(episode.started_at))} xong chưa? Đóng lại thì các bản ghi sau đó không tính vào đợt này nữa.`,
+    tone,
+    icon,
   };
 }
