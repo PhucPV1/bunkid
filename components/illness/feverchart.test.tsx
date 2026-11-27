@@ -92,6 +92,34 @@ describe("FeverChart", () => {
     expect(html).not.toMatch(/#[0-9a-fA-F]{3,6}\b/);
   });
 
+  it("draws two readings and two doses logged at the same minute, each once", () => {
+    const chart = feverChartModel(
+      [
+        temp("2026-11-25 20:00", 38.5),
+        temp("2026-11-25 20:00", 39.5),
+        temp("2026-11-25 22:00", 38.2),
+        dose("2026-11-25 20:10"),
+        dose("2026-11-25 20:10"),
+      ],
+      episode("2026-11-25 08:00"),
+      vn("2026-11-25 23:00"),
+    )!;
+    const twins = renderToStaticMarkup(<FeverChart chart={chart} />);
+    expect(twins.match(/<circle/g)).toHaveLength(3);
+    expect(twins.match(/data-dose/g)).toHaveLength(2);
+    expect(twins.match(/data-point-label/g)).toHaveLength(2);
+    // No two siblings share a key (the server renderer does not report it;
+    // the browser does, and may then drop or repeat one of them).
+    const children: unknown[] = FeverChart({ chart }).props.children;
+    for (const list of children) {
+      if (!Array.isArray(list)) continue;
+      const keys = list
+        .filter((child) => child !== null && typeof child === "object")
+        .map((child: { key: string | null }) => child.key);
+      expect(new Set(keys).size).toBe(keys.length);
+    }
+  });
+
   it("a single reading has a dot and no line", () => {
     const one = renderToStaticMarkup(
       <FeverChart

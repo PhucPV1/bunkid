@@ -531,10 +531,9 @@ export function feverChartModel(
     x < LABEL_EDGE ? "start" : x > 1 - LABEL_EDGE ? "end" : "middle";
   const boxes: Box[] = points.map((point) => dotBox(point.x, point.y));
 
-  // The highest reading keeps its label above the dot.
-  const peakPoint = points.find(
-    (point) => point.at === peak?.at && !point.latest,
-  );
+  // The highest reading keeps its label above the dot. Its point is found by
+  // position, not by time: two readings may carry the same minute.
+  const peakPoint = peak ? points[drawn.indexOf(peak)] : undefined;
   let peakLabel: Box | null = null;
   if (peak && peakPoint && peak !== latest) {
     peakPoint.label = {

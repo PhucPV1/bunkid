@@ -132,9 +132,10 @@ export function FeverChart({ chart }: { chart: FeverChartModel }) {
           strokeLinejoin="round"
         />
       )}
-      {chart.points.map((point) => (
+      {/* Keys are positions: two logs may carry the same minute. */}
+      {chart.points.map((point, index) => (
         <circle
-          key={point.at}
+          key={index}
           cx={round(px(point.x))}
           cy={round(py(point.y))}
           r={point.latest ? 6.5 : 4}
@@ -143,19 +144,19 @@ export function FeverChart({ chart }: { chart: FeverChartModel }) {
           strokeWidth={point.latest ? 2.5 : 0}
         />
       ))}
-      {chart.doses.map((dose) => (
+      {chart.doses.map((dose, index) => (
         <path
-          key={dose.at}
+          key={index}
           data-dose
           d={`M${round(px(dose.x))} ${DOSE_Y - 6}l6 6-6 6-6-6z`}
           fill="var(--color-cat-med)"
         />
       ))}
       {chart.points.map(
-        (point) =>
+        (point, index) =>
           point.label && (
             <text
-              key={point.at}
+              key={index}
               data-point-label
               x={
                 round(px(point.x)) +

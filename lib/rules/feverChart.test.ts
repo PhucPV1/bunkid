@@ -133,6 +133,27 @@ describe("feverChartModel", () => {
     ).toEqual([null, "39,2", "37,2"]);
   });
 
+  it("two readings at the same moment: the highest one's label sits on its own point", () => {
+    // Measured twice and logged with the same minute; a later reading is
+    // the newest. The label "39,5" belongs to the dot of 39,5.
+    const chart = feverChartModel(
+      [
+        temp("2026-11-24 20:00", 38.5),
+        temp("2026-11-24 20:00", 39.5),
+        temp("2026-11-24 22:00", 37),
+      ],
+      episode("2026-11-24 08:00"),
+      vn("2026-11-24 23:00"),
+    )!;
+    expect(
+      chart.points.map((point) => [point.celsius, point.label?.text ?? null]),
+    ).toEqual([
+      [38.5, null],
+      [39.5, "39,5"],
+      [37, "37"],
+    ]);
+  });
+
   it("only the newest point is marked latest", () => {
     const chart = feverChartModel(
       [temp("2026-11-24 09:00", 38.4), temp("2026-11-24 20:00", 39.2)],
