@@ -211,6 +211,57 @@ export function useStatsLogs(babyId: string, since: string) {
   });
 }
 
+// PostgREST returns at most 1000 rows per request (max_rows).
+const RANGE_PAGE_ROWS = 1000;
+
+// Spec 2026-11-26 §4.2: every log that starts in [from, to); `to` null means
+// no upper bound. Read page after page until one comes back short. Oldest
+// first then id, only so the pages cannot shuffle: the overlay below and the
+// optimistic cache sort again, so callers must not rely on the order.
+export async function fetchLogsBetween(
+  babyId: string,
+  from: string,
+  to: string | null,
+): Promise<LogRow[]> {
+  const rows: LogRow[] = [];
+  for (let offset = 0; ; offset += RANGE_PAGE_ROWS) {
+    let query = supabase()
+      .from("logs")
+      .select("*")
+      .eq("baby_id", babyId)
+      .gte("started_at", from);
+    if (to !== null) query = query.lt("started_at", to);
+    const { data, error } = await query
+      .order("started_at", { ascending: true })
+      .order("id")
+      .range(offset, offset + RANGE_PAGE_ROWS - 1);
+    if (error) throw error;
+    rows.push(...data);
+    if (data.length < RANGE_PAGE_ROWS) break;
+  }
+  const fromMs = Date.parse(from);
+  const toMs = to === null ? null : Date.parse(to);
+  return withPending(babyId, rows, (row) => {
+    const at = Date.parse(row.started_at);
+    return at >= fromMs && (toMs === null || at < toMs);
+  });
+}
+
+// The logs of an illness episode (and of the days around it). Under logsKey,
+// so a new log and a realtime event refresh it like every other log list.
+export function useRangeLogs(
+  babyId: string,
+  from: string,
+  to: string | null,
+  enabled = true,
+) {
+  return useQuery({
+    queryKey: [...logsKey(babyId), "range", from, to ?? "open"],
+    queryFn: () => fetchLogsBetween(babyId, from, to),
+    enabled,
+  });
+}
+
 export function useSaveLog(babyId: string, userId: string) {
   const queryClient = useQueryClient();
   return useMutation({
