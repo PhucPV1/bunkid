@@ -1,4 +1,5 @@
 import type {
+  EpisodeRow,
   GrowthRow,
   LogRow,
   MilestoneRow,
@@ -12,7 +13,12 @@ export type OutboxOp = "insert" | "update" | "delete" | "stop" | "upsert";
 
 export type OutboxEntry = {
   id: string;
-  table: "logs" | "vaccine_doses" | "growth" | "milestones_achieved";
+  table:
+    | "logs"
+    | "vaccine_doses"
+    | "growth"
+    | "milestones_achieved"
+    | "illness_episodes";
   op: OutboxOp;
   rowId: string;
   babyId: string;
@@ -22,6 +28,8 @@ export type OutboxEntry = {
   // growth — insert: the measurement; update: the changed columns; delete: null.
   // milestones_achieved — upsert: { milestone_code, achieved_on, note, photo_id };
   // delete: { milestone_code }. rowId is the milestone code.
+  // illness_episodes — insert: { started_at, ended_at? }; update: the changed
+  // columns (ended_at: null reopens the episode); delete: null.
   row: Record<string, unknown> | null;
   createdAt: number;
   attempts: number;
@@ -41,6 +49,8 @@ const DROP_CODES: Record<string, string> = {
   "23514": INVALID,
   "23503": "Bản ghi liên quan không còn",
   "22P02": INVALID,
+  // Spec 2026-11-26 §4.2: the no-overlap constraint of illness_episodes.
+  "23P01": "Trùng thời gian với một đợt ốm khác",
 };
 
 // How many flushes an entry may fail with an unknown 4xx before it is given up.
@@ -324,4 +334,53 @@ export function overlayPendingMilestones(
   return [...entriesFor(entries, "milestones_achieved")]
     .sort((a, b) => a.createdAt - b.createdAt)
     .reduce((acc, entry) => applyMilestoneChange(acc, entry, nowIso), rows);
+}
+
+const byStartedAt = (a: EpisodeRow, b: EpisodeRow) =>
+  Date.parse(b.started_at) - Date.parse(a.started_at);
+
+// Spec 2026-11-26 §4.2: illness episodes use a client id, so entries match
+// rows by id (like growth). The list stays newest start first.
+export function applyEpisodeChange(
+  rows: EpisodeRow[],
+  entry: OutboxEntry,
+  nowIso: string,
+): EpisodeRow[] {
+  const patch = (entry.row ?? {}) as Partial<EpisodeRow>;
+  switch (entry.op) {
+    case "insert":
+      if (rows.some((r) => r.id === entry.rowId)) return rows;
+      return [
+        ...rows,
+        {
+          id: entry.rowId,
+          baby_id: entry.babyId,
+          started_at: String(patch.started_at),
+          ended_at: patch.ended_at ?? null,
+          created_by: entry.userId,
+          created_at: nowIso,
+          updated_at: nowIso,
+        },
+      ].sort(byStartedAt);
+    case "update":
+      return rows
+        .map((r) =>
+          r.id === entry.rowId ? { ...r, ...patch, updated_at: nowIso } : r,
+        )
+        .sort(byStartedAt);
+    case "delete":
+      return rows.filter((r) => r.id !== entry.rowId);
+    default:
+      return rows;
+  }
+}
+
+export function overlayPendingEpisodes(
+  rows: EpisodeRow[],
+  entries: OutboxEntry[],
+  nowIso: string,
+): EpisodeRow[] {
+  return [...entriesFor(entries, "illness_episodes")]
+    .sort((a, b) => a.createdAt - b.createdAt)
+    .reduce((acc, entry) => applyEpisodeChange(acc, entry, nowIso), rows);
 }
