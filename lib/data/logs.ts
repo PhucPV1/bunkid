@@ -204,10 +204,11 @@ export function useHistoryLogs(babyId: string, dob: string) {
   });
 }
 
-export function useStatsLogs(babyId: string, since: string) {
+export function useStatsLogs(babyId: string, since: string, enabled = true) {
   return useQuery({
     queryKey: [...logsKey(babyId), "stats", since],
     queryFn: () => fetchLogsSince(babyId, since),
+    enabled,
   });
 }
 

@@ -1,18 +1,20 @@
 "use client";
 
 import { useState } from "react";
+import { FeverChartFigure } from "@/components/illness/FeverChart";
 import { Button } from "@/components/ui/Button";
 import { ErrorCard } from "@/components/ui/ErrorCard";
 import { Icon } from "@/components/ui/Icon";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { Segmented } from "@/components/ui/Segmented";
+import { type ChoiceOption, Segmented } from "@/components/ui/Segmented";
 import { NeedsNetwork, waitingForNetwork } from "@/components/ui/NeedsNetwork";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { VACCINES } from "@/lib/content/vaccines";
 import { whoSex, type LmsRow } from "@/lib/content/who";
 import { toVietnameseError } from "@/lib/data/errors";
 import { useGrowth, useWhoTable } from "@/lib/data/growth";
-import { useStatsLogs } from "@/lib/data/logs";
+import { useEpisodes } from "@/lib/data/illness";
+import { useRangeLogs, useStatsLogs } from "@/lib/data/logs";
 import { useNow } from "@/lib/hooks/useNow";
 import { useVaccineDoses } from "@/lib/data/vaccines";
 import {
@@ -21,10 +23,14 @@ import {
   statsFetchSince,
 } from "@/lib/rules/dailyStats";
 import { formatDayShort, vnDayRange, vnDayStartMs } from "@/lib/rules/days";
+import { belongsTo, feverChartModel } from "@/lib/rules/illness";
 import {
+  episodeReport,
   growthSummary,
   medicineRows,
   REPORT_DAYS,
+  type ReportPeriod,
+  reportSelection,
   symptomRows,
   temperatureRows,
   vaccineSummary,
@@ -36,17 +42,48 @@ import type { Baby } from "@/lib/supabase/rows";
 
 const decimal = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 1 });
 const dmy = (day: string) => day.split("-").reverse().join("/");
-const RANGES = REPORT_DAYS.map((n) => ({
-  value: String(n),
+const RANGES: ChoiceOption<ReportPeriod>[] = REPORT_DAYS.map((n) => ({
+  value: n === 7 ? "7" : "14",
   label: `${n} ngày`,
 }));
+// Spec 2026-11-26 §9: the third choice, once the baby has an episode.
+const EPISODE: ChoiceOption<ReportPeriod> = { value: "dot", label: "Đợt ốm" };
 
-export function ReportScreen({ baby }: { baby: Baby }) {
-  const [range, setRange] = useState<(typeof REPORT_DAYS)[number]>(7);
+// `dot` is the episode named by the address (/bao-cao?dot={id}), or null.
+export function ReportScreen({
+  baby,
+  dot = null,
+}: {
+  baby: Baby;
+  dot?: string | null;
+}) {
+  const [picked, setPicked] = useState<ReportPeriod | null>(null);
   const now = useNow(60_000);
-  const days = vnDayRange(now, range);
+  const episodes = useEpisodes(baby.id);
+  // null while the address names an episode and the list is still loading:
+  // nothing is shown yet rather than 7 days that then jump.
+  const selection = reportSelection({
+    picked,
+    address: dot,
+    episodes: episodes.data,
+  });
+  const episode = selection?.episode ?? null;
+  const report = episode ? episodeReport(episode, now) : null;
+  const range = selection?.period === "14" ? 14 : 7;
+  const days = report ? report.days : vnDayRange(now, range);
   const fromMs = vnDayStartMs(days[0]);
-  const logs = useStatsLogs(baby.id, statsFetchSince(days));
+  const statsLogs = useStatsLogs(
+    baby.id,
+    statsFetchSince(days),
+    selection !== null && report === null,
+  );
+  const rangeLogs = useRangeLogs(
+    baby.id,
+    report?.from ?? "",
+    report?.to ?? null,
+    report !== null,
+  );
+  const logs = report ? rangeLogs : statsLogs;
   const growth = useGrowth(baby.id);
   const doses = useVaccineDoses(baby.id);
   const sex = whoSex(baby.sex);
@@ -55,10 +92,16 @@ export function ReportScreen({ baby }: { baby: Baby }) {
   const hcfa = useWhoTable("hcfa", sex);
 
   const rows = logs.data ?? [];
+  // The daily table counts whole calendar days; the readings, the medicines
+  // and the symptoms of an episode are only the logs that belong to it.
+  const own = episode
+    ? rows.filter((log) => belongsTo(episode, log.started_at, now))
+    : rows;
   const stats = dailyStats(rows, days, now);
-  const temperatures = temperatureRows(rows, fromMs);
-  const medicines = medicineRows(rows, fromMs);
-  const symptoms = symptomRows(rows, fromMs);
+  const temperatures = temperatureRows(own, fromMs);
+  const medicines = medicineRows(own, fromMs);
+  const symptoms = symptomRows(own, fromMs);
+  const chart = episode ? feverChartModel(rows, episode, now) : null;
   const measures = growthSummary(
     growth.data ?? [],
     {
@@ -80,8 +123,9 @@ export function ReportScreen({ baby }: { baby: Baby }) {
   const cell = "border border-line px-2 py-1 print:border-ink";
   // A report for a doctor must never print "nothing recorded" while data is
   // still loading or failed to load (offline without a cache).
-  const ready = Boolean(logs.data && growth.data && doses.data);
+  const ready = Boolean(selection && logs.data && growth.data && doses.data);
   const failures = [
+    ...(selection ? [] : [{ label: "Đợt ốm", query: episodes }]),
     { label: "Nhật ký", query: logs },
     { label: "Tăng trưởng", query: growth },
     { label: "Tiêm chủng", query: doses },
@@ -96,11 +140,13 @@ export function ReportScreen({ baby }: { baby: Baby }) {
         />
         <Segmented
           label="Khoảng thời gian"
-          options={RANGES}
-          value={String(range)}
-          onChange={(value) =>
-            setRange(Number(value) as (typeof REPORT_DAYS)[number])
+          options={
+            episodes.data && episodes.data.length > 0
+              ? [...RANGES, EPISODE]
+              : RANGES
           }
+          value={selection?.period ?? "dot"}
+          onChange={setPicked}
         />
         <Button block disabled={!ready} onClick={() => window.print()}>
           <Icon name="doc" size={18} />
@@ -115,7 +161,9 @@ export function ReportScreen({ baby }: { baby: Baby }) {
         ))}
         {!ready &&
           failures.length === 0 &&
-          ([logs, growth, doses].some(waitingForNetwork) ? (
+          ([selection ? logs : episodes, growth, doses].some(
+            waitingForNetwork,
+          ) ? (
             <NeedsNetwork what="báo cáo" />
           ) : (
             <div className="flex flex-col gap-2.5">
@@ -142,10 +190,14 @@ export function ReportScreen({ baby }: { baby: Baby }) {
               {baby.allergies ? ` · Dị ứng: ${baby.allergies}` : ""}
             </p>
             <p className="text-muted">
-              {range} ngày, từ {formatDayShort(days[0])} đến{" "}
-              {formatDayShort(days[days.length - 1])} · in ngày{" "}
-              {dmy(vnDateString(now))}
+              {report
+                ? report.line
+                : `${range} ngày, từ ${formatDayShort(days[0])} đến ${formatDayShort(days[days.length - 1])}`}{" "}
+              · in ngày {dmy(vnDateString(now))}
             </p>
+            {report?.truncated && (
+              <p className="text-muted">14 ngày cuối của đợt ốm</p>
+            )}
           </section>
 
           <section>
@@ -180,6 +232,13 @@ export function ReportScreen({ baby }: { baby: Baby }) {
 
           <section>
             <h3 className="font-semibold">Nhiệt độ</h3>
+            {/* Spec 2026-11-26 §9: the episode's chart, on paper too; not
+                an empty frame when its last 7 days have no reading. */}
+            {chart && chart.points.length > 0 && (
+              <div className="flex max-w-md flex-col gap-2.5 py-2 break-inside-avoid [print-color-adjust:exact]">
+                <FeverChartFigure chart={chart} />
+              </div>
+            )}
             {temperatures.length === 0 ? (
               <p className="text-muted">Không đo trong khoảng này.</p>
             ) : (

@@ -197,8 +197,35 @@ export function FeverChart({ chart }: { chart: FeverChartModel }) {
 
 const LEGEND = "flex items-center gap-1.5";
 
-// The card around the chart: its title, what the marks mean, and the two
-// notes of spec §6.5.
+// The chart with the note of spec §6.5 and what the marks mean, without a
+// card: the episode's page puts it in one, the doctor report prints it bare.
+export function FeverChartFigure({ chart }: { chart: FeverChartModel }) {
+  return (
+    <>
+      <FeverChart chart={chart} />
+      {chart.truncated && (
+        <p className="px-1 text-xs text-muted">7 ngày gần nhất</p>
+      )}
+      <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1 px-1 text-xs text-muted">
+        <span className={LEGEND}>
+          <span className="size-2.5 rounded-full bg-cat-temp" />
+          Nhiệt độ
+        </span>
+        <span className={LEGEND}>
+          <span className="size-[9px] rotate-45 bg-cat-med" />
+          Liều hạ sốt
+        </span>
+        <span className={LEGEND}>
+          <span className="w-3.5 border-t-2 border-dashed border-danger" />
+          Từ 38°C là sốt
+        </span>
+      </div>
+    </>
+  );
+}
+
+// The card around the chart: its title, the chart, or the one sentence of
+// spec §6.5 when the episode has no reading.
 export function FeverChartCard({ chart }: { chart: FeverChartModel | null }) {
   return (
     <Glass className="flex flex-col gap-2.5 p-3">
@@ -206,26 +233,7 @@ export function FeverChartCard({ chart }: { chart: FeverChartModel | null }) {
         Nhiệt độ và thuốc hạ sốt
       </h2>
       {chart ? (
-        <>
-          <FeverChart chart={chart} />
-          {chart.truncated && (
-            <p className="px-1 text-xs text-muted">7 ngày gần nhất</p>
-          )}
-          <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1 px-1 text-xs text-muted">
-            <span className={LEGEND}>
-              <span className="size-2.5 rounded-full bg-cat-temp" />
-              Nhiệt độ
-            </span>
-            <span className={LEGEND}>
-              <span className="size-[9px] rotate-45 bg-cat-med" />
-              Liều hạ sốt
-            </span>
-            <span className={LEGEND}>
-              <span className="w-3.5 border-t-2 border-dashed border-danger" />
-              Từ 38°C là sốt
-            </span>
-          </div>
-        </>
+        <FeverChartFigure chart={chart} />
       ) : (
         <p className="px-1 text-[15px] text-muted">
           Chưa có lần đo nào trong đợt này.

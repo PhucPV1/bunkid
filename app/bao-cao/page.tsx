@@ -1,12 +1,7 @@
 "use client";
 
-import { AuthGate } from "@/components/AuthGate";
-import { ReportScreen } from "@/components/report/ReportScreen";
+import { ReportPage } from "@/components/report/ReportPage";
 
 export default function Page() {
-  return (
-    <AuthGate need="baby">
-      {({ ctx }) => (ctx?.baby ? <ReportScreen baby={ctx.baby} /> : null)}
-    </AuthGate>
-  );
+  return <ReportPage />;
 }

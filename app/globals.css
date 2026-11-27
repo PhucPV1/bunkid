@@ -443,6 +443,12 @@ dialog[data-closing] > .glass-strong {
     --color-bg: #ffffff;
     --color-ink: #000000;
     --color-muted: #444444;
+    /* Spec 2026-11-26 §9: the fever chart prints in the light theme's colours. */
+    --color-glass-solid: #ffffff;
+    --color-danger: #c4142b;
+    --color-danger-ink: #8a0f1f;
+    --color-cat-med: #c0392b;
+    --color-cat-temp: #1b6f87;
   }
   body {
     background: #ffffff;

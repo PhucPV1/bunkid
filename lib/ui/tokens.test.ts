@@ -37,6 +37,31 @@ describe("globals.css matches lib/ui/tokens.ts", () => {
     },
   );
 
+  // Spec 2026-11-26 §9: the fever chart is printed with the doctor report,
+  // black on white whatever the theme; its marks keep the light theme's
+  // colours, so a dark theme does not print pale lines and dark halos.
+  it("on paper the chart's colours are the light theme's", () => {
+    const print = css.slice(css.indexOf("@media print {"));
+    const start = print.indexOf(":root[data-theme] {");
+    const vars = Object.fromEntries(
+      [
+        ...print
+          .slice(start, print.indexOf("}", start))
+          .matchAll(/--color-([a-z0-9-]+)\s*:\s*([^;]+);/g),
+      ].map((m) => [m[1], m[2].trim().toUpperCase()]),
+    );
+    for (const token of [
+      "glass-solid",
+      "danger",
+      "danger-ink",
+      "cat-med",
+      "cat-temp",
+    ] as const)
+      expect(vars[token], `--color-${token}`).toBe(
+        THEMES.light[token].toUpperCase(),
+      );
+  });
+
   it("the legacy tokens are gone", () => {
     for (const name of LEGACY)
       expect(css, `--color-${name}`).not.toMatch(
