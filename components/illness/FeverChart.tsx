@@ -142,6 +142,13 @@ export function FeverChart({ chart }: { chart: FeverChartModel }) {
         fontSize={11}
         fontWeight={600}
         fill="var(--color-danger-ink)"
+        // Only where a visit's line runs through it: the labels' halo.
+        {...(chart.feverWordHalo && {
+          stroke: "var(--color-glass-solid)",
+          strokeWidth: 3,
+          strokeLinejoin: "round" as const,
+          style: { paintOrder: "stroke" },
+        })}
       >
         Sốt
       </text>

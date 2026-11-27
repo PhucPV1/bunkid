@@ -78,3 +78,51 @@ describe("feverChartModel, visits", () => {
     expect(chart!.visits[0].x).toBeCloseTo(5.5 / 7);
   });
 });
+
+// The word "Sốt" has no halo: a dashed line through it reads as a mark in
+// the word. It keeps off the visits' lines as it keeps off the dots: right,
+// left, then middle; where every place is crossed, the dots come first and
+// the word takes the labels' halo.
+describe("feverChartModel, the word Sốt and the visits", () => {
+  const chart = (
+    visits: string[],
+    readings = [temp("2026-11-25 09:00", 38.6)],
+  ) =>
+    feverChartModel(
+      readings,
+      episode("2026-11-25 00:10"),
+      vn("2026-11-25 23:50"),
+      visits.map(at),
+    )!;
+  const word = (...args: Parameters<typeof chart>) => chart(...args).feverWord;
+  const halo = (...args: Parameters<typeof chart>) =>
+    chart(...args).feverWordHalo;
+  // A high reading in the left corner, where the word would go next.
+  const highLeft = [
+    temp("2026-11-25 01:00", 39.8),
+    temp("2026-11-25 09:00", 38.6),
+  ];
+
+  it("a line through the right corner moves the word to the left", () => {
+    expect(word([])).toBe("end");
+    expect(word(["2026-11-25 23:00"])).toBe("start");
+    expect(halo([])).toBe(false);
+    expect(halo(["2026-11-25 23:00"])).toBe(false);
+  });
+
+  it("lines through both corners: the middle", () => {
+    expect(word(["2026-11-25 01:00", "2026-11-25 23:00"])).toBe("middle");
+  });
+
+  it("a dot in the free corner: the word goes where neither is", () => {
+    expect(word([], highLeft)).toBe("end");
+    expect(word(["2026-11-25 23:00"], highLeft)).toBe("middle");
+  });
+
+  it("every place crossed: a line gives way to a dot, and the word takes a halo", () => {
+    expect(word(["2026-11-25 12:00", "2026-11-25 23:00"], highLeft)).toBe(
+      "end",
+    );
+    expect(halo(["2026-11-25 12:00", "2026-11-25 23:00"], highLeft)).toBe(true);
+  });
+});

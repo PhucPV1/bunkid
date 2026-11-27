@@ -485,6 +485,8 @@ const BELOW_MIN_Y = 0.2;
 const WORD_Y0 = 0.87;
 // The word "Khám" of a visit, about 30 px at 375 px wide.
 const VISIT_WORD_W = 0.11;
+// Half the width of a visit's line, with a little air.
+const VISIT_LINE_X = 0.005;
 const WORD_BOXES: { at: "start" | "middle" | "end"; x0: number; x1: number }[] =
   [
     { at: "end", x0: 0.9, x1: 1 },
@@ -534,8 +536,12 @@ export type FeverChart = {
   // Where 38,0 sits on the scale.
   feverY: number;
   // Where in the top band of the fever zone the word "Sốt" sits: the first
-  // of right, left, middle that no dot and no label reaches.
+  // of right, left, middle that no dot and no label reaches, and no visit's
+  // line where one is left.
   feverWord: "start" | "middle" | "end";
+  // A visit's line runs through the word "Sốt" wherever it goes: the word
+  // takes the halo of the value labels (spec §6.5 from M5).
+  feverWordHalo: boolean;
   // Oldest first.
   points: FeverChartPoint[];
   doses: { at: number; x: number }[];
@@ -678,18 +684,8 @@ export function feverChartModel(
     ).option;
     boxes.push(labelBox(newest.x, newest.y, newest.label));
   }
-  const feverWord =
-    WORD_BOXES.find(
-      (word) =>
-        !boxes.some((box) => hit(box, { ...word, y0: WORD_Y0, y1: 1.05 })),
-    )?.at ?? "end";
-
-  const doses = antipyreticTimes(logs, episode, now)
-    .filter(inWindow)
-    .map((at) => ({ at, x: xOf(at) }));
-
-  // The words sit in a band of their own above the plot, so they only have
-  // to keep off each other.
+  // The words "Khám" sit in a band of their own above the plot, so they
+  // only have to keep off each other.
   const visits: FeverChartVisit[] = [];
   let wordEnd = -Infinity;
   for (const at of visitTimes.filter(inWindow).sort((a, b) => a - b)) {
@@ -705,6 +701,33 @@ export function feverChartModel(
     if (free) wordEnd = x0 + VISIT_WORD_W;
     visits.push({ x, word: free ? anchor : null });
   }
+
+  // The word "Sốt" has no halo: it takes the first place that no dot or
+  // label covers and no visit's line runs through (a dash through the word
+  // reads as part of it). Where every place is crossed by a line, a line
+  // gives way to a dot: the first place no dot or label covers.
+  const wordBox = (word: (typeof WORD_BOXES)[number]): Box => ({
+    ...word,
+    y0: WORD_Y0,
+    y1: 1.05,
+  });
+  const offDots = WORD_BOXES.filter(
+    (word) => !boxes.some((box) => hit(box, wordBox(word))),
+  );
+  const crossed = (word: (typeof WORD_BOXES)[number]) =>
+    visits.some(
+      (visit) =>
+        word.x0 - VISIT_LINE_X < visit.x && visit.x < word.x1 + VISIT_LINE_X,
+    );
+  const wordPlace =
+    offDots.find((word) => !crossed(word)) ?? offDots[0] ?? WORD_BOXES[0];
+  const feverWord = wordPlace.at;
+  // Where a line still runs through the word, it takes the labels' halo.
+  const feverWordHalo = crossed(wordPlace);
+
+  const doses = antipyreticTimes(logs, episode, now)
+    .filter(inWindow)
+    .map((at) => ({ at, x: xOf(at) }));
 
   const highest = degrees.length > 0 ? Math.max(...degrees) : null;
   const ariaLabel = [
@@ -733,6 +756,7 @@ export function feverChartModel(
     })),
     feverY,
     feverWord,
+    feverWordHalo,
     points,
     doses,
     visits,

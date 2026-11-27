@@ -193,5 +193,19 @@ describe("FeverChart with visits", () => {
     const plain = renderToStaticMarkup(<FeverChart chart={threeDays} />);
     expect(plain).toContain('viewBox="0 0 330 204"');
     expect(plain).not.toContain("Khám");
+    expect(plain).not.toMatch(/<text[^>]*stroke=[^>]*>Sốt<\/text>/);
+  });
+
+  it("where every place of the word Sốt is crossed, it has the labels' halo", () => {
+    const crossed = feverChartModel(
+      [temp("2026-11-25 01:00", 39.8), temp("2026-11-25 09:00", 38.6)],
+      episode("2026-11-25 00:10"),
+      vn("2026-11-25 23:50"),
+      [vn("2026-11-25 12:00").getTime(), vn("2026-11-25 23:00").getTime()],
+    )!;
+    expect(renderToStaticMarkup(<FeverChart chart={crossed} />)).toMatch(
+      /<text[^>]*stroke="var\(--color-glass-solid\)"[^>]*>Sốt<\/text>/,
+    );
+    expect(html).not.toMatch(/<text[^>]*stroke=[^>]*>Sốt<\/text>/);
   });
 });
