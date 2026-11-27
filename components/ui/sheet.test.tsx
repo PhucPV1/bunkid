@@ -26,8 +26,10 @@ describe("Sheet", () => {
     expect(html).toContain(`id="${labelledBy}"`);
     expect(html).toContain(">Thay tã</h2>");
     expect(html).toContain("data-sheet-handle");
-    expect(html).toContain('aria-label="Đóng"');
-    expect(html).toContain("size-9");
+    // The close button is 44 × 44, like the app's other round buttons.
+    const close = /<button [^>]*aria-label="Đóng"[^>]*>/.exec(html)?.[0];
+    expect(close).toContain("size-11");
+    expect(close).not.toContain("size-9");
     expect(html).toContain(`d="${ICON_PATHS.drop}"`);
     expect(html).toContain("bg-cat-diaper/15 text-cat-diaper");
     expect(html).toContain("<p>Thân</p>");

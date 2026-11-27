@@ -188,7 +188,6 @@ export function Sheet({
           <IconButton
             label="Đóng"
             icon="close"
-            small
             variant="plain"
             className="bg-muted/15"
             onClick={requestClose}
