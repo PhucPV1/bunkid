@@ -17,7 +17,7 @@ Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Tech Stack:** Next.js 16.4.3, React 19.3.1, TypeScript 5.9.3 `strict`, Tailwind CSS 4.3.3, TanStack Query, Vitest, Bun. Không thêm gói nào.
 
-**Nhánh:** `feat/kim-bun-dot-om-m2e`, cắt từ `main` sau khi M2d đã lên. Baseline: 1821 test vitest xanh (195 file), typecheck sạch.
+**Nhánh:** `feat/kim-bun-dot-om-m2e`, cắt từ `main` sau khi M2d đã lên. Baseline: 1821 test vitest xanh (195 file), typecheck sạch. **Khi chạy (2026-11-27):** nền thật là 195 file / 1825 test, vì M2c thêm 3 test (hai bản sửa của biểu đồ sốt) và M2d thêm 1 test (tiêu đề thẻ kết luận chia đều hai dòng); mọi con số test xanh trong plan này vì vậy cộng 4, số file không đổi. Số đo thật ghi ở Task 4 Step 6.
 
 **Các mốc của spec này:**
 
@@ -114,7 +114,7 @@ Plan này đứng sau M2d. M2f dùng `useRangeLogs`, mở `EpisodeSheet` từ n�
 - `lib/data/logs.ts`: `fetchLogsBetween(babyId: string, from: string, to: string | null): Promise<LogRow[]>`; `useRangeLogs(babyId: string, from: string, to: string | null, enabled = true)` (kết quả `useQuery` với `data: LogRow[] | undefined`).
 - `lib/rules/illnessForm.ts`: `type EpisodeTimes`; `type EpisodeRaw`; `episodeToRaw(episode: EpisodeLike): EpisodeRaw`; `buildEpisodePatch(input)`; `planStart(episodes: EpisodeLike[], now: Date)`; `planClose(episode: EpisodeLike, episodes: EpisodeLike[], now: Date)`; `planReopen(episode: EpisodeLike, episodes: EpisodeLike[], now: Date)` (chữ ký đầy đủ ở Task 2).
 - `components/illness/EpisodeSheet.tsx`: `EpisodeSheetView(props)` (chữ ký ở Task 3); `EpisodeSheet(props: { babyId: string; userId: string; episode: EpisodeRow; episodes: EpisodeRow[]; canDelete: boolean; onClose: () => void; onDeleted: () => void })`.
-- **Vitest sau M2e:** 1852 test, 198 file.
+- **Vitest sau M2e:** 1852 test, 198 file. (Khi chạy: 1856 test, 198 file; xem Task 4 Step 6.)
 
 ---
 
@@ -132,7 +132,7 @@ Plan này đứng sau M2d. M2f dùng `useRangeLogs`, mở `EpisodeSheet` từ n�
   - `fetchLogsBetween(babyId: string, from: string, to: string | null): Promise<LogRow[]>`: mọi bản ghi có `started_at` trong `[from, to)`; `to` là `null` thì không có cận trên. Thứ tự của mảng trả về không được bảo đảm.
   - `useRangeLogs(babyId: string, from: string, to: string | null, enabled = true)`: kết quả `useQuery`, khóa `[...logsKey(babyId), "range", from, to ?? "open"]`.
 
-- [ ] **Step 0: Kiểm M2d đã xong, rồi tạo nhánh**
+- [x] **Step 0: Kiểm M2d đã xong, rồi tạo nhánh**
 
 ```bash
 git checkout main && git pull --ff-only
@@ -143,7 +143,7 @@ bunx vitest run
 
 Expected: dòng `M2d có trên main`; `Test Files  195 passed (195)`, `Tests  1821 passed (1821)`. Không thấy dòng đó thì dừng: M2d chưa lên `main`. Số test khác đi vì `main` có commit mới thì vẫn làm tiếp, và ghi lại số xuất phát thật.
 
-- [ ] **Step 1: Viết test đỏ (Patch 1)**
+- [x] **Step 1: Viết test đỏ (Patch 1)**
 
 File test thay Supabase bằng một vật thế ghi lại mọi lệnh gọi và trả từng trang đã chuẩn bị sẵn.
 
@@ -324,12 +324,12 @@ index 0000000..1821a98
 +});
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run`
 Expected: `Test Files  1 failed | 195 passed (196)`, `Tests  8 failed | 1821 passed (1829)`. 8 test của file mới đỏ: hai hàm chưa có trong `lib/data/logs.ts`.
 
-- [ ] **Step 3: Thêm hai hàm vào `lib/data/logs.ts` (Patch 2)**
+- [x] **Step 3: Thêm hai hàm vào `lib/data/logs.ts` (Patch 2)**
 
 ```diff
 diff --git a/lib/data/logs.ts b/lib/data/logs.ts
@@ -396,12 +396,12 @@ index 5b3b6a2..0f53f68 100644
    return useMutation({
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run && bun run typecheck`
 Expected: `Test Files  196 passed (196)`, `Tests  1829 passed (1829)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/data/logs.ts lib/data/logsRange.test.ts
@@ -427,7 +427,7 @@ git commit -m "feat(logs): fetchLogsBetween and useRangeLogs" -m "Co-Authored-By
   - `planClose(episode: EpisodeLike, episodes: EpisodeLike[], now: Date): { ok: true; patch: { ended_at: string } } | { ok: false; message: string }`
   - `planReopen(episode: EpisodeLike, episodes: EpisodeLike[], now: Date): { ok: true; patch: { ended_at: null } } | { ok: false; message: string }`
 
-- [ ] **Step 1: Viết test đỏ (Patch 3)**
+- [x] **Step 1: Viết test đỏ (Patch 3)**
 
 ```diff
 diff --git a/lib/rules/illnessForm.test.ts b/lib/rules/illnessForm.test.ts
@@ -618,12 +618,12 @@ index 0000000..ab3ebd4
 +});
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run`
 Expected: `Test Files  1 failed | 196 passed (197)`, `Tests  1829 passed (1829)`. File test mới không nạp được vì `./illnessForm` chưa có, nên 13 test của nó chưa được đếm.
 
-- [ ] **Step 3: Viết luật của phiếu (Patch 4)**
+- [x] **Step 3: Viết luật của phiếu (Patch 4)**
 
 ```diff
 diff --git a/lib/rules/illnessForm.ts b/lib/rules/illnessForm.ts
@@ -771,12 +771,12 @@ index 0000000..3e393d7
 +}
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run && bun run typecheck`
 Expected: `Test Files  197 passed (197)`, `Tests  1842 passed (1842)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/rules/illnessForm.ts lib/rules/illnessForm.test.ts
@@ -797,7 +797,7 @@ git commit -m "feat(illness): the edit form and the one-tap actions" -m "Co-Auth
   - `EpisodeSheetView(props: { formId: string; raw: EpisodeRaw; errors: EpisodeErrors; message: string | null; dirty: boolean; saving: boolean; busy: boolean; canReopen: boolean; canDelete: boolean; onRaw: (next: EpisodeRaw) => void; onSubmit: (event: FormEvent) => void; onReopen: () => void; onDelete: () => void; onClose: () => void })`: phần vẽ, không có hook.
   - `EpisodeSheet(props: { babyId: string; userId: string; episode: EpisodeRow; episodes: EpisodeRow[]; canDelete: boolean; onClose: () => void; onDeleted: () => void })`: giữ trạng thái và gọi `useEpisodeActions`.
 
-- [ ] **Step 1: Viết test đỏ (Patch 5)**
+- [x] **Step 1: Viết test đỏ (Patch 5)**
 
 ```diff
 diff --git a/components/illness/episodesheet.test.tsx b/components/illness/episodesheet.test.tsx
@@ -1026,12 +1026,12 @@ index 0000000..66975f3
 +});
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run`
 Expected: `Test Files  1 failed | 197 passed (198)`, `Tests  1842 passed (1842)`. File test mới không nạp được vì `./EpisodeSheet` chưa có, nên 10 test của nó chưa được đếm.
 
-- [ ] **Step 3: Viết phiếu (Patch 6)**
+- [x] **Step 3: Viết phiếu (Patch 6)**
 
 ```diff
 diff --git a/components/illness/EpisodeSheet.tsx b/components/illness/EpisodeSheet.tsx
@@ -1272,12 +1272,12 @@ index 0000000..4f158ba
 +}
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run && bun run typecheck`
 Expected: `Test Files  198 passed (198)`, `Tests  1852 passed (1852)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add components/illness/EpisodeSheet.tsx components/illness/episodesheet.test.tsx
@@ -1296,17 +1296,17 @@ git commit -m "feat(illness): the edit sheet" -m "Co-Authored-By: Claude Fable 5
 - Consumes: mọi thứ của các task trước trong plan này.
 - Produces: kết quả kiểm, ghi ngay trong plan; `main` có M2e.
 
-- [ ] **Step 1: Chạy cả bộ kiểm**
+- [x] **Step 1: Chạy cả bộ kiểm**
 
 Run: `bun run typecheck && bunx vitest run`
 Expected: `tsc --noEmit` không báo lỗi; `Test Files  198 passed (198)`, `Tests  1852 passed (1852)`.
 
-- [ ] **Step 2: Build**
+- [x] **Step 2: Build**
 
 Run: `bun run build`
 Expected: lần đầu có thể dừng với thông báo bảo mật của Next.js 16.4.3 (bình thường; không chạy `next upgrade`). Chạy lại đúng lệnh đó: `✓ Generating static pages` và thoát mã 0.
 
-- [ ] **Step 3: Tạo trang fixture tạm**
+- [x] **Step 3: Tạo trang fixture tạm**
 
 Phiếu sửa chưa mở được từ trang nào: chỉ thấy được ở đây. Trang dùng `EpisodeSheetView` (phần vẽ), nên không nút nào ghi dữ liệu. Trang này không đọc hay ghi dữ liệu của gia đình và vẽ được khi chưa đăng nhập. Tạo `app/fixture-illness/page.tsx` (không commit):
 
@@ -1377,7 +1377,7 @@ export default function Page() {
 Run: `bun run typecheck`
 Expected: `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 4: Kiểm trong trình duyệt (chỉ xem)**
+- [x] **Step 4: Kiểm trong trình duyệt (chỉ xem)**
 
 Chạy `bun run dev` (lần đầu có thể dừng vì thông báo bảo mật: chạy lại). Mở `http://localhost:3000/fixture-illness` trong khung Browser của app, cỡ 375×812 (xem mục "Trình duyệt" ở Ghi chú khi thực thi). Xóa phần tử `nextjs-portal` trong trang trước khi chụp.
 
@@ -1392,7 +1392,31 @@ Trang thật (chỉ xem): mở `http://localhost:3000/`. Trang mở được nh�
 
 Dừng `bun run dev` khi xong. Ghi kết quả từng mục ngay dưới bước này, kèm số đo: chiều cao của từng ô và từng nút, số dòng của hai câu lỗi, và theme nào đã xem. Mục nào không cho thấy được thì ghi "chưa kiểm". Nếu bước này lộ ra lỗi và code phải đổi: sửa (test trước, code sau), rồi chạy lại Step 1 và Step 2 trước khi đi tiếp.
 
-- [ ] **Step 5: Xóa trang fixture**
+**Kết quả Step 4 (2026-11-27, khung Browser trong app, sáng, trang `http://localhost:3000/fixture-illness`):**
+
+Cách đo: `innerWidth` đọc trước mỗi lần đo (375, 390, 440 đều đúng). Theme giữ bằng một `MutationObserver` trên `data-theme`, đã ngắt khi xong. `nextjs-portal` đã xóa trước khi đo và chụp. Phiếu được đo sau khi trượt lên xong (đo sớm hơn 1 giây thì phiếu còn đang trượt và mọi tọa độ nằm dưới mép màn hình; đó không phải lỗi). "Trong phiếu" nghĩa là hình chữ nhật của phần tử nằm trọn trong tấm phiếu và trong màn hình.
+
+1. **Mục 1, đạt.** Hai nút mở phiếu, mỗi nút 343 × 44 px. `scrollWidth` 375 ≤ `innerWidth` 375.
+2. **Mục 2, đạt (375 px, `rose`).** Tiêu đề "Sửa đợt ốm". Ô "Bắt đầu" và ô "Kết thúc" mỗi ô 317 × 44 px, giá trị không bị cắt. Dưới ô "Bắt đầu": "Trùng thời gian với một đợt ốm khác.", 13 px, **1 dòng** (cao 19,5 px), trong phiếu. Dưới ô "Kết thúc": "Giờ kết thúc phải sau giờ bắt đầu.", 13 px, **1 dòng**, trong phiếu. Câu báo phía trên các nút (`role="alert"`): 1 dòng, trong phiếu. Nút theo đúng thứ tự: "Lưu" 317 × 56 px, "Mở lại đợt ốm" 317 × 50 px, "Xóa đợt ốm" 317 × 50 px, chữ màu `danger`; mỗi nút 1 dòng chữ; đáy nút cuối ở 783 px, màn hình cao 812 px. Tấm phiếu từ 277,5 tới 804 px. Không phần tử nào có "…". Esc đóng phiếu.
+3. **Mục 3, đạt.** Chỉ có ô "Bắt đầu" (317 × 44 px); không có "Kết thúc", không có "Mở lại đợt ốm", không dòng lỗi, không câu báo. "Lưu" 56 px, "Xóa đợt ốm" 50 px. Tấm phiếu từ 501 tới 804 px. Esc đóng phiếu.
+4. **Mục 4, đạt.** Với phiếu đang mở, `scrollWidth <= innerWidth` là `true` ở mọi lần đo (cả ba bề ngang, cả bốn theme).
+5. **Mục 5, đạt.** Ở 375 px bốn theme `rose`, `light`, `dark`, `night` cho cùng số đo từng số, cho cả hai phiếu; Esc đóng được cả tám lần. Nhìn bằng mắt ở 375 px: `rose` cả hai phiếu, `light` và `dark` phiếu có lỗi, `night` cả hai phiếu. Ở `night`: hai dòng lỗi và câu báo đọc được trên nền phiếu; "Xóa đợt ốm" khác hai nút kia bằng chữ và bằng hình (không nền, không viền; "Mở lại đợt ốm" có viền, "Lưu" có nền).
+6. **Mục 6, đạt.** 390 px (màn hình 844): ô và nút rộng 332 px, chiều cao như mục 2, tấm phiếu từ 309,5 tới 836 px. 440 px (màn hình 956): rộng 382 px, tấm phiếu từ 421,5 tới 948 px. Ở cả hai bề ngang, bốn theme cùng số đo; mọi câu 1 dòng, mọi nút trong màn hình, không "…", không tràn ngang. Nhìn bằng mắt: 390 px `rose`, 440 px `night`.
+7. **Ngoài plan, trên fixture.** Đặt một giá trị vào ô "Bắt đầu" của phiếu đợt đã đóng (qua sự kiện `input`): ô nhận `2026-11-21T07:15`, ô "Kết thúc" không đổi. Xóa trống ô: ô hiện "dd/mm/yyyy, --:--" và vẫn cao 44 px. Mở phiếu "đợt đang mở" rồi quay lại phiếu kia: ô "Kết thúc" còn nguyên `2026-11-22T09:30`.
+8. **Trang thật `/` (chỉ xem, 375 px, theme `dark` của máy).** Mở được như trước, không bị đưa về `/dang-nhap`, không tràn ngang; console lọc `onlyErrors`: không có dòng nào. Không bấm gì.
+
+Không lỗi nào lộ ra ở bước này; code không đổi sau Task 3.
+
+**Chưa kiểm:**
+
+- Theme `peach`, `lavender`, `sea`.
+- iPhone thật và Safari iOS: ô `datetime-local` của iOS vẽ khác Chromium (dùng bộ chọn ngày giờ của máy); chiều cao ô và nút trên iOS chưa đo. Màn hình thấp hơn 812 px cũng chưa đo.
+- `EpisodeSheet` (phần giữ trạng thái): chưa trang nào dùng. Ba hàm `submit`, `reopen`, `remove` của nó chưa có test nào chạy qua (test của Task 3 chỉ vẽ tĩnh và bấm `EpisodeSheetView`), và chưa được bấm trong trình duyệt: "Lưu", "Mở lại đợt ốm", "Xóa đợt ốm" thật, hộp hỏi `window.confirm`, hộp hỏi bỏ thay đổi khi đang sửa dở. M2f gắn phiếu vào trang chi tiết; lần bấm thật đầu tiên là của người dùng (Bước 38).
+- Câu "Nhập giờ bắt đầu", "Nhập giờ kết thúc" và câu báo của server trong phiếu thật: chỉ có unit test của luật; trên fixture chỉ thấy các câu đặt sẵn.
+- Lý do của Diễn giải 7 (Toast nằm dưới lớp nền mờ của phiếu): chưa nhìn trong trình duyệt, vì chưa nơi nào vừa mở phiếu vừa hiện Toast.
+- `useRangeLogs` chưa có trang nào dùng: chưa có lệnh đọc thật nào tới Supabase; việc đọc từng trang 1000 hàng chỉ kiểm bằng vật thế trong test.
+
+- [x] **Step 5: Xóa trang fixture**
 
 ```bash
 rm -r app/fixture-illness
@@ -1402,9 +1426,32 @@ git status --short  # không còn app/fixture-illness
 
 Expected: `tsc --noEmit` không báo lỗi. Nếu nó đỏ với lỗi trong `.next/…/types/validator.ts` (thư mục `.next` còn trỏ tới trang tạm vừa xóa): chạy `rm -rf .next/dev/types .next/types` rồi chạy lại, phải sạch.
 
-- [ ] **Step 6: Ghi kết quả vào plan, commit**
+- [x] **Step 6: Ghi kết quả vào plan, commit**
 
 Ghi ngay dưới bước này: số đo đỏ và xanh của từng task có khớp plan không; kết quả Step 1, Step 2 và Step 4. Mục nào không cho thấy được thì ghi "chưa kiểm". Đánh dấu `[x]` các bước đã làm.
+
+**Kết quả (2026-11-27):**
+
+| Bước                        | Plan (đã cộng 4 của M2c và M2d)                           | Đo thật                                 |
+| --------------------------- | --------------------------------------------------------- | --------------------------------------- |
+| Step 0, nền                 | 195 file / 1825 test                                      | 195 file / 1825 test                    |
+| Task 1 đỏ                   | `1 failed \| 195 passed (196)`, `8 failed \| 1825 passed` | khớp                                    |
+| Task 1 xanh                 | 196 / 1833                                                | 196 / 1833, `tsc` thoát 0               |
+| Task 2 đỏ                   | `1 failed \| 196 passed (197)`, `1833 passed`             | khớp (file test mới không nạp được)     |
+| Task 2 xanh                 | 197 / 1846                                                | 197 / 1846, `tsc` thoát 0               |
+| Task 3 đỏ                   | `1 failed \| 197 passed (198)`, `1846 passed`             | khớp (file test mới không nạp được)     |
+| Task 3 xanh, cũng là Step 1 | 198 / 1856                                                | **198 file / 1856 test**, `tsc` thoát 0 |
+
+- Số đỏ và xanh của cả ba task khớp plan sau khi cộng 4. Sáu patch áp sạch bằng `kb_patch`. Không có bản sửa nào, nên không có test nào thêm ngoài plan.
+- **Step 2, build:** lần đầu thoát 1 với thông báo bảo mật của Next.js 16.4.3 (không chạy `next upgrade`), lần hai thoát 0, `✓ Generating static pages (40/40)`. Code không đổi sau lần build đó.
+- **Step 3:** trang fixture qua `tsc --noEmit`. Server dev chạy bằng `preview_start` với một `.claude/launch.json` tạm; file đó và trang fixture đã xóa, server đã tắt.
+- **Step 4:** ghi ngay dưới Step 4. Không lỗi nào lộ ra.
+- **Step 5:** sau khi xóa trang tạm, `tsc --noEmit` đỏ một lần vì `.next/dev/types/validator.ts` còn trỏ tới trang vừa xóa; xóa `.next/dev/types` và `.next/types` rồi chạy lại thì thoát 0.
+- **Khác với ghi chú của plan:** các file plan M2a–M2g đã được commit từ trước (không còn untracked), nên commit docs của plan này là một lần sửa file. Plan này không dùng API nào của Next ngoài chỉ thị `"use client"`; trang `node_modules/next/dist/docs/01-app/03-api-reference/01-directives/use-client.md` đã đọc trước Task 3.
+- **Spec đã sửa cho khớp (cùng commit docs):** §5.7 và §6.4, "Mở lại đợt ốm" bị từ chối thì câu lỗi hiện ngay trong sheet, không bằng `Toast` (Diễn giải 7); §6.4, ô bị xóa trống báo "Nhập giờ bắt đầu" hoặc "Nhập giờ kết thúc" (Diễn giải 5). Cả hai ghi rõ là khác bản đã duyệt ngày 2026-11-26.
+- **Không thuộc plan này, chưa ghi vào spec:** việc nới 2 phút cho "≤ lúc này" của đợt đang mở (§4.3) nằm ở M2b (`OPEN_SLACK_MS` trong `lib/rules/illness.ts`); plan này không áp dụng nó ở đâu. Spec §4.3 hiện chưa có câu nào về nó.
+- **Chưa kiểm:** xem danh sách ở cuối kết quả Step 4. Plan này không đụng DB, không chạy pgTAP.
+- **Cho các plan sau:** nền của M2f là 198 file / 1856 test (plan M2f ghi 1852): vẫn cộng 4 vào mọi con số test xanh của M2f và M2g; cuối M2 là 200 file / 1879 test nếu không plan nào thêm test. Code của plan này đúng y sáu patch, không có dòng nào khác đi. `EpisodeSheet` chưa từng chạy với trạng thái thật: M2f là nơi đầu tiên mở nó, nên bước trình duyệt của M2f cần xem cả phần giữ trạng thái (ít nhất các đường không ghi dữ liệu: "Lưu" khi không đổi gì, ô giờ ở tương lai, ô bị xóa trống, đóng khi đang sửa dở).
 
 ```bash
 git status --short   # file plan này hiện là untracked (??); các file plan khác của M2 chưa chạy cũng vậy, không add chúng
@@ -1412,7 +1459,7 @@ git add docs/blueprint/plans/2026-11-26-kim-bun-dot-om-m2e.md
 git commit -m "docs(plan): the M2e plan and its check results" -m "Co-Authored-By: Claude Fable 5.2 <noreply@anthropic.com>"
 ```
 
-- [ ] **Step 7: Đưa lên `main`**
+- [x] **Step 7: Đưa lên `main`**
 
 Chỉ khi mọi bước trên đều đạt và không còn lỗi đã biết (lỗi tìm thấy khi kiểm phải được sửa, có test, và ghi vào plan trước; sửa xong thì chạy lại Step 1 và Step 2). Không hỏi lại người dùng: xem mục "Lên `main` không cần hỏi" ở Ghi chú khi thực thi.
 

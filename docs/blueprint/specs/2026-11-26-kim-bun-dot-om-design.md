@@ -243,7 +243,7 @@ Nhắc khi lúc này − mốc cuối ≥ 48 giờ và trên máy này lời nh�
 - `ended_at` phải sau `started_at`: "Giờ kết thúc phải sau giờ bắt đầu."
 - `ended_at` không được sau lúc này quá 1 phút: "Giờ kết thúc ở tương lai."
 - Khoảng `[started_at, ended_at)` (đợt đang mở: tới vô cùng) không được giao với khoảng của đợt khác của bé (so với `useEpisodes`): "Trùng thời gian với một đợt ốm khác." Đợt này bắt đầu đúng lúc đợt kia kết thúc là hợp lệ, giống ràng buộc ở server.
-- Trong sheet (§6.4) câu lỗi hiện dưới ô liên quan. Với thao tác một chạm (lời mời, nút "Bắt đầu đợt ốm", "Mở lại đợt ốm", "Bé đã khỏi") câu lỗi hiện bằng `Toast` và không có thay đổi nào được xếp vào outbox.
+- Trong sheet (§6.4) câu lỗi hiện dưới ô liên quan. Với thao tác một chạm (lời mời, nút "Bắt đầu đợt ốm", "Mở lại đợt ốm", "Bé đã khỏi") câu lỗi hiện bằng `Toast` và không có thay đổi nào được xếp vào outbox. Riêng "Mở lại đợt ốm" được bấm trong sheet §6.4: bị từ chối thì câu lỗi hiện ngay trong sheet, ở dòng báo phía trên các nút, không bằng `Toast`. (Khác bản đã duyệt ngày 2026-11-26, vốn ghi câu lỗi của "Mở lại đợt ốm" cũng hiện bằng `Toast`. Đổi ở M2e ngày 2026-11-27 theo lời duyệt trước của người dùng: `Toast` nằm ngoài hộp thoại của sheet đang mở và dưới lớp nền mờ của nó, nên không đọc được.)
 - Server vẫn là nơi quyết định; outbox bỏ thay đổi bị từ chối với câu ở §4.2.
 
 ## 6. Đợt ốm: màn hình
@@ -287,8 +287,8 @@ Mã không có trong `useEpisodes`: `EmptyState` "Không tìm thấy đợt ốm
 ### 6.4 Sheet "Sửa đợt ốm"
 
 - Ô "Bắt đầu" (ngày giờ). Đợt đã đóng có thêm ô "Kết thúc".
-- Lỗi theo §5.7 hiện dưới ô liên quan.
-- Nút "Mở lại đợt ốm" (xóa `ended_at`) chỉ hiện khi đợt đã đóng, bé không có đợt nào đang mở, và đây là đợt có `started_at` muộn nhất của bé.
+- Lỗi theo §5.7 hiện dưới ô liên quan. Ô bị xóa trống: "Nhập giờ bắt đầu" hoặc "Nhập giờ kết thúc" dưới ô đó, là hai câu sẵn có của phiếu bản ghi. (Khác bản đã duyệt ngày 2026-11-26, vốn không có câu nào cho ô bị xóa trống. Thêm ở M2e ngày 2026-11-27 theo lời duyệt trước của người dùng.)
+- Nút "Mở lại đợt ốm" (xóa `ended_at`) chỉ hiện khi đợt đã đóng, bé không có đợt nào đang mở, và đây là đợt có `started_at` muộn nhất của bé. Bị từ chối theo §5.7 thì câu lỗi hiện trong sheet, phía trên các nút (xem §5.7; khác bản đã duyệt ngày 2026-11-26).
 - Nút "Xóa đợt ốm", chỉ hiện với chủ gia đình hoặc người tạo. Hỏi lại một lần: "Xóa đợt ốm này? Các bản ghi nhiệt độ, thuốc, triệu chứng vẫn giữ nguyên."
 - Từ M5: đợt còn lần khám thì nút "Xóa đợt ốm" tắt, kèm dòng "Xóa các lần khám trước."; khi `useVisits` chưa có dữ liệu (mất mạng, chưa từng tải) nút cũng tắt, kèm dòng "Cần mạng để kiểm các lần khám."
 - Nút "Lưu".
