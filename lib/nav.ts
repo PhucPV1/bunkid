@@ -60,6 +60,15 @@ export const HEALTH_STATS: NavItem = {
 };
 
 export const HEALTH_SICK: NavItem[] = [
+  // Spec 2026-11-26 §6.1: first of "Khi bé ốm". /dot-om/chi-tiet lights the
+  // Sức khỏe tab through this prefix.
+  {
+    label: "Đợt ốm",
+    href: "/dot-om",
+    icon: "calendar",
+    color: "cat-temp",
+    detail: "Gom sốt, thuốc, triệu chứng theo từng đợt",
+  },
   {
     label: "Triệu chứng",
     href: "/trieu-chung",

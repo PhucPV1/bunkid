@@ -106,6 +106,8 @@ describe("service worker", () => {
         "/suc-khoe",
         "/tien-ich",
         "/tang-truong/chieu-cao",
+        "/dot-om",
+        "/dot-om/chi-tiet",
         "/cai-dat/thanh-vien",
         "/cai-dat/nhac-thuoc",
         "/dang-nhap",
@@ -142,6 +144,11 @@ describe("service worker", () => {
     expect(await (await nav("/nhat-ky"))!.text()).toBe("fresh nhat-ky");
     online = false;
     expect(await (await nav("/nhat-ky?x=1"))!.text()).toBe("fresh nhat-ky");
+    // Spec 2026-11-26 §6.1: an episode's page opens offline whatever its id,
+    // from the shell kept at install.
+    expect(await (await nav("/dot-om/chi-tiet?id=abc"))!.text()).toContain(
+      "chunks/dot-om/chi-tiet.js",
+    );
     expect(await (await nav("/xem-them"))!.text()).toContain(
       "chunks/offline.js",
     );

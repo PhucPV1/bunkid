@@ -219,6 +219,7 @@ describe("HealthScreen", () => {
       "Thống kê",
       "Khi bé ốm",
       "Khẩn cấp",
+      "Đợt ốm",
       "Triệu chứng",
       "Bệnh thường gặp",
       "Báo cáo cho bác sĩ",

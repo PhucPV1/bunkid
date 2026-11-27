@@ -34,6 +34,9 @@ describe("nav", () => {
       "/kham-pha",
       "/cam-nang",
       "/tang-truong/chieu-cao",
+      // Spec 2026-11-26 §6.1: the list of illness episodes and one episode.
+      "/dot-om",
+      "/dot-om/chi-tiet",
       ...HEALTH_PAGES.map((item) => item.href),
     ])
       expect(activeTab(path), path).toBe("health");
@@ -43,6 +46,7 @@ describe("nav", () => {
       "/tiem-chung",
       "/phat-trien",
       "/thong-ke",
+      "/dot-om",
       "/trieu-chung",
       "/benh-thuong-gap",
       "/bao-cao",
@@ -63,6 +67,7 @@ describe("nav", () => {
   it("other pages light no tab, and a prefix alone is not a match", () => {
     expect(activeTab("/nhat-ky-cu")).toBeNull();
     expect(activeTab("/suc-khoe-cu")).toBeNull();
+    expect(activeTab("/dot-om-cu")).toBeNull();
     expect(activeTab("/dang-nhap")).toBeNull();
     expect(activeTab("/cai-app")).toBeNull();
   });
@@ -136,6 +141,13 @@ describe("Sức khỏe and Tiện ích items", () => {
       "Biểu đồ ngủ, bú, tã 7 và 14 ngày",
     ]);
     expect(nav.HEALTH_SICK.map(brief)).toEqual([
+      [
+        "Đợt ốm",
+        "/dot-om",
+        "calendar",
+        "cat-temp",
+        "Gom sốt, thuốc, triệu chứng theo từng đợt",
+      ],
       [
         "Triệu chứng",
         "/trieu-chung",
