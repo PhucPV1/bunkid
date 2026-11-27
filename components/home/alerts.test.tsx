@@ -1,9 +1,11 @@
+import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { SyncBarView } from "@/components/sync/SyncBar";
+import { findElements } from "@/components/ui/testTree";
 import type { HomeAlert } from "@/lib/rules/alerts";
 import { ICON_PATHS } from "@/lib/ui/icons";
-import { AlertBanners } from "./AlertBanners";
+import { AlertBanners, type BannerInvite } from "./AlertBanners";
 
 const red: HomeAlert = {
   key: "few-wet",
@@ -47,6 +49,104 @@ describe("AlertBanners", () => {
 
   it("renders nothing without alerts", () => {
     expect(renderToStaticMarkup(<AlertBanners alerts={[]} />)).toBe("");
+  });
+});
+
+// Spec 2026-11-26 §7.2: the invite to start an illness episode, inside the
+// fever banner, after what the banner already says and offers.
+describe("AlertBanners with the invite", () => {
+  const QUESTION =
+    "Mở một đợt ốm để gom nhiệt độ, thuốc và triệu chứng vào một chỗ?";
+  const feverHigh: HomeAlert = {
+    key: "fever-high",
+    level: "red",
+    message: "Sốt rất cao: cần đi khám ngay.",
+  };
+  const invite = (alertKey: string, over: Partial<BannerInvite> = {}) => ({
+    alertKey,
+    busy: false,
+    onStart: () => {},
+    onDismiss: () => {},
+    ...over,
+  });
+  const render = (alerts: HomeAlert[], value: BannerInvite | null) =>
+    renderToStaticMarkup(<AlertBanners alerts={alerts} invite={value} />);
+  // The banner (a direct child of the list) that holds a text.
+  const bannerWith = (html: string, text: string) =>
+    html
+      .split('role="alert"')
+      .slice(1)
+      .find((part) => part.includes(text)) ?? "";
+
+  it("yellow: the question and two buttons after Phân loại triệu chứng", () => {
+    const html = render([fever, pale], invite("fever"));
+    const banner = bannerWith(html, ">Bé sốt nhẹ</p>");
+    const order = [
+      ">Bé sốt nhẹ</p>",
+      ">Phân loại triệu chứng</a>",
+      `>${QUESTION}</p>`,
+      ">Bắt đầu đợt ốm</button>",
+      ">Không</button>",
+    ].map((mark) => banner.indexOf(mark));
+    expect(order.every((index) => index > -1)).toBe(true);
+    expect(order).toEqual([...order].sort((a, b) => a - b));
+    expect(banner).toMatch(/<button[^>]*min-h-11[^>]*border-warn[^>]*>Bắt đầu/);
+    // Only in the banner it rides on.
+    expect(html.match(/Bắt đầu đợt ốm/g)).toHaveLength(1);
+    expect(bannerWith(html, ">Phân bạc màu</p>")).not.toContain(QUESTION);
+  });
+
+  it("red: after Gọi 115 and Phân loại triệu chứng, in the banner's own colours", () => {
+    const html = render([feverHigh, red], invite("fever-high"));
+    const banner = bannerWith(html, "Sốt rất cao");
+    expect(banner.indexOf("Gọi 115</a>")).toBeLessThan(
+      banner.indexOf(QUESTION),
+    );
+    expect(banner.indexOf(">Phân loại triệu chứng</a>")).toBeLessThan(
+      banner.indexOf(QUESTION),
+    );
+    expect(banner).toMatch(
+      /<button[^>]*min-h-11[^>]*border-on-danger[^>]*>Bắt đầu đợt ốm/,
+    );
+    expect(banner).toMatch(/<button[^>]*border-on-danger[^>]*>Không/);
+    expect(bannerWith(html, "Rất ít tã ướt")).not.toContain(QUESTION);
+  });
+
+  it("the banners are unchanged without the invite", () => {
+    expect(render([fever, feverHigh], null)).toBe(
+      renderToStaticMarkup(<AlertBanners alerts={[fever, feverHigh]} />),
+    );
+    expect(render([fever], null)).not.toContain(QUESTION);
+    // An invite for a banner that is not shown shows nowhere.
+    expect(render([pale], invite("fever"))).not.toContain(QUESTION);
+  });
+
+  it("each button reports its tap; Bắt đầu đợt ốm waits while the episode is on its way", () => {
+    const onStart = vi.fn();
+    const onDismiss = vi.fn();
+    // The invite is its own small component inside the banner: draw it too.
+    const [part] = findElements(
+      AlertBanners({
+        alerts: [fever],
+        invite: invite("fever", { onStart, onDismiss }),
+      }),
+      (el) => "invite" in el.props && typeof el.type === "function",
+    );
+    const draw = part.type as (props: typeof part.props) => ReactNode;
+    const buttons = findElements(
+      draw(part.props),
+      (el) => el.type === "button",
+    );
+    expect(buttons.map((button) => button.props.children)).toEqual([
+      "Bắt đầu đợt ốm",
+      "Không",
+    ]);
+    for (const button of buttons) (button.props.onClick as () => void)();
+    expect(onStart).toHaveBeenCalledOnce();
+    expect(onDismiss).toHaveBeenCalledOnce();
+    expect(render([fever], invite("fever", { busy: true }))).toMatch(
+      /<button[^>]*disabled=""[^>]*>Bắt đầu đợt ốm</,
+    );
   });
 });
 
