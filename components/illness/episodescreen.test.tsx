@@ -10,6 +10,7 @@ const NOW = new Date("2026-11-26T10:00:00+07:00");
 const state = vi.hoisted(() => ({
   episodes: {} as Record<string, unknown>,
   logs: {} as Record<string, unknown>,
+  visits: {} as Record<string, unknown>,
   search: "id=open",
 }));
 const useRangeLogs = vi.hoisted(() => vi.fn());
@@ -21,6 +22,13 @@ vi.mock("@/lib/data/illness", () => ({
     update: { isPending: false, mutate: () => {} },
     remove: { isPending: false, mutate: () => {} },
   }),
+  useVisits: () => state.visits,
+  useVisitActions: () => ({}),
+}));
+vi.mock("@/lib/data/photos", () => ({
+  usePhotoUrls: () => ({ data: {} }),
+  usePhotoActions: () => ({ remove: { isPending: false, mutate: () => {} } }),
+  usePhotosUsage: () => ({ data: 0 }),
 }));
 vi.mock("@/lib/data/logs", () => ({ useRangeLogs }));
 vi.mock("@/lib/data/realtime", () => ({ useLogsRealtime }));
@@ -127,12 +135,14 @@ function render(
     id?: string | null;
     episodes?: Record<string, unknown>;
     logs?: Record<string, unknown>;
+    visits?: Record<string, unknown>;
     userId?: string;
     isOwner?: boolean;
   } = {},
 ) {
   state.episodes = input.episodes ?? loaded([open, past]);
   state.logs = input.logs ?? loaded(LOGS);
+  state.visits = input.visits ?? loaded([]);
   return renderToStaticMarkup(
     <EpisodeScreen
       baby={baby}
@@ -171,7 +181,7 @@ describe("EpisodeScreen", () => {
     expect(useLogsRealtime).toHaveBeenCalledWith("b1");
   });
 
-  it("an open episode: verdict, chart, days, the comparison, the report, then Bé đã khỏi", () => {
+  it("an open episode: verdict, chart, days, the comparison, the visits, the report, then Bé đã khỏi", () => {
     const html = render();
     expect(html).toContain(">Bun đã hết sốt 19 giờ</h2>");
     expect(html).toContain(">Ngày thứ 3 · bắt đầu 24/11 lúc 23:30</span>");
@@ -193,13 +203,35 @@ describe("EpisodeScreen", () => {
       ">Nhiệt độ và thuốc hạ sốt</h2>",
       ">Từng ngày</h2>",
       ">So với thường ngày</h2>",
+      ">Lần khám</h2>",
       "Báo cáo cho bác sĩ</a>",
       ">Bé đã khỏi</button>",
     ].map((mark) => html.indexOf(mark));
     expect(order).toEqual([...order].sort((a, b) => a - b));
     expect(order[0]).toBeGreaterThan(-1);
-    // Not in this milestone: the visits.
-    expect(html).not.toContain("Lần khám");
+    expect(html).toContain(">Chưa có lần khám nào.</p>");
+  });
+
+  // Spec §8.3: the card shows the episode's visits from the page's one read.
+  it("the visits card lists this episode's visits", () => {
+    const html = render({
+      visits: loaded([
+        {
+          id: "v1",
+          episode_id: "open",
+          baby_id: "b1",
+          visited_at: iso("2026-11-25 09:15"),
+          place: "Phòng khám Nhi",
+          conclusion: "Viêm họng",
+          advice: null,
+          created_by: "u1",
+          photos: [],
+        },
+      ]),
+    });
+    expect(html).toContain(">25/11 09:15 · Phòng khám Nhi</span>");
+    expect(html).toContain(">Viêm họng</span>");
+    expect(html).not.toContain("Chưa có lần khám nào.");
   });
 
   // The page's clock moves once a minute; a log saved since its last tick is

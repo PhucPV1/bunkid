@@ -37,6 +37,7 @@ const viewProps = (over: Partial<ViewProps> = {}): ViewProps => ({
   busy: false,
   canReopen: false,
   canDelete: false,
+  deleteBlock: null,
   onRaw: () => {},
   onSubmit: () => {},
   onReopen: () => {},
@@ -102,6 +103,27 @@ describe("EpisodeSheetView", () => {
     expect(html.indexOf(">Lưu<")).toBeLessThan(html.indexOf(">Mở lại đợt ốm<"));
     expect(html.indexOf(">Mở lại đợt ốm<")).toBeLessThan(
       html.indexOf(">Xóa đợt ốm<"),
+    );
+  });
+
+  // Spec §6.4 from M5.
+  it("Xóa đợt ốm is off, with the reason, while the episode may have visits", () => {
+    for (const reason of [
+      "Xóa các lần khám trước.",
+      "Cần mạng để kiểm các lần khám.",
+    ]) {
+      const html = view({ canDelete: true, deleteBlock: reason });
+      expect(html).toMatch(/<button[^>]*disabled=""[^>]*>Xóa đợt ốm<\/button>/);
+      expect(html).toContain(`>${reason}</p>`);
+      expect(html.indexOf(">Xóa đợt ốm<")).toBeLessThan(
+        html.indexOf(`>${reason}<`),
+      );
+    }
+    expect(view({ canDelete: true })).toMatch(
+      /<button(?![^>]*disabled="")[^>]*>Xóa đợt ốm<\/button>/,
+    );
+    expect(view({ deleteBlock: "Xóa các lần khám trước." })).not.toContain(
+      "Xóa các lần khám trước.",
     );
   });
 
@@ -181,6 +203,7 @@ describe("EpisodeSheet", () => {
         episode={episode}
         episodes={episodes}
         canDelete={canDelete}
+        deleteBlock={null}
         onClose={() => {}}
         onDeleted={() => {}}
       />,

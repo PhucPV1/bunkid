@@ -29,6 +29,7 @@ export function EpisodeSheetView({
   busy,
   canReopen: reopen,
   canDelete,
+  deleteBlock,
   onRaw,
   onSubmit,
   onReopen,
@@ -47,6 +48,8 @@ export function EpisodeSheetView({
   busy: boolean;
   canReopen: boolean;
   canDelete: boolean;
+  // Why "Xóa đợt ốm" is off (spec §6.4 from M5), or null.
+  deleteBlock: string | null;
   onRaw: (next: EpisodeRaw) => void;
   onSubmit: (event: FormEvent) => void;
   onReopen: () => void;
@@ -107,12 +110,15 @@ export function EpisodeSheetView({
             <Button
               variant="ghost"
               block
-              disabled={busy}
+              disabled={busy || deleteBlock !== null}
               className="text-danger!"
               onClick={onDelete}
             >
               Xóa đợt ốm
             </Button>
+          )}
+          {canDelete && deleteBlock && (
+            <p className="px-1 text-[13px] text-muted">{deleteBlock}</p>
           )}
         </div>
       }
@@ -146,6 +152,7 @@ export function EpisodeSheet({
   episode,
   episodes,
   canDelete,
+  deleteBlock,
   onClose,
   onDeleted,
 }: {
@@ -156,6 +163,8 @@ export function EpisodeSheet({
   episodes: EpisodeRow[];
   // The owner of the family or whoever started the episode.
   canDelete: boolean;
+  // Why "Xóa đợt ốm" is off: the episode has visits, or they are not loaded.
+  deleteBlock: string | null;
   onClose: () => void;
   // The episode is gone: its page has nothing left to show.
   onDeleted: () => void;
@@ -220,6 +229,7 @@ export function EpisodeSheet({
       busy={actions.update.isPending || actions.remove.isPending}
       canReopen={canReopen(episode, episodes)}
       canDelete={canDelete}
+      deleteBlock={deleteBlock}
       onRaw={setRaw}
       onSubmit={submit}
       onReopen={reopen}

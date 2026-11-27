@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { useQuickActions } from "@/components/actions/QuickActions";
 import { Button, buttonClass } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -14,7 +14,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useToast } from "@/components/ui/Toast";
 import { toVietnameseError } from "@/lib/data/errors";
-import { useEpisodeActions, useEpisodes } from "@/lib/data/illness";
+import { useEpisodeActions, useEpisodes, useVisits } from "@/lib/data/illness";
 import { useRangeLogs } from "@/lib/data/logs";
 import { useLogsRealtime } from "@/lib/data/realtime";
 import { useNow } from "@/lib/hooks/useNow";
@@ -26,12 +26,14 @@ import {
 } from "@/lib/rules/illness";
 import { planClose } from "@/lib/rules/illnessForm";
 import { dayRows, usualView, verdictView } from "@/lib/rules/illnessView";
+import { episodeDeleteBlock } from "@/lib/rules/visits";
 import type { Baby } from "@/lib/supabase/rows";
 import { EpisodeDayList } from "./EpisodeDayList";
 import { EpisodeSheet } from "./EpisodeSheet";
 import { EpisodeUsual } from "./EpisodeUsual";
 import { EpisodeVerdict, type QuickLogType } from "./EpisodeVerdict";
 import { FeverChartCard } from "./FeverChart";
+import { VisitsCard } from "./VisitsCard";
 
 const LIST = "/dot-om";
 
@@ -53,6 +55,7 @@ export function EpisodeBody({
   babyName,
   now,
   closing,
+  visits = null,
   onLog,
   onClose,
 }: {
@@ -62,6 +65,8 @@ export function EpisodeBody({
   now: Date;
   // "Bé đã khỏi" is on its way.
   closing: boolean;
+  // Spec §6.3 item 6: the card "Lần khám" (§8.3), which reads by itself.
+  visits?: ReactNode;
   onLog: (type: QuickLogType) => void;
   onClose: () => void;
 }) {
@@ -74,6 +79,7 @@ export function EpisodeBody({
       <FeverChartCard chart={feverChartModel(logs, episode, now)} />
       <EpisodeDayList rows={dayRows(logs, episode, now)} />
       <EpisodeUsual view={usualView(logs, episode, now)} />
+      {visits}
       {/* Spec §6.3 item 7: the report of this episode (§9), then, while it
           is open, "Bé đã khỏi". */}
       <div className="flex flex-col gap-2.5">
@@ -114,6 +120,7 @@ export function EpisodeScreen({
   const quick = useQuickActions();
   const episodes = useEpisodes(baby.id);
   const actions = useEpisodeActions(baby.id, userId);
+  const visits = useVisits(baby.id);
   const [editing, setEditing] = useState(false);
 
   const all = episodes.data ?? [];
@@ -189,6 +196,15 @@ export function EpisodeScreen({
           babyName={baby.name}
           now={now}
           closing={actions.update.isPending}
+          visits={
+            <VisitsCard
+              baby={baby}
+              userId={userId}
+              isOwner={isOwner}
+              episode={episode}
+              visits={visits}
+            />
+          }
           onLog={quick.openInstant}
           onClose={close}
         />
@@ -200,6 +216,7 @@ export function EpisodeScreen({
           episode={episode}
           episodes={all}
           canDelete={isOwner || episode.created_by === userId}
+          deleteBlock={episodeDeleteBlock(visits.data, episode.id)}
           onClose={() => setEditing(false)}
           onDeleted={() => router.replace(LIST)}
         />
