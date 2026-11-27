@@ -88,30 +88,9 @@ describe("QuickEntrySheet", () => {
     );
   });
 
-  it("spec 2026-11-26 §3.5: symptom opens on its chips; Lưu waits for the first one", () => {
+  it("spec 2026-11-27 §4.1: no symptom fields here; Lưu is never off up front", () => {
     const html = render({ type: "symptom", ageDays: 76 });
-    expect(html).toContain(">Triệu chứng</h2>");
-    expect(html).toContain("bg-cat-med/15 text-cat-med");
-    expect(html).toContain(`d="${ICON_PATHS.pulse}"`);
-    expect(html).toContain(">Bấm những gì bé đang có.</p>");
-    expect(html).toContain(">Xem tất cả 22 triệu chứng</button>");
-    expect(html).not.toContain('aria-pressed="true">✓');
-    expect(html.indexOf(">Hay gặp</span>")).toBeLessThan(
-      html.indexOf(">Ghi chú (không bắt buộc)</span>"),
-    );
-    expect(html.indexOf(">Ghi chú (không bắt buộc)</span>")).toBeLessThan(
-      html.indexOf(">Lúc nào?</span>"),
-    );
-    expect(html).toMatch(/<button[^>]*type="submit"[^>]*disabled=""[^>]*>Lưu</);
-    const picked = render({
-      type: "symptom",
-      ageDays: 76,
-      initial: { codes: "cough" },
-    });
-    expect(picked).toContain(">Bấm những gì bé đang có. Đã chọn 1.</p>");
-    expect(picked).toMatch(/aria-pressed="true"[^>]*>✓ Ho<\/button>/);
-    expect(picked).not.toMatch(/<button[^>]*type="submit"[^>]*disabled=""/);
-    // The other types never disable Lưu up front.
+    expect(html).not.toContain(">Hay gặp</span>");
     expect(render({ type: "note" })).not.toMatch(
       /<button[^>]*type="submit"[^>]*disabled=""/,
     );

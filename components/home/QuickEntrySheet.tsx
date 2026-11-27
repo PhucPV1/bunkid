@@ -6,7 +6,6 @@ import { DiaperFields } from "@/components/quick/DiaperFields";
 import { MedicineFields } from "@/components/quick/MedicineFields";
 import { NoteFields } from "@/components/quick/NoteFields";
 import { SolidsFields } from "@/components/quick/SolidsFields";
-import { SymptomFields } from "@/components/quick/SymptomFields";
 import { TemperatureFields } from "@/components/quick/TemperatureFields";
 import { TimeChips } from "@/components/quick/TimeChips";
 import { WaterFields } from "@/components/quick/WaterFields";
@@ -26,7 +25,6 @@ import {
   type InstantType,
   type QuickValues,
 } from "@/lib/rules/quickEntry";
-import { parseCodes } from "@/lib/rules/symptomForm";
 import {
   timeChipError,
   timeChipToDate,
@@ -70,7 +68,8 @@ export function QuickEntrySheet({
   }) => void;
   initial?: QuickValues;
   recentLogs?: LogRow[];
-  // Spec 2026-11-26 §3.5: filters the symptom chips; null shows them all.
+  // Spec 2026-11-26 §3.5: filtered the symptom chips. Spec 2026-11-27 §4.1:
+  // symptoms have their own sheet now; kept so callers need not change.
   ageDays?: number | null;
 }) {
   const add = useAddInstant(babyId, userId);
@@ -155,13 +154,9 @@ export function QuickEntrySheet({
     // Tắm has no fields: the sheet is just the time chips and Lưu.
     bath: null,
     note: <NoteFields values={values} onChange={setValues} />,
-    symptom: (
-      <SymptomFields values={values} onChange={setValues} ageDays={ageDays} />
-    ),
+    // Spec 2026-11-27 §4.1: Triệu chứng opens SymptomDaySheet instead.
+    symptom: null,
   }[type];
-  // Spec 2026-11-26 §3.5: a symptom log needs at least one chip.
-  const nothingPicked =
-    type === "symptom" && parseCodes(values.codes).length === 0;
 
   return (
     <Sheet
@@ -183,7 +178,6 @@ export function QuickEntrySheet({
             form={formId}
             block
             busy={add.isPending}
-            disabled={nothingPicked}
             className="min-h-14!"
           >
             Lưu

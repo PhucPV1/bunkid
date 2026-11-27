@@ -11,6 +11,7 @@ import {
 } from "react";
 import { PumpSheet } from "@/components/home/PumpSheet";
 import { QuickEntrySheet } from "@/components/home/QuickEntrySheet";
+import { SymptomDaySheet } from "@/components/quick/SymptomDaySheet";
 import { useToast } from "@/components/ui/Toast";
 import { toVietnameseError } from "@/lib/data/errors";
 import {
@@ -21,6 +22,7 @@ import {
   useStopTimer,
   useTimerPress,
 } from "@/lib/data/logs";
+import { canModifyLog } from "@/lib/rules/history";
 import type { LogType } from "@/lib/rules/logDetails";
 import {
   ACTION_SHEET_CLOSED,
@@ -50,6 +52,48 @@ import {
 } from "@/lib/rules/undo";
 import type { Baby, FamilyMember, LogRow } from "@/lib/supabase/rows";
 import { tapFeedback } from "@/lib/ui/haptics";
+
+// Spec 2026-11-27 §4.1: Triệu chứng opens the day sheet; every other type
+// the quick-entry sheet with its time chips.
+export function InstantSheet({
+  sheet,
+  baby,
+  member,
+  userId,
+  rows,
+  onSaved,
+  onClose,
+}: {
+  sheet: { type: InstantType; initial?: QuickValues };
+  baby: Baby;
+  member: FamilyMember;
+  userId: string;
+  rows: LogRow[];
+  onSaved: Parameters<typeof QuickEntrySheet>[0]["onSaved"];
+  onClose: () => void;
+}) {
+  if (sheet.type === "symptom")
+    return (
+      <SymptomDaySheet
+        baby={baby}
+        userId={userId}
+        canModify={(createdBy) => canModifyLog(member, createdBy)}
+        onClose={onClose}
+      />
+    );
+  return (
+    <QuickEntrySheet
+      type={sheet.type}
+      initial={sheet.initial}
+      recentLogs={rows}
+      ageDays={ageDays(baby.dob, new Date())}
+      babyId={baby.id}
+      userId={userId}
+      onSaved={onSaved}
+      onClose={onClose}
+    />
+  );
+}
 
 export type QuickActionsValue = {
   running: RunningLog[];
@@ -179,13 +223,12 @@ export function QuickActionsProvider({
     <QuickActionsContext.Provider value={value}>
       {children}
       {sheet && (
-        <QuickEntrySheet
-          type={sheet.type}
-          initial={sheet.initial}
-          recentLogs={rows}
-          ageDays={ageDays(baby.dob, new Date())}
-          babyId={baby.id}
+        <InstantSheet
+          sheet={sheet}
+          baby={baby}
+          member={member}
           userId={userId}
+          rows={rows}
           onSaved={(saved) => showUndo(instantToast(saved))}
           onClose={() => setSheet(null)}
         />

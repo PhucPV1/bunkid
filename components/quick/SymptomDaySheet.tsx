@@ -1,14 +1,30 @@
 "use client";
 
-import type { Ref } from "react";
+import { type Ref, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { Sheet } from "@/components/ui/Sheet";
+import { useToast } from "@/components/ui/Toast";
 import { TRIAGE } from "@/lib/content/triage";
-import { formatDayShort } from "@/lib/rules/days";
-import type { StripDay, SymptomDay } from "@/lib/rules/symptomDay";
+import { toVietnameseError } from "@/lib/data/errors";
+import { useEpisodes } from "@/lib/data/illness";
+import { useDeleteLog, useRangeLogs, useSaveLog } from "@/lib/data/logs";
+import { addDays, formatDayShort, startOfDayIso } from "@/lib/rules/days";
+import {
+  canDeleteDay,
+  dayStrip,
+  type StripDay,
+  symptomDay,
+  type SymptomDay,
+  symptomDayDelete,
+  symptomDaySave,
+  type SymptomOp,
+} from "@/lib/rules/symptomDay";
 import { parseCodes, symptomShorts } from "@/lib/rules/symptomForm";
+import { ageDays, vnDateString } from "@/lib/rules/time";
+import type { Baby } from "@/lib/supabase/rows";
 import { CATEGORIES } from "@/lib/ui/categories";
+import { keepPickedInView } from "@/lib/ui/scrollRow";
 import { cx } from "@/lib/ui/cx";
 import { FIELD_INPUT, FIELD_LABEL } from "./styles";
 import { SymptomPicker } from "./SymptomPicker";
@@ -257,5 +273,196 @@ export function SymptomDaySheetView({
         )}
       </div>
     </Sheet>
+  );
+}
+
+// Spec 2026-11-27 §4 and §5: the symptom sheet with its data. Without `day`
+// it opens on today with the day strip (the open episode's days, else the
+// last 7); with `day` that day is fixed and `sub` is the line under the title.
+// `canModify` says whether the viewer may change a log made by someone
+// (canModifyLog).
+export function SymptomDaySheet({
+  baby,
+  userId,
+  canModify,
+  day: fixedDay = null,
+  sub = null,
+  onClose,
+}: {
+  baby: Baby;
+  userId: string;
+  canModify: (createdBy: string) => boolean;
+  day?: string | null;
+  sub?: string | null;
+  onClose: () => void;
+}) {
+  const toast = useToast();
+  const save = useSaveLog(baby.id, userId);
+  const remove = useDeleteLog(baby.id, userId);
+  const [openedAt] = useState(() => new Date());
+  const today = vnDateString(openedAt);
+  const episodes = useEpisodes(baby.id);
+  const open = episodes.data?.find((item) => item.ended_at === null) ?? null;
+  const strip =
+    fixedDay === null
+      ? dayStrip({ episode: open, today, dob: baby.dob })
+      : null;
+  const [chosen, setChosen] = useState(today);
+  const day = fixedDay ?? chosen;
+  const inStrip = strip?.days.some((cell) => cell.day === day) ?? false;
+  const stripLogs = useRangeLogs(
+    baby.id,
+    startOfDayIso(strip?.days[0]?.day ?? today),
+    null,
+    strip !== null,
+  );
+  const dayLogs = useRangeLogs(
+    baby.id,
+    startOfDayIso(day),
+    startOfDayIso(addDays(day, 1)),
+    !inStrip,
+  );
+  const source = inStrip ? stripLogs : dayLogs;
+  // The strip is drawn inside the sheet's <dialog>, which is display:none
+  // until Sheet's effect has called showModal(). These effects run after it
+  // (a parent's effects run after its children's), so the row has a width.
+  // The strip opens scrolled to its end, where today and "Khác" are, and
+  // again when it gains cells (the episode list arrived); a picked cell is
+  // then kept in view. Only the row moves (keepPickedInView), never the
+  // dialog, which is still sliding in.
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const cellCount = strip?.days.length ?? 0;
+  useEffect(() => {
+    const row = scrollRef.current;
+    if (row) row.scrollLeft = row.scrollWidth;
+    keepPickedInView(row);
+  }, [cellCount]);
+  useEffect(() => keepPickedInView(scrollRef.current), [day]);
+  const rows = source.data ?? [];
+  const status: SheetStatus = source.data
+    ? "ready"
+    : source.isError
+      ? "error"
+      : "loading";
+  const current = symptomDay(rows, day, canModify);
+  // What the parent changed on this day; dropped when another day is picked.
+  const [edit, setEdit] = useState<{
+    day: string;
+    picked: string;
+    note: string;
+  } | null>(null);
+  const shown =
+    edit && edit.day === day
+      ? edit
+      : { day, picked: current.codes.join(","), note: current.ownNote };
+  const [message, setMessage] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function run(ops: SymptomOp[]) {
+    for (const op of ops) {
+      if (op.op === "delete") await remove.mutateAsync(op.id);
+      else
+        await save.mutateAsync({
+          id: op.op === "update" ? op.id : null,
+          type: "symptom",
+          patch: op.patch,
+        });
+    }
+  }
+
+  async function perform(ops: SymptomOp[], done: string) {
+    setBusy(true);
+    setMessage(null);
+    try {
+      await run(ops);
+      toast(done);
+      onClose();
+    } catch (error) {
+      setMessage(toVietnameseError(error));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function onSave() {
+    // One clock for the whole save: a sheet opened at 23:59 and saved after
+    // midnight stores its day (then yesterday) at 12:00, not at "now".
+    const saveNow = new Date();
+    const result = symptomDaySave({
+      day: current,
+      picked: parseCodes(shown.picked),
+      note: shown.note,
+      today: vnDateString(saveNow),
+      now: saveNow,
+    });
+    if (!result.ok) {
+      setMessage(result.message);
+      return;
+    }
+    if (result.ops.length === 0) {
+      onClose();
+      return;
+    }
+    // Also from the clock of the save, not the day the sheet was opened.
+    const label =
+      day === vnDateString(saveNow) ? "hôm nay" : formatDayShort(day);
+    void perform(result.ops, `Đã lưu triệu chứng ${label}`);
+  }
+
+  function onDelete() {
+    const date = formatDayShort(day);
+    if (!window.confirm(`Xóa triệu chứng ngày ${date}?`)) return;
+    void perform(symptomDayDelete(current), `Đã xóa triệu chứng ${date}`);
+  }
+
+  return (
+    <SymptomDaySheetView
+      title={
+        fixedDay === null
+          ? "Triệu chứng"
+          : `Triệu chứng · ${formatDayShort(fixedDay)}`
+      }
+      sub={fixedDay === null ? null : sub}
+      strip={
+        strip && {
+          label: strip.label,
+          days: strip.days,
+          selected: day,
+          // From the strip's own logs, also while "Khác" shows another day.
+          marked: strip.days
+            .filter(
+              (cell) =>
+                symptomDay(stripLogs.data ?? [], cell.day, () => true).logs
+                  .length > 0,
+            )
+            .map((cell) => cell.day),
+          scrollRef,
+          other: inStrip ? null : day,
+          min: baby.dob,
+          max: today,
+          onPick: (next) => {
+            setChosen(next);
+            setEdit(null);
+            setMessage(null);
+          },
+        }
+      }
+      status={status}
+      day={current}
+      picked={shown.picked}
+      note={shown.note}
+      ageDays={ageDays(baby.dob, openedAt)}
+      dirty={edit !== null}
+      saving={busy}
+      message={message}
+      deletable={
+        fixedDay !== null && status === "ready" && canDeleteDay(current)
+      }
+      onPicked={(picked) => setEdit({ ...shown, picked })}
+      onNote={(note) => setEdit({ ...shown, note })}
+      onSave={onSave}
+      onDelete={onDelete}
+      onClose={onClose}
+    />
   );
 }

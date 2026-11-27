@@ -1,7 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { hostElements } from "@/components/ui/testTree";
-import { SymptomFields } from "./SymptomFields";
 import { SymptomPickerView } from "./SymptomPicker";
 
 type ViewProps = Parameters<typeof SymptomPickerView>[0];
@@ -143,29 +142,5 @@ describe("SymptomPickerView", () => {
     );
     (buttons[0].props.onClick as () => void)();
     expect(onChange).toHaveBeenCalledWith("fever,gone_code");
-  });
-});
-
-describe("SymptomFields", () => {
-  const html = (values: Record<string, string>) =>
-    renderToStaticMarkup(
-      <SymptomFields values={values} onChange={() => {}} ageDays={76} />,
-    );
-
-  it("a hint line, the chips, then a note of at most 200 characters", () => {
-    const empty = html({ codes: "", note: "" });
-    expect(empty).toContain(">Bấm những gì bé đang có.</p>");
-    expect(empty).toContain(">Hay gặp</span>");
-    expect(empty).toContain(">Ghi chú (không bắt buộc)</span>");
-    expect(empty).toMatch(/<textarea[^>]*rows="3"[^>]*maxLength="200"/);
-    expect(empty.indexOf(">Hay gặp</span>")).toBeLessThan(
-      empty.indexOf(">Ghi chú (không bắt buộc)</span>"),
-    );
-  });
-
-  it("says how many are picked and shows the note", () => {
-    const picked = html({ codes: "runny_nose,cough", note: "Ho về đêm" });
-    expect(picked).toContain(">Bấm những gì bé đang có. Đã chọn 2.</p>");
-    expect(picked).toContain(">Ho về đêm</textarea>");
   });
 });
