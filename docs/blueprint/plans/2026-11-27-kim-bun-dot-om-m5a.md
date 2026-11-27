@@ -555,7 +555,7 @@ bunx supabase stop
 
 Expected: `All tests successful.`, `Files=18, Tests=234`, `Result: PASS`. Sau đó tắt OrbStack nếu chính phiên này đã bật nó.
 
-- [ ] **Step 4: Áp migration lên Supabase thật**
+- [x] **Step 4: Áp migration lên Supabase thật**
 
 `main` không được có code cần một migration trước khi migration đó đã áp (Global Constraints): `types.ts` của plan này đã mô tả bảng mới. Làm bước này trước Step 7.
 
@@ -602,13 +602,13 @@ git commit -m "docs(plan): the M5a plan and its check results" -m "Co-Authored-B
 - **Task 2 Step 1:** `tsc --noEmit` exit 0; vitest `208 passed (208)` / `1981 passed (1981)`.
 - **Task 2 Step 2:** `bun run build` lần 1 thoát 1 vì thông báo bảo mật của Next.js 16.4.3 (không chạy `next upgrade`); lần 2 exit 0, `✓ Generating static pages using 9 workers (42/42)`.
 - **Task 2 Step 3:** `db:reset` rồi `db:test`: `All tests successful.`, `Files=18, Tests=234`, `Result: PASS`. Đã `bunx supabase stop`; OrbStack do phiên này bật nên đã tắt.
-- **Task 2 Step 4: CHƯA áp.** 16:34:15 +07 dry-run lần 1: `Would push these migrations: • 20261126000300_illness_visits.sql` (đúng một). `bunx supabase db push --linked --yes` bị bộ kiểm quyền của app chặn; không thử đường vòng. 16:34:35 +07 dry-run lần 2: vẫn đúng một migration đó (`"upToDate":false`). Chờ người dùng tự chạy `bunx supabase db push --linked --dry-run` rồi `bunx supabase db push --linked`.
-- **Task 2 Step 7: CHƯA làm.** Code nằm trên nhánh, không gộp vào `main`, không đẩy, cho tới khi migration đã áp và dry-run báo `Remote database is up to date.`.
+- **Task 2 Step 4: đã áp, do người dùng chạy.** 16:34:15 +07 dry-run lần 1 (phiên thực thi): `Would push these migrations: • 20261126000300_illness_visits.sql` (đúng một). `bunx supabase db push --linked --yes` của phiên bị bộ kiểm quyền của app chặn; không thử đường vòng. 16:34:35 +07 dry-run lần 2: vẫn đúng một migration đó (`"upToDate":false`). Người dùng tự chạy trong terminal của app (khoảng 16:35 +07): dry-run ra đúng một migration đó; `bunx supabase db push --linked`, trả lời Yes, `Applying migration 20261126000300_illness_visits.sql...`, `Finished supabase db push.` 16:36:00 +07 dry-run cuối (phiên thực thi): `Remote database is up to date.`
+- **Task 2 Step 7:** gộp `--ff-only` vào `main` và đẩy `origin/main` sau khi dry-run cuối báo up to date.
 - **Lỗi:** không lỗi nào lộ ra; không sửa gì ngoài hai patch.
-- **Chưa kiểm:** bảng, RLS và trigger trên Supabase thật (migration chưa áp); pgTAP chỉ chạy local.
+- **Chưa kiểm:** bảng, RLS và trigger trên Supabase thật (chỉ biết migration chạy xong không lỗi); pgTAP chỉ chạy local.
 - Bốn plan M5b–M5e được commit nguyên trạng (`440e418`) để cây sạch.
 
-- [ ] **Step 7: Đưa lên `main`**
+- [x] **Step 7: Đưa lên `main`**
 
 Chỉ khi migration đã áp (Step 4, dry-run cuối báo `Remote database is up to date.`), mọi bước trên đều đạt và không còn lỗi đã biết. Không hỏi lại người dùng: xem mục "Lên `main` không cần hỏi" ở Ghi chú khi thực thi.
 
