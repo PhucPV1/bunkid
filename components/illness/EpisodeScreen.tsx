@@ -26,7 +26,7 @@ import {
 } from "@/lib/rules/illness";
 import { planClose } from "@/lib/rules/illnessForm";
 import { dayRows, usualView, verdictView } from "@/lib/rules/illnessView";
-import { episodeDeleteBlock } from "@/lib/rules/visits";
+import { episodeDeleteBlock, visitsOf } from "@/lib/rules/visits";
 import type { Baby } from "@/lib/supabase/rows";
 import { EpisodeDayList } from "./EpisodeDayList";
 import { EpisodeSheet } from "./EpisodeSheet";
@@ -56,6 +56,7 @@ export function EpisodeBody({
   now,
   closing,
   visits = null,
+  visitTimes = [],
   onLog,
   onClose,
 }: {
@@ -67,6 +68,8 @@ export function EpisodeBody({
   closing: boolean;
   // Spec §6.3 item 6: the card "Lần khám" (§8.3), which reads by itself.
   visits?: ReactNode;
+  // The times of the episode's visits, marked on the chart (§6.5 from M5).
+  visitTimes?: number[];
   onLog: (type: QuickLogType) => void;
   onClose: () => void;
 }) {
@@ -76,7 +79,7 @@ export function EpisodeBody({
         view={verdictView({ episode, logs, babyName, now })}
         onLog={onLog}
       />
-      <FeverChartCard chart={feverChartModel(logs, episode, now)} />
+      <FeverChartCard chart={feverChartModel(logs, episode, now, visitTimes)} />
       <EpisodeDayList rows={dayRows(logs, episode, now)} />
       <EpisodeUsual view={usualView(logs, episode, now)} />
       {visits}
@@ -196,6 +199,9 @@ export function EpisodeScreen({
           babyName={baby.name}
           now={now}
           closing={actions.update.isPending}
+          visitTimes={visitsOf(visits.data ?? [], episode.id).map((visit) =>
+            Date.parse(visit.visited_at),
+          )}
           visits={
             <VisitsCard
               baby={baby}

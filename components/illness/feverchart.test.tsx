@@ -167,3 +167,31 @@ describe("FeverChartCard", () => {
     expect(html).not.toContain("Liều hạ sốt");
   });
 });
+
+// Spec §6.5 from M5: a band above the plot holds the word of each visit.
+describe("FeverChart with visits", () => {
+  const withVisits = feverChartModel(
+    [temp("2026-11-25 12:00", 38.6)],
+    episode("2026-11-25 08:00"),
+    vn("2026-11-25 20:00"),
+    [vn("2026-11-25 12:00").getTime(), vn("2026-11-25 13:00").getTime()],
+  )!;
+  const html = renderToStaticMarkup(<FeverChart chart={withVisits} />);
+
+  it("is 16 units taller: the band sits above the drawing", () => {
+    expect(html).toContain('viewBox="0 -16 330 220"');
+  });
+
+  it("draws a dashed line per visit and one word where it fits", () => {
+    expect(html.match(/<line[^>]*data-visit/g)).toHaveLength(2);
+    expect(html).toMatch(/<line[^>]*data-visit[^>]*stroke-dasharray="3 3"/);
+    expect(html.match(/>Khám<\/text>/g)).toHaveLength(1);
+    expect(html).toMatch(/<text[^>]*x="178"[^>]*y="-4"[^>]*>Khám<\/text>/);
+  });
+
+  it("without a visit the chart is as before", () => {
+    const plain = renderToStaticMarkup(<FeverChart chart={threeDays} />);
+    expect(plain).toContain('viewBox="0 0 330 204"');
+    expect(plain).not.toContain("Khám");
+  });
+});

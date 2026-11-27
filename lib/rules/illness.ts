@@ -483,6 +483,8 @@ const SIDE_MAX_X = 0.85;
 const BELOW_MIN_Y = 0.2;
 // The word "Sốt" in the top band of the plot: right, left, then middle.
 const WORD_Y0 = 0.87;
+// The word "Khám" of a visit, about 30 px at 375 px wide.
+const VISIT_WORD_W = 0.11;
 const WORD_BOXES: { at: "start" | "middle" | "end"; x0: number; x1: number }[] =
   [
     { at: "end", x0: 0.9, x1: 1 },
@@ -512,6 +514,14 @@ export type FeverChartPoint = {
   label: FeverChartLabel | null;
 };
 
+// A doctor's visit (spec §6.5 from M5): a dashed line at its time, with the
+// word "Khám" above the plot. `word` is how the word is anchored on the line,
+// or null when it would touch the word of the visit before.
+export type FeverChartVisit = {
+  x: number;
+  word: "start" | "middle" | "end" | null;
+};
+
 export type FeverChart = {
   // The episode is longer than 7 days: only its last 7 are drawn.
   truncated: boolean;
@@ -529,6 +539,8 @@ export type FeverChart = {
   // Oldest first.
   points: FeverChartPoint[];
   doses: { at: number; x: number }[];
+  // Oldest first; only the visits inside the days drawn.
+  visits: FeverChartVisit[];
   ariaLabel: string;
 };
 
@@ -557,11 +569,13 @@ function labelBox(x: number, y: number, label: FeverChartLabel): Box {
 
 // Spec §6.5: everything the fever chart draws, as fractions of the plot; the
 // component only turns them into pixels. null when the episode has no reading
-// at all (the card then says so).
+// at all (the card then says so). `visitTimes` are the times of the episode's
+// doctor's visits, in ms.
 export function feverChartModel(
   logs: LogLike[],
   episode: EpisodeLike,
   now: Date,
+  visitTimes: number[] = [],
 ): FeverChart | null {
   const readings = episodeReadings(logs, episode, now);
   if (readings.length === 0) return null;
@@ -674,6 +688,24 @@ export function feverChartModel(
     .filter(inWindow)
     .map((at) => ({ at, x: xOf(at) }));
 
+  // The words sit in a band of their own above the plot, so they only have
+  // to keep off each other.
+  const visits: FeverChartVisit[] = [];
+  let wordEnd = -Infinity;
+  for (const at of visitTimes.filter(inWindow).sort((a, b) => a - b)) {
+    const x = xOf(at);
+    const anchor = anchorOf(x);
+    const x0 =
+      anchor === "start"
+        ? x
+        : anchor === "end"
+          ? x - VISIT_WORD_W
+          : x - VISIT_WORD_W / 2;
+    const free = x0 >= wordEnd;
+    if (free) wordEnd = x0 + VISIT_WORD_W;
+    visits.push({ x, word: free ? anchor : null });
+  }
+
   const highest = degrees.length > 0 ? Math.max(...degrees) : null;
   const ariaLabel = [
     `Biểu đồ nhiệt độ${count > CHART_DAYS ? ", 7 ngày gần nhất" : ""}: ${drawn.length} lần đo`,
@@ -703,6 +735,7 @@ export function feverChartModel(
     feverWord,
     points,
     doses,
+    visits,
     ariaLabel,
   };
 }

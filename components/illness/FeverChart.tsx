@@ -12,6 +12,10 @@ const BOTTOM = 154;
 // The row of dose marks under the plot, and the day names under that.
 const DOSE_Y = 170;
 const DAY_Y = 198;
+// The band above the drawing, at negative y, for the word "Khám" of a visit
+// (spec §6.5 from M5); there only when a visit is drawn, so a chart without
+// one is unchanged.
+const VISIT_BAND = 16;
 
 const MUTED = "var(--color-muted)";
 const INK = "var(--color-ink)";
@@ -27,11 +31,12 @@ const round = (value: number) => Math.round(value * 10) / 10;
 // as well as colour (theme night has one hue).
 export function FeverChart({ chart }: { chart: FeverChartModel }) {
   const feverY = round(py(chart.feverY));
+  const band = chart.visits.length > 0 ? VISIT_BAND : 0;
   return (
     <svg
       role="img"
       aria-label={chart.ariaLabel}
-      viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
+      viewBox={`0 ${-band} ${WIDTH} ${HEIGHT + band}`}
       className="w-full"
     >
       <rect
@@ -76,6 +81,38 @@ export function FeverChart({ chart }: { chart: FeverChartModel }) {
           strokeOpacity={0.14}
         />
       ))}
+      {/* A visit: a dashed line through the plot, from just under its
+          word in the band above. */}
+      {chart.visits.map((visit, index) => (
+        <line
+          key={index}
+          data-visit
+          x1={round(px(visit.x))}
+          x2={round(px(visit.x))}
+          y1={0}
+          y2={BOTTOM}
+          stroke={INK}
+          strokeOpacity={0.45}
+          strokeWidth={1.25}
+          strokeDasharray="3 3"
+        />
+      ))}
+      {chart.visits.map(
+        (visit, index) =>
+          visit.word && (
+            <text
+              key={index}
+              x={round(px(visit.x))}
+              y={-4}
+              textAnchor={visit.word}
+              fontSize={11}
+              fontWeight={600}
+              fill={MUTED}
+            >
+              Khám
+            </text>
+          ),
+      )}
       <text x={6} y={11} fontSize={11} fill={MUTED}>
         °C
       </text>

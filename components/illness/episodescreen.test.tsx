@@ -232,6 +232,28 @@ describe("EpisodeScreen", () => {
     expect(html).toContain(">25/11 09:15 · Phòng khám Nhi</span>");
     expect(html).toContain(">Viêm họng</span>");
     expect(html).not.toContain("Chưa có lần khám nào.");
+    // Spec §6.5 from M5: the visit is marked on the chart too.
+    expect(html.match(/<line[^>]*data-visit/g)).toHaveLength(1);
+    expect(html).toContain(">Khám</text>");
+  });
+
+  it("a visit of another episode is not on this chart", () => {
+    const html = render({
+      visits: loaded([
+        {
+          id: "v9",
+          episode_id: "past",
+          baby_id: "b1",
+          visited_at: iso("2026-11-25 09:15"),
+          place: null,
+          conclusion: null,
+          advice: null,
+          created_by: "u1",
+          photos: [],
+        },
+      ]),
+    });
+    expect(html).not.toContain("Khám</text>");
   });
 
   // The page's clock moves once a minute; a log saved since its last tick is
