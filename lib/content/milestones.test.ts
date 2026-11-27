@@ -37,4 +37,16 @@ describe("content/milestones.vi.json (spec §6.9, §10.2)", () => {
     ]);
     for (const m of MILESTONES.motor) expect(m.source).toMatch(/^https:\/\//);
   });
+
+  it("has a short lower-case name for each motor milestone (spec 2026-11-27 §3.4)", () => {
+    expect(MILESTONES.motor.map((m) => [m.code, m.short])).toEqual([
+      ["lat", "lật"],
+      ["ngoi", "ngồi"],
+      ["dung_co_do", "đứng có đỡ"],
+      ["bo", "bò"],
+      ["di_co_dat", "đi có dắt"],
+      ["tu_dung", "tự đứng"],
+      ["tu_di", "tự đi"],
+    ]);
+  });
 });
