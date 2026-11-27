@@ -1,4 +1,4 @@
-import { addDays, vnDayStartMs } from "./days";
+import { addDays, formatDayShort, vnDayStartMs } from "./days";
 import type { LogLike } from "./describeLog";
 import { detailsSchemas } from "./logDetails";
 import { vnDateString } from "./time";
@@ -387,4 +387,227 @@ export function canReopen(
   if (episode.ended_at === null) return false;
   if (episodes.some((other) => other.ended_at === null)) return false;
   return episodes.every((other) => startOf(other) <= startOf(episode));
+}
+
+const CHART_DAYS = 7;
+
+// The chart's geometry, in fractions of the plot (about 288 × 128 px at
+// 375 px wide), so the model can keep the texts apart.
+type Box = { x0: number; x1: number; y0: number; y1: number };
+const hit = (a: Box, b: Box) =>
+  a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
+// A dot, with a little air round it.
+const DOT_X = 0.025;
+const DOT_Y = 0.055;
+// A value label such as "38,6", halo included.
+const LABEL_W = 0.11;
+// A label nearer than this to the left or right edge is anchored inwards.
+const LABEL_EDGE = 0.1;
+// The newest label may sit beside its dot up to here, under it from here up.
+const SIDE_MAX_X = 0.85;
+const BELOW_MIN_Y = 0.2;
+// The word "Sốt" in the top band of the plot: right, left, then middle.
+const WORD_Y0 = 0.87;
+const WORD_BOXES: { at: "start" | "middle" | "end"; x0: number; x1: number }[] =
+  [
+    { at: "end", x0: 0.9, x1: 1 },
+    { at: "start", x0: 0, x1: 0.1 },
+    { at: "middle", x0: 0.45, x1: 0.55 },
+  ];
+
+export type FeverChartLabel = {
+  // "38,6", without the unit.
+  text: string;
+  // Which end of the text sits on the point, so it stays inside the plot.
+  anchor: "start" | "middle" | "end";
+  // Above the dot; or, where that would cover another dot or label, beside
+  // it or under it. Beside is to the right with anchor "start" and to the
+  // left with anchor "end".
+  place: "above" | "side" | "below";
+};
+
+export type FeverChartPoint = {
+  at: number;
+  celsius: number;
+  // 0 = left edge of the plot, 1 = right edge.
+  x: number;
+  // 0 = lowest degree of the scale, 1 = highest.
+  y: number;
+  latest: boolean;
+  label: FeverChartLabel | null;
+};
+
+export type FeverChart = {
+  // The episode is longer than 7 days: only its last 7 are drawn.
+  truncated: boolean;
+  // One per day; x is the middle of the day.
+  days: { day: string; label: string; x: number }[];
+  // The day borders inside the plot.
+  dividers: number[];
+  // One per whole degree, lowest first.
+  ticks: { celsius: number; y: number }[];
+  // Where 38,0 sits on the scale.
+  feverY: number;
+  // Where in the top band of the fever zone the word "Sốt" sits: the first
+  // of right, left, middle that no dot and no label reaches.
+  feverWord: "start" | "middle" | "end";
+  // Oldest first.
+  points: FeverChartPoint[];
+  doses: { at: number; x: number }[];
+  ariaLabel: string;
+};
+
+const dotBox = (x: number, y: number): Box => ({
+  x0: x - DOT_X,
+  x1: x + DOT_X,
+  y0: y - DOT_Y,
+  y1: y + DOT_Y,
+});
+
+function labelBox(x: number, y: number, label: FeverChartLabel): Box {
+  if (label.place === "side") {
+    const left = label.anchor === "end" ? x - 0.035 - LABEL_W : x + 0.035;
+    return { x0: left, x1: left + LABEL_W, y0: y - 0.06, y1: y + 0.06 };
+  }
+  const x0 =
+    label.anchor === "start"
+      ? x - 0.01
+      : label.anchor === "end"
+        ? x + 0.01 - LABEL_W
+        : x - LABEL_W / 2;
+  return label.place === "above"
+    ? { x0, x1: x0 + LABEL_W, y0: y + 0.07, y1: y + 0.21 }
+    : { x0, x1: x0 + LABEL_W, y0: y - 0.19, y1: y - 0.06 };
+}
+
+// Spec §6.5: everything the fever chart draws, as fractions of the plot; the
+// component only turns them into pixels. null when the episode has no reading
+// at all (the card then says so).
+export function feverChartModel(
+  logs: LogLike[],
+  episode: EpisodeLike,
+  now: Date,
+): FeverChart | null {
+  const readings = episodeReadings(logs, episode, now);
+  if (readings.length === 0) return null;
+
+  const today = vnDateString(now);
+  const count = episodeDayCount(episode, now);
+  const shown = Math.min(count, CHART_DAYS);
+  const lastDay = addDays(
+    vnDateString(new Date(episode.started_at)),
+    count - 1,
+  );
+  const firstDay = addDays(lastDay, 1 - shown);
+  const from = vnDayStartMs(firstDay);
+  const span = shown * DAY_MS;
+  const xOf = (at: number) => (at - from) / span;
+  const inWindow = (at: number) => at >= from && at < from + span;
+
+  const drawn = readings.filter((reading) => inWindow(reading.at));
+  const degrees = drawn.map((reading) => reading.celsius);
+  const yMin = Math.min(36, Math.floor(Math.min(...degrees, 36)));
+  const yMax = Math.max(40, Math.ceil(Math.max(...degrees, 40)));
+  const yOf = (celsius: number) => (celsius - yMin) / (yMax - yMin);
+
+  const latest = drawn.at(-1) ?? null;
+  let peak: Reading | null = null;
+  for (const reading of drawn)
+    if (hasFever(reading.celsius) && (!peak || reading.celsius >= peak.celsius))
+      peak = reading;
+
+  const points = drawn.map((reading): FeverChartPoint => ({
+    at: reading.at,
+    celsius: reading.celsius,
+    x: xOf(reading.at),
+    y: yOf(reading.celsius),
+    latest: reading === latest,
+    label: null,
+  }));
+  const anchorOf = (x: number) =>
+    x < LABEL_EDGE ? "start" : x > 1 - LABEL_EDGE ? "end" : "middle";
+  const boxes: Box[] = points.map((point) => dotBox(point.x, point.y));
+
+  // The highest reading keeps its label above the dot.
+  const peakPoint = points.find(
+    (point) => point.at === peak?.at && !point.latest,
+  );
+  if (peak && peakPoint && peak !== latest) {
+    peakPoint.label = {
+      text: formatCelsius(peak.celsius),
+      anchor: anchorOf(peakPoint.x),
+      place: "above",
+    };
+    boxes.push(labelBox(peakPoint.x, peakPoint.y, peakPoint.label));
+  }
+  // The newest label takes the first place that covers no other dot and not
+  // the highest reading's label: above, beside on the right, under, beside on
+  // the left. Nothing is ever drawn to the right of the newest dot, so that
+  // side is free whenever it fits; near the right edge it does not fit, and
+  // the left side is the last try (the line runs behind the label there, and
+  // the halo keeps it readable).
+  const newest = points.at(-1);
+  if (newest) {
+    const others = boxes.filter((_, index) => index !== points.length - 1);
+    const text = formatCelsius(newest.celsius);
+    const options: FeverChartLabel[] = [
+      { text, anchor: anchorOf(newest.x), place: "above" },
+      ...(newest.x <= SIDE_MAX_X
+        ? [{ text, anchor: "start", place: "side" } as const]
+        : []),
+      ...(newest.y >= BELOW_MIN_Y
+        ? [{ text, anchor: anchorOf(newest.x), place: "below" } as const]
+        : []),
+      ...(newest.x > SIDE_MAX_X
+        ? [{ text, anchor: "end", place: "side" } as const]
+        : []),
+    ];
+    newest.label =
+      options.find((option) => {
+        const box = labelBox(newest.x, newest.y, option);
+        return !others.some((other) => hit(box, other));
+      }) ?? options[0];
+    boxes.push(labelBox(newest.x, newest.y, newest.label));
+  }
+  const feverWord =
+    WORD_BOXES.find(
+      (word) =>
+        !boxes.some((box) => hit(box, { ...word, y0: WORD_Y0, y1: 1.05 })),
+    )?.at ?? "end";
+
+  const doses = antipyreticTimes(logs, episode, now)
+    .filter(inWindow)
+    .map((at) => ({ at, x: xOf(at) }));
+
+  const highest = degrees.length > 0 ? Math.max(...degrees) : null;
+  const ariaLabel = [
+    `Biểu đồ nhiệt độ${count > CHART_DAYS ? ", 7 ngày gần nhất" : ""}: ${drawn.length} lần đo`,
+    ...(highest === null ? [] : [`cao nhất ${formatCelsius(highest)}°C`]),
+    `${doses.length} liều hạ sốt.`,
+  ].join(", ");
+
+  return {
+    truncated: count > CHART_DAYS,
+    days: Array.from({ length: shown }, (_, index) => {
+      const day = addDays(firstDay, index);
+      return {
+        day,
+        label: day === today ? "Hôm nay" : formatDayShort(day),
+        x: (index + 0.5) / shown,
+      };
+    }),
+    dividers: Array.from(
+      { length: shown - 1 },
+      (_, index) => (index + 1) / shown,
+    ),
+    ticks: Array.from({ length: yMax - yMin + 1 }, (_, index) => ({
+      celsius: yMin + index,
+      y: index / (yMax - yMin),
+    })),
+    feverY: yOf(38),
+    feverWord,
+    points,
+    doses,
+    ariaLabel,
+  };
 }
