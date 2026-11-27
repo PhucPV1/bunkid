@@ -7,6 +7,7 @@ import {
   type EpisodeLike,
   episodeDay,
   episodeDayCount,
+  episodeDays,
   episodeReadings,
   episodeVerdict,
   feverStatus,
@@ -469,5 +470,103 @@ describe("statusTone", () => {
     expect(tone([temp("2026-11-25 10:00", 36.9)], "2026-11-25 11:00")).toBe(
       "good",
     );
+  });
+});
+
+// Spec §5.3 and §6.3 item 4.
+describe("episodeDays", () => {
+  const open = episode("2026-11-24 23:30");
+  const now = vn("2026-11-27 08:00");
+  const logs = [
+    temp("2026-11-24 23:00", 40), // before the episode
+    temp("2026-11-24 23:40", 38.4),
+    temp("2026-11-25 03:00", 39),
+    temp("2026-11-25 15:00", 38.2),
+    dose("2026-11-25 03:10"),
+    dose("2026-11-25 09:30"),
+    symptom("2026-11-25 08:00", ["cough", "runny_nose"]),
+    symptom("2026-11-25 20:00", ["runny_nose", "fussy"]),
+    temp("2026-11-26 09:00", 37.6),
+    temp("2026-11-26 19:00", 37.9),
+    dose("2026-11-26 01:00", false),
+    symptom("2026-11-27 07:00", ["cough"]),
+  ];
+  const days = () =>
+    sameForEveryOrder(logs, (list) => episodeDays(list, open, now));
+
+  it("one row per day from the first day to today, newest first", () => {
+    expect(days().map((row) => [row.day, row.n])).toEqual([
+      ["2026-11-27", 4],
+      ["2026-11-26", 3],
+      ["2026-11-25", 2],
+      ["2026-11-24", 1],
+    ]);
+  });
+
+  it("each day: its highest reading, its doses, its symptom codes once each", () => {
+    expect(days()[2]).toEqual({
+      day: "2026-11-25",
+      n: 2,
+      peak: 39,
+      doses: 2,
+      codes: ["cough", "fussy", "runny_nose"],
+      label: { text: "Sốt cao", tone: "danger" },
+    });
+    expect(days()[3]).toMatchObject({ peak: 38.4, doses: 0, codes: [] });
+  });
+
+  it("labels: Sốt cao from 39,0, Sốt from 38,0, Hết sốt after a day with fever, none without a reading", () => {
+    expect(days().map((row) => row.label)).toEqual([
+      null,
+      { text: "Hết sốt", tone: "good" },
+      { text: "Sốt cao", tone: "danger" },
+      { text: "Sốt", tone: "warn" },
+    ]);
+    expect(days()[0]).toMatchObject({ peak: null, doses: 0, codes: ["cough"] });
+  });
+
+  it("Không sốt when no earlier day of the episode had a fever", () => {
+    const calm = [
+      temp("2026-11-24 23:40", 37.2),
+      temp("2026-11-25 09:00", 37.9),
+      temp("2026-11-26 09:00", 38),
+      temp("2026-11-27 07:00", 37),
+    ];
+    expect(
+      sameForEveryOrder(calm, (list) => episodeDays(list, open, now)).map(
+        (row) => row.label?.text,
+      ),
+    ).toEqual(["Hết sốt", "Sốt", "Không sốt", "Không sốt"]);
+  });
+
+  it("a fever earlier the same day does not turn the day into Hết sốt", () => {
+    const sameDay = [
+      temp("2026-11-24 23:40", 38.4),
+      temp("2026-11-24 23:50", 37),
+    ];
+    expect(episodeDays(sameDay, open, vn("2026-11-24 23:55"))).toEqual([
+      {
+        day: "2026-11-24",
+        n: 1,
+        peak: 38.4,
+        doses: 0,
+        codes: [],
+        label: { text: "Sốt", tone: "warn" },
+      },
+    ]);
+  });
+
+  it("a closed episode ends on the day of its end and leaves later logs out", () => {
+    const closed = episode("2026-11-24 23:30", "2026-11-26 12:00");
+    const rows = sameForEveryOrder(logs, (list) =>
+      episodeDays(list, closed, now),
+    );
+    expect(rows.map((row) => row.day)).toEqual([
+      "2026-11-26",
+      "2026-11-25",
+      "2026-11-24",
+    ]);
+    // 19:00 on the last day is after the end: only the 09:00 reading counts.
+    expect(rows[0].peak).toBe(37.6);
   });
 });

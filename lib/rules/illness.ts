@@ -259,3 +259,71 @@ export function episodeVerdict(input: {
     icon: tone === "good" ? "check" : "thermo",
   };
 }
+
+export type DayLabel = {
+  text: "Sốt cao" | "Sốt" | "Hết sốt" | "Không sốt";
+  tone: "danger" | "warn" | "good";
+};
+
+export type EpisodeDayRow = {
+  // "2026-11-25", a Vietnam calendar day.
+  day: string;
+  // Its number in the episode, from 1.
+  n: number;
+  // The highest reading of the day; null without a reading.
+  peak: number | null;
+  // Doses of fever medicine that day.
+  doses: number;
+  // Codes of the day's symptom logs, each once, sorted by code.
+  codes: string[];
+  // Spec §5.3; null on a day without a reading.
+  label: DayLabel | null;
+};
+
+// Spec §5.3 and §6.3 item 4: one row per calendar day from the first day to
+// the last (an open episode: today), newest first. Only logs that belong to
+// the episode count, so the first and last day may be partial days.
+export function episodeDays(
+  logs: LogLike[],
+  episode: EpisodeLike,
+  now: Date,
+): EpisodeDayRow[] {
+  const dayOf = (ms: number) => vnDateString(new Date(ms));
+  const firstDay = dayOf(Date.parse(episode.started_at));
+  const count = episodeDayCount(episode, now);
+  const readings = episodeReadings(logs, episode, now);
+  const doses = antipyreticTimes(logs, episode, now);
+  const symptoms = symptomEntries(logs, episode, now);
+  const rows: EpisodeDayRow[] = [];
+  let feverBefore = false;
+  for (let index = 0; index < count; index += 1) {
+    const day = addDays(firstDay, index);
+    const temperatures = readings
+      .filter((reading) => dayOf(reading.at) === day)
+      .map((reading) => reading.celsius);
+    const peak = temperatures.length > 0 ? Math.max(...temperatures) : null;
+    let label: DayLabel | null = null;
+    if (peak !== null) {
+      if (peak >= HIGH_FEVER) label = { text: "Sốt cao", tone: "danger" };
+      else if (hasFever(peak)) label = { text: "Sốt", tone: "warn" };
+      else
+        label = { text: feverBefore ? "Hết sốt" : "Không sốt", tone: "good" };
+    }
+    rows.push({
+      day,
+      n: index + 1,
+      peak,
+      doses: doses.filter((time) => dayOf(time) === day).length,
+      codes: [
+        ...new Set(
+          symptoms
+            .filter((entry) => dayOf(entry.at) === day)
+            .flatMap((entry) => entry.codes),
+        ),
+      ].sort(),
+      label,
+    });
+    if (hasFever(peak)) feverBefore = true;
+  }
+  return rows.reverse();
+}
