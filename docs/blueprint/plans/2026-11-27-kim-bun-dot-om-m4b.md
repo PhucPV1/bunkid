@@ -127,7 +127,7 @@ Plan này đứng sau M4a và trước M4c. M4c dùng hai luật của Task 1 v�
 - Consumes: `type EpisodeLike`, `episodeDayCount(episode, now): number` (`lib/rules/illness.ts`); `symptomShorts(codes, symptoms): string[]`; `TRIAGE.symptoms`; `addDays`, `formatDayShort`, `vnDayStartMs`, `vnDateString`; hàm `when` sẵn có trong `report.ts` ("{dd/mm} {HH:mm}").
 - Produces: `symptomRows`, `type ReportPeriod`, `reportSelection`, `episodeReport` (chữ ký ở Contracts). Chữ đúng của spec §9: "Đợt ốm {dd/mm} – {dd/mm} · {n} ngày", "Đợt ốm từ {dd/mm} · ngày thứ {n}".
 
-- [ ] **Step 0: Kiểm M4a đã xong, rồi tạo nhánh**
+- [x] **Step 0: Kiểm M4a đã xong, rồi tạo nhánh**
 
 ```bash
 git checkout main && git pull --ff-only
@@ -138,7 +138,7 @@ bunx vitest run
 
 Expected: dòng `M4a có trên main`; `Test Files  206 passed (206)`, `Tests  1953 passed (1953)`. Không thấy dòng đó thì dừng: M4a chưa lên `main`. Số test khác đi vì `main` có commit mới thì vẫn làm tiếp, và ghi lại số xuất phát thật.
 
-- [ ] **Step 1: Viết test đỏ (Patch 1)**
+- [x] **Step 1: Viết test đỏ (Patch 1)**
 
 ```diff
 diff --git a/lib/rules/reportIllness.test.ts b/lib/rules/reportIllness.test.ts
@@ -322,12 +322,12 @@ index 0000000..5442c58
 +});
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run`
 Expected: `Test Files  1 failed | 206 passed (207)`, `Tests  13 failed | 1953 passed (1966)`. Cả 13 test mới đỏ vì ba hàm chưa có (`is not a function`).
 
-- [ ] **Step 3: Viết ba luật (Patch 2)**
+- [x] **Step 3: Viết ba luật (Patch 2)**
 
 ```diff
 diff --git a/lib/rules/report.ts b/lib/rules/report.ts
@@ -454,12 +454,12 @@ index b751b9d..f93965c 100644
    rows: (GrowthInput & { created_at?: string })[],
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run && bun run typecheck`
 Expected: `Test Files  207 passed (207)`, `Tests  1966 passed (1966)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/rules/report.ts lib/rules/reportIllness.test.ts
@@ -478,7 +478,7 @@ git commit -m "feat(report): the symptom rows, and the rules of the episode peri
 - Consumes: `symptomRows` (Task 1); `useStatsLogs`, `useGrowth`, `useWhoTable`, `useVaccineDoses`, `useNow` (đều bị mock trong test).
 - Produces: bảng "Triệu chứng" của `ReportScreen`; file test `reportscreen.test.tsx` với các mock, hàm `loaded`, `log`, `render` mà M4c sửa tiếp.
 
-- [ ] **Step 1: Viết test đỏ (Patch 3)**
+- [x] **Step 1: Viết test đỏ (Patch 3)**
 
 `report.test.tsx` sẵn có vẽ trang với một `QueryClient` thật (chỉ thấy khung chờ). File mới mock các hook dữ liệu để vẽ được báo cáo có số. Nó mock luôn `useRangeLogs` và `@/lib/data/illness` dù trang chưa dùng: M4c cần chúng, và mock một module chưa được nạp thì không sao.
 
@@ -607,12 +607,12 @@ index 0000000..7663f96
 +});
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run`
 Expected: `Test Files  1 failed | 207 passed (208)`, `Tests  1 failed | 1968 passed (1969)`. Chỉ test đầu đỏ (chưa có bảng); hai test kia (không có bảng khi không có bản ghi triệu chứng trong kỳ) đã xanh từ trước và phải giữ xanh.
 
-- [ ] **Step 3: Thêm bảng (Patch 4)**
+- [x] **Step 3: Thêm bảng (Patch 4)**
 
 ```diff
 diff --git a/components/report/ReportScreen.tsx b/components/report/ReportScreen.tsx
@@ -671,12 +671,12 @@ index 76256e7..2786abb 100644
              {measures.length === 0 ? (
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run && bun run typecheck`
 Expected: `Test Files  208 passed (208)`, `Tests  1969 passed (1969)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add components/report/ReportScreen.tsx components/report/reportscreen.test.tsx
@@ -695,17 +695,17 @@ git commit -m "feat(report): the table Triệu chứng" -m "Co-Authored-By: Clau
 - Consumes: mọi thứ của các task trước trong plan này.
 - Produces: kết quả kiểm, ghi ngay trong plan; Bước 38 mục 24; một đoạn đọc spec ở §9; `main` có M4b.
 
-- [ ] **Step 1: Chạy cả bộ kiểm**
+- [x] **Step 1: Chạy cả bộ kiểm**
 
 Run: `bun run typecheck && bunx vitest run`
 Expected: `tsc --noEmit` không báo lỗi; `Test Files  208 passed (208)`, `Tests  1969 passed (1969)`.
 
-- [ ] **Step 2: Build**
+- [x] **Step 2: Build**
 
 Run: `bun run build`
 Expected: lần đầu có thể dừng với thông báo bảo mật của Next.js 16.4.3 (bình thường; không chạy `next upgrade`). Chạy lại đúng lệnh đó: `✓ Generating static pages using 9 workers (42/42)` và thoát mã 0.
 
-- [ ] **Step 3: Tạo trang fixture tạm**
+- [x] **Step 3: Tạo trang fixture tạm**
 
 Trang vẽ `ReportScreen` thật trong một `QueryClient` riêng đã có sẵn dữ liệu giả (xem Ghi chú khi thực thi về các lần tải lại sau một phút), nên không đọc hay ghi dữ liệu của gia đình và vẽ được khi chưa đăng nhập. Giờ của bản ghi tính từ hôm nay. Có một ghi chú dài, một bản ghi chỉ có mã lạ, và một bản ghi 9 ngày trước (chỉ có ở kỳ 14 ngày). Tạo `app/fixture-report/page.tsx` (không commit):
 
@@ -796,7 +796,7 @@ export default function Page() {
 Run: `bun run typecheck`
 Expected: `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 4: Kiểm trong trình duyệt (chỉ xem)**
+- [x] **Step 4: Kiểm trong trình duyệt (chỉ xem)**
 
 Chạy `bun run dev` (lần đầu có thể dừng vì thông báo bảo mật: chạy lại). Mở `http://localhost:3000/fixture-report` trong khung Browser của app, cỡ 375×812 (xem mục "Trình duyệt" ở Ghi chú khi thực thi). Xóa phần tử `nextjs-portal` trong trang trước khi chụp.
 
@@ -880,7 +880,23 @@ Trang thật (dữ liệu thật của gia đình: **chỉ xem**; cần đăng n
 
 Dừng `bun run dev` khi xong. Ghi kết quả từng mục ngay dưới bước này, kèm số đo; mục nào thấy trên trang thật, mục nào chỉ thấy trên trang tạm. Mục nào không cho thấy được thì ghi "chưa kiểm". Nếu bước này lộ ra lỗi và code phải đổi: sửa (test trước, code sau), rồi chạy lại Step 1 và Step 2 trước khi đi tiếp.
 
-- [ ] **Step 5: Xóa trang fixture**
+**Kết quả Step 4 (2026-11-27, khung Browser trong app, 375×812, `innerWidth` 375 trước mỗi lần đo):**
+
+Trên trang tạm `/fixture-report` (hôm nay 27/11, đúng ngày của lần viết plan):
+
+1. Đạt. Thứ tự "Theo ngày → Nhiệt độ → Thuốc đã dùng → Triệu chứng → Tăng trưởng (lần đo gần nhất) → Tiêm chủng". Ba hàng, cũ trước: "26/11 08:00 | Sổ mũi, Ho, Quấy | Ho nhiều về đêm, bú ít hơn mọi ngày, quấy khi đặt xuống"; "27/11 06:30 | Ho | (trống)"; "27/11 07:00 | (trống) | (trống)". Không có hàng "18/11".
+2. Theme `rose`: bảng 309×253; ô giờ 1 dòng; "Sổ mũi, Ho, Quấy" 3 dòng; ghi chú 5 dòng; `overflow` `true` (`scrollWidth` 375) — khớp plan. **Lệch:** `ellipsis` là 2, không phải 0. Hai phần tử đó là hai nút "7 ngày" và "14 ngày" của `Segmented` (`components/ui/Segmented.tsx`), có lớp `truncate` từ commit `81c7005`, có từ trước M4b; cả hai không bị cắt thật (`scrollWidth` = `clientWidth` = 165). Đoạn đo đếm phần tử có kiểu `text-overflow: ellipsis`, không đếm chữ bị cắt; đếm chữ bị cắt thật (`ellipsis` và `scrollWidth > clientWidth`) thì 0. Không phải lỗi, không sửa.
+3. Đạt. "14 ngày": thêm hàng đầu "18/11 09:00 | Ho ông ổng, Nốt ở tay chân, Loét miệng | (trống)"; bảng 309×406, ô đó 5 dòng, ghi chú 6 dòng ("Sổ mũi, Ho, Quấy" 2 dòng) — khớp plan. Chữ bị cắt thật: 0.
+4. Đạt. 12 luật `@media print` được chép vào trang: nền `body` trắng, chữ ô đen, kẻ ô đen, không nút nào còn hiện (tiêu đề trang, chọn kỳ, nút in ẩn). Bảng ở 14 ngày đọc rõ, mỗi hàng nguyên vẹn.
+5. Đạt. Tải lại, kỳ 7 ngày, theme `rose`, `light`, `dark`, `night`: cả bốn có ba hàng, không tràn ngang. Tương phản chữ ô / nền đo được ở `rose` (~14:1) và `light` (~16:1); `dark` và `night` có nền kính trong mờ nên không đo bằng số, đã nhìn ảnh chụp: đọc rõ.
+
+Trên trang thật (dữ liệu thật của gia đình, chỉ xem; khung Browser đã đăng nhập sẵn):
+
+6. Đạt. `/bao-cao` mở, kỳ mặc định "7 ngày"; `scrollWidth` 375 = `innerWidth`; chữ bị cắt thật 0; console lọc `onlyErrors`: không có lỗi. Không có bảng "Triệu chứng" ở "7 ngày" lẫn "14 ngày" (bảng "Theo ngày" 14 hàng): gia đình chưa ghi triệu chứng nào trong 14 ngày qua, nên bảng có chữ và giờ thật **chưa kiểm** trên trang thật (chỉ thấy trên trang tạm). Không bấm "In / Lưu PDF"; bản xem trước khi in thật của trình duyệt **chưa kiểm**.
+
+Chưa kiểm: bề ngang 390 và 440 px; theme `peach`, `lavender`, `sea`; bản xem trước khi in thật; iPhone thật (Bước 38 mục 24, chờ người dùng).
+
+- [x] **Step 5: Xóa trang fixture**
 
 ```bash
 rm -r app/fixture-report
@@ -890,7 +906,7 @@ git status --short  # không còn app/fixture-report
 
 Expected: `tsc --noEmit` không báo lỗi. Nếu nó đỏ với lỗi trong `.next/…/types/validator.ts`: chạy `rm -rf .next/dev/types .next/types` rồi chạy lại, phải sạch.
 
-- [ ] **Step 6: Phần M4b của Bước 38 (Patch 5) và một đoạn đọc spec (Patch 6), commit**
+- [x] **Step 6: Phần M4b của Bước 38 (Patch 5) và một đoạn đọc spec (Patch 6), commit**
 
 ```diff
 diff --git a/docs/device-checklist.md b/docs/device-checklist.md
@@ -938,7 +954,7 @@ git add docs/device-checklist.md docs/blueprint/specs/2026-11-26-kim-bun-dot-om-
 git commit -m "docs: the M4b part of step 38, and a reading of §9 in the spec" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
-- [ ] **Step 7: Ghi kết quả vào plan, commit**
+- [x] **Step 7: Ghi kết quả vào plan, commit**
 
 Ghi ngay dưới bước này: số đo đỏ và xanh của từng task có khớp plan không; kết quả Step 1, Step 2 và Step 4. Mục nào không cho thấy được thì ghi "chưa kiểm". Đánh dấu `[x]` các bước đã làm.
 
@@ -948,7 +964,18 @@ git add docs/blueprint/plans/2026-11-27-kim-bun-dot-om-m4b.md
 git commit -m "docs(plan): the M4b plan and its check results" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
-- [ ] **Step 8: Đưa lên `main`**
+**Kết quả (2026-11-27, nhánh `feat/kim-bun-dot-om-m4b` cắt từ `main` @ `f28e7d1`):**
+
+- Step 0: `M4a có trên main`; nền `Test Files  206 passed (206)`, `Tests  1953 passed (1953)` — khớp.
+- Task 1: đỏ `Test Files  1 failed | 206 passed (207)`, `Tests  13 failed | 1953 passed (1966)` (4 `episodeReport`, 7 `reportSelection`, 2 `symptomRows` `is not a function`); xanh `207/1966`; `tsc` sạch — khớp. Commit `da11116`.
+- Task 2: đỏ `Test Files  1 failed | 207 passed (208)`, `Tests  1 failed | 1968 passed (1969)` (chỉ "a table after the medicines…"); xanh `208/1969`; `tsc` sạch — khớp. Commit `d79184b`.
+- Task 3 Step 1: `tsc` sạch, `208/1969`. Step 2: lần 1 thoát 1 (thông báo bảo mật của Next.js 16.4.3), lần 2 thoát 0, `✓ Generating static pages using 9 workers (42/42)`, `/bao-cao` vẫn `○`. Không chạy `next upgrade`.
+- Step 4: xem kết quả ngay dưới Step 4. Một số lệch (`ellipsis` 2 thay vì 0) đã tìm ra nguyên nhân: hai nút có sẵn của `Segmented`, không bị cắt; không phải lỗi.
+- Step 5: sau khi xóa trang tạm, `tsc` đỏ giả một lần ở `.next/dev/types/validator.ts`; `rm -rf .next/dev/types .next/types` rồi sạch.
+- Step 6: Patch 5, 6 áp sạch. Commit `37ae3dd`. Sau đó chạy lại: `208/1969`; build lần 1 thoát 1 (thông báo bảo mật), lần 2 thoát 0, 42/42; `tsc` sạch; cây sạch.
+- Không có lỗi, không có bản sửa ngoài plan.
+
+- [x] **Step 8: Đưa lên `main`**
 
 Chỉ khi mọi bước trên đều đạt và không còn lỗi đã biết (lỗi tìm thấy khi kiểm phải được sửa, có test, và ghi vào plan trước; sửa xong thì chạy lại Step 1 và Step 2). Không hỏi lại người dùng: xem mục "Lên `main` không cần hỏi" ở Ghi chú khi thực thi.
 
