@@ -403,6 +403,26 @@ describe("EpisodeBody", () => {
     (verdict.props.onLog as (type: string) => void)("symptom");
     expect(onLog).toHaveBeenCalledWith("symptom");
   });
+
+  // Spec 2026-11-27 §6.1.
+  it("hands the day on from the day list", () => {
+    const onEditDay = vi.fn();
+    const [list] = findElements(
+      EpisodeBody({
+        episode: open,
+        logs: LOGS,
+        babyName: "Bun",
+        now: NOW,
+        closing: false,
+        onLog: () => {},
+        onClose: () => {},
+        onEditDay,
+      }),
+      (el) => "rows" in el.props && "onEdit" in el.props,
+    );
+    (list.props.onEdit as (day: string) => void)("2026-11-25");
+    expect(onEditDay).toHaveBeenCalledWith("2026-11-25");
+  });
 });
 
 // Spec §6.1.

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type ReactNode, useState } from "react";
 import { useQuickActions } from "@/components/actions/QuickActions";
+import { SymptomDaySheet } from "@/components/quick/SymptomDaySheet";
 import { Button, buttonClass } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorCard } from "@/components/ui/ErrorCard";
@@ -22,6 +23,7 @@ import type { LogLike } from "@/lib/rules/describeLog";
 import {
   detailRange,
   type EpisodeLike,
+  episodeDay,
   feverChartModel,
 } from "@/lib/rules/illness";
 import { planClose } from "@/lib/rules/illnessForm";
@@ -59,6 +61,7 @@ export function EpisodeBody({
   visitTimes = [],
   onLog,
   onClose,
+  onEditDay = () => {},
 }: {
   episode: EpisodeLike;
   logs: LogLike[];
@@ -72,6 +75,8 @@ export function EpisodeBody({
   visitTimes?: number[];
   onLog: (type: QuickLogType) => void;
   onClose: () => void;
+  // Spec 2026-11-27 §6.1: "Sửa" or "Ghi triệu chứng" on a day's row.
+  onEditDay?: (day: string) => void;
 }) {
   return (
     <>
@@ -80,7 +85,7 @@ export function EpisodeBody({
         onLog={onLog}
       />
       <FeverChartCard chart={feverChartModel(logs, episode, now, visitTimes)} />
-      <EpisodeDayList rows={dayRows(logs, episode, now)} />
+      <EpisodeDayList rows={dayRows(logs, episode, now)} onEdit={onEditDay} />
       <EpisodeUsual view={usualView(logs, episode, now)} />
       {visits}
       {/* Spec §6.3 item 7: the report of this episode (§9), then, while it
@@ -125,6 +130,8 @@ export function EpisodeScreen({
   const actions = useEpisodeActions(baby.id, userId);
   const visits = useVisits(baby.id);
   const [editing, setEditing] = useState(false);
+  // Spec 2026-11-27 §5.1: the day whose symptom sheet is open.
+  const [symptomDay, setSymptomDay] = useState<string | null>(null);
 
   const all = episodes.data ?? [];
   const episode = all.find((item) => item.id === id) ?? null;
@@ -213,6 +220,17 @@ export function EpisodeScreen({
           }
           onLog={quick.openInstant}
           onClose={close}
+          onEditDay={setSymptomDay}
+        />
+      )}
+      {symptomDay && episode && (
+        <SymptomDaySheet
+          baby={baby}
+          userId={userId}
+          canModify={(createdBy) => isOwner || createdBy === userId}
+          day={symptomDay}
+          sub={`Ngày ${episodeDay(episode.started_at, new Date(`${symptomDay}T12:00:00+07:00`))} của đợt ốm · cả ngày`}
+          onClose={() => setSymptomDay(null)}
         />
       )}
       {editing && episode && (

@@ -146,15 +146,39 @@ describe("EpisodeDayList", () => {
       label: { text: "Sốt", tone: "warn" },
     },
   ];
-  const html = renderToStaticMarkup(<EpisodeDayList rows={rows} />);
+  const html = renderToStaticMarkup(
+    <EpisodeDayList rows={rows} onEdit={() => {}} />,
+  );
   const items = html.split("<li").slice(1);
 
-  it("a titled list with one row per day, none of them a link or a button", () => {
+  it("a titled list with one row per day; a row is no link, only its symptom button is a button", () => {
     expect(html).toContain(">Từng ngày</h2>");
     expect(items).toHaveLength(3);
     expect(html).not.toContain("<a ");
-    expect(html).not.toContain("<button");
+    expect(html.match(/<button/g)).toHaveLength(3);
     expect(html).not.toContain("truncate");
+  });
+
+  // Spec 2026-11-27 §6.1 (board "Từng ngày · E").
+  it("a day with symptoms ends its chips with Sửa; a day without has Ghi triệu chứng", () => {
+    expect(items[1]).toMatch(
+      />Quấy<\/span><button type="button" aria-label="Sửa triệu chứng ngày 25\/11" class="[^"]*min-h-11[^"]*bg-accent-tint[^"]*text-accent-text[^"]*">/,
+    );
+    expect(items[1]).toContain(`d="${ICON_PATHS.pencil}"`);
+    expect(items[1]).toMatch(/<\/svg>Sửa<\/button>/);
+    expect(items[0]).toContain('aria-label="Ghi triệu chứng ngày 26/11"');
+    expect(items[0]).toContain(`d="${ICON_PATHS.plus}"`);
+    expect(items[0]).toMatch(/<\/svg>Ghi triệu chứng<\/button>/);
+  });
+
+  it("the button hands its day on", () => {
+    const onEdit = vi.fn();
+    const buttons = findElements(
+      EpisodeDayList({ rows, onEdit }),
+      (el) => el.type === "button",
+    );
+    (buttons[1].props.onClick as () => void)();
+    expect(onEdit).toHaveBeenCalledWith("2026-11-25");
   });
 
   it("the label shares a line with the title only, so the line under it has the full width", () => {
@@ -169,6 +193,5 @@ describe("EpisodeDayList", () => {
     expect(items[1].match(/bg-line text-ink/g)).toHaveLength(3);
     expect(items[1]).toContain(">Quấy</span>");
     expect(items[0]).not.toContain("bg-line text-ink");
-    expect(items[0]).not.toContain("rounded-full");
   });
 });
