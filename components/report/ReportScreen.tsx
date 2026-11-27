@@ -13,7 +13,7 @@ import { VACCINES } from "@/lib/content/vaccines";
 import { whoSex, type LmsRow } from "@/lib/content/who";
 import { toVietnameseError } from "@/lib/data/errors";
 import { useGrowth, useWhoTable } from "@/lib/data/growth";
-import { useEpisodes } from "@/lib/data/illness";
+import { useEpisodes, useVisits } from "@/lib/data/illness";
 import { useRangeLogs, useStatsLogs } from "@/lib/data/logs";
 import { useNow } from "@/lib/hooks/useNow";
 import { useVaccineDoses } from "@/lib/data/vaccines";
@@ -34,10 +34,12 @@ import {
   symptomRows,
   temperatureRows,
   vaccineSummary,
+  visitRows,
 } from "@/lib/rules/report";
 import { formatAgeVi, vnDateString } from "@/lib/rules/time";
 import { parseChoices, toDoseRecords } from "@/lib/rules/vaccineForm";
 import { buildSchedule } from "@/lib/rules/vaccines";
+import { visitsOf } from "@/lib/rules/visits";
 import type { Baby } from "@/lib/supabase/rows";
 
 const decimal = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 1 });
@@ -84,6 +86,9 @@ export function ReportScreen({
     report !== null,
   );
   const logs = report ? rangeLogs : statsLogs;
+  // Spec §9 from M5: the episode's visits, read only for the episode period.
+  const visits = useVisits(baby.id, report !== null);
+  const episodeVisits = episode ? visitsOf(visits.data ?? [], episode.id) : [];
   const growth = useGrowth(baby.id);
   const doses = useVaccineDoses(baby.id);
   const sex = whoSex(baby.sex);
@@ -101,7 +106,15 @@ export function ReportScreen({
   const temperatures = temperatureRows(own, fromMs);
   const medicines = medicineRows(own, fromMs);
   const symptoms = symptomRows(own, fromMs);
-  const chart = episode ? feverChartModel(rows, episode, now) : null;
+  const visitTable = visitRows(episodeVisits);
+  const chart = episode
+    ? feverChartModel(
+        rows,
+        episode,
+        now,
+        episodeVisits.map((visit) => Date.parse(visit.visited_at)),
+      )
+    : null;
   const measures = growthSummary(
     growth.data ?? [],
     {
@@ -123,10 +136,17 @@ export function ReportScreen({
   const cell = "border border-line px-2 py-1 print:border-ink";
   // A report for a doctor must never print "nothing recorded" while data is
   // still loading or failed to load (offline without a cache).
-  const ready = Boolean(selection && logs.data && growth.data && doses.data);
+  const ready = Boolean(
+    selection &&
+    logs.data &&
+    growth.data &&
+    doses.data &&
+    (report === null || visits.data),
+  );
   const failures = [
     ...(selection ? [] : [{ label: "Đợt ốm", query: episodes }]),
     { label: "Nhật ký", query: logs },
+    ...(report ? [{ label: "Lần khám", query: visits }] : []),
     { label: "Tăng trưởng", query: growth },
     { label: "Tiêm chủng", query: doses },
   ].filter(({ query }) => query.isError && !query.data);
@@ -161,9 +181,12 @@ export function ReportScreen({
         ))}
         {!ready &&
           failures.length === 0 &&
-          ([selection ? logs : episodes, growth, doses].some(
-            waitingForNetwork,
-          ) ? (
+          ([
+            selection ? logs : episodes,
+            growth,
+            doses,
+            ...(report ? [visits] : []),
+          ].some(waitingForNetwork) ? (
             <NeedsNetwork what="báo cáo" />
           ) : (
             <div className="flex flex-col gap-2.5">
@@ -266,6 +289,38 @@ export function ReportScreen({
               </ul>
             )}
           </section>
+
+          {/* Spec 2026-11-26 §9 from M5: the visits of the episode, without
+              their photos; only when it has one. */}
+          {visitTable.length > 0 && (
+            <section>
+              <h3 className="font-semibold">Lần khám</h3>
+              <table className="w-full border-collapse text-left">
+                <thead>
+                  <tr>
+                    <th className={cell}>Lúc khám</th>
+                    <th className={cell}>Nơi khám</th>
+                    <th className={cell}>Bác sĩ kết luận</th>
+                    <th className={cell}>Lời dặn</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {visitTable.map((row, i) => (
+                    <tr key={i} className="break-inside-avoid">
+                      {/* The time may break after its day: on a phone the
+                          three columns of text need the room. */}
+                      <td className={`${cell} tabular-nums`}>{row.at}</td>
+                      <td className={cell}>{row.place}</td>
+                      <td className={cell}>{row.conclusion}</td>
+                      <td className={`${cell} whitespace-pre-line`}>
+                        {row.advice}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </section>
+          )}
 
           {/* Spec 2026-11-26 §9: only when the period has a symptom log. */}
           {symptoms.length > 0 && (

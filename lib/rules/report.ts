@@ -103,6 +103,25 @@ export function symptomRows(
     });
 }
 
+// Spec 2026-11-26 §9 from M5: the table "Lần khám" of the episode period, a
+// row per visit in the order given; an empty field is an empty cell. No
+// photo is printed.
+export function visitRows(
+  visits: {
+    visited_at: string;
+    place: string | null;
+    conclusion: string | null;
+    advice: string | null;
+  }[],
+): { at: string; place: string; conclusion: string; advice: string }[] {
+  return visits.map((visit) => ({
+    at: when(visit.visited_at),
+    place: visit.place ?? "",
+    conclusion: visit.conclusion ?? "",
+    advice: visit.advice ?? "",
+  }));
+}
+
 export type ReportPeriod = "7" | "14" | "dot";
 
 // Spec 2026-11-26 §9: the period the report shows. `picked` is the choice

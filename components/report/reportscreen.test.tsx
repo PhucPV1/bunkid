@@ -7,7 +7,9 @@ import { ReportScreen } from "./ReportScreen";
 const NOW = new Date("2026-11-26T10:00:00+07:00");
 const useStatsLogs = vi.hoisted(() => vi.fn());
 const useRangeLogs = vi.hoisted(() => vi.fn());
+const useVisits = vi.hoisted(() => vi.fn());
 const state = vi.hoisted(() => ({
+  visits: {} as Record<string, unknown>,
   stats: {} as Record<string, unknown>,
   range: {} as Record<string, unknown>,
   episodes: {} as Record<string, unknown>,
@@ -15,7 +17,10 @@ const state = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/data/logs", () => ({ useStatsLogs, useRangeLogs }));
-vi.mock("@/lib/data/illness", () => ({ useEpisodes: () => state.episodes }));
+vi.mock("@/lib/data/illness", () => ({
+  useEpisodes: () => state.episodes,
+  useVisits,
+}));
 vi.mock("@/lib/data/growth", () => ({
   useGrowth: () => loaded([]),
   useWhoTable: () => loaded(undefined),
@@ -103,9 +108,11 @@ function render(
     stats?: unknown[];
     range?: Record<string, unknown>;
     episodes?: Record<string, unknown>;
+    visits?: Record<string, unknown>;
     dot?: string | null;
   } = {},
 ) {
+  if (input.visits) state.visits = input.visits;
   state.stats = loaded(input.stats ?? []);
   if (input.range) state.range = input.range;
   if (input.episodes) state.episodes = input.episodes;
@@ -127,6 +134,9 @@ beforeEach(() => {
   useStatsLogs.mockImplementation(() => state.stats);
   useRangeLogs.mockReset();
   useRangeLogs.mockImplementation(() => state.range);
+  useVisits.mockReset();
+  useVisits.mockImplementation(() => state.visits);
+  state.visits = loaded([]);
   state.range = LOADING;
   state.episodes = loaded([]);
   state.search = "";
@@ -309,6 +319,101 @@ describe("ReportScreen: the episode period", () => {
     });
     expect(html).toContain("08/10 09:00: 38,6°C (nách)");
     expect(html).not.toContain("Biểu đồ nhiệt độ");
+  });
+
+  // Spec §9 from M5: the visits of the episode, after the medicines.
+  it("a table of the episode's visits after the medicines, and the visit on the chart", () => {
+    const visit = (id: string, episodeId: string, at: string, over = {}) => ({
+      id,
+      episode_id: episodeId,
+      visited_at: iso(at),
+      place: null,
+      conclusion: null,
+      advice: null,
+      photos: [],
+      ...over,
+    });
+    const html = render({
+      episodes: loaded([OPEN, PAST]),
+      range: loaded(EPISODE_LOGS),
+      visits: loaded([
+        visit("v2", "open", "2026-11-26 08:05"),
+        visit("v9", "past", "2026-10-11 09:00", { place: "Khác" }),
+        visit("v1", "open", "2026-11-25 09:15", {
+          place: "Phòng khám Nhi",
+          conclusion: "Viêm họng",
+          advice: "Uống nhiều nước",
+        }),
+      ]),
+      dot: "open",
+    });
+    expect(useVisits).toHaveBeenLastCalledWith("b1", true);
+    expect(html).toMatch(
+      /<h3[^>]*>Lần khám<\/h3><table[^>]*><thead><tr><th[^>]*>Lúc khám<\/th><th[^>]*>Nơi khám<\/th><th[^>]*>Bác sĩ kết luận<\/th><th[^>]*>Lời dặn<\/th><\/tr><\/thead>/,
+    );
+    const rows = [
+      ...html.matchAll(
+        /<tr class="break-inside-avoid"><td[^>]*>(\d\d\/\d\d \d\d:\d\d)<\/td><td[^>]*>([^<]*)<\/td><td[^>]*>([^<]*)<\/td><td[^>]*>([^<]*)<\/td><\/tr>/g,
+      ),
+    ].map((match) => match.slice(1));
+    expect(rows).toContainEqual([
+      "25/11 09:15",
+      "Phòng khám Nhi",
+      "Viêm họng",
+      "Uống nhiều nước",
+    ]);
+    expect(rows).toContainEqual(["26/11 08:05", "", "", ""]);
+    expect(html).not.toContain("Khác");
+    const medicines = html.indexOf(">Thuốc đã dùng</h3>");
+    const visits = html.indexOf(">Lần khám</h3>");
+    const symptoms = html.indexOf(">Triệu chứng</h3>");
+    expect(medicines).toBeLessThan(visits);
+    expect(visits).toBeLessThan(symptoms);
+    expect(html.match(/<line[^>]*data-visit/g)).toHaveLength(2);
+  });
+
+  it("no visit, or 7 days: no visits table; 7 days do not ask for them", () => {
+    const html = render({
+      episodes: loaded([OPEN]),
+      range: loaded(EPISODE_LOGS),
+      dot: "open",
+    });
+    expect(html).not.toContain(">Lần khám</h3>");
+    expect(render({ episodes: loaded([OPEN]) })).not.toContain(
+      ">Lần khám</h3>",
+    );
+    expect(useVisits).toHaveBeenLastCalledWith("b1", false);
+  });
+
+  it("the episode period waits for the visits, like the other data", () => {
+    const loading = render({
+      episodes: loaded([OPEN]),
+      range: loaded(EPISODE_LOGS),
+      visits: LOADING,
+      dot: "open",
+    });
+    expect(loading).toContain("kb-pulse");
+    expect(loading).toMatch(/disabled=""[^>]*>.*In \/ Lưu PDF/);
+    expect(loading).not.toContain(">Nhiệt độ</h3>");
+    expect(
+      render({
+        episodes: loaded([OPEN]),
+        range: loaded(EPISODE_LOGS),
+        visits: OFFLINE,
+        dot: "open",
+      }),
+    ).toContain("Cần mạng để tải báo cáo. Trang sẽ tự tải khi có mạng lại.");
+    const failed = render({
+      episodes: loaded([OPEN]),
+      range: loaded(EPISODE_LOGS),
+      visits: FAILED,
+      dot: "open",
+    });
+    expect(failed).toContain("Lần khám: Có lỗi xảy ra: boom");
+    // The 7 days never wait for the visits.
+    expect(render({ episodes: loaded([OPEN]), visits: LOADING })).toContain(
+      ">Thuốc đã dùng</h3>",
+    );
   });
 
   it("longer than 14 days: the last 14, and it says so", () => {
