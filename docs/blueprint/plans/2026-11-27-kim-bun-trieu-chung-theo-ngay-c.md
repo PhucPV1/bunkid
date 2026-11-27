@@ -117,7 +117,7 @@ kb_patch 1 | git apply --verbose   # đổi số 1 thành số patch cần áp
 - Consumes: `SymptomDaySheet` (plan B), `episodeDay`, `formatDayShort`, `Icon`.
 - Produces: `EpisodeDayList({ rows, onEdit })`; `EpisodeBody` với `onEditDay`; `EpisodeScreen` mở `SymptomDaySheet` cố định ngày.
 
-- [ ] **Step 0: Kiểm plan B đã xong, rồi tạo nhánh**
+- [x] **Step 0: Kiểm plan B đã xong, rồi tạo nhánh**
 
 ```bash
 git checkout feat/kim-bun-trieu-chung-theo-ngay-b
@@ -126,7 +126,7 @@ git checkout -b feat/kim-bun-trieu-chung-theo-ngay-c
 bunx vitest run   # Test Files  219 passed (219), Tests  2109 passed (2109)
 ```
 
-- [ ] **Step 1: Viết test đỏ (Patch 1)**
+- [x] **Step 1: Viết test đỏ (Patch 1)**
 
 ```diff
 diff --git a/components/illness/episodecards.test.tsx b/components/illness/episodecards.test.tsx
@@ -218,12 +218,12 @@ index 7e75675..2cb3461 100644
  // Spec §6.1.
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run`
 Expected: `Test Files  2 failed | 217 passed (219)`, `Tests  4 failed | 2108 passed (2112)`. `tsc` báo `onEdit` và `onEditDay` chưa có.
 
-- [ ] **Step 3: Viết code (Patch 2)**
+- [x] **Step 3: Viết code (Patch 2)**
 
 ```diff
 diff --git a/components/illness/EpisodeDayList.tsx b/components/illness/EpisodeDayList.tsx
@@ -389,12 +389,12 @@ index 06796c6..d990611 100644
        {editing && episode && (
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run && bun run typecheck`
 Expected: `Test Files  219 passed (219)`, `Tests  2112 passed (2112)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add components/illness/EpisodeDayList.tsx components/illness/EpisodeScreen.tsx components/illness/episodecards.test.tsx components/illness/episodescreen.test.tsx
@@ -413,7 +413,7 @@ git commit -m "feat(illness): each day of an episode opens its symptoms" -m "Co-
 - Consumes: `SymptomDaySheet` (plan B), `canModifyLog`, `vnDateString`.
 - Produces: `HistorySheet<T>`, `historySheet(log)`; `HistoryScreen` mở `SymptomDaySheet` với `sub="Cả ngày"` cho bản ghi triệu chứng; "Ghi bù" mở `LogEditSheet` như cũ.
 
-- [ ] **Step 1: Viết test đỏ (Patch 3)**
+- [x] **Step 1: Viết test đỏ (Patch 3)**
 
 ```diff
 diff --git a/lib/rules/history.test.ts b/lib/rules/history.test.ts
@@ -455,12 +455,12 @@ index 6639ba5..afcd757 100644
        fromDay: "2026-11-08",
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run`
 Expected: `Test Files  1 failed | 218 passed (219)`, `Tests  1 failed | 2112 passed (2113)`.
 
-- [ ] **Step 3: Viết code (Patch 4)**
+- [x] **Step 3: Viết code (Patch 4)**
 
 ```diff
 diff --git a/components/history/HistoryScreen.tsx b/components/history/HistoryScreen.tsx
@@ -566,12 +566,12 @@ index 0a3ce05..4f1c201 100644
  export function logTimeText(log: { type: string; started_at: string }): string {
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run && bun run typecheck`
 Expected: `Test Files  219 passed (219)`, `Tests  2113 passed (2113)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/rules/history.ts lib/rules/history.test.ts components/history/HistoryScreen.tsx
@@ -590,17 +590,17 @@ git commit -m "feat(history): a symptom row opens the sheet of its day" -m "Co-A
 - Consumes: mọi Produces của plan A, B và Task 1–2.
 - Produces: Bước 39 của checklist; nhánh sẵn sàng lên `main`.
 
-- [ ] **Step 1: Chạy cả bộ kiểm**
+- [x] **Step 1: Chạy cả bộ kiểm**
 
 Run: `bun run typecheck && bunx vitest run`
 Expected: `tsc --noEmit` không báo lỗi; `Test Files  219 passed (219)`, `Tests  2113 passed (2113)`.
 
-- [ ] **Step 2: Build**
+- [x] **Step 2: Build**
 
 Run: `bun run build`
 Expected: thoát 0, `Generating static pages … (42/42)`; `/dot-om/chi-tiet`, `/nhat-ky`, `/bao-cao` vẫn `○`. Có thể dừng ở `SecurityFatalError`: chạy lại đúng lệnh đó tới khi thoát 0.
 
-- [ ] **Step 3: Tạo trang fixture tạm**
+- [x] **Step 3: Tạo trang fixture tạm**
 
 Dữ liệu thật của gia đình không có đủ trạng thái (ngày có chip người khác ghi, ngày cũ đã ghi) và không được lưu thử trên đó, nên phiếu xem đủ ở đây. Trang vẽ `SymptomDaySheetView` thật với dữ liệu giả, cuộn dải tới cuối và giữ ô đang chọn trong khung bằng cùng hai effect như `SymptomDaySheet` (`keepPickedInView`) (nên `atEnd` trên trang tạm chỉ cho thấy bố cục; cuộn của code thật được đo ở mục 11 trên trang thật) (ngày tính từ hôm nay; đợt ốm giả mở từ 3 hôm trước 20:10; bé 80 ngày tuổi), chip và ghi chú bấm được, Lưu và Xóa không làm gì. `?view=` chọn trạng thái: không có (dải của đợt, đang ở hôm qua có "Sổ mũi, Ho"), `week` (không đợt, 7 ngày, hôm nay trống), `other` (ngày ngoài dải, 12 hôm trước), `empty` (không bản ghi nào), `fixed` (ngày cố định hôm qua, có nút xóa), `locked` (thành viên, hôm nay có "Sốt" của người khác kèm ghi chú "bà ghi"), `owner` (chủ, cùng ngày: không khóa, có nút xóa), `loading`, `error`, `message` (lời báo dưới cùng), `rows` (ba hàng của "Từng ngày"). Tạo `app/fixture-symptom-day/page.tsx` (không commit):
 
@@ -774,7 +774,7 @@ export default function Page() {
 Run: `bun run typecheck`
 Expected: `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 4: Kiểm trong trình duyệt (chỉ xem)**
+- [x] **Step 4: Kiểm trong trình duyệt (chỉ xem)**
 
 Chạy `bun run dev` (lần đầu có thể dừng vì thông báo bảo mật: chạy lại). Mở các trang dưới ở 375×812 (xem mục "Trình duyệt" ở Ghi chú khi thực thi). Xóa phần tử `nextjs-portal` trước khi chụp. Mỗi mục chạy đoạn đo dưới (trên trang có phiếu) và ghi số:
 
@@ -824,14 +824,38 @@ Trang thật (dữ liệu thật của gia đình: **chỉ xem**; cần đăng n
 
 Dừng `bun run dev` khi xong. Ghi kết quả từng mục ngay dưới bước này (bằng script), kèm số đo; mục nào thấy trên trang thật, mục nào chỉ trên trang tạm; mục nào không cho thấy được thì ghi "chưa kiểm". Nếu bước này lộ ra lỗi và code phải đổi: sửa (test trước, code sau), ghi vào plan, rồi chạy lại Step 1 và Step 2 trước khi đi tiếp.
 
-- [ ] **Step 5: Xóa trang fixture**
+**Kết quả Step 4 (2026-11-27, 19:30–19:50, khung Browser trong app, người dùng chọn qua một câu hỏi):** `bun run dev` dừng một lần ở thông báo bảo mật, lần hai chạy. Khung đã đăng nhập sẵn (chủ gia đình). Đoạn đo của plan chạy ở mọi mục có phiếu; `pageOverflow` false và `cut` rỗng ở mọi lần đo. `smallTargets` không rỗng ở mọi phiếu: luôn đúng một phần tử, nút "Đóng" của `Sheet` chung (36×36, `size-9`, có từ `4609221` ngày 2026-11-14, không thuộc spec này; không sửa, ghi lại để người dùng quyết).
+
+Trang tạm `/fixture-symptom-day`, 375×812, theme `rose`:
+
+1. Đạt. Nhãn "Ngày nào? · đợt ốm từ 24/11"; năm ô 64×68 ("Ngày 1 24/11", "Ngày 2", "Ngày 3", "Hôm nay", "Khác"); "Ngày 3" nền đậm; chấm ở Ngày 2, Ngày 3, Hôm nay; dòng nền hồng "Ngày này đã ghi Sổ mũi, Ho. …"; "✓ Sổ mũi", "✓ Ho" bật; ghi chú "Ho nhiều về đêm". `atEnd` true khi trang mở ở 375 px (scrollLeft 35 = 360 − 325). Lần đo đầu `atEnd` false chỉ vì khung được đổi cỡ sau khi trang đã mở (ở bề ngang rộng dải không cần cuộn); mở lại ở 375 thì true. Chữ "Hôm nay" xuống hai dòng trong ô 64 px ("Hôm / nay"), không bị cắt.
+2. Đạt. "Sốt" bật, `aria-disabled="true"`, opacity 0,5; dòng "Chip mờ do người khác ghi, …"; ô ghi chú disabled, opacity 0,5, dòng "Bật ít nhất một triệu chứng để ghi chú."; "Người khác ghi: bà ghi". Bấm "Sốt" (theo `ref`): vẫn `aria-pressed="true"`. Bấm "Ho": ô ghi chú hết mờ (opacity 1), dòng "Bật ít nhất…" biến mất.
+3. Đạt một phần. Nhãn "Ngày nào?"; tám ô (T7 21/11 … "Hôm qua 26/11", "Hôm nay 27/11", "Khác"), `atEnd` true, "Hôm nay" nền đậm. Dòng "Bấm những gì bé có trong ngày." và "Lưu" mờ **không** thấy ở `week`, vì dữ liệu của chính trang tạm cho hôm nay có "Sốt" của người khác (bản ghi `c`): app hiện "Ngày này đã ghi Sốt…", chip khóa, Lưu bật (`picked` không rỗng), đúng spec §3.2. Kỳ vọng của plan sai với fixture, không phải lỗi app. Trạng thái ngày trống xem ở `?view=empty`: "Bấm những gì bé có trong ngày.", Lưu `disabled`, opacity 0,5.
+4. Đạt. Ô "Khác" nền đậm, dòng dưới "15/11" (12 hôm trước); không ô nào khác nền đậm. `input[type=date]`: `min` 2026-09-08 (80 ngày tuổi), `max` 2026-11-27, phủ cả ô 64×68, opacity 0. Chạm ô (theo `ref`): bảng chọn ngày của Chromium không lên ảnh chụp của khung, nên chưa kiểm được bảng chọn (để cho Bước 39 mục 4 trên iPhone).
+5. Đạt. Tiêu đề "Triệu chứng · 26/11", dòng "Ngày 3 của đợt ốm · cả ngày", không có dải; ngay sau "Lưu" là "Xóa triệu chứng ngày này", cao 44, chữ `text-danger` (rgb 173,16,37), nền trong suốt.
+6. Đạt. `locked`: không nút xóa, "Sốt" khóa (opacity 0,5). `owner`: có nút xóa, "Sốt" `aria-disabled` không có, opacity 1, ô ghi chú có "bà ghi".
+7. Đạt. `loading`: "Đang tải…" (`text-muted`), 0 chip, không ô ghi chú, Lưu `disabled` opacity 0,5. `error`: "Không tải được triệu chứng đã ghi" (`text-danger`), cùng như trên. `message`: dòng đỏ "Ghi chú dài quá 200 ký tự" là phần tử ngay trước "Lưu", cách 8 px.
+8. Đạt. "Hôm nay · ngày 4": nút "Ghi triệu chứng" (icon dấu cộng) 139×44; hai hàng kia: "Sửa" (icon bút chì) 66×44, cùng dòng với chip cuối; hàng sáu chip xuống hai dòng, "Sửa" ở cuối dòng hai. `aria-label` "Sửa triệu chứng ngày 26/11" v.v. `li` không có handler hay role; không chữ bị cắt.
+9. Đạt. 390×844 và 440×956: mục 1 (`atEnd` true, năm ô 64×68), mục 2 (cùng các dòng như ở 375), mục 8 (ba nút cao 44, "Sửa" cùng dòng chip cuối, hàng sáu chip hai dòng); `pageOverflow` false, `cut` rỗng.
+10. Đạt, kèm một ghi chú. Ô đang chọn khác ô thường cả nền lẫn chữ ở mọi theme (chữ/nền ô chọn: night 5,14:1 nền rgb 107,42,18 chữ rgb 244,160,112; dark 7,42; light 5,99; peach 6,75; lavender 7,91; sea 7,22; rose 6,82). Chip khóa và chip bật thường cùng màu, khác bằng opacity 0,5/1 (đúng §5.3 "độ mờ như chip tắt"). "Sửa": chữ/nền (nền tint trộn trên nền trang) rose 4,24, light 4,57, peach 4,29, lavender 4,97, sea 4,75, dark 7,71, night 7,13. **Ghi chú:** ở `night`, chấm của ô chưa chọn là `--color-accent` #6b2a12 trên nền gần đen (rgb 10,7,5): ≈1,9:1, thấy được trên ảnh nhưng mờ. Spec §4.3 định màu chấm là accent và plan cấm token mới, nên không sửa; để người dùng xem ở Bước 39 mục 9.
+
+Trang thật (chỉ xem; không bấm Lưu, Xóa, Bắt đầu hay đóng đợt ốm; mọi phiếu đóng bằng Esc khi chưa sửa gì; một đồng hồ "Ngủ" thật đang chạy, không đụng tới):
+
+11. Đạt. Trang chủ → "Ghi lại" → nhóm "Khác" → "Triệu chứng": phiếu "Triệu chứng", nhãn "Ngày nào?" (gia đình không có đợt ốm đang mở), tám ô 64×66 (T7 21/11 … "Hôm qua", "Hôm nay 27/11 · đã ghi", "Khác"), không có "Lúc nào?"; dòng "Ngày này đã ghi Sốt, Sổ mũi. …". Đo cuộn của `SymptomDaySheet` thật: một bộ ghi 30 ms gài trước khi bấm cho thấy `scrollLeft` của dải là 251 (= 576 − 325, `atEnd` true) ngay từ mẫu đầu tiên và không đổi; `dialog.scrollTop` luôn 0; đỉnh dải đi 918 → 598 (trượt lên, giảm dần) rồi 598 → 196 khi dữ liệu về và phiếu cao lên; chỉ đi lên, không giật xuống. Cuộn hàng về 0, ô "T4 25/11" bị che một phần (292–356 trong khung 325): bấm bằng `click()` trong trang (cú bấm theo `ref` của công cụ tự cuộn ô vào giữa trước khi bấm, nên không dùng làm số đo) → `scrollLeft` 31, đúng 356 − 325; ô nằm 261–325; đỉnh dải 195 và `dialog.scrollTop` 0 trước và sau. `pageOverflow` false, `cut` rỗng.
+12. Đạt. `/nhat-ky`, Hôm nay: hai bản ghi triệu chứng cũ của "Ba" ("Triệu chứng: Sốt, Sổ mũi", "Triệu chứng: Sổ mũi"), cả hai ghi "Cả ngày" và là hai dòng đầu, trước "Ngủ · 47 phút (đang chạy)". Bấm dòng đầu: phiếu "Triệu chứng · 27/11", dòng "Cả ngày", không dải, "✓ Sốt", "✓ Sổ mũi" (gộp hai bản ghi), có nút xóa. "Ghi bù" ("Thêm bản ghi cũ"): ô "Loại" có Bú mẹ, Bú bình, Ngủ, Tã, Thuốc, Nhiệt độ, Ăn dặm, Uống nước, Tắm, Ghi chú; không có "Triệu chứng".
+13. Đạt. `/bao-cao` (7 ngày): bảng "Triệu chứng" có đầu cột "Ngày | Triệu chứng | Ghi chú", một hàng "27/11 | Sốt, Sổ mũi" (hai bản ghi gộp). `/dot-om`: một đợt đã qua 26/11–27/11; trang chi tiết: "Hôm nay · ngày 2" có "Sửa" (66×44, cùng dòng chip), "26/11 · ngày 1" có "Ghi triệu chứng" (139×44); đợt đã đóng vẫn có nút (§6.1). "Sửa" mở "Triệu chứng · 27/11", "Ngày 2 của đợt ốm · cả ngày", có nút xóa; "Ghi triệu chứng" mở "Triệu chứng · 26/11", "Ngày 1 của đợt ốm · cả ngày", không chip, Lưu `disabled`, không nút xóa. Hàng tự nó không phải nút.
+14. Đạt. Console (`onlyErrors`) không có lỗi nào trên `/`, `/nhat-ky`, `/bao-cao`, `/dot-om`, `/dot-om/chi-tiet`.
+
+Không có lỗi app nào phải sửa ở bước này. Dừng `bun run dev`; xóa các script trong `sessionStorage`; trả khung về cỡ desktop.
+
+- [x] **Step 5: Xóa trang fixture**
 
 ```bash
 rm -r app/fixture-symptom-day
 git status --short   # không còn app/fixture-symptom-day
 ```
 
-- [ ] **Step 6: Bước 39 của checklist (Patch 5), commit**
+- [x] **Step 6: Bước 39 của checklist (Patch 5), commit**
 
 ```diff
 diff --git a/docs/device-checklist.md b/docs/device-checklist.md
@@ -873,9 +897,20 @@ git add docs/device-checklist.md
 git commit -m "docs: step 39 of the device checklist, symptoms by day" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
-- [ ] **Step 7: Ghi kết quả vào plan**
+- [x] **Step 7: Ghi kết quả vào plan**
 
 Ghi ngay dưới bước này (bằng script): số đỏ và xanh của từng task có khớp plan không; kết quả Step 1, Step 2 và Step 4. Đánh dấu `[x]` các bước đã làm.
+
+**Kết quả (2026-11-27):** nhánh `feat/kim-bun-trieu-chung-theo-ngay-c` cắt từ `-b` @ `7c7e496`; baseline 219 file / 2109 test xanh. Năm patch áp sạch bằng `kb_patch` + `git apply`.
+
+- Task 1: đỏ `Test Files  2 failed | 217 passed (219)`, `Tests  4 failed | 2108 passed (2112)`, `tsc` báo `onEdit`/`onEditDay` (khớp plan). Xanh 219 / 2112, `tsc` sạch. Commit `6ca43fe`.
+- Task 2: đỏ `1 failed | 218 passed (219)`, `Tests  1 failed | 2112 passed (2113)` (khớp). Xanh 219 / 2113, `tsc` sạch. Commit `e313ec6`.
+- Task 3 Step 1: `tsc --noEmit` sạch, 219 file / 2113 test xanh (đo trên commit `e313ec6`).
+- Step 2: `bun run build` lần một dừng ở `SecurityFatalError` sau khi đã dựng 42/42; lần hai thoát 0, `Generating static pages … (42/42)`, `/bao-cao`, `/dot-om/chi-tiet`, `/nhat-ky` vẫn `○`. Build chạy trước khi tạo trang fixture.
+- Step 3: trang fixture chép nguyên từ plan, `tsc` sạch.
+- Step 4: xem kết quả ngay dưới Step 4. Không lỗi app nào phải sửa. Ghi chú để người dùng quyết: nút "Đóng" của `Sheet` 36 px (có từ trước); chấm ô chưa chọn ở `night` ≈1,9:1; kỳ vọng mục 3 của plan không khớp dữ liệu fixture (app đúng).
+- Step 5: đã xóa `app/fixture-symptom-day` và thư mục sinh ra `.next/dev/types`; `git status` sạch, `tsc` sạch.
+- Step 6: Patch 5 áp sạch, commit `f3cb0bf`.
 
 - [ ] **Step 8: Hỏi người dùng, rồi mới commit file docs và lên `main`**
 
