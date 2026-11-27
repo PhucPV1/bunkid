@@ -2,6 +2,7 @@ import { addDays, vnDayStartMs } from "./days";
 import type { LogLike } from "./describeLog";
 import { detailsSchemas } from "./logDetails";
 import { vnDateString } from "./time";
+import { hasFever } from "./triage";
 
 const DAY_MS = 86_400_000;
 
@@ -146,5 +147,115 @@ export function detailRange(episode: EpisodeLike): {
     to: episode.ended_at
       ? startOfDayIso(addDays(vnDateString(new Date(episode.ended_at)), 1))
       : null,
+  };
+}
+
+const HOUR_MS = 3_600_000;
+// Spec §5.2: the window of the home page's fever banner (temperatureAlert).
+const FRESH_MS = 6 * HOUR_MS;
+const HIGH_FEVER = 39;
+const LOW_TEMPERATURE = 35.5;
+
+export type FeverKind = "unmeasured" | "fever" | "stale" | "cleared" | "none";
+
+export type FeverStatus = {
+  kind: FeverKind;
+  // The newest reading of the episode.
+  latest: Reading | null;
+  // The newest reading from 38,0.
+  lastFever: Reading | null;
+  // The highest reading; of equal ones, the later.
+  peak: Reading | null;
+};
+
+// Spec §5.2. For a closed episode `kind` is worked out the same way, but the
+// verdict card does not use it.
+export function feverStatus(
+  logs: LogLike[],
+  episode: EpisodeLike,
+  now: Date,
+): FeverStatus {
+  const readings = episodeReadings(logs, episode, now);
+  const latest = readings.at(-1) ?? null;
+  if (!latest)
+    return { kind: "unmeasured", latest: null, lastFever: null, peak: null };
+  let lastFever: Reading | null = null;
+  let peak = readings[0];
+  for (const reading of readings) {
+    if (hasFever(reading.celsius)) lastFever = reading;
+    if (reading.celsius >= peak.celsius) peak = reading;
+  }
+  const kind: FeverKind = hasFever(latest.celsius)
+    ? now.getTime() - latest.at <= FRESH_MS
+      ? "fever"
+      : "stale"
+    : lastFever
+      ? "cleared"
+      : "none";
+  return { kind, latest, lastFever, peak };
+}
+
+// Spec §5.2 {khoảng}: under an hour; whole hours up to 48; then whole days.
+export function sinceText(ms: number): string {
+  if (ms < HOUR_MS) return "chưa đầy 1 giờ";
+  if (ms < 48 * HOUR_MS) return `${Math.floor(ms / HOUR_MS)} giờ`;
+  return `${Math.floor(ms / DAY_MS)} ngày`;
+}
+
+export type EpisodeTone = "good" | "warn" | "danger" | "neutral";
+
+// The tone of an open episode's state (verdict card, chip on the list).
+export function statusTone(status: FeverStatus): EpisodeTone {
+  const { kind, latest } = status;
+  if (kind === "unmeasured" || !latest) return "neutral";
+  if (kind === "fever") return latest.celsius >= HIGH_FEVER ? "danger" : "warn";
+  if (kind === "stale") return "warn";
+  // A body temperature this low has its own red banner on Hôm nay: no green.
+  return latest.celsius < LOW_TEMPERATURE ? "neutral" : "good";
+}
+
+export type Verdict = {
+  title: string;
+  tone: EpisodeTone;
+  icon: "thermo" | "clock" | "check";
+};
+
+// Spec §5.2: the heading of the verdict card.
+export function episodeVerdict(input: {
+  episode: EpisodeLike;
+  status: FeverStatus;
+  babyName: string;
+  now: Date;
+}): Verdict {
+  const { episode, status, babyName, now } = input;
+  if (episode.ended_at)
+    return {
+      title: `Đã khỏi sau ${episodeDayCount(episode, now)} ngày`,
+      tone: "good",
+      icon: "check",
+    };
+  const { kind, latest, lastFever } = status;
+  const tone = statusTone(status);
+  if (kind === "unmeasured" || !latest)
+    return { title: "Chưa đo nhiệt độ", tone, icon: "thermo" };
+  if (kind === "fever")
+    return {
+      title: `${babyName} đang sốt ${formatCelsius(latest.celsius)}°C`,
+      tone,
+      icon: "thermo",
+    };
+  if (kind === "stale")
+    return {
+      title: `Chưa đo lại sau ${formatCelsius(latest.celsius)}°C`,
+      tone,
+      icon: "clock",
+    };
+  return {
+    title:
+      kind === "cleared" && lastFever
+        ? `${babyName} đã hết sốt ${sinceText(now.getTime() - lastFever.at)}`
+        : `${babyName} không sốt`,
+    tone,
+    icon: tone === "good" ? "check" : "thermo",
   };
 }

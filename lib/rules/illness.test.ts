@@ -8,7 +8,11 @@ import {
   episodeDay,
   episodeDayCount,
   episodeReadings,
+  episodeVerdict,
+  feverStatus,
   formatCelsius,
+  sinceText,
+  statusTone,
   symptomEntries,
 } from "./illness";
 
@@ -224,5 +228,246 @@ describe("detailRange", () => {
       from: iso("2026-11-16 00:00"),
       to: iso("2026-11-27 00:00"),
     });
+  });
+});
+
+// Spec §5.2.
+describe("feverStatus", () => {
+  const open = episode("2026-11-25 08:00");
+  const kindAt = (logs: LogLike[], now: string) =>
+    sameForEveryOrder(logs, (list) => feverStatus(list, open, vn(now))).kind;
+
+  it("unmeasured: no reading in the episode", () => {
+    const status = feverStatus(
+      [temp("2026-11-25 07:00", 39), dose("2026-11-25 09:00")],
+      open,
+      vn("2026-11-25 12:00"),
+    );
+    expect(status).toEqual({
+      kind: "unmeasured",
+      latest: null,
+      lastFever: null,
+      peak: null,
+    });
+  });
+
+  it("fever: the newest reading is from 38,0 and at most 6 hours old", () => {
+    const logs = [temp("2026-11-25 09:00", 37.5), temp("2026-11-25 10:00", 38)];
+    expect(kindAt(logs, "2026-11-25 10:00")).toBe("fever");
+    expect(kindAt(logs, "2026-11-25 16:00")).toBe("fever");
+    expect(kindAt(logs, "2026-11-25 16:01")).toBe("stale");
+  });
+
+  it("stale: the newest reading is from 38,0 and older than 6 hours", () => {
+    const logs = [temp("2026-11-25 10:00", 39.4)];
+    const status = feverStatus(logs, open, vn("2026-11-26 08:00"));
+    expect(status.kind).toBe("stale");
+    expect(status.latest?.celsius).toBe(39.4);
+  });
+
+  it("cleared: the newest reading is under 38,0 after one from 38,0", () => {
+    const logs = [
+      temp("2026-11-25 09:00", 38.6),
+      temp("2026-11-25 14:00", 39.2),
+      temp("2026-11-25 20:00", 38.1),
+      temp("2026-11-26 07:00", 37.9),
+    ];
+    const status = sameForEveryOrder(logs, (list) =>
+      feverStatus(list, open, vn("2026-11-26 09:00")),
+    );
+    expect(status.kind).toBe("cleared");
+    expect(status.latest).toEqual({
+      at: vn("2026-11-26 07:00").getTime(),
+      celsius: 37.9,
+    });
+    expect(status.lastFever).toEqual({
+      at: vn("2026-11-25 20:00").getTime(),
+      celsius: 38.1,
+    });
+    expect(status.peak).toEqual({
+      at: vn("2026-11-25 14:00").getTime(),
+      celsius: 39.2,
+    });
+  });
+
+  it("none: every reading is under 38,0", () => {
+    const logs = [
+      temp("2026-11-25 09:00", 37.9),
+      temp("2026-11-25 12:00", 37.2),
+    ];
+    const status = feverStatus(logs, open, vn("2026-11-25 13:00"));
+    expect(status.kind).toBe("none");
+    expect(status.lastFever).toBeNull();
+    expect(status.peak?.celsius).toBe(37.9);
+  });
+
+  it("a fever before the episode does not make it cleared", () => {
+    const logs = [temp("2026-11-25 07:00", 39), temp("2026-11-25 09:00", 37.5)];
+    expect(kindAt(logs, "2026-11-25 10:00")).toBe("none");
+  });
+
+  it("of two equal highest readings the later one is the peak", () => {
+    const logs = [
+      temp("2026-11-25 09:00", 39.2),
+      temp("2026-11-25 14:00", 39.2),
+    ];
+    const status = sameForEveryOrder(logs, (list) =>
+      feverStatus(list, open, vn("2026-11-25 15:00")),
+    );
+    expect(status.peak?.at).toBe(vn("2026-11-25 14:00").getTime());
+  });
+
+  it("a reading saved just after the page's clock last moved counts at once", () => {
+    const now = vn("2026-11-25 12:00");
+    const fresh: LogLike = {
+      type: "temperature",
+      started_at: new Date(now.getTime() + 20_000).toISOString(),
+      ended_at: null,
+      details: { celsius: 38.6, method: "nach" },
+    };
+    const status = feverStatus([fresh], open, now);
+    expect(status.kind).toBe("fever");
+    expect(status.latest?.celsius).toBe(38.6);
+  });
+
+  it("a closed episode reads its readings up to its end", () => {
+    const closed = episode("2026-11-25 08:00", "2026-11-26 08:00");
+    const logs = [
+      temp("2026-11-25 09:00", 38.6),
+      temp("2026-11-26 09:00", 36.8),
+    ];
+    const status = feverStatus(logs, closed, vn("2026-11-30 09:00"));
+    expect(status.latest?.celsius).toBe(38.6);
+  });
+});
+
+describe("sinceText", () => {
+  const HOUR = 3_600_000;
+
+  it("under an hour, whole hours up to 48, then whole days", () => {
+    expect(sinceText(0)).toBe("chưa đầy 1 giờ");
+    expect(sinceText(HOUR - 1)).toBe("chưa đầy 1 giờ");
+    expect(sinceText(HOUR)).toBe("1 giờ");
+    expect(sinceText(2.9 * HOUR)).toBe("2 giờ");
+    expect(sinceText(48 * HOUR - 1)).toBe("47 giờ");
+    expect(sinceText(48 * HOUR)).toBe("2 ngày");
+    expect(sinceText(71.9 * HOUR)).toBe("2 ngày");
+    expect(sinceText(72 * HOUR)).toBe("3 ngày");
+  });
+});
+
+describe("episodeVerdict", () => {
+  const open = episode("2026-11-25 08:00");
+  const verdict = (logs: LogLike[], now: string, of: EpisodeLike = open) =>
+    episodeVerdict({
+      episode: of,
+      status: feverStatus(logs, of, vn(now)),
+      babyName: "Bun",
+      now: vn(now),
+    });
+
+  it("unmeasured: neutral, the thermometer", () => {
+    expect(verdict([], "2026-11-25 12:00")).toEqual({
+      title: "Chưa đo nhiệt độ",
+      tone: "neutral",
+      icon: "thermo",
+    });
+  });
+
+  it("fever: warn under 39,0, danger from 39,0", () => {
+    expect(
+      verdict([temp("2026-11-25 10:00", 38.9)], "2026-11-25 11:00"),
+    ).toEqual({ title: "Bun đang sốt 38,9°C", tone: "warn", icon: "thermo" });
+    expect(verdict([temp("2026-11-25 10:00", 39)], "2026-11-25 11:00")).toEqual(
+      {
+        title: "Bun đang sốt 39°C",
+        tone: "danger",
+        icon: "thermo",
+      },
+    );
+  });
+
+  it("stale: warn and a clock, even from 39,0", () => {
+    expect(
+      verdict([temp("2026-11-25 10:00", 39.4)], "2026-11-25 17:00"),
+    ).toEqual({ title: "Chưa đo lại sau 39,4°C", tone: "warn", icon: "clock" });
+  });
+
+  it("cleared: counts from the last reading that was a fever", () => {
+    const logs = [
+      temp("2026-11-25 10:00", 38.6),
+      temp("2026-11-25 13:00", 37.4),
+    ];
+    expect(verdict(logs, "2026-11-25 13:30")).toEqual({
+      title: "Bun đã hết sốt 3 giờ",
+      tone: "good",
+      icon: "check",
+    });
+    expect(verdict(logs, "2026-11-27 11:00").title).toBe(
+      "Bun đã hết sốt 2 ngày",
+    );
+    expect(
+      verdict(
+        [temp("2026-11-25 10:00", 38.6), temp("2026-11-25 10:20", 37.4)],
+        "2026-11-25 10:30",
+      ).title,
+    ).toBe("Bun đã hết sốt chưa đầy 1 giờ");
+  });
+
+  it("none: good and a tick", () => {
+    expect(
+      verdict([temp("2026-11-25 10:00", 37.2)], "2026-11-25 11:00"),
+    ).toEqual({ title: "Bun không sốt", tone: "good", icon: "check" });
+  });
+
+  it("a newest reading under 35,5 is never green: neutral and the thermometer, same title", () => {
+    expect(
+      verdict([temp("2026-11-25 10:00", 35.4)], "2026-11-25 11:00"),
+    ).toEqual({ title: "Bun không sốt", tone: "neutral", icon: "thermo" });
+    expect(
+      verdict(
+        [temp("2026-11-25 09:00", 38.2), temp("2026-11-25 10:00", 35.4)],
+        "2026-11-25 11:00",
+      ),
+    ).toEqual({
+      title: "Bun đã hết sốt 2 giờ",
+      tone: "neutral",
+      icon: "thermo",
+    });
+    expect(
+      verdict([temp("2026-11-25 10:00", 35.5)], "2026-11-25 11:00").tone,
+    ).toBe("good");
+  });
+
+  it("a closed episode always reads Đã khỏi, whatever its last reading", () => {
+    const closed = episode("2026-11-24 23:30", "2026-11-26 07:00");
+    expect(
+      verdict([temp("2026-11-25 10:00", 39.4)], "2026-11-30 09:00", closed),
+    ).toEqual({ title: "Đã khỏi sau 3 ngày", tone: "good", icon: "check" });
+    expect(verdict([], "2026-11-30 09:00", closed).title).toBe(
+      "Đã khỏi sau 3 ngày",
+    );
+  });
+});
+
+describe("statusTone", () => {
+  const open = episode("2026-11-25 08:00");
+  const tone = (logs: LogLike[], now: string) =>
+    statusTone(feverStatus(logs, open, vn(now)));
+
+  it("is the tone of the verdict card for each kind", () => {
+    expect(tone([], "2026-11-25 12:00")).toBe("neutral");
+    expect(tone([temp("2026-11-25 10:00", 38.5)], "2026-11-25 11:00")).toBe(
+      "warn",
+    );
+    expect(tone([temp("2026-11-25 10:00", 40)], "2026-11-25 11:00")).toBe(
+      "danger",
+    );
+    expect(tone([temp("2026-11-25 10:00", 40)], "2026-11-25 17:00")).toBe(
+      "warn",
+    );
+    expect(tone([temp("2026-11-25 10:00", 36.9)], "2026-11-25 11:00")).toBe(
+      "good",
+    );
   });
 });
