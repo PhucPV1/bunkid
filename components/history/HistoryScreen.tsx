@@ -18,14 +18,19 @@ import { entriesFor, pendingRowIds } from "@/lib/data/outboxCore";
 import { useNow } from "@/lib/hooks/useNow";
 import { useOutboxEntries } from "@/lib/hooks/useOutboxEntries";
 import {
+  dayPeriods,
+  type DayPeriodKey,
+  firstScreenDays,
+  openPeriods,
+  periodOpenKey,
+} from "@/lib/rules/dayPeriods";
+import {
   canModifyLog,
   daySummary,
-  firstScreen,
   groupByVnDay,
   HISTORY_FILTERS,
   historySheet,
   type HistorySheet,
-  matchesFilter,
   type HistoryFilter,
 } from "@/lib/rules/history";
 import { ageDays } from "@/lib/rules/time";
@@ -77,11 +82,24 @@ export function HistoryScreen({
     [pendingKey],
   );
   const [filter, setFilter] = useState<HistoryFilter>("all");
+  // Spec 2026-11-27 (Nhật ký theo buổi) §3.5: the periods the user tapped,
+  // by periodOpenKey. Not kept anywhere; a new filter starts from the default.
+  const [overrides, setOverrides] = useState<Record<string, boolean>>({});
   const [sheet, setSheet] = useState<SheetState>(null);
+  const changeFilter = useCallback((next: HistoryFilter) => {
+    setFilter(next);
+    setOverrides({});
+  }, []);
+  const togglePeriod = useCallback(
+    (day: string, key: DayPeriodKey, open: boolean) =>
+      setOverrides((prev) => ({ ...prev, [periodOpenKey(day, key)]: open })),
+    [],
+  );
 
   const rows = useMemo(() => history.data?.pages.flat() ?? [], [history.data]);
-  // The day summary counts every log of the day; the filter only hides rows (spec §9).
-  const groups = useMemo(
+  // The day summary counts every log of the day; the filter only hides rows
+  // (spec §9). A day with no row left under the filter is hidden.
+  const days = useMemo(
     () =>
       groupByVnDay(rows)
         .map((group) => ({
@@ -92,17 +110,31 @@ export function HistoryScreen({
             all: rows,
             now,
           }),
-          logs: group.logs.filter((row) => matchesFilter(row, filter)),
+          ...dayPeriods({
+            day: group.day,
+            logs: group.logs,
+            all: rows,
+            filter,
+            now,
+          }),
         }))
-        .filter((group) => group.logs.length > 0),
+        .filter(
+          (day) =>
+            day.symptoms.length > 0 ||
+            day.periods.some((period) => period.logs.length > 0),
+        ),
     [rows, filter, now],
+  );
+  const groups = useMemo(
+    () => openPeriods(days, { filter, now, overrides }),
+    [days, filter, now, overrides],
   );
   // A tab switch commits the first screen of rows only; React renders the
   // days below right after, so the tap is not held for the whole week.
-  const deferredGroups = useDeferredValue(groups, firstScreen(groups));
+  const deferredGroups = useDeferredValue(groups, firstScreenDays(groups));
   // Rows that arrive after the skeleton keep the first screen while the rest renders.
   const shownGroups =
-    deferredGroups.length === 0 ? firstScreen(groups) : deferredGroups;
+    deferredGroups.length === 0 ? firstScreenDays(groups) : deferredGroups;
   const nameOf = useCallback(
     (userId: string) =>
       members.data?.find((m) => m.user_id === userId)?.display_name ?? "Ai đó",
@@ -125,7 +157,7 @@ export function HistoryScreen({
         label="Lọc nhật ký"
         options={HISTORY_FILTERS}
         value={filter}
-        onChange={setFilter}
+        onChange={changeFilter}
       />
 
       {waitingForNetwork(history) ? (
@@ -169,6 +201,7 @@ export function HistoryScreen({
           nameOf={nameOf}
           pending={pending}
           onOpen={openLog}
+          onToggle={togglePeriod}
         />
       )}
 
