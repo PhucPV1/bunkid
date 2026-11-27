@@ -219,13 +219,58 @@ describe("feverChartModel", () => {
       null,
       { text: "38,3", anchor: "end", place: "side" },
     ]);
-    // Low on the scale as well: nothing fits, so it stays above.
+    // Low on the scale as well: no place is free. Above would sit on the
+    // earlier dot; beside on the left only touches the air round it.
     const low = feverChartModel(
       [temp("2026-11-24 22:00", 36.9), temp("2026-11-24 23:00", 36.5)],
       episode("2026-11-24 00:10"),
       vn("2026-11-24 23:50"),
     )!;
-    expect(low.points[1].label?.place).toBe("above");
+    expect(low.points[1].label).toEqual({
+      text: "36,5",
+      anchor: "end",
+      place: "side",
+    });
+  });
+
+  it("no place is free: the newest label never sits on the highest reading's label, and takes the place that covers least", () => {
+    // Seven days. 39,0 last night, 38,2 this morning, 38,6 two hours later:
+    // on a week's axis the three dots are a few pixels apart. Above the
+    // newest dot is the label "39"; under it is the dot of 38,2.
+    const chart = feverChartModel(
+      [
+        temp("2026-11-25 20:15", 39),
+        temp("2026-11-26 09:15", 38.2),
+        temp("2026-11-26 10:55", 38.6),
+      ],
+      episode("2026-11-20 08:00"),
+      vn("2026-11-26 11:30"),
+    )!;
+    expect(chart.days).toHaveLength(7);
+    expect(chart.points.map((point) => point.label)).toEqual([
+      { text: "39", anchor: "middle", place: "above" },
+      null,
+      { text: "38,6", anchor: "end", place: "side" },
+    ]);
+    // The fever at its peak on the morning of day six: 39,9 half an hour
+    // after 40. Above is the label "40"; the left side is all but free.
+    const peaking = feverChartModel(
+      [
+        temp("2026-11-26 00:40", 39.3),
+        temp("2026-11-26 07:50", 39.8),
+        temp("2026-11-26 08:50", 40),
+        temp("2026-11-26 09:25", 39.9),
+      ],
+      episode("2026-11-21 08:00"),
+      vn("2026-11-26 10:00"),
+    )!;
+    expect(peaking.days).toHaveLength(6);
+    expect(peaking.points.map((point) => point.label)).toEqual([
+      null,
+      null,
+      { text: "40", anchor: "middle", place: "above" },
+      { text: "39,9", anchor: "end", place: "side" },
+    ]);
   });
 
   it("the word Sốt takes the first of right, left, middle that no dot and no label reaches", () => {
