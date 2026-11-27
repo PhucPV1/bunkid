@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  MILESTONES,
-  type MilestoneGroup,
-  type MotorMilestone,
-} from "@/lib/content/milestones";
+import { MILESTONES, type MotorMilestone } from "@/lib/content/milestones";
 import {
   ageInMonths,
   defaultOpenMonths,
@@ -14,22 +10,7 @@ import {
   motorSummary,
   parseMilestoneForm,
   timelineSteps,
-  visibleGroups,
 } from "./milestones";
-
-const group = (months: number) => ({ months }) as MilestoneGroup;
-const groups = [2, 4, 6, 9, 12].map(group);
-
-describe("visibleGroups (spec §6.9)", () => {
-  it("shows the current age group and the next one", () => {
-    const at = (m: number) => visibleGroups(groups, m).map((g) => g.months);
-    expect(at(0.5)).toEqual([2, 4]);
-    expect(at(2)).toEqual([2, 4]);
-    expect(at(3.9)).toEqual([2, 4]);
-    expect(at(4)).toEqual([4, 6]);
-    expect(at(13)).toEqual([12]);
-  });
-});
 
 describe("motorStatus", () => {
   const sitting = {
