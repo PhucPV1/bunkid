@@ -123,7 +123,7 @@ Plan này là plan cuối của M2. M3 (tab Hôm nay), M4 (so sánh và Báo cá
 - Consumes: `HEALTH_SICK`, `activeTab` (`lib/nav.ts`); `HealthScreen` vẽ mọi mục của `HEALTH_SICK` nên không phải sửa; `PAGES` của `sw/sw.template.js`; hai trang `/dot-om` và `/dot-om/chi-tiet` (M2f).
 - Produces: `HEALTH_SICK[0]` = `{ label: "Đợt ốm", href: "/dot-om", icon: "calendar", color: "cat-temp", detail: "Gom sốt, thuốc, triệu chứng theo từng đợt" }` (bốn mục); `activeTab("/dot-om")` và `activeTab("/dot-om/chi-tiet")` là `"health"`; `PAGES` có `"/dot-om"` và `"/dot-om/chi-tiet"`.
 
-- [ ] **Step 0: Kiểm M2f đã xong, rồi tạo nhánh**
+- [x] **Step 0: Kiểm M2f đã xong, rồi tạo nhánh**
 
 ```bash
 git checkout main && git pull --ff-only
@@ -134,7 +134,7 @@ bunx vitest run
 
 Expected: dòng `M2f có trên main`; `Test Files  200 passed (200)`, `Tests  1875 passed (1875)`. Không thấy dòng đó thì dừng: M2f chưa lên `main`, và dòng "Đợt ốm" sẽ dẫn tới một trang không có. Số test khác đi vì `main` có commit mới thì vẫn làm tiếp, và ghi lại số xuất phát thật.
 
-- [ ] **Step 1: Viết test đỏ (Patch 1)**
+- [x] **Step 1: Viết test đỏ (Patch 1)**
 
 ```diff
 diff --git a/components/health/health.test.tsx b/components/health/health.test.tsx
@@ -220,12 +220,12 @@ index d30a3a4..82f33c1 100644
      );
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run`
 Expected: `Test Files  3 failed | 197 passed (200)`, `Tests  5 failed | 1870 passed (1875)`. Năm test đỏ ở ba file: hai của `nav`, một của trang Sức khỏe, hai của service worker.
 
-- [ ] **Step 3: Thêm mục và hai trang (Patch 2)**
+- [x] **Step 3: Thêm mục và hai trang (Patch 2)**
 
 ```diff
 diff --git a/lib/nav.ts b/lib/nav.ts
@@ -263,12 +263,12 @@ index 056b1f1..e04940a 100644
    "/anh",
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run && bun run typecheck`
 Expected: `Test Files  200 passed (200)`, `Tests  1875 passed (1875)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/nav.ts lib/nav.test.ts sw/sw.template.js scripts/sw.test.ts components/health/health.test.tsx
@@ -286,17 +286,17 @@ git commit -m "feat(nav): Đợt ốm on Sức khỏe and in the service worker"
 - Consumes: mọi thứ của task trước trong plan này, và hai trang của M2f.
 - Produces: kết quả kiểm, ghi ngay trong plan; phần M2 của Bước 38; `main` có M2g, tức người dùng thấy "Đợt ốm" trong app. Mốc M2 của spec xong.
 
-- [ ] **Step 1: Chạy cả bộ kiểm**
+- [x] **Step 1: Chạy cả bộ kiểm**
 
 Run: `bun run typecheck && bunx vitest run`
 Expected: `tsc --noEmit` không báo lỗi; `Test Files  200 passed (200)`, `Tests  1875 passed (1875)`.
 
-- [ ] **Step 2: Build**
+- [x] **Step 2: Build**
 
 Run: `bun run build`
 Expected: lần đầu có thể dừng với thông báo bảo mật của Next.js 16.4.3 (bình thường; không chạy `next upgrade`). Chạy lại đúng lệnh đó: `✓ Generating static pages` và thoát mã 0.
 
-- [ ] **Step 3: Kiểm trong trình duyệt (chỉ xem, trên trang thật)**
+- [x] **Step 3: Kiểm trong trình duyệt (chỉ xem, trên trang thật)**
 
 Plan này không có trang fixture: mọi thứ nó thêm đều nằm trên trang thật. Chạy `bun run dev` (lần đầu có thể dừng vì thông báo bảo mật: chạy lại). Dùng khung Browser của app, cỡ 375×812 (xem mục "Trình duyệt" ở Ghi chú khi thực thi); trang thật cần đăng nhập.
 
@@ -326,7 +326,7 @@ Service worker chỉ chạy ở bản build, không chạy ở `bun run dev`: vi
 
 Dừng `bun run dev` khi xong. Ghi kết quả từng mục ngay dưới bước này. Mục nào không cho thấy được thì ghi "chưa kiểm". Nếu bước này lộ ra lỗi và code phải đổi: sửa (test trước, code sau), rồi chạy lại Step 1 và Step 2 trước khi đi tiếp.
 
-- [ ] **Step 4: Thêm phần M2 vào Bước 38 của checklist (Patch 3), commit**
+- [x] **Step 4: Thêm phần M2 vào Bước 38 của checklist (Patch 3), commit**
 
 ```diff
 diff --git a/docs/device-checklist.md b/docs/device-checklist.md
@@ -365,7 +365,7 @@ git add docs/device-checklist.md
 git commit -m "docs(checklist): the M2 part of step 38" -m "Co-Authored-By: Claude Fable 5.2 <noreply@anthropic.com>"
 ```
 
-- [ ] **Step 5: Ghi kết quả vào plan, commit**
+- [x] **Step 5: Ghi kết quả vào plan, commit**
 
 Ghi ngay dưới bước này: số đo đỏ và xanh của Task 1 có khớp plan không; kết quả Step 1, Step 2 và Step 3. Mục nào không cho thấy được thì ghi "chưa kiểm". Đánh dấu `[x]` các bước đã làm.
 
@@ -375,7 +375,28 @@ git add docs/blueprint/plans/2026-11-26-kim-bun-dot-om-m2g.md
 git commit -m "docs(plan): the M2g plan and its check results" -m "Co-Authored-By: Claude Fable 5.2 <noreply@anthropic.com>"
 ```
 
-- [ ] **Step 6: Đưa lên `main`**
+**Kết quả (2026-11-27, nhánh `feat/kim-bun-dot-om-m2g` cắt từ `main` @ `5f8be01`):**
+
+Số test trong plan lệch 4 so với số thật: M2c thêm 3 test, M2d thêm 1. Mọi con số dưới đây là số đo thật; số của plan cộng 4 thì khớp.
+
+- **Task 1 Step 0:** dòng `M2f có trên main`; nền `Test Files  200 passed (200)`, `Tests  1879 passed (1879)` (plan ghi 1875).
+- **Task 1 Step 2 (đỏ):** `Test Files  3 failed | 197 passed (200)`, `Tests  5 failed | 1874 passed (1879)`; năm test đỏ đúng như plan tả (hai của `nav`, một của trang Sức khỏe, hai của service worker). Khớp plan + 4.
+- **Task 1 Step 4 (xanh):** 200 file / 1879 test; `tsc --noEmit` thoát 0. Commit `c86f020`. Ba patch áp sạch.
+- **Bản sửa sau bước kiểm** (xem mục cuối file): đỏ `1 failed | 199 passed (200)`, `2 failed | 1878 passed (1880)`; xanh 200 file / 1880 test. Commit `c59be69`.
+- **Task 2 Step 1 (sau mọi commit code và docs):** `tsc --noEmit` thoát 0; `Test Files  200 passed (200)`, `Tests  1880 passed (1880)` (plan ghi 1875: + 4 từ M2c, M2d, + 1 test của bản sửa).
+- **Task 2 Step 2:** `bun run build` lần đầu thoát 1 (thông báo bảo mật của Next.js 16.4.3; không chạy `next upgrade`), lần hai thoát 0: `✓ Generating static pages using 9 workers (42/42)`, `/dot-om` và `/dot-om/chi-tiet` đều `○`. Chạy cả trước và sau bản sửa, giống nhau.
+- **Task 2 Step 3 (khung Browser trong app, 375×812, đang đăng nhập, chỉ xem; làm hai lần: trước bản sửa nhãn, và lại sau mọi commit):**
+  1. Đạt. `/suc-khoe`, mục "Khi bé ốm": thẻ "Khẩn cấp" (343×101) rồi bốn hàng theo thứ tự "Đợt ốm", "Triệu chứng", "Bệnh thường gặp", "Báo cáo cho bác sĩ". Hàng "Đợt ốm" 341×75 px (vùng chạm ≥ 44 px), icon lịch; đoạn đo: `Đợt ốm: 1 dòng`, `Gom sốt, thuốc, triệu chứng theo từng đợt: 2 dòng` (chữ "đợt" xuống dòng hai), không `line-clamp`, không "…", `scrollHeight` = `clientHeight`. Ba hàng kia 341×56, mỗi dòng 1 dòng. Thẻ "Khẩn cấp" và các mục khác như trước.
+  2. Đạt. Bấm hàng "Đợt ốm" (theo `ref`): tới `/dot-om`, tiêu đề lớn "Đợt ốm", nút quay lại "Sức khỏe", tab Sức khỏe có `aria-current="page"`; `GET /rest/v1/illness_episodes` trả 200 (Resource Timing); trạng thái trống "Chưa có đợt ốm nào". Không bấm "Bắt đầu đợt ốm".
+  3. Đạt. `/dot-om/chi-tiet?id=khong-co`: tab Sức khỏe sáng, "Không tìm thấy đợt ốm này"; bấm "Về danh sách" về `/dot-om`.
+  4. Đạt. Bấm ba hàng còn lại: `/trieu-chung` ("Phân loại triệu chứng"), `/benh-thuong-gap`, `/bao-cao` mở được. `/trieu-chung` không có thanh tab: có từ trước (trang đó ẩn thanh tab theo spec 2026-11-19 §6), không do plan này.
+  5. Đạt. `scrollWidth` 375 = `innerWidth` ở `/suc-khoe` và `/dot-om`. Console lọc `onlyErrors`: không có lỗi.
+  6. Đạt. `rose`, `light`, `dark`, `night`: hàng "Đợt ốm" đọc được, vẫn 1 + 2 dòng; ở `night` icon và chữ theo tông hổ phách.
+  - Chưa kiểm (service worker chỉ chạy ở bản build): mở hai trang khi mất mạng; có test ở Task 1 và mục 14 của Bước 38. Chưa kiểm: theme `peach`, `lavender`, `sea` (mục 13 của Bước 38); iPhone thật.
+- **Task 2 Step 4:** Patch 3 áp sạch. Ngoài Patch 3, Bước 38 có thêm các dòng kiểm cho những thứ M2 chưa ai kiểm được trên dữ liệu thật, viết cùng giọng: mục 8 thêm ô ngày giờ trên Safari iOS (bánh xe chọn ngày giờ); mục 11 thêm realtime đổi chip và thẻ trên máy thứ hai (lần đo 38,8); mục 12 thêm lần đo 37,6 để thấy nhãn không nằm trên đường 38, và hình thoi chỉ khi có liều; mục 13 mới: ba nền sáng Đào mơ, Oải hương, Biển sương; mục 14 mới: mở hai trang khi mất mạng từ app đã cài; mục dọn thành mục 15, ghi rõ chỗ dễ hỏng (trang có tự về "Đợt ốm" sau khi xóa không) và xóa thêm hai bản ghi thử của mục 11 và 12. Phần M2 giờ là mục 6–15, tạo hai đợt ốm thử và bốn bản ghi thử. Commit `2a8bdca` (cùng các chỗ sửa spec).
+- **Step 6:** chạy ngay sau commit này: `git merge --ff-only` vào `main`, đẩy `origin/main`, xóa nhánh.
+
+- [x] **Step 6: Đưa lên `main`**
 
 Chỉ khi mọi bước trên đều đạt và không còn lỗi đã biết (lỗi tìm thấy khi kiểm phải được sửa, có test, và ghi vào plan trước; sửa xong thì chạy lại Step 1 và Step 2). Không hỏi lại người dùng: xem mục "Lên `main` không cần hỏi" ở Ghi chú khi thực thi.
 
@@ -390,3 +411,17 @@ git rev-parse --short origin/main   # hai dòng phải giống nhau
 `git merge --ff-only` từ chối (ai đó đã đẩy thêm lên `main`) thì dừng và báo, không tự rebase.
 
 Báo cáo bằng tiếng Việt: `git log --oneline` của các commit vừa lên `main`; kết quả typecheck, vitest, build; mục nào của bước trình duyệt đã thấy; nhắc người dùng phần M2 của Bước 38 (mục 6–13) đang chờ họ trên iPhone thật, và rằng chưa ai từng bấm "Bắt đầu đợt ốm", "Bé đã khỏi", "Lưu", "Mở lại" hay "Xóa" trên dữ liệu thật; lỗi nào đã sửa trong phiên; mục nào chưa kiểm.
+
+## Bản sửa sau bước kiểm: nhãn giá trị nằm trên đường 38°C (2026-11-27)
+
+**Lỗi (điểm để ngỏ từ M2c và M2f).** Luật đặt nhãn của chấm mới nhất chỉ tránh chấm khác và nhãn của chấm cao nhất, không tránh đường 38 nét đứt. Lần đo mới nhất sát dưới 38,0 (trục một ngày: 37,3 tới 37,6) có nhãn trên chấm nằm đè lên đường; viền nền của chữ chỉ che phần đường ngay sau nét chữ, nên một gạch ló ra sát con số, nhìn thoáng như "37,6-". Trên trang fixture 49 hình ở 375 px, 13 nhãn nằm trên đường (trên chấm: 37,3–37,6, cả giữa trục lẫn sát mép phải; dưới chấm: 38,5 sát mép phải khi trên chấm vướng chấm 38,9; bên cạnh: 38,1 ngay sau 38,6; 37,2 và 36,8 trên thang 34–43).
+
+**Sửa (test trước, code sau; component không đổi, không thêm màu, không thêm chữ).** `feverChartModel` tính thêm cho mỗi chỗ đặt nhãn xem hộp của nhãn có chứa mực 38,0 không. Thứ tự chọn: bỏ chỗ chạm nhãn kia khi còn chỗ khác; trong số còn lại bỏ chỗ nằm trên đường khi còn chỗ khác; rồi lấy chỗ che chấm ít nhất (bằng nhau thì theo thứ tự trên, phải, dưới, trái). Các chỗ trên, cạnh, dưới ở ba độ cao không chồng nhau và luôn có ít nhất hai chỗ, nên bậc thứ hai luôn chọn được. Test mới "the newest label keeps off the 38 line" (37,2–37,7 sang bên phải; 37,1 và 37,8–38,5 vẫn ở trên; sát mép phải 37,5 xuống dưới; 38,9 rồi 38,5 sát mép phải sang trái; thang 34–43 với 37,2 sang bên cạnh). Một kỳ vọng cũ đổi: "đo lại sau một giờ, thấp hơn" nay đặt "38,1" dưới chấm thay vì bên phải (bên phải nằm trên đường). Test của hai bản sửa M2c ("no place is free…", "two readings at the same moment…") không đổi và xanh.
+
+**Đã thử và bỏ:** né chấm trước, đường sau (chỉ dùng đường để phân xử khi che chấm bằng nhau). Trên 600 đợt ngẫu nhiên nó còn 15 đợt nhãn nằm trên đường (cụm đo dày, nơi chỗ trên chấm che ít chấm nhất).
+
+**Đo trên trang fixture tạm** (khối biểu đồ của M2c thêm 31 khối "38: …" có lần đo mới nhất từ 37,2 tới 38,7, giữa trục và sát mép phải; không commit): đoạn đo của M2c thêm `onLine` (đường chạy qua hộp của nhãn, viền tính vào). Sau sửa, 50 khối / 49 hình: `overlaps`, `outside`, `onDot`, `onLine` đều rỗng ở 375 px (hình 317 px), 390 px (332 px), 440 px (382 px), mỗi bề ngang bốn theme `rose`, `light`, `dark`, `night`; khe nhỏ nhất giữa nhãn và đường 2,2 đơn vị viewBox. Nhìn bằng mắt: `rose` (giữa trục 37,5 và 37,6: nhãn bên phải chấm; sát mép phải 37,5: dưới chấm; 38,9 rồi 38,5: bên trái), `night` (dáng 3 ngày của M2f: "37,6" bên phải, không gạch nào sát số; trục 7 ngày 37,5: dưới chấm).
+
+**Trang tạm 600 đợt ngẫu nhiên** (của M2c, cùng hạt giống), 375 px: trước sửa 47 đợt nhãn trên đường, 22 đợt nhãn chạm chấm; sau sửa 0 đợt trên đường, 31 đợt chạm chấm (390 và 440 px: 0 và 32). Chữ đè chữ 0, chữ ra ngoài hình 0, cả trước và sau. Cái giá: 9/600 đợt thêm nhãn chạm một phần một chấm trước ở cụm đo dày, cùng loại giới hạn M2c đã nhận; một nét đứt sau con số đọc nhầm thành dấu, một chấm khuất một phần thì không.
+
+**Spec:** §6.5 ghi luật mới kèm chú thích khác bản duyệt 2026-11-26. Cùng commit, spec ghi bốn cách đọc của plan M2f, mỗi chỗ có chú thích khác bản duyệt: §6.2 nút "Bắt đầu đợt ốm" bỏ qua lần bấm thứ hai; §6.2 trạng thái trống có nút đó và không có tiêu đề mục; §6.2 (và một dòng ở §6.3) hai trang theo realtime của bản ghi; §6.4 xóa xong về `/dot-om` bằng `router.replace`.
