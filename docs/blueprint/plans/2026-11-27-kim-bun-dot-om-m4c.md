@@ -141,7 +141,7 @@ Plan này đứng sau M4b và là plan cuối của mốc M4. M5 (lần khám) t
 
 Trước khi viết, đọc `node_modules/next/dist/docs/01-app/03-api-reference/04-functions/use-search-params.md` (AGENTS.md): một trang được dựng tĩnh mà gọi `useSearchParams` phải bọc phần gọi nó trong `Suspense`, không thì `next build` hỏng ("Missing Suspense boundary with useSearchParams"). `ReportPage` làm đúng như `EpisodeDetailPage` (`components/illness/EpisodeDetailPage.tsx`).
 
-- [ ] **Step 0: Kiểm M4b đã xong, rồi tạo nhánh**
+- [x] **Step 0: Kiểm M4b đã xong, rồi tạo nhánh**
 
 ```bash
 git checkout main && git pull --ff-only
@@ -152,7 +152,7 @@ bunx vitest run
 
 Expected: dòng `M4b có trên main`; `Test Files  208 passed (208)`, `Tests  1969 passed (1969)`. Không thấy dòng đó thì dừng: M4b chưa lên `main`. Số test khác đi vì `main` có commit mới thì vẫn làm tiếp, và ghi lại số xuất phát thật.
 
-- [ ] **Step 1: Viết test đỏ (Patch 1)**
+- [x] **Step 1: Viết test đỏ (Patch 1)**
 
 `render` của file test nay nhận `dot`, `range` và `episodes`; hai mock mới (`next/navigation`, `AuthGate`) để vẽ `ReportPage`. Test của bản in nằm ở `lib/ui/tokens.test.ts`, cạnh các test so `globals.css` với `lib/ui/tokens.ts`.
 
@@ -499,12 +499,12 @@ index 1207530..5bf2f6a 100644
        expect(css, `--color-${name}`).not.toMatch(
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run`
 Expected: `Test Files  2 failed | 206 passed (208)`, `Tests  1 failed | 1966 passed (1967)`. `reportscreen.test.tsx` không nạp được (chưa có `ReportPage.tsx`), nên ba test của M4b trong file đó tạm không được đếm; test mới của `tokens.test.ts` đỏ vì khối in chưa có năm màu.
 
-- [ ] **Step 3: Viết kỳ "Đợt ốm" (Patch 2)**
+- [x] **Step 3: Viết kỳ "Đợt ốm" (Patch 2)**
 
 ```diff
 diff --git a/app/bao-cao/page.tsx b/app/bao-cao/page.tsx
@@ -859,12 +859,12 @@ index 0f53f68..034d2d6 100644
  
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run && bun run typecheck`
 Expected: `Test Files  208 passed (208)`, `Tests  1980 passed (1980)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add app/bao-cao/page.tsx app/globals.css components/illness/FeverChart.tsx components/report/ReportPage.tsx components/report/ReportScreen.tsx components/report/reportscreen.test.tsx lib/data/logs.ts lib/ui/tokens.test.ts
@@ -885,7 +885,7 @@ git commit -m "feat(report): the period Đợt ốm, at /bao-cao?dot=" -m "Co-Au
 
 Trước khi viết, đọc `node_modules/next/dist/docs/01-app/03-api-reference/02-components/link.md` (AGENTS.md): nút là một `Link` mang dáng nút, như ở `components/conditions/ConditionsScreen.tsx`; không có tham số nào mới.
 
-- [ ] **Step 1: Viết test đỏ (Patch 3)**
+- [x] **Step 1: Viết test đỏ (Patch 3)**
 
 ```diff
 diff --git a/components/illness/episodescreen.test.tsx b/components/illness/episodescreen.test.tsx
@@ -949,12 +949,12 @@ index 7cfbb9e..27c2973 100644
      const [verdict] = findElements(
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run`
 Expected: `Test Files  1 failed | 207 passed (208)`, `Tests  3 failed | 1978 passed (1981)`.
 
-- [ ] **Step 3: Thêm nút (Patch 4)**
+- [x] **Step 3: Thêm nút (Patch 4)**
 
 ```diff
 diff --git a/components/illness/EpisodeScreen.tsx b/components/illness/EpisodeScreen.tsx
@@ -1006,12 +1006,12 @@ index a4d48b7..580d3f7 100644
  }
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run && bun run typecheck`
 Expected: `Test Files  208 passed (208)`, `Tests  1981 passed (1981)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add components/illness/EpisodeScreen.tsx components/illness/episodescreen.test.tsx
@@ -1030,17 +1030,17 @@ git commit -m "feat(illness): Báo cáo cho bác sĩ on the episode page" -m "Co
 - Consumes: mọi thứ của các task trước trong plan này.
 - Produces: kết quả kiểm, ghi ngay trong plan; Bước 38 mục 25–28; một đoạn đọc spec ở §9; `main` có M4c, tức mốc M4 của spec xong.
 
-- [ ] **Step 1: Chạy cả bộ kiểm**
+- [x] **Step 1: Chạy cả bộ kiểm**
 
 Run: `bun run typecheck && bunx vitest run`
 Expected: `tsc --noEmit` không báo lỗi; `Test Files  208 passed (208)`, `Tests  1981 passed (1981)`.
 
-- [ ] **Step 2: Build**
+- [x] **Step 2: Build**
 
 Run: `bun run build`
 Expected: lần đầu có thể dừng với thông báo bảo mật của Next.js 16.4.3 (bình thường; không chạy `next upgrade`). Chạy lại đúng lệnh đó: `✓ Generating static pages using 9 workers (42/42)`, dòng `├ ○ /bao-cao` (vẫn tĩnh), và thoát mã 0.
 
-- [ ] **Step 3: Tạo hai trang fixture tạm**
+- [x] **Step 3: Tạo hai trang fixture tạm**
 
 Gia đình chưa có đợt ốm và không được tạo đợt trên dữ liệu thật, nên kỳ "Đợt ốm" chỉ thấy đủ ở đây. Trang Báo cáo vẽ `ReportScreen` thật với ba đợt giả (đang mở từ hôm kia; đã đóng 3 ngày; đã đóng 20 ngày) và bản ghi giả của đợt đang mở; giờ tính từ hôm nay (xem Ghi chú khi thực thi về lần tải lại 60 giây). Tạo `app/fixture-report/page.tsx` (không commit):
 
@@ -1276,7 +1276,7 @@ export default function Page() {
 Run: `bun run typecheck`
 Expected: `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 4: Kiểm trong trình duyệt (chỉ xem)**
+- [x] **Step 4: Kiểm trong trình duyệt (chỉ xem)**
 
 Chạy `bun run dev` (lần đầu có thể dừng vì thông báo bảo mật: chạy lại). Mở các trang dưới trong khung Browser của app, cỡ 375×812 (xem mục "Trình duyệt" ở Ghi chú khi thực thi). Xóa phần tử `nextjs-portal` trong trang trước khi chụp. Ngày ghi dưới đây là của lần viết plan (hôm nay 27/11); lúc chạy thì theo hôm nay.
 
@@ -1378,7 +1378,31 @@ Trang thật (dữ liệu thật của gia đình: **chỉ xem**; cần đăng n
 
 Dừng `bun run dev` khi xong. Ghi kết quả từng mục ngay dưới bước này, kèm số đo; mục nào thấy trên trang thật, mục nào chỉ thấy trên trang tạm. Mục nào không cho thấy được thì ghi "chưa kiểm". Nếu bước này lộ ra lỗi và code phải đổi: sửa (test trước, code sau), rồi chạy lại Step 1 và Step 2 trước khi đi tiếp.
 
-- [ ] **Step 5: Xóa hai trang fixture**
+**Kết quả Step 4 (2026-11-27, khung Browser trong app; trang tạm vẽ lúc 16:07 nên ngày khớp plan: hôm nay 27/11):**
+
+Trang tạm `/fixture-report` (375×812, `innerWidth` 375):
+
+1. `?dot=open`: ba nút "7 ngày", "14 ngày", "Đợt ốm*"; dòng "Đợt ốm từ 25/11 · ngày thứ 3 · in ngày 27/11/2026"; bảng "Theo ngày" 25/11, 26/11, 27/11; biểu đồ có nhãn 39,2 và 37,4, một hình thoi, vùng "Sốt", chú thích ba mục, rồi bốn dòng đo (23:40 38,4; 03:15 39,2; 15:00 38,6; 07:05 37,4); không có 37,6°C; "Triệu chứng" hai hàng — khớp.
+2. Đoạn đo: ba nút 108×44, mỗi nút 1 dòng; `days` 3; biểu đồ 309×191, nhãn "Biểu đồ nhiệt độ: 4 lần đo, cao nhất 39,2°C, 1 liều hạ sốt."; `overflow` `true`; `ellipsis` 0 — khớp từng số.
+3. `?dot=past`: "Đợt ốm 18/10 – 20/10 · 3 ngày · in ngày 27/11/2026", `days` 3, không biểu đồ, "Không đo trong khoảng này." — khớp.
+4. `?dot=long`: "Đợt ốm 08/09 – 27/09 · 20 ngày · in ngày 27/11/2026", dòng riêng "14 ngày cuối của đợt ốm", `days` 14 — khớp.
+5. `?dot=gone` và không tham số: "7 ngày*", ba nút, "7 ngày, từ 21/11 đến 27/11 · in ngày 27/11/2026", không biểu đồ — khớp.
+6. `?dot=past`, bấm "7 ngày" rồi "Đợt ốm" (theo `ref`): dòng "Đợt ốm từ 25/11 · ngày thứ 3 · in ngày 27/11/2026", địa chỉ vẫn `?dot=past` — khớp.
+7. Bản in giả lập (chép luật `@media print` vào `<style>`): ở `dark`, `night`, `light`, `rose` đều ra `bg` #fff, `ink` #000, `glass-solid` #fff, `danger` #c4142b, `danger-ink` #8a0f1f, `cat-med` #c0392b, `cat-temp` #1b6f87; chữ "38" và "Sốt" tô `rgb(138, 15, 31)`, nhãn 39,2/37,4 đen, chấm đo `rgb(27, 111, 135)` viền trắng; nền body trắng; khối điều khiển (`print:hidden`) ẩn. Nhìn ảnh chụp ở `dark` và `night`: đường và chấm xanh, chữ "38", "Sốt" đỏ đậm đọc rõ, ba dấu chú thích có màu — khớp.
+8. Trên màn (không in) `rose`, `light`, `dark`, `night`: ba nút, biểu đồ, hai bảng đọc được. Thêm 390×844 (nút 113×44, biểu đồ 324×200, bảng 324) và 440×956 (nút 130×44, biểu đồ 374×231, bảng 374): `overflow` `true`, `ellipsis` 0 ở mọi theme. Ghi chú đo: nút của `Segmented` có `transition-colors`, nên màu đọc ngay sau khi đổi theme là màu đang chuyển; đọc lại sau khi chuyển xong thì đúng theme. Không phải lỗi.
+
+Trang tạm `/fixture-illness`:
+
+9. Sau thẻ "So với thường ngày": "Báo cáo cho bác sĩ" (nền `accent`, icon `doc` 20 px) rồi "Bé đã khỏi"; hai nút 343×50, cách 10 px; `href` `/bao-cao?dot=fixture` — khớp, ở cả `rose`, `light`, `dark`, `night` (ở `night` hai nút khác cả nền, icon và chữ). 390 px: 358×50, cách 10; 440 px: 408×50, cách 10. Không bấm.
+
+Trang thật (đã đăng nhập sẵn trong khung; chỉ xem, 375 px):
+
+10. `/bao-cao`: gia đình chưa có đợt ốm nên chỉ "7 ngày*", "14 ngày"; "7 ngày, từ 21/11 đến 27/11 · in ngày 27/11/2026"; không biểu đồ; `illness_episodes` 200 (cùng `growth`, `logs`, `vaccine_doses` 200). Hai lệnh đọc `logs`: một của kỳ 7 ngày, một của `useRecentLogs` (`QuickActions`, có từ trước). `scrollWidth <= innerWidth` `true`. Không bấm "In / Lưu PDF".
+11. `/bao-cao?dot=khong-co` (tab mới, sạch): như mục 10, nút in bấm được, không sập; console lọc `onlyErrors`: không có lỗi (cả `/bao-cao` mở lại trong tab đó). Tab đầu có một lỗi 400 còn lại từ trang tạm (mã bé giả, đúng như Ghi chú khi thực thi), không phải của trang thật. Gia đình không có đợt ốm thật: nút "Báo cáo cho bác sĩ" và kỳ "Đợt ốm" trên dữ liệu thật **chưa kiểm** (để Bước 38 mục 25–28).
+
+Chưa kiểm: bản xem trước khi in thật của trình duyệt (chỉ giả lập), theme `peach`, `lavender`, `sea`, kỳ "Đợt ốm" trên dữ liệu thật, mở offline `/bao-cao?dot=…`.
+
+- [x] **Step 5: Xóa hai trang fixture**
 
 ```bash
 rm -r app/fixture-report app/fixture-illness
@@ -1388,7 +1412,7 @@ git status --short  # không còn app/fixture-report, app/fixture-illness
 
 Expected: `tsc --noEmit` không báo lỗi. Nếu nó đỏ với lỗi trong `.next/…/types/validator.ts`: chạy `rm -rf .next/dev/types .next/types` rồi chạy lại, phải sạch.
 
-- [ ] **Step 6: Phần M4c của Bước 38 (Patch 5) và một đoạn đọc spec (Patch 6), commit**
+- [x] **Step 6: Phần M4c của Bước 38 (Patch 5) và một đoạn đọc spec (Patch 6), commit**
 
 ```diff
 diff --git a/docs/device-checklist.md b/docs/device-checklist.md
@@ -1439,7 +1463,7 @@ git add docs/device-checklist.md docs/blueprint/specs/2026-11-26-kim-bun-dot-om-
 git commit -m "docs: the M4c part of step 38, and readings of §9 in the spec" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
-- [ ] **Step 7: Ghi kết quả vào plan, commit**
+- [x] **Step 7: Ghi kết quả vào plan, commit**
 
 Ghi ngay dưới bước này: số đo đỏ và xanh của từng task có khớp plan không; kết quả Step 1, Step 2 và Step 4. Mục nào không cho thấy được thì ghi "chưa kiểm". Đánh dấu `[x]` các bước đã làm.
 
@@ -1449,7 +1473,19 @@ git add docs/blueprint/plans/2026-11-27-kim-bun-dot-om-m4c.md
 git commit -m "docs(plan): the M4c plan and its check results" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
-- [ ] **Step 8: Đưa lên `main`**
+**Kết quả (2026-11-27, nhánh `feat/kim-bun-dot-om-m4c` cắt từ `main` @ `c4e28b6`):**
+
+- Step 0: `M4b có trên main`; nền `Test Files  208 passed (208)`, `Tests  1969 passed (1969)` — khớp.
+- Task 1: Patch 1 áp sạch; đỏ `Test Files  2 failed | 206 passed (208)`, `Tests  1 failed | 1966 passed (1967)` (`reportscreen.test.tsx` không nạp được vì chưa có `ReportPage`; test mới của `tokens.test.ts` đỏ ở `--color-glass-solid`) — khớp. Đã đọc `use-search-params.md`. Patch 2 áp sạch; xanh `208/1980`; `tsc` sạch — khớp. Commit `bcffdd5`.
+- Task 2: đã đọc `link.md`. Patch 3: đỏ `Test Files  1 failed | 207 passed (208)`, `Tests  3 failed | 1978 passed (1981)` — khớp. Patch 4: xanh `208/1981`; `tsc` sạch — khớp. Commit `1f01885`.
+- Task 3 Step 1: `tsc` sạch, `208/1981`. Step 2: lần 1 thoát 1 (`SecurityFatalError` của Next.js 16.4.3, sau khi đã dựng xong), lần 2 thoát 0, `✓ Generating static pages using 9 workers (42/42)`, `├ ○ /bao-cao`. Không chạy `next upgrade`.
+- Step 3: hai trang tạm chép nguyên từ plan, `tsc` sạch.
+- Step 4: xem kết quả ngay dưới Step 4. Mọi số đo khớp plan; không lộ lỗi.
+- Step 5: sau khi xóa trang tạm, `tsc` đỏ giả một lần ở `.next/dev/types/validator.ts`; `rm -rf .next/dev/types .next/types` rồi sạch; `208/1981`.
+- Step 6: Patch 5, 6 áp sạch. Commit `4021877`. Sau đó build lại: lần 1 thoát 1 (cùng thông báo bảo mật), lần 2 thoát 0, 42/42, `/bao-cao` vẫn `○`; `tsc` sạch; cây sạch.
+- Không có lỗi, không có bản sửa ngoài plan.
+
+- [x] **Step 8: Đưa lên `main`**
 
 Chỉ khi mọi bước trên đều đạt và không còn lỗi đã biết (lỗi tìm thấy khi kiểm phải được sửa, có test, và ghi vào plan trước; sửa xong thì chạy lại Step 1 và Step 2). Không hỏi lại người dùng: xem mục "Lên `main` không cần hỏi" ở Ghi chú khi thực thi.
 
