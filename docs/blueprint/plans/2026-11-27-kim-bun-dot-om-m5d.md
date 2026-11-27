@@ -132,7 +132,7 @@ Plan này đứng sau M5c. M5e thêm vạch "Khám" vào biểu đồ của tran
 - Consumes: như mục Consumes ở trên.
 - Produces: `VisitCardRow`, `VisitsCardView`, `VisitsCard`, `EpisodeBody({ …, visits })`, `EpisodeSheetView({ …, deleteBlock })`, `EpisodeSheet({ …, deleteBlock })` (chữ ký ở Contracts).
 
-- [ ] **Step 0: Kiểm M5c đã xong, rồi tạo nhánh**
+- [x] **Step 0: Kiểm M5c đã xong, rồi tạo nhánh**
 
 ```bash
 git checkout main && git pull --ff-only
@@ -143,7 +143,7 @@ bunx vitest run
 
 Expected: lệnh `grep` in đúng một dòng (không thấy thì dừng và báo người dùng); `Test Files  212 passed (212)`, `Tests  2034 passed (2034)`. `main` có thêm commit khác thì ghi lại số xuất phát thật.
 
-- [ ] **Step 1: Viết test đỏ (Patch 1)**
+- [x] **Step 1: Viết test đỏ (Patch 1)**
 
 `visitscard.test.tsx` (mới): tiêu đề và "Thêm", dòng "Chưa có lần khám nào.", một lần khám đủ các dòng theo thứ tự, không nhãn khi không có kết luận, ba trạng thái chờ, mất mạng, các nút báo đúng việc; `VisitsCard` chỉ lấy lần khám của đợt, cũ trước. `episodescreen.test.tsx`: thứ tự các khối nay có "Lần khám" giữa "So với thường ngày" và nút báo cáo; thẻ hiện lần khám của đợt (bỏ kiểm "không có Lần khám" của M2). `episodesheet.test.tsx`: "Xóa đợt ốm" tắt kèm lý do.
 
@@ -192,7 +192,7 @@ index 27c2973..0dd36fc 100644
 @@ -171,7 +181,7 @@ describe("EpisodeScreen", () => {
      expect(useLogsRealtime).toHaveBeenCalledWith("b1");
    });
- 
+
 -  it("an open episode: verdict, chart, days, the comparison, the report, then Bé đã khỏi", () => {
 +  it("an open episode: verdict, chart, days, the comparison, the visits, the report, then Bé đã khỏi", () => {
      const html = render();
@@ -234,7 +234,7 @@ index 27c2973..0dd36fc 100644
 +    expect(html).toContain(">Viêm họng</span>");
 +    expect(html).not.toContain("Chưa có lần khám nào.");
    });
- 
+
    // The page's clock moves once a minute; a log saved since its last tick is
 diff --git a/components/illness/episodesheet.test.tsx b/components/illness/episodesheet.test.tsx
 index 66975f3..277bb0f 100644
@@ -251,7 +251,7 @@ index 66975f3..277bb0f 100644
 @@ -105,6 +106,27 @@ describe("EpisodeSheetView", () => {
      );
    });
- 
+
 +  // Spec §6.4 from M5.
 +  it("Xóa đợt ốm is off, with the reason, while the episode may have visits", () => {
 +    for (const reason of [
@@ -493,12 +493,12 @@ index 0000000..d5752be
 +});
 ```
 
-- [ ] **Step 2: Chạy để thấy đỏ**
+- [x] **Step 2: Chạy để thấy đỏ**
 
 Run: `bunx vitest run`
 Expected: `Test Files  3 failed | 210 passed (213)`, `Tests  3 failed | 2033 passed (2036)`. `visitscard.test.tsx` không nạp được (`./VisitsCard` chưa có); ba test đỏ: hai của `EpisodeScreen` (chưa có "Lần khám") và một của `EpisodeSheetView` (nút chưa tắt).
 
-- [ ] **Step 3: Viết thẻ và nối vào trang (Patch 2)**
+- [x] **Step 3: Viết thẻ và nối vào trang (Patch 2)**
 
 ```diff
 diff --git a/components/illness/EpisodeScreen.tsx b/components/illness/EpisodeScreen.tsx
@@ -506,7 +506,7 @@ index 580d3f7..6a7ced2 100644
 --- a/components/illness/EpisodeScreen.tsx
 +++ b/components/illness/EpisodeScreen.tsx
 @@ -2,7 +2,7 @@
- 
+
  import Link from "next/link";
  import { useRouter } from "next/navigation";
 -import { useState } from "react";
@@ -535,9 +535,9 @@ index 580d3f7..6a7ced2 100644
  import { EpisodeVerdict, type QuickLogType } from "./EpisodeVerdict";
  import { FeverChartCard } from "./FeverChart";
 +import { VisitsCard } from "./VisitsCard";
- 
+
  const LIST = "/dot-om";
- 
+
 @@ -53,6 +55,7 @@ export function EpisodeBody({
    babyName,
    now,
@@ -569,7 +569,7 @@ index 580d3f7..6a7ced2 100644
    const actions = useEpisodeActions(baby.id, userId);
 +  const visits = useVisits(baby.id);
    const [editing, setEditing] = useState(false);
- 
+
    const all = episodes.data ?? [];
 @@ -189,6 +196,15 @@ export function EpisodeScreen({
            babyName={baby.name}
@@ -882,12 +882,12 @@ index 0000000..f90364f
 +}
 ```
 
-- [ ] **Step 4: Chạy để thấy xanh**
+- [x] **Step 4: Chạy để thấy xanh**
 
 Run: `bunx vitest run && bun run typecheck`
 Expected: `Test Files  213 passed (213)`, `Tests  2044 passed (2044)`; `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add components/illness/VisitsCard.tsx components/illness/EpisodeScreen.tsx components/illness/EpisodeSheet.tsx components/illness/visitscard.test.tsx components/illness/episodescreen.test.tsx components/illness/episodesheet.test.tsx
@@ -907,17 +907,17 @@ git commit -m "feat(illness): the visits card on the episode page" -m "Co-Author
 - Consumes: mọi thứ của Task 1.
 - Produces: kết quả kiểm, ghi ngay trong plan; Bước 38 mục 29–33; hai đoạn đọc spec; `main` có M5d.
 
-- [ ] **Step 1: Chạy cả bộ kiểm**
+- [x] **Step 1: Chạy cả bộ kiểm**
 
 Run: `bun run typecheck && bunx vitest run`
 Expected: `tsc --noEmit` không báo lỗi; `Test Files  213 passed (213)`, `Tests  2044 passed (2044)`.
 
-- [ ] **Step 2: Build**
+- [x] **Step 2: Build**
 
 Run: `bun run build`
 Expected: lần đầu có thể dừng với thông báo bảo mật của Next.js 16.4.3 (bình thường; không chạy `next upgrade`). Chạy lại đúng lệnh đó: `✓ Generating static pages using 9 workers (42/42)`, dòng `├ ○ /dot-om/chi-tiet` (vẫn tĩnh), và thoát mã 0.
 
-- [ ] **Step 3: Tạo trang fixture tạm**
+- [x] **Step 3: Tạo trang fixture tạm**
 
 Gia đình chưa có đợt ốm và không được tạo đợt hay lần khám trên dữ liệu thật, nên thẻ chỉ thấy đủ ở đây. Trang vẽ thẻ ở năm trạng thái (chưa có; ba lần khám với 1 ảnh, 6 ảnh và chữ dài, chỉ có giờ; mất mạng; chưa từng tải và mất mạng; lỗi), rồi thân trang chi tiết của một đợt đang mở với thẻ; `?case=xoa` và `?case=xoa-mang` vẽ sheet "Sửa đợt ốm" với hai lý do tắt "Xóa đợt ốm". Tạo `app/fixture-visits/page.tsx` (không commit):
 
@@ -1063,7 +1063,7 @@ export default function Page() {
 Run: `bun run typecheck`
 Expected: `tsc --noEmit` không báo lỗi.
 
-- [ ] **Step 4: Kiểm trong trình duyệt (chỉ xem)**
+- [x] **Step 4: Kiểm trong trình duyệt (chỉ xem)**
 
 Chạy `bun run dev` (lần đầu có thể dừng vì thông báo bảo mật: chạy lại). Mở các trang dưới trong khung Browser của app, cỡ 375×812 (xem mục "Trình duyệt" ở Ghi chú khi thực thi). Xóa phần tử `nextjs-portal` trong trang trước khi chụp.
 
@@ -1081,7 +1081,23 @@ Trang thật (dữ liệu thật của gia đình: **chỉ xem**; cần đăng n
 
 Dừng `bun run dev` khi xong. Ghi kết quả từng mục ngay dưới bước này, kèm số đo; mục nào thấy trên trang thật, mục nào chỉ thấy trên trang tạm. Mục nào không cho thấy được thì ghi "chưa kiểm". Nếu bước này lộ ra lỗi và code phải đổi: sửa (test trước, code sau), rồi chạy lại Step 1 và Step 2 trước khi đi tiếp.
 
-- [ ] **Step 5: Xóa trang fixture**
+**Kết quả (2026-11-27, khung Browser trong app; server dev đã dừng).** Không lộ lỗi nào, code không đổi.
+
+Trang tạm (mục 1–5 chỉ thấy ở đây):
+
+1. Đạt ở 375 px, theme `rose`: "Thêm" 101×44; phần chữ của ba lần khám cao 92, 192, 44 px; dòng ngày giờ của lần thứ hai 2 dòng, hai lần kia 1 dòng; kết luận dài 2 dòng, đậm (700, 15 px), dưới nhãn "Bác sĩ kết luận" (12 px); lời dặn 4 dòng; lần thứ ba chỉ có "26/11 18:40", không nhãn; 7 ô ảnh 60×78, 6 ô của lần thứ hai trên 2 hàng (4 + 2), nhãn đọc màn hình "Ảnh 1" … "Ảnh 6"; 0 chữ bị cắt; `scrollWidth <= innerWidth`. Thêm: 390 px (`rose`, `night`) y hệt 375; 440 px (`rose`, `night`, `light`, `dark`): lời dặn 3 dòng, phần chữ lần hai 173 px, 6 ảnh xếp 5 + 1, 0 chữ bị cắt, không cuộn ngang.
+2. Đạt ở `night`, `light`, `dark`: số đo như mục 1; dòng ngày giờ 13 px/400 và nhãn 12 px/400 màu nhạt, kết luận 15 px/700 và lời dặn 13 px/400 màu chữ chính (ở `night` nhạt `rgb(181,115,79)`, chính `rgb(217,137,92)`); đọc rõ trên ảnh chụp.
+3. Đạt: "Chưa có lần khám nào."; thẻ mất mạng có dòng "Cần kết nối mạng để thay đổi các mục dưới đây.", "Thêm" `disabled`, lần khám đã tải vẫn hiện; thẻ chưa từng tải có thêm "Cần mạng để tải lần khám. Trang sẽ tự tải khi có mạng lại."; thẻ lỗi có "Có lỗi xảy ra: thử" và "Thử lại", "Thêm" `disabled`.
+4. Đạt: 2883 < 3038 < 3296 < 3356 px, trùng số lúc viết plan.
+5. Đạt ở 375 px: `?case=xoa` theme `night`: sheet "Sửa đợt ốm", "Xóa đợt ốm" `disabled` (opacity 0,5), ngay dưới (cách 8 px) là "Xóa các lần khám trước." 13 px. `?case=xoa-mang` ở `rose`, `light`, `dark`, `night`: nút `disabled`, dòng "Cần mạng để kiểm các lần khám.". Console trang tạm: không lỗi.
+
+Trang thật (chỉ xem, đã đăng nhập sẵn trong khung):
+
+6. Chưa kiểm (gia đình chưa có đợt ốm): `/dot-om` ghi "Chưa có đợt ốm nào", các lệnh đọc `/rest/v1/` trả 200. Thêm `/dot-om/chi-tiet?id=khong-co`: "Không tìm thấy đợt ốm này" và "Về danh sách", không sập; lệnh đọc `illness_visits` (`select, baby_id, order`) và `photos` (`select, baby_id, visit_id=not.is.null, order`) trả 200 trên Supabase thật; console không lỗi; không cuộn ngang.
+
+Chưa kiểm: theme `peach`, `lavender`, `sea`; Safari iOS thật; thẻ với dữ liệu thật; bấm "Thêm", lần khám, ô ảnh và `PhotoViewer` thật (Bước 38 mục 29–33 trên iPhone).
+
+- [x] **Step 5: Xóa trang fixture**
 
 ```bash
 rm -r app/fixture-visits
@@ -1091,7 +1107,7 @@ git status --short  # không còn app/fixture-visits
 
 Expected: `tsc --noEmit` không báo lỗi. Nếu nó đỏ với lỗi trong `.next/…/types/validator.ts`: chạy `rm -rf .next/dev/types .next/types` rồi chạy lại, phải sạch.
 
-- [ ] **Step 6: Phần M5d của Bước 38 và các chỗ đọc spec (Patch 3), commit**
+- [x] **Step 6: Phần M5d của Bước 38 và các chỗ đọc spec (Patch 3), commit**
 
 ```diff
 diff --git a/docs/blueprint/specs/2026-11-26-kim-bun-dot-om-design.md b/docs/blueprint/specs/2026-11-26-kim-bun-dot-om-design.md
@@ -1104,27 +1120,27 @@ index c2d6e89..1296003 100644
  - Từ M5: đợt còn lần khám thì nút "Xóa đợt ốm" tắt, kèm dòng "Xóa các lần khám trước."; khi `useVisits` chưa có dữ liệu (mất mạng, chưa từng tải) nút cũng tắt, kèm dòng "Cần mạng để kiểm các lần khám."
 +- Dòng lý do nằm ngay dưới nút "Xóa đợt ốm". Danh sách lần khám tải lỗi cũng tính là chưa có dữ liệu. Lần khám do máy khác thêm sau lúc kiểm thì server từ chối lệnh xóa (đợt còn lần khám); outbox bỏ lệnh đó với câu sẵn có "Bản ghi liên quan không còn", và đợt hiện lại sau lần tải lại. (Khác bản đã duyệt ngày 2026-11-26, vốn không nói ba chỗ này. Chọn ở M5d ngày 2026-11-27 theo lời duyệt trước của người dùng.)
  - Nút "Lưu".
- 
+
  ### 6.5 Biểu đồ sốt
 @@ -412,6 +413,7 @@ alter table public.photos add foreign key (visit_id, baby_id)
  - Tiêu đề "Lần khám", bên phải nút "Thêm".
  - Mỗi lần khám, cũ trước: dòng "{dd/mm} {HH:mm} · {nơi khám}" (không có nơi khám thì chỉ ngày giờ); nhãn nhỏ "Bác sĩ kết luận" rồi `conclusion` đậm; `advice` chữ nhỏ; các ảnh thành ô 60×78 bấm để xem lớn. Bấm vào lần khám mở sheet sửa.
  - Chưa có lần khám: dòng "Chưa có lần khám nào."
 +- Thẻ đứng sau thẻ "So với thường ngày", trên nút "Báo cáo cho bác sĩ". Dòng ngày giờ chữ nhỏ màu nhạt; nhãn "Bác sĩ kết luận" chỉ có khi có kết luận; lời dặn giữ các chỗ xuống dòng như lúc gõ. Bấm phần chữ thì mở sheet sửa; bấm một ô ảnh thì xem ảnh lớn, chỉ xem (xóa ảnh ở trong sheet); nhãn đọc màn hình của ô ảnh là "Ảnh 1", "Ảnh 2", …. Nút "Thêm" có ở cả đợt đã đóng; tắt khi mất mạng (kèm dòng "Cần kết nối mạng để thay đổi các mục dưới đây.") và khi danh sách lần khám chưa tải xong. Chưa từng tải mà mất mạng: "Cần mạng để tải lần khám. Trang sẽ tự tải khi có mạng lại."; tải lỗi: thẻ lỗi có "Thử lại". (Khác bản đã duyệt ngày 2026-11-26, vốn không nói mấy chỗ này. Chọn ở M5d ngày 2026-11-27 theo lời duyệt trước của người dùng.)
- 
+
  ### 8.4 Sheet "Lần khám" (bảng "Lần khám — phiếu nhập")
- 
+
 diff --git a/docs/device-checklist.md b/docs/device-checklist.md
 index 456ae1e..d02134b 100644
 --- a/docs/device-checklist.md
 +++ b/docs/device-checklist.md
 @@ -646,7 +646,7 @@ Kết quả: Chờ người dùng.
- 
+
  ## Bước 38 — Đợt ốm (spec 2026-11-26)
- 
+
 -Phần của mốc M1 (bản ghi Triệu chứng, spec §3) là mục 1–5; phần của mốc M2 (đợt ốm, spec §4–§6) là mục 6–15; phần của mốc M3 (tab Hôm nay, spec §5.5, §5.6, §7) là mục 16–21; phần của mốc M4 (so sánh và Báo cáo, spec §5.4, §9) bắt đầu từ mục 22: thẻ "So với thường ngày" là mục 22–23, bảng "Triệu chứng" của Báo cáo là mục 24, kỳ "Đợt ốm" của Báo cáo và nút "Báo cáo cho bác sĩ" là mục 25–28. Các mốc sau của spec thêm mục của mình vào cuối danh sách này. Mục 2 tạo một bản ghi Triệu chứng thử và mục 4 xóa nó. Mục 6–12 tạo hai đợt ốm thử và bốn bản ghi thử; mục 15 xóa hết. Mục 11 cần hai máy. Mục 16–19 tạo một đợt ốm thử và ba bản ghi thử, và cần hai máy cùng gia đình; mục 20 xóa hết. Mục 22 tạo một đợt ốm thử; mục 23 xóa nó. Mục 24 tạo một bản ghi Triệu chứng thử và xóa nó. Mục 25 tạo một đợt ốm thử và một bản ghi nhiệt độ thử; mục 28 xóa cả hai.
 +Phần của mốc M1 (bản ghi Triệu chứng, spec §3) là mục 1–5; phần của mốc M2 (đợt ốm, spec §4–§6) là mục 6–15; phần của mốc M3 (tab Hôm nay, spec §5.5, §5.6, §7) là mục 16–21; phần của mốc M4 (so sánh và Báo cáo, spec §5.4, §9) bắt đầu từ mục 22: thẻ "So với thường ngày" là mục 22–23, bảng "Triệu chứng" của Báo cáo là mục 24, kỳ "Đợt ốm" của Báo cáo và nút "Báo cáo cho bác sĩ" là mục 25–28; phần của mốc M5 (lần khám, spec §8) bắt đầu từ mục 29: thẻ và sheet "Lần khám" là mục 29–33. Các mốc sau của spec thêm mục của mình vào cuối danh sách này. Mục 2 tạo một bản ghi Triệu chứng thử và mục 4 xóa nó. Mục 6–12 tạo hai đợt ốm thử và bốn bản ghi thử; mục 15 xóa hết. Mục 11 cần hai máy. Mục 16–19 tạo một đợt ốm thử và ba bản ghi thử, và cần hai máy cùng gia đình; mục 20 xóa hết. Mục 22 tạo một đợt ốm thử; mục 23 xóa nó. Mục 24 tạo một bản ghi Triệu chứng thử và xóa nó. Mục 25 tạo một đợt ốm thử và một bản ghi nhiệt độ thử; mục 28 xóa cả hai. Mục 29 tạo một đợt ốm thử, một lần khám thử và một ảnh thử, mục 33 thêm một ảnh thử nữa; mục 33 xóa hết.
- 
+
  1. Mở app từ màn hình chính, bấm "+". Kỳ vọng: nhóm "Khác" có năm ô, ô đầu là "Triệu chứng", không chữ nào bị cắt. Bấm "Triệu chứng". Kỳ vọng: phiếu "Triệu chứng" có dòng "Bấm những gì bé đang có.", các chip dưới nhãn "Hay gặp", nút "Xem tất cả … triệu chứng", ô "Ghi chú (không bắt buộc)", rồi "Lúc nào?"; nút "Lưu" mờ và chưa bấm được.
  2. Bấm "Sổ mũi" và "Ho". Kỳ vọng: hai chip đổi sang nền đậm và có dấu ✓; dòng trên ghi "Đã chọn 2."; nút "Lưu" bấm được. Bấm "Xem tất cả … triệu chứng". Kỳ vọng: các chip còn lại hiện theo nhóm "Hô hấp", "Tiêu hóa", "Da", "Hành vi, ăn bú", "Khác"; nút thành "Thu gọn". Gõ ghi chú "thử", bấm "Lưu". Kỳ vọng: toast "Đã ghi Triệu chứng: Sổ mũi, Ho · thử lúc …" có nút "Hoàn tác".
 @@ -676,6 +676,11 @@ Phần của mốc M1 (bản ghi Triệu chứng, spec §3) là mục 1–5; ph
@@ -1136,9 +1152,9 @@ index 456ae1e..d02134b 100644
 +31. Bật chế độ máy bay. Kỳ vọng: thẻ "Lần khám" có dòng "Cần kết nối mạng để thay đổi các mục dưới đây.", nút "Thêm" mờ. Bấm dòng lần khám. Kỳ vọng: phiếu có dòng đó; "Lưu" và "Xóa lần khám" mờ. Đóng phiếu, tắt chế độ máy bay.
 +32. Bấm bút chì ở đầu trang. Kỳ vọng: "Xóa đợt ốm" mờ, ngay dưới là dòng "Xóa các lần khám trước.". Đóng phiếu.
 +33. Dọn: bấm dòng lần khám, bấm dấu × trên ảnh. Kỳ vọng: hỏi lại "Xóa ảnh này?"; đồng ý thì ảnh biến mất ngay, phiếu vẫn mở. Bấm ô "Thêm", chụp một ảnh nữa, bấm "Lưu". Mở lại lần khám, bấm "Xóa lần khám". Kỳ vọng: hỏi lại "Xóa lần khám này và các ảnh của nó?"; đồng ý thì phiếu đóng, thẻ ghi lại "Chưa có lần khám nào.". Bút chì → "Xóa đợt ốm" bấm được: xóa đợt thử.
- 
+
  Kết quả: Chờ người dùng.
- 
+
 ```
 
 `docs/device-checklist.md` từ trước đã không theo prettier: không chạy `prettier --write` lên nó.
@@ -1148,9 +1164,19 @@ git add docs/device-checklist.md docs/blueprint/specs/2026-11-26-kim-bun-dot-om-
 git commit -m "docs: the M5d part of step 38, and readings of §6.4 and §8.3 in the spec" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
-- [ ] **Step 7: Ghi kết quả vào plan, commit**
+- [x] **Step 7: Ghi kết quả vào plan, commit**
 
 Ghi ngay dưới bước này: số đo đỏ và xanh của Task 1 có khớp plan không; kết quả Step 1, Step 2 và Step 4. Mục nào không cho thấy được thì ghi "chưa kiểm". Đánh dấu `[x]` các bước đã làm.
+
+**Kết quả (2026-11-27).**
+
+- Task 1, Step 0: `main` = `origin/main` = `7655148`, nền 212 file / 2034 test xanh.
+- Task 1, Step 2 (đỏ): `Test Files  3 failed | 210 passed (213)`, `Tests  3 failed | 2033 passed (2036)`, đúng ba test plan ghi; khớp plan.
+- Task 1, Step 4 (xanh): `Test Files  213 passed (213)`, `Tests  2044 passed (2044)`; `tsc --noEmit` thoát 0; khớp plan. Commit `40b972e`.
+- Task 2, Step 1: như trên. Step 2: build lần 1 thoát 1 vì thông báo bảo mật của Next 16.4.3 (sau 42/42), lần 2 thoát 0, `✓ Generating static pages using 9 workers (42/42)`, `├ ○ /dot-om/chi-tiet` vẫn tĩnh.
+- Step 4: xem kết quả ngay dưới Step 4. Không lỗi, không bản sửa.
+- Step 5: sau khi xóa trang tạm, `tsc` đỏ giả một lần (`.next/dev/types/validator.ts` còn nhắc `app/fixture-visits`); xóa `.next/dev/types .next/types` thì thoát 0.
+- Step 6: Patch 3 áp sạch, commit `71ba054`.
 
 ```bash
 git status --short   # file plan này là untracked (??), hoặc đã được commit lúc duyệt thì là M; các file plan khác chưa chạy: không add chúng
@@ -1158,7 +1184,7 @@ git add docs/blueprint/plans/2026-11-27-kim-bun-dot-om-m5d.md
 git commit -m "docs(plan): the M5d plan and its check results" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
-- [ ] **Step 8: Đưa lên `main`**
+- [x] **Step 8: Đưa lên `main`**
 
 Chỉ khi mọi bước trên đều đạt và không còn lỗi đã biết (lỗi tìm thấy khi kiểm phải được sửa, có test, và ghi vào plan trước; sửa xong thì chạy lại Step 1 và Step 2). Không hỏi lại người dùng: xem mục "Lên `main` không cần hỏi" ở Ghi chú khi thực thi.
 
